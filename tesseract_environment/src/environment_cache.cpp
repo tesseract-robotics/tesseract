@@ -29,7 +29,7 @@
 
 #include <mutex>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 DefaultEnvironmentCache::DefaultEnvironmentCache(std::shared_ptr<const Environment> env, std::size_t cache_size)
   : env_(std::move(env)), cache_size_(cache_size)
@@ -52,7 +52,7 @@ void DefaultEnvironmentCache::refreshCache() const
 
 std::unique_ptr<Environment> DefaultEnvironmentCache::getCachedEnvironment() const
 {
-  tesseract_scene_graph::SceneState current_state = env_->getState();
+  tesseract::scene_graph::SceneState current_state = env_->getState();
 
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
   refreshCacheHelper();  // This is to make sure the cached items are updated if needed
@@ -90,4 +90,4 @@ void DefaultEnvironmentCache::refreshCacheHelper() const
   }
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

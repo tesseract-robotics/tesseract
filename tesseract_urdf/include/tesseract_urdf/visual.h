@@ -40,7 +40,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view VISUAL_ELEMENT_NAME = "visual";
 
@@ -50,10 +50,10 @@ static constexpr std::string_view VISUAL_ELEMENT_NAME = "visual";
  * @param locator The Tesseract resource locator
  * @return A Visual object
  */
-std::shared_ptr<tesseract_scene_graph::Visual>
+std::shared_ptr<tesseract::scene_graph::Visual>
 parseVisual(const tinyxml2::XMLElement* xml_element,
-            const tesseract_common::ResourceLocator& locator,
-            std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials);
+            const tesseract::common::ResourceLocator& locator,
+            std::unordered_map<std::string, std::shared_ptr<tesseract::scene_graph::Material>>& available_materials);
 
 /**
  * @brief writeVisual Write one visual geometry object to URDF XML
@@ -66,12 +66,12 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
  * the same link.
  * @return An XML element representing the collision object in URDF format.
  */
-tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract_scene_graph::Visual>& visual,
+tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract::scene_graph::Visual>& visual,
                                   tinyxml2::XMLDocument& doc,
                                   const std::string& package_path,
                                   const std::string& link_name,
                                   int id);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_VISUAL_H

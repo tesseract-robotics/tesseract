@@ -31,7 +31,7 @@
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 /*********************************************************************/
 /*************************** BASE NODE *******************************/
@@ -55,7 +55,7 @@ OFKTBaseNode::OFKTBaseNode(JointType type,
 {
 }
 
-tesseract_scene_graph::JointType OFKTBaseNode::getType() const { return type_; }
+tesseract::scene_graph::JointType OFKTBaseNode::getType() const { return type_; }
 
 void OFKTBaseNode::setParent(OFKTNode* parent)
 {
@@ -70,7 +70,7 @@ const std::string& OFKTBaseNode::getJointName() const { return joint_name_; }
 
 void OFKTBaseNode::storeJointValue(double joint_value)
 {
-  if (tesseract_common::almostEqualRelativeAndAbs(joint_value_, joint_value, 1e-10))
+  if (tesseract::common::almostEqualRelativeAndAbs(joint_value_, joint_value, 1e-10))
     return;
 
   joint_value_ = joint_value;
@@ -127,7 +127,7 @@ const std::vector<const OFKTNode*>& OFKTBaseNode::getChildren() const { return c
 /*************************** ROOT NODE *******************************/
 /*********************************************************************/
 OFKTRootNode::OFKTRootNode(std::string link_name)
-  : OFKTBaseNode(tesseract_scene_graph::JointType::FIXED, nullptr, std::move(link_name))
+  : OFKTBaseNode(tesseract::scene_graph::JointType::FIXED, nullptr, std::move(link_name))
 {
   update_world_required_ = false;
 }
@@ -160,7 +160,7 @@ OFKTFixedNode::OFKTFixedNode(OFKTNode* parent,
                              std::string link_name,
                              std::string joint_name,
                              const Eigen::Isometry3d& static_tf)
-  : OFKTBaseNode(tesseract_scene_graph::JointType::FIXED,
+  : OFKTBaseNode(tesseract::scene_graph::JointType::FIXED,
                  parent,
                  std::move(link_name),
                  std::move(joint_name),
@@ -194,7 +194,7 @@ OFKTFloatingNode::OFKTFloatingNode(OFKTNode* parent,
                                    std::string link_name,
                                    std::string joint_name,
                                    const Eigen::Isometry3d& static_tf)
-  : OFKTBaseNode(tesseract_scene_graph::JointType::FLOATING,
+  : OFKTBaseNode(tesseract::scene_graph::JointType::FLOATING,
                  parent,
                  std::move(link_name),
                  std::move(joint_name),
@@ -232,7 +232,7 @@ OFKTRevoluteNode::OFKTRevoluteNode(OFKTNode* parent,
                                    std::string joint_name,
                                    const Eigen::Isometry3d& static_tf,
                                    const Eigen::Vector3d& axis)
-  : OFKTBaseNode(tesseract_scene_graph::JointType::REVOLUTE,
+  : OFKTBaseNode(tesseract::scene_graph::JointType::REVOLUTE,
                  parent,
                  std::move(link_name),
                  std::move(joint_name),
@@ -270,7 +270,7 @@ OFKTContinuousNode::OFKTContinuousNode(OFKTNode* parent,
                                        std::string joint_name,
                                        const Eigen::Isometry3d& static_tf,
                                        const Eigen::Vector3d& axis)
-  : OFKTBaseNode(tesseract_scene_graph::JointType::CONTINUOUS,
+  : OFKTBaseNode(tesseract::scene_graph::JointType::CONTINUOUS,
                  parent,
                  std::move(link_name),
                  std::move(joint_name),
@@ -306,7 +306,7 @@ OFKTPrismaticNode::OFKTPrismaticNode(OFKTNode* parent,
                                      std::string joint_name,
                                      const Eigen::Isometry3d& static_tf,
                                      const Eigen::Vector3d& axis)
-  : OFKTBaseNode(tesseract_scene_graph::JointType::PRISMATIC,
+  : OFKTBaseNode(tesseract::scene_graph::JointType::PRISMATIC,
                  parent,
                  std::move(link_name),
                  std::move(joint_name),
@@ -333,4 +333,4 @@ Eigen::Isometry3d OFKTPrismaticNode::computeLocalTransformation(double joint_val
 }
 
 const Eigen::Vector3d& OFKTPrismaticNode::getAxis() const { return axis_; }
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph

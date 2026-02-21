@@ -11,17 +11,17 @@ TEST(TesseractURDFUnit, trailingSlash)  // NOLINT
 {
   {
     std::string str = "/tmp";
-    EXPECT_EQ(tesseract_urdf::trailingSlash(str), "/tmp/");
+    EXPECT_EQ(tesseract::urdf::trailingSlash(str), "/tmp/");
   }
 
   {
     std::string str = "/tmp/";
-    EXPECT_EQ(tesseract_urdf::trailingSlash(str), "/tmp/");
+    EXPECT_EQ(tesseract::urdf::trailingSlash(str), "/tmp/");
   }
 
   {
     std::string str;
-    EXPECT_EQ(tesseract_urdf::trailingSlash(str), "/");
+    EXPECT_EQ(tesseract::urdf::trailingSlash(str), "/");
   }
 }
 
@@ -29,22 +29,22 @@ TEST(TesseractURDFUnit, noTrailingSlash)  // NOLINT
 {
   {
     std::string str = "/tmp";
-    EXPECT_EQ(tesseract_urdf::noTrailingSlash(str), "/tmp");
+    EXPECT_EQ(tesseract::urdf::noTrailingSlash(str), "/tmp");
   }
 
   {
     std::string str = "/tmp/";
-    EXPECT_EQ(tesseract_urdf::noTrailingSlash(str), "/tmp");
+    EXPECT_EQ(tesseract::urdf::noTrailingSlash(str), "/tmp");
   }
 
   {
     std::string str;
-    EXPECT_EQ(tesseract_urdf::noTrailingSlash(str), "");
+    EXPECT_EQ(tesseract::urdf::noTrailingSlash(str), "");
   }
 
   {
     std::string str = "/tmp//";
-    EXPECT_EQ(tesseract_urdf::noTrailingSlash(str), "/tmp");
+    EXPECT_EQ(tesseract::urdf::noTrailingSlash(str), "/tmp");
   }
 }
 
@@ -52,21 +52,21 @@ TEST(TesseractURDFUnit, noLeadingSlash)  // NOLINT
 {
   {
     std::string str = "/tmp";
-    EXPECT_EQ(tesseract_urdf::noLeadingSlash(str), "tmp");
+    EXPECT_EQ(tesseract::urdf::noLeadingSlash(str), "tmp");
   }
 
   {
     std::string str = "/tmp/";
-    EXPECT_EQ(tesseract_urdf::noLeadingSlash(str), "tmp/");
+    EXPECT_EQ(tesseract::urdf::noLeadingSlash(str), "tmp/");
   }
 
   {
     std::string str = "//tmp/";
-    EXPECT_EQ(tesseract_urdf::noLeadingSlash(str), "tmp/");
+    EXPECT_EQ(tesseract::urdf::noLeadingSlash(str), "tmp/");
   }
 
   {
     std::string str;
-    EXPECT_EQ(tesseract_urdf::noLeadingSlash(str), "");
+    EXPECT_EQ(tesseract::urdf::noLeadingSlash(str), "");
   }
 }

@@ -37,7 +37,7 @@ namespace tinyxml2
 class XMLElement;  // NOLINT
 }
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 /**
  * @brief Parse a config xml element
@@ -47,7 +47,7 @@ namespace tesseract_srdf
  * @param version The SRDF version
  * @return The extracted file path
  */
-std::filesystem::path parseConfigFilePath(const tesseract_common::ResourceLocator& locator,
+std::filesystem::path parseConfigFilePath(const tesseract::common::ResourceLocator& locator,
                                           const tinyxml2::XMLElement* xml_element,
                                           const std::array<int, 3>& version);
 
@@ -59,10 +59,10 @@ std::filesystem::path parseConfigFilePath(const tesseract_common::ResourceLocato
  * @param version The SRDF version
  * @return The calibration information
  */
-tesseract_common::CalibrationInfo parseCalibrationConfig(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                         const tesseract_common::ResourceLocator& locator,
-                                                         const tinyxml2::XMLElement* xml_element,
-                                                         const std::array<int, 3>& version);
+tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                          const tesseract::common::ResourceLocator& locator,
+                                                          const tinyxml2::XMLElement* xml_element,
+                                                          const std::array<int, 3>& version);
 
 /**
  * @brief Parse kinematics plugin config xml element
@@ -71,9 +71,9 @@ tesseract_common::CalibrationInfo parseCalibrationConfig(const tesseract_scene_g
  * @param version The SRDF version
  * @return The kinematics plugin information
  */
-tesseract_common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract_common::ResourceLocator& locator,
-                                                                   const tinyxml2::XMLElement* xml_element,
-                                                                   const std::array<int, 3>& version);
+tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
+                                                                    const tinyxml2::XMLElement* xml_element,
+                                                                    const std::array<int, 3>& version);
 
 /**
  * @brief Parse contact managers plugin config xml element
@@ -82,9 +82,9 @@ tesseract_common::KinematicsPluginInfo parseKinematicsPluginConfig(const tessera
  * @param version The SRDF version
  * @return The contact managers plugin information
  */
-tesseract_common::ContactManagersPluginInfo
-parseContactManagersPluginConfig(const tesseract_common::ResourceLocator& locator,
+tesseract::common::ContactManagersPluginInfo
+parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locator,
                                  const tinyxml2::XMLElement* xml_element,
                                  const std::array<int, 3>& version);
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_CONFIGS_H

@@ -31,14 +31,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 thread_local KDL::JntArray KDLFwdKinChain::kdl_joints_cache;  // NOLINT
 
-KDLFwdKinChain::KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
+KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
                                const std::vector<std::pair<std::string, std::string>>& chains,
                                std::string solver_name)
   : solver_name_(std::move(solver_name))
@@ -53,7 +53,7 @@ KDLFwdKinChain::KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_gr
   jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
 }
 
-KDLFwdKinChain::KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
+KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
                                const std::string& base_link,
                                const std::string& tip_link,
                                std::string solver_name)
@@ -74,7 +74,7 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& other)
   return *this;
 }
 
-void KDLFwdKinChain::calcFwdKinHelperAll(tesseract_common::TransformMap& transforms,
+void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::TransformMap& transforms,
                                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   if (joint_angles.rows() != kdl_data_.robot_chain.getNrOfJoints())
@@ -95,7 +95,7 @@ void KDLFwdKinChain::calcFwdKinHelperAll(tesseract_common::TransformMap& transfo
   KDLToEigen(kdl_pose, pose);
 }
 
-void KDLFwdKinChain::calcFwdKin(tesseract_common::TransformMap& transforms,
+void KDLFwdKinChain::calcFwdKin(tesseract::common::TransformMap& transforms,
                                 const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(joint_angles.size() == numJoints());
@@ -153,4 +153,4 @@ std::vector<std::string> KDLFwdKinChain::getTipLinkNames() const { return { kdl_
 
 std::string KDLFwdKinChain::getSolverName() const { return solver_name_; }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

@@ -33,14 +33,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_common/resource_locator.h>
 
-using namespace tesseract_collision;
+using namespace tesseract::collision;
 
 void runContactManagersFactoryTest(const std::filesystem::path& config_path)
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   ContactManagersPluginFactory factory(config_path, locator);
   YAML::Node plugin_config = YAML::LoadFile(config_path.string());
-  tesseract_common::processYamlIncludeDirective(plugin_config, locator);
+  tesseract::common::processYamlIncludeDirective(plugin_config, locator);
 
   const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -86,8 +86,8 @@ void runContactManagersFactoryTest(const std::filesystem::path& config_path)
     EXPECT_TRUE(cm != nullptr);
   }
 
-  factory.saveConfig(std::filesystem::path(tesseract_common::getTempPath()) / "contact_manager_plugins_export."
-                                                                              "yaml");
+  factory.saveConfig(std::filesystem::path(tesseract::common::getTempPath()) / "contact_manager_plugins_export."
+                                                                               "yaml");
 
   // Failures
   {
@@ -99,13 +99,13 @@ void runContactManagersFactoryTest(const std::filesystem::path& config_path)
     EXPECT_TRUE(cm == nullptr);
   }
   {
-    tesseract_common::PluginInfo plugin_info;
+    tesseract::common::PluginInfo plugin_info;
     plugin_info.class_name = "DoesNotExistFactory";
     DiscreteContactManager::UPtr cm = factory.createDiscreteContactManager("DoesNotExist", plugin_info);
     EXPECT_TRUE(cm == nullptr);
   }
   {
-    tesseract_common::PluginInfo plugin_info;
+    tesseract::common::PluginInfo plugin_info;
     plugin_info.class_name = "DoesNotExistFactory";
     ContinuousContactManager::UPtr cm = factory.createContinuousContactManager("DoesNotExist", plugin_info);
     EXPECT_TRUE(cm == nullptr);
@@ -118,14 +118,14 @@ TEST(TesseractContactManagersFactoryUnit, LoadAndExportPluginTest)  // NOLINT
   std::filesystem::path config_path = file_path.parent_path() / "contact_manager_plugins.yaml";
   runContactManagersFactoryTest(config_path);
 
-  std::filesystem::path export_config_path = std::filesystem::path(tesseract_common::getTempPath()) / "contac"
-                                                                                                      "t_"
-                                                                                                      "manage"
-                                                                                                      "r_"
-                                                                                                      "plugin"
-                                                                                                      "s_"
-                                                                                                      "export"
-                                                                                                      ".yaml";
+  std::filesystem::path export_config_path = std::filesystem::path(tesseract::common::getTempPath()) / "contac"
+                                                                                                       "t_"
+                                                                                                       "manage"
+                                                                                                       "r_"
+                                                                                                       "plugin"
+                                                                                                       "s_"
+                                                                                                       "export"
+                                                                                                       ".yaml";
   runContactManagersFactoryTest(export_config_path);
 }
 
@@ -154,9 +154,9 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
                                 BulletCastSimpleManager:
                                   class: BulletCastSimpleManagerFactory)";
 
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   ContactManagersPluginFactory factory(config, locator);
-  YAML::Node plugin_config = tesseract_common::loadYamlString(config, locator);
+  YAML::Node plugin_config = tesseract::common::loadYamlString(config, locator);
 
   const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -226,10 +226,10 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   EXPECT_EQ(factory.getSearchLibraries().size(), 3);
 
   {
-    tesseract_common::PluginInfoMap map = factory.getDiscreteContactManagerPlugins();
+    tesseract::common::PluginInfoMap map = factory.getDiscreteContactManagerPlugins();
     EXPECT_TRUE(map.find("NotFound") == map.end());
 
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "TestDiscreteManagerFactory";
     factory.addDiscreteContactManagerPlugin("TestDiscreteManager", pi);
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 1);
@@ -239,7 +239,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_TRUE(map.find("TestDiscreteManager") != map.end());
     EXPECT_EQ(factory.getDefaultDiscreteContactManagerPlugin(), "TestDiscreteManager");
 
-    tesseract_common::PluginInfo pi2;
+    tesseract::common::PluginInfo pi2;
     pi2.class_name = "Test2DiscreteManagerFactory";
     factory.addDiscreteContactManagerPlugin("Test2DiscreteManager", pi2);
     EXPECT_EQ(factory.getDiscreteContactManagerPlugins().size(), 2);
@@ -264,10 +264,10 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   }
 
   {
-    tesseract_common::PluginInfoMap map = factory.getContinuousContactManagerPlugins();
+    tesseract::common::PluginInfoMap map = factory.getContinuousContactManagerPlugins();
     EXPECT_TRUE(map.find("NotFound") == map.end());
 
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "TestContinuousManagerFactory";
     factory.addContinuousContactManagerPlugin("TestContinuousManager", pi);
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 1);
@@ -277,7 +277,7 @@ TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
     EXPECT_TRUE(map.find("TestContinuousManager") != map.end());
     EXPECT_EQ(factory.getDefaultContinuousContactManagerPlugin(), "TestContinuousManager");
 
-    tesseract_common::PluginInfo pi2;
+    tesseract::common::PluginInfo pi2;
     pi2.class_name = "Test2ContinuousManagerFactory";
     factory.addContinuousContactManagerPlugin("Test2ContinuousManager", pi2);
     EXPECT_EQ(factory.getContinuousContactManagerPlugins().size(), 2);
@@ -321,9 +321,9 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyDiscretePluginTest)  // NOLINT
                                 FCLDiscreteBVHManager:
                                   class: FCLDiscreteBVHManagerFactory)";
 
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   ContactManagersPluginFactory factory(config, locator);
-  YAML::Node plugin_config = tesseract_common::loadYamlString(config, locator);
+  YAML::Node plugin_config = tesseract::common::loadYamlString(config, locator);
 
   const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -376,9 +376,9 @@ TEST(TesseractContactManagersFactoryUnit, LoadOnlyContinuousPluginTest)  // NOLI
                                 BulletCastSimpleManager:
                                   class: BulletCastSimpleManagerFactory)";
 
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   ContactManagersPluginFactory factory(config, locator);
-  YAML::Node plugin_config = tesseract_common::loadYamlString(config, locator);
+  YAML::Node plugin_config = tesseract::common::loadYamlString(config, locator);
 
   const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
   const YAML::Node& search_paths = plugin_info["search_paths"];

@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/fwd.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision
 {
 struct BulletCollisionShape
 {
@@ -57,7 +57,7 @@ public:
    * @param key The cache key
    * @param value The value to store
    */
-  static void insert(const std::shared_ptr<const tesseract_geometry::Geometry>& key,
+  static void insert(const std::shared_ptr<const tesseract::geometry::Geometry>& key,
                      const std::shared_ptr<BulletCollisionShape>& value);
 
   /**
@@ -65,7 +65,7 @@ public:
    * @param key The cache key
    * @return If key exists the entry is returned, otherwise a nullptr is returned
    */
-  static std::shared_ptr<BulletCollisionShape> get(const std::shared_ptr<const tesseract_geometry::Geometry>& key);
+  static std::shared_ptr<BulletCollisionShape> get(const std::shared_ptr<const tesseract::geometry::Geometry>& key);
 
   /** @brief Remove any entries which are no longer valid */
   static void prune();
@@ -76,6 +76,6 @@ private:
   /** @brief The shared mutex for thread safety */
   static std::mutex mutex_;  // NOLINT
 };
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_BULLET_COLLISION_SHAPE_CACHE_H

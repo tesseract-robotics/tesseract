@@ -24,14 +24,14 @@
 #include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
-SDFMesh::SDFMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+SDFMesh::SDFMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
                  std::shared_ptr<const Eigen::VectorXi> triangles,
-                 std::shared_ptr<const tesseract_common::Resource> resource,
+                 std::shared_ptr<const tesseract::common::Resource> resource,
                  const Eigen::Vector3d& scale,
-                 std::shared_ptr<const tesseract_common::VectorVector3d> normals,
-                 std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                 std::shared_ptr<const tesseract::common::VectorVector3d> normals,
+                 std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors,
                  std::shared_ptr<MeshMaterial> mesh_material,
                  std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures)
   : PolygonMesh(std::move(vertices),
@@ -48,13 +48,13 @@ SDFMesh::SDFMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertice
     std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
 }
 
-SDFMesh::SDFMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+SDFMesh::SDFMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
                  std::shared_ptr<const Eigen::VectorXi> triangles,
                  int triangle_count,
-                 std::shared_ptr<const tesseract_common::Resource> resource,
+                 std::shared_ptr<const tesseract::common::Resource> resource,
                  const Eigen::Vector3d& scale,
-                 std::shared_ptr<const tesseract_common::VectorVector3d> normals,
-                 std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors,
+                 std::shared_ptr<const tesseract::common::VectorVector3d> normals,
+                 std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors,
                  std::shared_ptr<MeshMaterial> mesh_material,
                  std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures)
   : PolygonMesh(std::move(vertices),
@@ -85,4 +85,4 @@ bool SDFMesh::operator==(const SDFMesh& rhs) const
 }
 bool SDFMesh::operator!=(const SDFMesh& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 CREATE_MEMBER_CHECK(extension_type);
 
-namespace tesseract_common
+namespace tesseract::common
 {
 namespace serialization::xml
 {
@@ -90,7 +90,7 @@ struct extension
   static constexpr const char* value = boost::mpl::c_str<extension::extension_type>::value;
 };
 }  // namespace serialization::binary
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 /**
  * @brief A macro for defining serialization extension for classes
@@ -101,7 +101,7 @@ struct extension
  * @param B the binary serialzation extension for the provided class
  */
 #define TESSERACT_CLASS_EXTENSION(T, X, J, B)                                                                          \
-  namespace tesseract_common                                                                                           \
+  namespace tesseract::common                                                                                          \
   {                                                                                                                    \
   namespace serialization::xml                                                                                         \
   {                                                                                                                    \

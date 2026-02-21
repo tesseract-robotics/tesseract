@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand()
   : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS){};
@@ -49,7 +49,7 @@ bool ChangeJointVelocityLimitsCommand::operator==(const ChangeJointVelocityLimit
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract_common::isIdenticalMap<std::unordered_map<std::string, double>, double>(limits_, rhs.limits_);
+  equal &= tesseract::common::isIdenticalMap<std::unordered_map<std::string, double>, double>(limits_, rhs.limits_);
   return equal;
 }
 bool ChangeJointVelocityLimitsCommand::operator!=(const ChangeJointVelocityLimitsCommand& rhs) const
@@ -57,4 +57,4 @@ bool ChangeJointVelocityLimitsCommand::operator!=(const ChangeJointVelocityLimit
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

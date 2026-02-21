@@ -36,13 +36,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_common/plugin_info.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 using GroupsJointState = std::unordered_map<std::string, double>;
 using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
 using GroupJointStates = std::unordered_map<std::string, GroupsJointStates>;
-using GroupsTCPs = tesseract_common::TransformMap;
-using GroupTCPs = tesseract_common::AlignedUnorderedMap<std::string, GroupsTCPs>;
+using GroupsTCPs = tesseract::common::TransformMap;
+using GroupTCPs = tesseract::common::AlignedUnorderedMap<std::string, GroupsTCPs>;
 using ChainGroup = std::vector<std::pair<std::string, std::string>>;
 using ChainGroups = std::unordered_map<std::string, ChainGroup>;
 using JointGroup = std::vector<std::string>;
@@ -80,7 +80,7 @@ struct KinematicsInformation
   GroupTCPs group_tcps;
 
   /** @brief The kinematics plugin information */
-  tesseract_common::KinematicsPluginInfo kinematics_plugin_info;
+  tesseract::common::KinematicsPluginInfo kinematics_plugin_info;
 
   /** @brief Insert the content of an other KinematicsInformation */
   void insert(const KinematicsInformation& other);
@@ -142,6 +142,6 @@ struct KinematicsInformation
   bool operator!=(const KinematicsInformation& rhs) const;
 };
 
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
 
 #endif  // TESSERACT_SRDF_KINEMATICS_INFORMATION_H

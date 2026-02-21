@@ -39,19 +39,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/visual.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::Link::Ptr
+tesseract::scene_graph::Link::Ptr
 parseLink(const tinyxml2::XMLElement* xml_element,
-          const tesseract_common::ResourceLocator& locator,
+          const tesseract::common::ResourceLocator& locator,
           bool make_convex_meshes,
-          std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+          std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr>& available_materials)
 {
   std::string link_name;
-  if (tesseract_common::QueryStringAttribute(xml_element, "name", link_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(xml_element, "name", link_name) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Link: Missing or failed parsing attribute 'name'!"));
 
-  auto l = std::make_shared<tesseract_scene_graph::Link>(link_name);
+  auto l = std::make_shared<tesseract::scene_graph::Link>(link_name);
 
   // get inertia if it exists
   const tinyxml2::XMLElement* inertial = xml_element->FirstChildElement("inertial");
@@ -72,7 +72,7 @@ parseLink(const tinyxml2::XMLElement* xml_element,
   for (const tinyxml2::XMLElement* visual = xml_element->FirstChildElement("visual"); visual != nullptr;
        visual = visual->NextSiblingElement("visual"))
   {
-    tesseract_scene_graph::Visual::Ptr temp_visual;
+    tesseract::scene_graph::Visual::Ptr temp_visual;
     try
     {
       temp_visual = parseVisual(visual, locator, available_materials);
@@ -89,7 +89,7 @@ parseLink(const tinyxml2::XMLElement* xml_element,
   for (const tinyxml2::XMLElement* collision = xml_element->FirstChildElement("collision"); collision != nullptr;
        collision = collision->NextSiblingElement("collision"))
   {
-    tesseract_scene_graph::Collision::Ptr temp_collision;
+    tesseract::scene_graph::Collision::Ptr temp_collision;
     try
     {
       temp_collision = parseCollision(collision, locator, make_convex_meshes);
@@ -106,7 +106,7 @@ parseLink(const tinyxml2::XMLElement* xml_element,
   return l;
 }
 
-tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
+tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract::scene_graph::Link>& link,
                                 tinyxml2::XMLDocument& doc,
                                 const std::string& package_path)
 {
@@ -128,7 +128,7 @@ tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_grap
   int id = -1;
   if (link->visual.size() > 1)
     id = 0;
-  for (const tesseract_scene_graph::Visual::Ptr& vis : link->visual)
+  for (const tesseract::scene_graph::Visual::Ptr& vis : link->visual)
   {
     try
     {
@@ -146,7 +146,7 @@ tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_grap
   id = -1;
   if (link->collision.size() > 1)
     id = 0;
-  for (const tesseract_scene_graph::Collision::Ptr& col : link->collision)
+  for (const tesseract::scene_graph::Collision::Ptr& col : link->collision)
   {
     try
     {
@@ -164,4 +164,4 @@ tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_grap
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

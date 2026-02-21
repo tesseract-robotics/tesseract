@@ -13,7 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator resource_locator;
+  tesseract::common::GeneralResourceLocator resource_locator;
   {
     std::string str =
         R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
@@ -30,7 +30,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
+    tesseract::scene_graph::SceneGraph::Ptr sg = tesseract::urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
     EXPECT_TRUE(sg->getName() == "test");
     EXPECT_TRUE(sg->isTree());
@@ -55,7 +55,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
+    tesseract::scene_graph::SceneGraph::Ptr sg = tesseract::urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
     EXPECT_TRUE(sg->getName() == "test");
     EXPECT_TRUE(sg->isTree());
@@ -84,7 +84,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -107,7 +107,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -126,7 +126,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l3"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -146,7 +146,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l3"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -165,7 +165,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -185,7 +185,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l1"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -204,7 +204,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -228,56 +228,56 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l3"/>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   // Not a urdf
   {
     std::string str = R"(this is not a urdf)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   // Missing robot element
   {
     std::string str = R"(<abcd name="test"></abcd>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   // Invalid version
   {
     std::string str = R"(<robot name="test" tesseract:make_convex="true" version="a"></robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   // Version not equal 1
   {
     std::string str = R"(<robot name="test" tesseract:make_convex="true" version="2"></robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   // Missing tesseract:make_convex attribute
   {
     std::string str = R"(<robot name="test"></robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   // The tesseract:make_convex attribute is not a bool
   {
     std::string str = R"(<robot name="test" tesseract:make_convex="1.5"></robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
     const std::string path =
         resource_locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
-    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFFile(path, resource_locator);
+    tesseract::scene_graph::SceneGraph::Ptr sg = tesseract::urdf::parseURDFFile(path, resource_locator);
     EXPECT_TRUE(sg != nullptr);
   }
 }
 
 TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator resource_locator;
+  tesseract::common::GeneralResourceLocator resource_locator;
   {
     std::string str =
         R"(<robot name="test" extra="0 0 0" tesseract:make_convex="true">
@@ -305,7 +305,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
              </link>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
+    tesseract::scene_graph::SceneGraph::Ptr sg = tesseract::urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
     EXPECT_TRUE(sg->getName() == "test");
     EXPECT_TRUE(sg->isTree());
@@ -349,7 +349,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
                </visual>
              </link>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
+    tesseract::scene_graph::SceneGraph::Ptr sg = tesseract::urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
     EXPECT_TRUE(sg->getName() == "test");
     EXPECT_TRUE(sg->isTree());
@@ -393,7 +393,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
                </visual>
              </link>
            </robot>)";
-    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::urdf::parseURDFString(str, resource_locator));  // NOLINT
   }
 
   {
@@ -432,20 +432,20 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
                </visual>
              </link>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
+    tesseract::scene_graph::SceneGraph::Ptr sg = tesseract::urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
   }
 }
 
 TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string urdf_file =
       locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
 
-  auto g = tesseract_urdf::parseURDFFile(urdf_file, locator);
+  auto g = tesseract::urdf::parseURDFFile(urdf_file, locator);
 
   EXPECT_TRUE(g->getJoints().size() == 9);
   EXPECT_TRUE(g->getLinks().size() == 10);
@@ -453,7 +453,7 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
   EXPECT_TRUE(g->isAcyclic());
 
   // Save Graph
-  g->saveDOT(tesseract_common::getTempPath() + "tesseract_urdf_import.dot");
+  g->saveDOT(tesseract::common::getTempPath() + "tesseract_urdf_import.dot");
 
   // Get Shortest Path
   auto path = g->getShortestPath("link_1", "link_4");
@@ -473,11 +473,11 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 TEST(TesseractURDFUnit, write_urdf)  // NOLINT
 {
   {  // trigger nullptr input
-    tesseract_scene_graph::SceneGraph::Ptr sg = nullptr;
+    tesseract::scene_graph::SceneGraph::Ptr sg = nullptr;
     bool success = true;
     try
     {
-      tesseract_urdf::writeURDFFile(sg, "/tmp/", "urdf0.urdf");
+      tesseract::urdf::writeURDFFile(sg, "/tmp/", "urdf0.urdf");
     }
     catch (...)
     {
@@ -488,17 +488,17 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
   }
 
   {  // Successful run
-    tesseract_scene_graph::SceneGraph::Ptr sg = std::make_shared<tesseract_scene_graph::SceneGraph>();
+    tesseract::scene_graph::SceneGraph::Ptr sg = std::make_shared<tesseract::scene_graph::SceneGraph>();
 
     // Add 2 links
-    tesseract_scene_graph::Link::Ptr link_0 = std::make_shared<tesseract_scene_graph::Link>("link_0");
-    tesseract_scene_graph::Link::Ptr link_1 = std::make_shared<tesseract_scene_graph::Link>("link_1");
+    tesseract::scene_graph::Link::Ptr link_0 = std::make_shared<tesseract::scene_graph::Link>("link_0");
+    tesseract::scene_graph::Link::Ptr link_1 = std::make_shared<tesseract::scene_graph::Link>("link_1");
     sg->addLink(*link_0);
     sg->addLink(*link_1);
 
     // Add joint
-    tesseract_scene_graph::Joint::Ptr joint_0 = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
-    joint_0->type = tesseract_scene_graph::JointType::FIXED;
+    tesseract::scene_graph::Joint::Ptr joint_0 = std::make_shared<tesseract::scene_graph::Joint>("joint_0");
+    joint_0->type = tesseract::scene_graph::JointType::FIXED;
     joint_0->parent_link_name = link_0->getName();
     joint_0->child_link_name = link_1->getName();
     sg->addJoint(*joint_0);
@@ -506,7 +506,7 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
     bool success = true;
     try
     {
-      tesseract_urdf::writeURDFFile(sg, "/tmp/", "urdf1.urdf");
+      tesseract::urdf::writeURDFFile(sg, "/tmp/", "urdf1.urdf");
     }
     catch (...)
     {
@@ -520,19 +520,19 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
    * dereferences all the collision & visual pointers, causing a segfault if the link was ill-formed.
    * This should probably get changed to throwing an exception if it is nullptr.
   { // Trigger Bad Link
-    tesseract_scene_graph::SceneGraph::Ptr sg = std::make_shared<tesseract_scene_graph::SceneGraph>();
+    tesseract::scene_graph::SceneGraph::Ptr sg = std::make_shared<tesseract::scene_graph::SceneGraph>();
 
     // Add 2 links
-    tesseract_scene_graph::Link::Ptr link_0 = std::make_shared<tesseract_scene_graph::Link>("link_0");
+    tesseract::scene_graph::Link::Ptr link_0 = std::make_shared<tesseract::scene_graph::Link>("link_0");
     link_0->visual.resize(1);
     link_0->visual[0] = nullptr;  // Bad visual geometry to cause write failure in link
-    tesseract_scene_graph::Link::Ptr link_1 = std::make_shared<tesseract_scene_graph::Link>("link_1");
+    tesseract::scene_graph::Link::Ptr link_1 = std::make_shared<tesseract::scene_graph::Link>("link_1");
     sg->addLink(*link_0);
     sg->addLink(*link_1);
 
     // Add joint
-    tesseract_scene_graph::Joint::Ptrros-industrial joint_0 = std::make_shared<tesseract_scene_graph::Joint>("joint_0");
-    joint_0->type = tesseract_scene_graph::JointType::FIXED;
+    tesseract::scene_graph::Joint::Ptrros-industrial joint_0 =
+  std::make_shared<tesseract::scene_graph::Joint>("joint_0"); joint_0->type = tesseract::scene_graph::JointType::FIXED;
     joint_0->parent_link_name = link_0->getName();
     joint_0->child_link_name = link_1->getName();
     sg->addJoint(*joint_0);

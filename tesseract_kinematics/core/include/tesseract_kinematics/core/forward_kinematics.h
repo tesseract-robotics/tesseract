@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/eigen_types.h>
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 /** @brief Forward kinematics functions. */
 class ForwardKinematics
@@ -65,7 +65,7 @@ public:
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return A map of tip link names and transforms
    */
-  tesseract_common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+  tesseract::common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
    * @brief Calculates the Jacobian matrix for a given joint state in the reference frame of the specified link
@@ -88,7 +88,7 @@ public:
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return A map of tip link names and transforms
    */
-  virtual void calcFwdKin(tesseract_common::TransformMap& transforms,
+  virtual void calcFwdKin(tesseract::common::TransformMap& transforms,
                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
@@ -132,6 +132,6 @@ public:
   /** @brief Clone the forward kinematics object */
   virtual ForwardKinematics::UPtr clone() const = 0;
 };
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_FORWARD_KINEMATICS_H

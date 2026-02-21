@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/any_poly.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /**
  * @brief Contains information about a robot manipulator
@@ -90,6 +90,6 @@ struct ManipulatorInfo
 };
 
 using ManipulatorInfoAnyPoly = AnyWrapper<ManipulatorInfo>;
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_MANIPULATOR_INFO_H

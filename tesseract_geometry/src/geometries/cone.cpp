@@ -23,7 +23,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/cone.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 Cone::Cone(double radius, double length) : Geometry(GeometryType::CONE), r_(radius), l_(length) {}
 
@@ -36,10 +36,10 @@ bool Cone::operator==(const Cone& rhs) const
 {
   bool equal = true;
   equal &= Geometry::operator==(rhs);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(r_, rhs.r_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(l_, rhs.l_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(r_, rhs.r_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(l_, rhs.l_);
   return equal;
 }
 bool Cone::operator!=(const Cone& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

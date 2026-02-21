@@ -10,9 +10,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_common
+namespace tesseract::common
 {
-using AllowedCollisionEntries = std::unordered_map<tesseract_common::LinkNamesPair, std::string>;
+using AllowedCollisionEntries = std::unordered_map<tesseract::common::LinkNamesPair, std::string>;
 
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
 
@@ -102,10 +102,10 @@ public:
 private:
   AllowedCollisionEntries lookup_table_;
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, AllowedCollisionMatrix& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, AllowedCollisionMatrix& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm);
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

@@ -55,43 +55,43 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/fcl/fcl_collision_geometry_cache.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision::tesseract_collision_fcl
+namespace tesseract::collision::fcl_internal
 {
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Plane::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Plane::ConstPtr& geom)
 {
   return std::make_shared<fcl::Planed>(geom->getA(), geom->getB(), geom->getC(), geom->getD());
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Box::ConstPtr& geom)
 {
   return std::make_shared<fcl::Boxd>(geom->getX(), geom->getY(), geom->getZ());
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Sphere::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Sphere::ConstPtr& geom)
 {
   return std::make_shared<fcl::Sphered>(geom->getRadius());
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Cylinder::ConstPtr& geom)
 {
   return std::make_shared<fcl::Cylinderd>(geom->getRadius(), geom->getLength());
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Cone::ConstPtr& geom)
 {
   return std::make_shared<fcl::Coned>(geom->getRadius(), geom->getLength());
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Capsule::ConstPtr& geom)
 {
   return std::make_shared<fcl::Capsuled>(geom->getRadius(), geom->getLength());
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Mesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
-  const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
+  const tesseract::common::VectorVector3d& vertices = *(geom->getVertices());
   const Eigen::VectorXi& triangles = *(geom->getFaces());
 
   auto g = std::make_shared<fcl::BVHModel<fcl::OBBRSSd>>();
@@ -117,7 +117,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstP
   return nullptr;
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::ConvexMesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVertexCount();
   int face_count = geom->getFaceCount();
@@ -133,11 +133,11 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::
   return nullptr;
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Octree::ConstPtr& geom)
 {
   switch (geom->getSubType())
   {
-    case tesseract_geometry::OctreeSubType::BOX:
+    case tesseract::geometry::OctreeSubType::BOX:
     {
       return std::make_shared<fcl::OcTreed>(geom->getOctree());
     }
@@ -154,43 +154,43 @@ CollisionGeometryPtr createShapePrimitiveHelper(const CollisionShapeConstPtr& ge
 {
   switch (geom->getType())
   {
-    case tesseract_geometry::GeometryType::PLANE:
+    case tesseract::geometry::GeometryType::PLANE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Plane>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Plane>(geom));
     }
-    case tesseract_geometry::GeometryType::BOX:
+    case tesseract::geometry::GeometryType::BOX:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Box>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Box>(geom));
     }
-    case tesseract_geometry::GeometryType::SPHERE:
+    case tesseract::geometry::GeometryType::SPHERE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Sphere>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Sphere>(geom));
     }
-    case tesseract_geometry::GeometryType::CYLINDER:
+    case tesseract::geometry::GeometryType::CYLINDER:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Cylinder>(geom));
     }
-    case tesseract_geometry::GeometryType::CONE:
+    case tesseract::geometry::GeometryType::CONE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Cone>(geom));
     }
-    case tesseract_geometry::GeometryType::CAPSULE:
+    case tesseract::geometry::GeometryType::CAPSULE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Capsule>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Capsule>(geom));
     }
-    case tesseract_geometry::GeometryType::MESH:
+    case tesseract::geometry::GeometryType::MESH:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Mesh>(geom));
     }
-    case tesseract_geometry::GeometryType::CONVEX_MESH:
+    case tesseract::geometry::GeometryType::CONVEX_MESH:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::ConvexMesh>(geom));
     }
-    case tesseract_geometry::GeometryType::OCTREE:
+    case tesseract::geometry::GeometryType::OCTREE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Octree>(geom));
     }
-    case tesseract_geometry::GeometryType::COMPOUND_MESH:
+    case tesseract::geometry::GeometryType::COMPOUND_MESH:
     {
       throw std::runtime_error("CompundMesh type should not be passed to this function!");
     }
@@ -216,7 +216,7 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
 
 bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
                          const CollisionObjectWrapper* cd2,
-                         const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                          bool verbose)
 {
   return cd1->m_enabled && cd2->m_enabled && (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
@@ -248,8 +248,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!col_result.isCollision())
     return false;
 
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
-  tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
+  tesseract::common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
 
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
   const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
@@ -334,8 +334,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   // TODO: There is an issue with FCL need to track down
   assert(!std::isnan(contact.nearest_points[0](0)));
 
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair link_pair;
-  tesseract_common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
+  tesseract::common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
   const auto it = cdata->res->find(link_pair);
   bool found = (it != cdata->res->end() && !it->second.empty());
 
@@ -347,7 +347,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
-                                               tesseract_common::VectorIsometry3d shape_poses)
+                                               tesseract::common::VectorIsometry3d shape_poses)
   : name_(std::move(name)), type_id_(type_id), shapes_(std::move(shapes)), shape_poses_(std::move(shape_poses))
 {
   assert(!shapes_.empty());                       // NOLINT
@@ -363,9 +363,9 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   collision_objects_raw_.reserve(shapes_.size());
   for (std::size_t i = 0; i < shapes_.size(); ++i)  // NOLINT
   {
-    if (shapes_[i]->getType() == tesseract_geometry::GeometryType::COMPOUND_MESH)
+    if (shapes_[i]->getType() == tesseract::geometry::GeometryType::COMPOUND_MESH)
     {
-      const auto& meshes = std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(shapes_[i])->getMeshes();
+      const auto& meshes = std::static_pointer_cast<const tesseract::geometry::CompoundMesh>(shapes_[i])->getMeshes();
       for (const auto& mesh : meshes)
       {
         CollisionGeometryPtr subshape = createShapePrimitive(mesh);
@@ -405,4 +405,4 @@ int CollisionObjectWrapper::getShapeIndex(const fcl::CollisionObjectd* co)
   return static_cast<const FCLCollisionObjectWrapper*>(co)->getShapeIndex();
 }
 
-}  // namespace tesseract_collision::tesseract_collision_fcl
+}  // namespace tesseract::collision::fcl_internal

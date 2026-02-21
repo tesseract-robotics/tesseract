@@ -27,7 +27,7 @@
 #include <memory>
 #include <tesseract_common/fwd.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 struct ContactResult;
 
@@ -49,6 +49,6 @@ public:
   virtual bool operator()(const ContactResult&) const = 0;
 };
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_CORE_CONTACT_RESULT_VALIDATORS_H

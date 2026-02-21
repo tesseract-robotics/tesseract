@@ -11,24 +11,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_urdf/urdf_parser.h>
 
-using namespace tesseract_scene_graph;
-using namespace tesseract_collision;
-using namespace tesseract_environment;
-using namespace tesseract_kinematics;
+using namespace tesseract::scene_graph;
+using namespace tesseract::collision;
+using namespace tesseract::environment;
+using namespace tesseract::kinematics;
 
-SceneGraph::Ptr getSceneGraph(const tesseract_common::ResourceLocator& locator)
+SceneGraph::Ptr getSceneGraph(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
 
-  return tesseract_urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
+  return tesseract::urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
 }
 
-tesseract_srdf::SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph,
-                                            const tesseract_common::ResourceLocator& locator)
+tesseract::srdf::SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph,
+                                             const tesseract::common::ResourceLocator& locator)
 {
   std::string path = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
 
-  auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
+  auto srdf = std::make_shared<tesseract::srdf::SRDFModel>();
   srdf->initFile(scene_graph, locator.locateResource(path)->getFilePath(), locator);
 
   return srdf;
@@ -88,7 +88,7 @@ static void BM_KINEMATIC_GROUP_COPY(benchmark::State& state, const Environment::
 
 int main(int argc, char** argv)
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   SceneGraph::Ptr scene_graph = getSceneGraph(locator);
   auto srdf = getSRDFModel(*scene_graph, locator);
   Environment::Ptr env = std::make_shared<Environment>();

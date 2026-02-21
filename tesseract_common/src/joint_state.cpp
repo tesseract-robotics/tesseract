@@ -25,7 +25,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_common/joint_state.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 JointState::JointState(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
   : joint_names(std::move(joint_names)), position(position)
@@ -40,7 +40,7 @@ bool JointState::operator==(const JointState& other) const
   ret_val &= ((velocity.size() == other.velocity.size()) && (velocity.isApprox(other.velocity, 1e-5)));
   ret_val &= ((acceleration.size() == other.acceleration.size()) && (acceleration.isApprox(other.acceleration, 1e-5)));
   ret_val &= ((effort.size() == other.effort.size()) && (effort.isApprox(other.effort, 1e-5)));
-  ret_val &= (tesseract_common::almostEqualRelativeAndAbs(time, other.time, 1e-5));
+  ret_val &= (tesseract::common::almostEqualRelativeAndAbs(time, other.time, 1e-5));
   return ret_val;
 }
 
@@ -152,4 +152,4 @@ void JointTrajectory::swap(std::vector<value_type>& other) noexcept { states.swa
 
 // LCOV_EXCL_STOP
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

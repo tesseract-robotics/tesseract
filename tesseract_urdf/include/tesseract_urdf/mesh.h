@@ -40,7 +40,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view MESH_ELEMENT_NAME = "mesh";
 
@@ -52,9 +52,9 @@ static constexpr std::string_view MESH_ELEMENT_NAME = "mesh";
  * @param make_convex Flag to indicate if the mesh should be converted to a convex hull
  * @return A vector of Tesseract Meshes
  */
-std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh>>
+std::vector<std::shared_ptr<tesseract::geometry::PolygonMesh>>
 parseMesh(const tinyxml2::XMLElement* xml_element,
-          const tesseract_common::ResourceLocator& locator,
+          const tesseract::common::ResourceLocator& locator,
           bool visual,
           bool make_convex);
 
@@ -68,11 +68,11 @@ parseMesh(const tinyxml2::XMLElement* xml_element,
  * should be an absolute path
  * @return XML element representing the mesh object in URDF format.
  */
-tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract_geometry::PolygonMesh>& mesh,
+tinyxml2::XMLElement* writeMesh(const std::shared_ptr<const tesseract::geometry::PolygonMesh>& mesh,
                                 tinyxml2::XMLDocument& doc,
                                 const std::string& package_path,
                                 const std::string& filename);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_MESH_H

@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, Plotter)
 // clang-format on
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 class Marker;
 
@@ -75,21 +75,21 @@ public:
    * @brief Plot environment
    * @param env The environment.
    */
-  virtual void plotEnvironment(const tesseract_environment::Environment& env, std::string ns = "") = 0;
+  virtual void plotEnvironment(const tesseract::environment::Environment& env, std::string ns = "") = 0;
 
   /**
    * @brief Plot state of the environment
    * @param state The state of the environment.
    */
-  virtual void plotEnvironmentState(const tesseract_scene_graph::SceneState& state, std::string ns = "") = 0;
+  virtual void plotEnvironmentState(const tesseract::scene_graph::SceneState& state, std::string ns = "") = 0;
 
   /**
    * @brief Plot a JointTrajectory
    * @param state_solver The environment
    * @param trajectory JointTrajectory to be plotted
    */
-  virtual void plotTrajectory(const tesseract_common::JointTrajectory& traj,
-                              const tesseract_scene_graph::StateSolver& state_solver,
+  virtual void plotTrajectory(const tesseract::common::JointTrajectory& traj,
+                              const tesseract::scene_graph::StateSolver& state_solver,
                               std::string ns = "") = 0;
 
   /**
@@ -116,6 +116,6 @@ public:
   virtual void waitForInput(std::string message = "Hit enter key to continue!") = 0;
 };
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 
 #endif  // TESSERACT_VISUALIZATION_VISUALIZATION_H

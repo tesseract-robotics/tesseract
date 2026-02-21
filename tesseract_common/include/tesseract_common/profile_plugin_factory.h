@@ -46,7 +46,7 @@ namespace YAML
 class Node;
 }
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class Profile;
 class ProfilePluginFactory;
@@ -86,7 +86,7 @@ protected:
 class ProfilePluginFactory
 {
 public:
-  using PluginInfoMap = std::map<std::string, tesseract_common::PluginInfo>;
+  using PluginInfoMap = std::map<std::string, tesseract::common::PluginInfo>;
 
   ProfilePluginFactory();
   ~ProfilePluginFactory();
@@ -99,49 +99,49 @@ public:
    * @brief Load plugins from a configuration object
    * @param config The config object
    */
-  ProfilePluginFactory(const tesseract_common::ProfilesPluginInfo& config);
+  ProfilePluginFactory(const tesseract::common::ProfilesPluginInfo& config);
 
   /**
    * @brief Load plugins from yaml node
    * @param config The config node
    */
-  ProfilePluginFactory(const YAML::Node& config, const tesseract_common::ResourceLocator& locator);
+  ProfilePluginFactory(const YAML::Node& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  ProfilePluginFactory(const std::filesystem::path& config, const tesseract_common::ResourceLocator& locator);
+  ProfilePluginFactory(const std::filesystem::path& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  ProfilePluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator);
+  ProfilePluginFactory(const std::string& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Loads plugins from a configuration object
    * @param config the config object
    */
-  void loadConfig(const tesseract_common::ProfilesPluginInfo& config);
+  void loadConfig(const tesseract::common::ProfilesPluginInfo& config);
 
   /**
    * @brief Load plugins from yaml node
    * @param config The config node
    */
-  void loadConfig(YAML::Node config, const tesseract_common::ResourceLocator& locator);
+  void loadConfig(YAML::Node config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from file path
    * @param config The config file path
    */
-  void loadConfig(const std::filesystem::path& config, const tesseract_common::ResourceLocator& locator);
+  void loadConfig(const std::filesystem::path& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load plugins from string
    * @param config The config string
    */
-  void loadConfig(const std::string& config, const tesseract_common::ResourceLocator& locator);
+  void loadConfig(const std::string& config, const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Set the factory data passed when constructing the plugin
@@ -197,7 +197,7 @@ public:
    * @param name The name
    * @param plugin_info The plugin information
    */
-  void addPlugin(const std::string& ns, const std::string& name, tesseract_common::PluginInfo plugin_info);
+  void addPlugin(const std::string& ns, const std::string& name, tesseract::common::PluginInfo plugin_info);
 
   /**
    * @brief Check if it has profile plugins
@@ -257,5 +257,5 @@ private:
 
   void loadConfig(YAML::Node config);
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_PROFILE_PLUGIN_FACTORY_H

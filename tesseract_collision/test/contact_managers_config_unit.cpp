@@ -34,21 +34,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 #include <tesseract_collision/core/utils.h>
 
-using namespace tesseract_collision;
+using namespace tesseract::collision;
 
-class AlwaysTrueContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+class AlwaysTrueContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
   bool operator()(const std::string&, const std::string&) const override { return true; }
 };
 
-class AlwaysFalseContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+class AlwaysFalseContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
   bool operator()(const std::string&, const std::string&) const override { return false; }
 };
 
-class TestOrigContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+class TestOrigContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
   bool operator()(const std::string& s1, const std::string& s2) const override
@@ -63,7 +63,7 @@ public:
   }
 };
 
-class TestOvrdContactAllowedValidator : public tesseract_common::ContactAllowedValidator
+class TestOvrdContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
   bool operator()(const std::string& s1, const std::string& s2) const override
@@ -74,75 +74,75 @@ public:
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleContactManagerConfigUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
+  BulletDiscreteSimpleManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHContactManagerConfigUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
+  BulletDiscreteBVHManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletCastSimpleContactManagerConfigUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletCastSimpleManager checker;
+  BulletCastSimpleManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletCastBVHContactManagerConfigUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletCastBVHManager checker;
+  BulletCastBVHManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHContactManagerConfigUnit)  // NOLINT
 {
-  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  FCLDiscreteBVHManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
 {
-  {  // tesseract_collision::ACMOverrideType::NONE
+  {  // tesseract::collision::ACMOverrideType::NONE
     auto orig = std::make_shared<AlwaysTrueContactAllowedValidator>();
     auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
-    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::NONE);
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::NONE);
     EXPECT_TRUE((*comb)("", ""));
   }
 
-  {  // tesseract_collision::ACMOverrideType::ASSIGN
+  {  // tesseract::collision::ACMOverrideType::ASSIGN
     auto orig = std::make_shared<AlwaysTrueContactAllowedValidator>();
     auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
-    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::ASSIGN);
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::ASSIGN);
     EXPECT_FALSE((*comb)("", ""));
   }
 
-  {  // tesseract_collision::ACMOverrideType::AND
+  {  // tesseract::collision::ACMOverrideType::AND
     auto orig = std::make_shared<TestOrigContactAllowedValidator>();
     auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
-    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::AND);
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::AND);
     EXPECT_TRUE((*comb)("link_1", "link_2"));
     EXPECT_FALSE((*comb)("link_1", "link_3"));
     EXPECT_FALSE((*comb)("abc", "def"));
 
-    auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract_collision::ACMOverrideType::AND);
+    auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract::collision::ACMOverrideType::AND);
     EXPECT_TRUE(comb1 == nullptr);
   }
 
-  {  // tesseract_collision::ACMOverrideType::AND
+  {  // tesseract::collision::ACMOverrideType::AND
     auto orig = std::make_shared<TestOrigContactAllowedValidator>();
     auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
-    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract_collision::ACMOverrideType::OR);
+    auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::OR);
     EXPECT_TRUE((*comb)("link_1", "link_2"));
     EXPECT_TRUE((*comb)("link_1", "link_3"));
     EXPECT_FALSE((*comb)("abc", "def"));
 
-    auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract_collision::ACMOverrideType::OR);
+    auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract::collision::ACMOverrideType::OR);
     EXPECT_TRUE((*comb1)("link_1", "link_2"));
     EXPECT_FALSE((*comb1)("link_1", "link_3"));
     EXPECT_FALSE((*comb1)("abc", "def"));

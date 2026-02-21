@@ -34,11 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/limits.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::JointLimits::Ptr parseLimits(const tinyxml2::XMLElement* xml_element)
+tesseract::scene_graph::JointLimits::Ptr parseLimits(const tinyxml2::XMLElement* xml_element)
 {
-  auto limits = std::make_shared<tesseract_scene_graph::JointLimits>();
+  auto limits = std::make_shared<tesseract::scene_graph::JointLimits>();
 
   int status = xml_element->QueryDoubleAttribute("lower", &(limits->lower));
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
@@ -69,7 +69,7 @@ tesseract_scene_graph::JointLimits::Ptr parseLimits(const tinyxml2::XMLElement* 
   return limits;
 }
 
-tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_graph::JointLimits>& limits,
+tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract::scene_graph::JointLimits>& limits,
                                   tinyxml2::XMLDocument& doc)
 {
   if (limits == nullptr)
@@ -77,8 +77,8 @@ tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_gr
   tinyxml2::XMLElement* xml_element = doc.NewElement(LIMITS_ELEMENT_NAME.data());
 
   // if upper and lower are both zero, don't write it.  This should only happen for continuous joints.
-  if (!tesseract_common::almostEqualRelativeAndAbs(limits->lower, 0.0) ||
-      !tesseract_common::almostEqualRelativeAndAbs(limits->upper, 0.0))
+  if (!tesseract::common::almostEqualRelativeAndAbs(limits->lower, 0.0) ||
+      !tesseract::common::almostEqualRelativeAndAbs(limits->upper, 0.0))
   {
     xml_element->SetAttribute("lower", toString(limits->lower).c_str());
     xml_element->SetAttribute("upper", toString(limits->upper).c_str());
@@ -89,16 +89,16 @@ tinyxml2::XMLElement* writeLimits(const std::shared_ptr<const tesseract_scene_gr
   xml_element->SetAttribute("velocity", toString(limits->velocity).c_str());
 
   // Write out nonzero acceleration (Tesseract-exclusive)
-  if (!tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, 0.0) &&
-      !tesseract_common::almostEqualRelativeAndAbs(limits->acceleration, limits->velocity * 0.5))
+  if (!tesseract::common::almostEqualRelativeAndAbs(limits->acceleration, 0.0) &&
+      !tesseract::common::almostEqualRelativeAndAbs(limits->acceleration, limits->velocity * 0.5))
     xml_element->SetAttribute("acceleration", toString(limits->acceleration).c_str());
 
   // Write out nonzero jerk (Tesseract-exclusive)
-  if (!tesseract_common::almostEqualRelativeAndAbs(limits->jerk, 0.0) &&
-      !tesseract_common::almostEqualRelativeAndAbs(limits->jerk, 1000))
+  if (!tesseract::common::almostEqualRelativeAndAbs(limits->jerk, 0.0) &&
+      !tesseract::common::almostEqualRelativeAndAbs(limits->jerk, 1000))
     xml_element->SetAttribute("jerk", toString(limits->jerk).c_str());
 
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

@@ -26,7 +26,7 @@
 
 #include "test_plugin_base.h"
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class TestPluginMultiply : public TestPluginBase
 {
@@ -39,6 +39,6 @@ public:
   TestPluginMultiply& operator=(TestPluginMultiply&&) = default;
   double multiply(double x, double y) override;
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_TEST_PLUGIN_SUM_H

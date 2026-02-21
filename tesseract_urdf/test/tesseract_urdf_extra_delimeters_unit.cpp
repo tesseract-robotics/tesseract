@@ -12,7 +12,7 @@ TEST(TesseractURDFUnit, parse_extra_delimeters)  // NOLINT
   {
     std::string str = R"(<origin xyz="0   2.5   0" rpy="3.14159265359   0  0.0"/>)";
     Eigen::Isometry3d origin;
-    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract_urdf::parseOrigin, str, "origin"));
+    EXPECT_TRUE(runTest<Eigen::Isometry3d>(origin, &tesseract::urdf::parseOrigin, str, "origin"));
     EXPECT_TRUE(origin.translation().isApprox(Eigen::Vector3d(0, 2.5, 0), 1e-8));
     EXPECT_TRUE(origin.matrix().col(0).head(3).isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
     EXPECT_TRUE(origin.matrix().col(1).head(3).isApprox(Eigen::Vector3d(0, -1, 0), 1e-8));

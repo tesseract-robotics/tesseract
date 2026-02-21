@@ -39,15 +39,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::Visual::Ptr
+tesseract::scene_graph::Visual::Ptr
 parseVisual(const tinyxml2::XMLElement* xml_element,
-            const tesseract_common::ResourceLocator& locator,
-            std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+            const tesseract::common::ResourceLocator& locator,
+            std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr>& available_materials)
 {
   // get name
-  std::string visual_name = tesseract_common::StringAttribute(xml_element, "name", "");
+  std::string visual_name = tesseract::common::StringAttribute(xml_element, "name", "");
 
   // get origin
   Eigen::Isometry3d visual_origin = Eigen::Isometry3d::Identity();
@@ -65,7 +65,7 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
   }
 
   // get material
-  tesseract_scene_graph::Material::Ptr visual_material = tesseract_scene_graph::Material::getDefaultMaterial();
+  tesseract::scene_graph::Material::Ptr visual_material = tesseract::scene_graph::Material::getDefaultMaterial();
   const tinyxml2::XMLElement* material = xml_element->FirstChildElement("material");
   if (material != nullptr)
   {
@@ -84,7 +84,7 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
   if (geometry == nullptr)
     std::throw_with_nested(std::runtime_error("Visual: Error missing 'geometry' element!"));
 
-  tesseract_geometry::Geometry::Ptr geom;
+  tesseract::geometry::Geometry::Ptr geom;
   try
   {
     // Set `make_convex_meshes` argument to false for visual geometry
@@ -96,7 +96,7 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
     std::throw_with_nested(std::runtime_error("Visual: Error parsing 'geometry' element!"));
   }
 
-  auto visual = std::make_shared<tesseract_scene_graph::Visual>();
+  auto visual = std::make_shared<tesseract::scene_graph::Visual>();
   visual->name = visual_name;
   visual->origin = visual_origin;
   visual->geometry = geom;
@@ -105,7 +105,7 @@ parseVisual(const tinyxml2::XMLElement* xml_element,
   return visual;
 }
 
-tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract_scene_graph::Visual>& visual,
+tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract::scene_graph::Visual>& visual,
                                   tinyxml2::XMLDocument& doc,
                                   const std::string& package_path,
                                   const std::string& link_name,
@@ -162,4 +162,4 @@ tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract_scene_gr
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

@@ -28,7 +28,7 @@
 
 #include <tesseract_common/eigen_types.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /**
  * @brief Write a simple ply file given vertices and faces
@@ -40,7 +40,7 @@ namespace tesseract_common
  * @return False if failed to write file, otherwise true
  */
 bool writeSimplePlyFile(const std::string& path,
-                        const tesseract_common::VectorVector3d& vertices,
+                        const tesseract::common::VectorVector3d& vertices,
                         const std::vector<Eigen::Vector3i>& vectices_color,
                         const Eigen::VectorXi& faces,
                         int num_faces);
@@ -54,7 +54,7 @@ bool writeSimplePlyFile(const std::string& path,
  * @return False if failed to write file, otherwise true
  */
 bool writeSimplePlyFile(const std::string& path,
-                        const tesseract_common::VectorVector3d& vertices,
+                        const tesseract::common::VectorVector3d& vertices,
                         const Eigen::VectorXi& faces,
                         int num_faces);
 
@@ -67,9 +67,9 @@ bool writeSimplePlyFile(const std::string& path,
  * @return Number of faces, If returned 0 it failed to load.
  */
 int loadSimplePlyFile(const std::string& path,
-                      tesseract_common::VectorVector3d& vertices,
+                      tesseract::common::VectorVector3d& vertices,
                       Eigen::VectorXi& faces,
                       bool triangles_only = false);
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_PLY_IO_H

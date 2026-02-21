@@ -34,15 +34,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/dynamics.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::JointDynamics::Ptr parseDynamics(const tinyxml2::XMLElement* xml_element)
+tesseract::scene_graph::JointDynamics::Ptr parseDynamics(const tinyxml2::XMLElement* xml_element)
 {
   if (xml_element->Attribute("damping") == nullptr && xml_element->Attribute("friction") == nullptr)
     std::throw_with_nested(std::runtime_error("Dynamics: Missing both attributes 'damping' and 'friction', remove tag "
                                               "or add attributes and values!"));
 
-  auto dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
+  auto dynamics = std::make_shared<tesseract::scene_graph::JointDynamics>();
 
   int status = xml_element->QueryDoubleAttribute("damping", &(dynamics->damping));
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
@@ -61,7 +61,7 @@ tesseract_scene_graph::JointDynamics::Ptr parseDynamics(const tinyxml2::XMLEleme
   return dynamics;
 }
 
-tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract_scene_graph::JointDynamics>& dynamics,
+tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract::scene_graph::JointDynamics>& dynamics,
                                     tinyxml2::XMLDocument& doc)
 {
   if (dynamics == nullptr)
@@ -74,4 +74,4 @@ tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract_scene_
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

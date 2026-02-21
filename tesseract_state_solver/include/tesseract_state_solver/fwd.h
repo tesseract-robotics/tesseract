@@ -24,10 +24,10 @@
 #ifndef TESSERACT_STATE_SOLVER_FWD_H
 #define TESSERACT_STATE_SOLVER_FWD_H
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 class StateSolver;
 class MutableStateSolver;
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_STATE_SOLVER_FWD_H

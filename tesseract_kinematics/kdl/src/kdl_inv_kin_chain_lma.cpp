@@ -31,12 +31,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
+KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract::scene_graph::SceneGraph& scene_graph,
                                      const std::vector<std::pair<std::string, std::string>>& chains,
                                      Config kdl_config,
                                      std::string solver_name)
@@ -57,7 +57,7 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& sc
                                                   kdl_config_.eps_joints);
 }
 
-KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract_scene_graph::SceneGraph& scene_graph,
+KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract::scene_graph::SceneGraph& scene_graph,
                                      const std::string& base_link,
                                      const std::string& tip_link,
                                      Config kdl_config,
@@ -133,7 +133,7 @@ void KDLInvKinChainLMA::calcInvKinHelper(IKSolutions& solutions,
 }
 
 void KDLInvKinChainLMA::calcInvKin(IKSolutions& solutions,
-                                   const tesseract_common::TransformMap& tip_link_poses,
+                                   const tesseract::common::TransformMap& tip_link_poses,
                                    const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(tip_link_poses.find(kdl_data_.tip_link_name) != tip_link_poses.end());
@@ -152,4 +152,4 @@ std::vector<std::string> KDLInvKinChainLMA::getTipLinkNames() const { return { k
 
 std::string KDLInvKinChainLMA::getSolverName() const { return solver_name_; }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

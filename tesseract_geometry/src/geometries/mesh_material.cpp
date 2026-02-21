@@ -25,7 +25,7 @@
 #include <tesseract_geometry/impl/mesh_material.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 MeshMaterial::MeshMaterial(const Eigen::Vector4d& base_color_factor,  // NOLINT(modernize-pass-by-value)
                            double metallic_factor,
@@ -46,14 +46,14 @@ double MeshMaterial::getRoughnessFactor() const { return roughness_factor_; }
 
 Eigen::Vector4d MeshMaterial::getEmissiveFactor() const { return emissive_factor_; }
 
-MeshTexture::MeshTexture(std::shared_ptr<tesseract_common::Resource> texture_image,
-                         std::shared_ptr<const tesseract_common::VectorVector2d> uvs)
+MeshTexture::MeshTexture(std::shared_ptr<tesseract::common::Resource> texture_image,
+                         std::shared_ptr<const tesseract::common::VectorVector2d> uvs)
   : uvs_(std::move(uvs)), texture_image_(std::move(texture_image))
 {
 }
 
-std::shared_ptr<tesseract_common::Resource> MeshTexture::getTextureImage() const { return texture_image_; }
+std::shared_ptr<tesseract::common::Resource> MeshTexture::getTextureImage() const { return texture_image_; }
 
-const std::shared_ptr<const tesseract_common::VectorVector2d>& MeshTexture::getUVs() { return uvs_; }
+const std::shared_ptr<const tesseract::common::VectorVector2d>& MeshTexture::getUVs() { return uvs_; }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

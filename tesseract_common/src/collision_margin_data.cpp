@@ -24,7 +24,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_common/collision_margin_data.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 CollisionMarginPairData::CollisionMarginPairData(const PairsCollisionMarginData& pair_margins)
 {
@@ -41,16 +41,16 @@ void CollisionMarginPairData::setCollisionMargin(const std::string& obj1, const 
 
 void CollisionMarginPairData::setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin)
 {
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair key;
-  tesseract_common::makeOrderedLinkPair(key, obj1, obj2);
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
+  tesseract::common::makeOrderedLinkPair(key, obj1, obj2);
   lookup_table_[key] = margin;
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const std::string& obj1,
                                                                   const std::string& obj2) const
 {
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair key;
-  tesseract_common::makeOrderedLinkPair(key, obj1, obj2);
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
+  tesseract::common::makeOrderedLinkPair(key, obj1, obj2);
   const auto it = lookup_table_.find(key);
 
   if (it != lookup_table_.end())
@@ -175,7 +175,7 @@ bool CollisionMarginPairData::operator==(const CollisionMarginPairData& rhs) con
   ret_val &= (max_collision_margin_.has_value() == rhs.max_collision_margin_.has_value());
 
   if (max_collision_margin_.has_value() && rhs.max_collision_margin_.has_value())
-    ret_val &= (tesseract_common::almostEqualRelativeAndAbs(
+    ret_val &= (tesseract::common::almostEqualRelativeAndAbs(
         max_collision_margin_.value(), rhs.max_collision_margin_.value(), 1e-5));
 
   ret_val &= (lookup_table_.size() == rhs.lookup_table_.size());
@@ -191,7 +191,7 @@ bool CollisionMarginPairData::operator==(const CollisionMarginPairData& rhs) con
       if (!ret_val)
         break;
 
-      ret_val = tesseract_common::almostEqualRelativeAndAbs(pair.second, cp->second, 1e-5);
+      ret_val = tesseract::common::almostEqualRelativeAndAbs(pair.second, cp->second, 1e-5);
       if (!ret_val)
         break;
     }
@@ -287,11 +287,11 @@ bool CollisionMarginData::operator==(const CollisionMarginData& rhs) const
 {
   bool ret_val = true;
   ret_val &=
-      (tesseract_common::almostEqualRelativeAndAbs(default_collision_margin_, rhs.default_collision_margin_, 1e-5));
+      (tesseract::common::almostEqualRelativeAndAbs(default_collision_margin_, rhs.default_collision_margin_, 1e-5));
   ret_val &= (pair_margins_ == rhs.pair_margins_);
   return ret_val;
 }
 
 bool CollisionMarginData::operator!=(const CollisionMarginData& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

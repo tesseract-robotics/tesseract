@@ -53,7 +53,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/bullet/bullet_collision_shape_cache.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision::bullet_internal
 {
 #define METERS
 
@@ -98,7 +98,7 @@ public:
   CollisionObjectWrapper(std::string name,
                          const int& type_id,
                          CollisionShapesConst shapes,
-                         tesseract_common::VectorIsometry3d shape_poses);
+                         tesseract::common::VectorIsometry3d shape_poses);
 
   short int m_collisionFilterGroup{ btBroadphaseProxy::KinematicFilter };
   short int m_collisionFilterMask{ btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter };
@@ -113,7 +113,7 @@ public:
 
   const CollisionShapesConst& getCollisionGeometries() const;
 
-  const tesseract_common::VectorIsometry3d& getCollisionGeometriesTransforms() const;
+  const tesseract::common::VectorIsometry3d& getCollisionGeometriesTransforms() const;
 
   /**
    * @brief Get the collision object's axis aligned bounding box
@@ -142,7 +142,7 @@ protected:
   /* @brief The shapes that define the collision object */
   CollisionShapesConst m_shapes;
   /**< @brief The shapes poses information */
-  tesseract_common::VectorIsometry3d m_shape_poses;
+  tesseract::common::VectorIsometry3d m_shape_poses;
   /** @brief This manages the collision shape pointer so they get destroyed */
   std::vector<std::shared_ptr<BulletCollisionShape>> m_data;
 };
@@ -216,7 +216,7 @@ btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow);
  */
 bool needsCollisionCheck(const COW& cow1,
                          const COW& cow2,
-                         const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                          bool verbose = false);
 
 /**
@@ -365,7 +365,7 @@ void updateCollisionObjectFilters(const std::vector<std::string>& active, const 
 COW::Ptr createCollisionObject(const std::string& name,
                                const int& type_id,
                                const CollisionShapesConst& shapes,
-                               const tesseract_common::VectorIsometry3d& shape_poses,
+                               const tesseract::common::VectorIsometry3d& shape_poses,
                                bool enabled = true);
 
 struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallback
@@ -462,5 +462,5 @@ void updateCollisionObjectFilters(const std::vector<std::string>& active,
 void refreshBroadphaseProxy(const COW::Ptr& cow,
                             const std::unique_ptr<btBroadphaseInterface>& broadphase,
                             const std::unique_ptr<btCollisionDispatcher>& dispatcher);
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision::bullet_internal
 #endif  // TESSERACT_COLLISION_BULLET_UTILS_H

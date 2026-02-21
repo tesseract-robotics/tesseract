@@ -28,7 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/unit_test_utils.h>
 
 /** @brief Resource locator implementation using a provided function to locate file resources */
-class TestResourceLocator : public tesseract_common::ResourceLocator
+class TestResourceLocator : public tesseract::common::ResourceLocator
 {
 public:
   using Ptr = std::shared_ptr<TestResourceLocator>;
@@ -36,7 +36,7 @@ public:
 
   ~TestResourceLocator() override = default;
 
-  tesseract_common::Resource::Ptr locateResource(const std::string& url) const override final
+  tesseract::common::Resource::Ptr locateResource(const std::string& url) const override final
   {
     std::string mod_url = url;
     if (url.find("package://tesseract_common") == 0)
@@ -60,12 +60,12 @@ public:
     if (!std::filesystem::path(mod_url).is_absolute())
       return nullptr;
 
-    return std::make_shared<tesseract_common::SimpleLocatedResource>(
+    return std::make_shared<tesseract::common::SimpleLocatedResource>(
         url, mod_url, std::make_shared<TestResourceLocator>(*this));
   }
 };
 
-class TestProfile : public tesseract_common::Profile
+class TestProfile : public tesseract::common::Profile
 {
 public:
   TestProfile() = default;
@@ -82,7 +82,7 @@ public:
 
 TEST(TesseractCommonUnit, ProfileDictionary)  // NOLINT
 {
-  tesseract_common::ProfileDictionary profiles;
+  tesseract::common::ProfileDictionary profiles;
 
   const std::string ns{ "test_ns" };
   const std::string profile_name{ "test_profile" };
@@ -97,14 +97,14 @@ TEST(TesseractCommonUnit, ProfileDictionary)  // NOLINT
 
   // Constructors
   auto data = profiles.getAllProfileEntries();
-  tesseract_common::ProfileDictionary profiles_copy(profiles);
+  tesseract::common::ProfileDictionary profiles_copy(profiles);
   EXPECT_EQ(data, profiles_copy.getAllProfileEntries());
-  tesseract_common::ProfileDictionary profiles_copy_assign;
+  tesseract::common::ProfileDictionary profiles_copy_assign;
   profiles_copy_assign = profiles;
   EXPECT_EQ(data, profiles_copy_assign.getAllProfileEntries());
-  tesseract_common::ProfileDictionary profiles_move(std::move(profiles_copy));
+  tesseract::common::ProfileDictionary profiles_move(std::move(profiles_copy));
   EXPECT_EQ(data, profiles_move.getAllProfileEntries());
-  tesseract_common::ProfileDictionary profiles_move_assign;
+  tesseract::common::ProfileDictionary profiles_move_assign;
   profiles_move_assign = std::move(profiles_copy_assign);
   EXPECT_EQ(data, profiles_move_assign.getAllProfileEntries());
 
@@ -201,21 +201,21 @@ TEST(TesseractCommonUnit, isNumeric)  // NOLINT
   std::vector<std::string> true_test = { "1",     "1.5",  "-1",     "-1.5",  "1e-5",    "1e5",
                                          "-1e-5", "-1e5", "1.0e-5", "1.0e5", "-1.0e-5", "-1.0e5" };
 
-  EXPECT_TRUE(tesseract_common::isNumeric(true_test));
+  EXPECT_TRUE(tesseract::common::isNumeric(true_test));
   for (const auto& s : true_test)
   {
-    EXPECT_TRUE(tesseract_common::isNumeric(s));
+    EXPECT_TRUE(tesseract::common::isNumeric(s));
   }
 
   std::vector<std::string> false_test = { "a", "test sdfs", "1 2", "1.0 2.0", "+", "-", "=" };
-  EXPECT_FALSE(tesseract_common::isNumeric(false_test));
+  EXPECT_FALSE(tesseract::common::isNumeric(false_test));
   for (const auto& s : false_test)
   {
-    EXPECT_FALSE(tesseract_common::isNumeric(s));
+    EXPECT_FALSE(tesseract::common::isNumeric(s));
   }
 
   std::string empty_string;
-  EXPECT_FALSE(tesseract_common::isNumeric(empty_string));
+  EXPECT_FALSE(tesseract::common::isNumeric(empty_string));
 }
 
 TEST(TesseractCommonUnit, toNumeric)  // NOLINT
@@ -225,26 +225,26 @@ TEST(TesseractCommonUnit, toNumeric)  // NOLINT
 
   std::vector<double> true_test_value = { 1, 1.5, -1, -1.5, 1e-5, 1e5, -1e-5, -1e5, 1.0e-5, 1.0e5, -1.0e-5, -1.0e5 };
 
-  EXPECT_TRUE(tesseract_common::isNumeric(true_test));
+  EXPECT_TRUE(tesseract::common::isNumeric(true_test));
   for (size_t i = 0; i < true_test.size(); ++i)
   {
     double value = 0;
-    EXPECT_TRUE(tesseract_common::toNumeric<double>(true_test[i], value));
+    EXPECT_TRUE(tesseract::common::toNumeric<double>(true_test[i], value));
     EXPECT_NEAR(value, true_test_value[i], 1e-8);
   }
 
   std::vector<std::string> false_test = { "a", "test sdfs", "1 2", "1.0 2.0", "+", "-", "=" };
-  EXPECT_FALSE(tesseract_common::isNumeric(false_test));
+  EXPECT_FALSE(tesseract::common::isNumeric(false_test));
   for (const auto& s : false_test)
   {
     double value = 0;
-    EXPECT_FALSE(tesseract_common::toNumeric(s, value));
+    EXPECT_FALSE(tesseract::common::toNumeric(s, value));
     EXPECT_NEAR(value, 0, 1e-8);
   }
 
   std::string empty_string;
   double value = 0;
-  EXPECT_FALSE(tesseract_common::toNumeric(empty_string, value));
+  EXPECT_FALSE(tesseract::common::toNumeric(empty_string, value));
 }
 
 TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
@@ -259,7 +259,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
   limits(3, 0) = -15;
   limits(3, 1) = -5;
 
-  Eigen::VectorXd random_numbers = tesseract_common::generateRandomNumber(limits);
+  Eigen::VectorXd random_numbers = tesseract::common::generateRandomNumber(limits);
   EXPECT_EQ(limits.rows(), random_numbers.rows());
   for (long i = 0; i < limits.rows(); ++i)
   {
@@ -268,7 +268,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
   }
 
   Eigen::MatrixX2d empty_limits;
-  Eigen::VectorXd random_numbers2 = tesseract_common::generateRandomNumber(empty_limits);
+  Eigen::VectorXd random_numbers2 = tesseract::common::generateRandomNumber(empty_limits);
   EXPECT_EQ(empty_limits.rows(), random_numbers2.rows());
 
   Eigen::MatrixX2d equal_limits(4, 2);
@@ -280,7 +280,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
   equal_limits(2, 1) = 5;
   equal_limits(3, 0) = 5;
   equal_limits(3, 1) = 5;
-  Eigen::VectorXd random_numbers3 = tesseract_common::generateRandomNumber(equal_limits);
+  Eigen::VectorXd random_numbers3 = tesseract::common::generateRandomNumber(equal_limits);
   EXPECT_EQ(equal_limits.rows(), random_numbers3.rows());
   for (long i = 0; i < equal_limits.rows(); ++i)
   {
@@ -296,7 +296,7 @@ TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
   wrong_limits(2, 1) = -5;
   wrong_limits(3, 0) = 5;
   wrong_limits(3, 1) = -5;
-  Eigen::VectorXd random_numbers4 = tesseract_common::generateRandomNumber(wrong_limits);
+  Eigen::VectorXd random_numbers4 = tesseract::common::generateRandomNumber(wrong_limits);
   EXPECT_EQ(wrong_limits.rows(), random_numbers4.rows());
   for (long i = 0; i < limits.rows(); ++i)
   {
@@ -313,27 +313,27 @@ TEST(TesseractCommonUnit, trim)  // NOLINT
   std::string check_trimmed = "trim";
 
   std::string s = check1;
-  tesseract_common::rtrim(s);
+  tesseract::common::rtrim(s);
   EXPECT_EQ(s, check1);
-  tesseract_common::ltrim(s);
+  tesseract::common::ltrim(s);
   EXPECT_EQ(s, check_trimmed);
 
   s = check2;
-  tesseract_common::ltrim(s);
+  tesseract::common::ltrim(s);
   EXPECT_EQ(s, check2);
-  tesseract_common::rtrim(s);
+  tesseract::common::rtrim(s);
   EXPECT_EQ(s, check_trimmed);
 
   s = check1;
-  tesseract_common::trim(s);
+  tesseract::common::trim(s);
   EXPECT_EQ(s, check_trimmed);
 
   s = check2;
-  tesseract_common::trim(s);
+  tesseract::common::trim(s);
   EXPECT_EQ(s, check_trimmed);
 
   s = check3;
-  tesseract_common::trim(s);
+  tesseract::common::trim(s);
   EXPECT_EQ(s, check_trimmed);
 }
 
@@ -404,8 +404,8 @@ TEST(TesseractCommonUnit, bytesResource)  // NOLINT
   for (uint8_t i = 0; i < 8; i++)
     data.push_back(i);
 
-  std::shared_ptr<tesseract_common::BytesResource> bytes_resource =
-      std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", data);
+  std::shared_ptr<tesseract::common::BytesResource> bytes_resource =
+      std::make_shared<tesseract::common::BytesResource>("package://test_package/data.bin", data);
   EXPECT_EQ(bytes_resource->getUrl(), "package://test_package/data.bin");
   EXPECT_EQ(bytes_resource->isFile(), false);
   EXPECT_EQ(bytes_resource->getFilePath(), "");
@@ -424,23 +424,23 @@ TEST(TesseractCommonUnit, bytesResource)  // NOLINT
     EXPECT_EQ(i, *reinterpret_cast<uint8_t*>(&data2_val));  // NOLINT
   }
 
-  std::shared_ptr<tesseract_common::BytesResource> bytes_resource2 =
-      std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", data.data(), data.size());
+  std::shared_ptr<tesseract::common::BytesResource> bytes_resource2 =
+      std::make_shared<tesseract::common::BytesResource>("package://test_package/data.bin", data.data(), data.size());
   EXPECT_EQ(bytes_resource2->getUrl(), "package://test_package/data.bin");
   EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
 }
 
 TEST(TesseractCommonUnit, fileToString)  // NOLINT
 {
-  tesseract_common::ResourceLocator::Ptr locator = std::make_shared<TestResourceLocator>();
-  tesseract_common::Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
-  std::string data = tesseract_common::fileToString(std::filesystem::path(resource->getFilePath()));
+  tesseract::common::ResourceLocator::Ptr locator = std::make_shared<TestResourceLocator>();
+  tesseract::common::Resource::Ptr resource = locator->locateResource("package://tesseract_common/package.xml");
+  std::string data = tesseract::common::fileToString(std::filesystem::path(resource->getFilePath()));
   EXPECT_FALSE(data.empty());
 }
 
 TEST(TesseractCommonUnit, stopwatch)  // NOLINT
 {
-  tesseract_common::Stopwatch stopwatch;
+  tesseract::common::Stopwatch stopwatch;
   stopwatch.start();
   std::this_thread::sleep_for(std::chrono::seconds(1));
   auto elapsed_ms = stopwatch.elapsedMilliseconds();
@@ -460,7 +460,7 @@ TEST(TesseractCommonUnit, timer)  // NOLINT
   int counter{ 0 };
   auto callback = [&counter]() { ++counter; };
   std::chrono::steady_clock::duration interval(std::chrono::milliseconds(1));
-  tesseract_common::Timer timer;
+  tesseract::common::Timer timer;
   timer.start(callback, interval);
   std::this_thread::sleep_for(std::chrono::seconds(1));
   timer.stop();
@@ -471,14 +471,14 @@ TEST(TesseractCommonUnit, timer)  // NOLINT
 TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
 {
   // Empty tcp
-  tesseract_common::ManipulatorInfo manip_info;
+  tesseract::common::ManipulatorInfo manip_info;
   EXPECT_TRUE(manip_info.empty());
   EXPECT_TRUE(manip_info.tcp_frame.empty());
   EXPECT_TRUE(manip_info.manipulator.empty());
   EXPECT_TRUE(manip_info.manipulator_ik_solver.empty());
   EXPECT_TRUE(manip_info.working_frame.empty());
 
-  tesseract_common::ManipulatorInfo manip_info_override("manipulator", "world", "tool0");
+  tesseract::common::ManipulatorInfo manip_info_override("manipulator", "world", "tool0");
   manip_info_override.tcp_offset = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.0, 0.0, 0.25);
   manip_info_override.manipulator_ik_solver = "OPWInvKin";
   manip_info_override.working_frame = "base_link";
@@ -492,22 +492,22 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
 
   // Test empty method
   {
-    tesseract_common::ManipulatorInfo manip_info("manip", "world", "");
+    tesseract::common::ManipulatorInfo manip_info("manip", "world", "");
     EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract_common::ManipulatorInfo manip_info("manip", "", "tool0");
+    tesseract::common::ManipulatorInfo manip_info("manip", "", "tool0");
     EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract_common::ManipulatorInfo manip_info("", "world", "tool0");
+    tesseract::common::ManipulatorInfo manip_info("", "world", "tool0");
     EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract_common::ManipulatorInfo manip_info("", "", "");
+    tesseract::common::ManipulatorInfo manip_info("", "", "");
     manip_info.manipulator_ik_solver = "manip";
     EXPECT_TRUE(manip_info.empty());
   }
@@ -517,28 +517,28 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
 {
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
   Eigen::VectorXd positons = Eigen::VectorXd::Constant(3, 5);
-  tesseract_common::JointState joint_state(joint_names, positons);
+  tesseract::common::JointState joint_state(joint_names, positons);
   EXPECT_TRUE(joint_state.joint_names == joint_names);
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
 TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 {
-  tesseract_common::AnyPoly any_null;
+  tesseract::common::AnyPoly any_null;
   EXPECT_TRUE(any_null.getType() == std::type_index(typeid(nullptr)));
   EXPECT_TRUE(any_null.isNull());
 
-  tesseract_common::AnyPoly any_type;
+  tesseract::common::AnyPoly any_type;
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
   EXPECT_TRUE(any_type.isNull());
 
-  tesseract_common::AnyPoly any_double(1.5);
+  tesseract::common::AnyPoly any_double(1.5);
   EXPECT_TRUE(any_double.getType() == std::type_index(typeid(double)));
   EXPECT_FALSE(any_double.isNull());
 
   EXPECT_TRUE(any_null == any_type);
 
-  tesseract_common::JointState joint_state;
+  tesseract::common::JointState joint_state;
   joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
@@ -547,71 +547,71 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   joint_state.time = 100;
 
   any_type = joint_state;
-  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(tesseract::common::JointState)));
   EXPECT_FALSE(any_type.isNull());
-  EXPECT_TRUE(any_type.as<tesseract_common::JointState>() == joint_state);
+  EXPECT_TRUE(any_type.as<tesseract::common::JointState>() == joint_state);
 
   // Expect False
   EXPECT_FALSE(any_type == any_null);
   EXPECT_FALSE(any_type == any_double);
 
-  tesseract_common::AnyInterface& interface = any_type.get();
-  EXPECT_TRUE(interface.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  tesseract::common::AnyInterface& interface = any_type.get();
+  EXPECT_TRUE(interface.getType() == std::type_index(typeid(tesseract::common::JointState)));
 
-  const tesseract_common::AnyInterface& interface_const = std::as_const(any_type).get();
-  EXPECT_TRUE(interface_const.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  const tesseract::common::AnyInterface& interface_const = std::as_const(any_type).get();
+  EXPECT_TRUE(interface_const.getType() == std::type_index(typeid(tesseract::common::JointState)));
 
   // Construct with interface
-  tesseract_common::AnyPoly any_interface_copy(interface_const);
-  EXPECT_TRUE(any_interface_copy.getType() == std::type_index(typeid(tesseract_common::JointState)));
+  tesseract::common::AnyPoly any_interface_copy(interface_const);
+  EXPECT_TRUE(any_interface_copy.getType() == std::type_index(typeid(tesseract::common::JointState)));
   EXPECT_FALSE(any_interface_copy.isNull());
-  EXPECT_TRUE(any_interface_copy.as<tesseract_common::JointState>() == joint_state);
+  EXPECT_TRUE(any_interface_copy.as<tesseract::common::JointState>() == joint_state);
 
   // Check clone
-  tesseract_common::AnyPoly any_copy = any_type;
+  tesseract::common::AnyPoly any_copy = any_type;
   EXPECT_TRUE(any_copy == any_type);
 
-  tesseract_common::AnyPoly any_copy2;
+  tesseract::common::AnyPoly any_copy2;
   any_copy2 = any_type;
   EXPECT_TRUE(any_copy2 == any_type);
 
   // Check to make sure it is not making a copy during cast
-  auto& any_type_ref1 = any_type.as<tesseract_common::JointState>();
-  auto& any_type_ref2 = any_type.as<tesseract_common::JointState>();
-  auto& any_copy_ref = any_copy.as<tesseract_common::JointState>();
+  auto& any_type_ref1 = any_type.as<tesseract::common::JointState>();
+  auto& any_type_ref2 = any_type.as<tesseract::common::JointState>();
+  auto& any_copy_ref = any_copy.as<tesseract::common::JointState>();
   EXPECT_TRUE(&any_type_ref1 == &any_type_ref2);
   EXPECT_TRUE(&any_type_ref1 != &any_copy_ref);
   EXPECT_TRUE(&any_type_ref2 != &any_copy_ref);
 
-  const auto& any_type_const_ref1 = any_type.as<tesseract_common::JointState>();
-  const auto& any_type_const_ref2 = any_type.as<tesseract_common::JointState>();
+  const auto& any_type_const_ref1 = any_type.as<tesseract::common::JointState>();
+  const auto& any_type_const_ref2 = any_type.as<tesseract::common::JointState>();
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
-  tesseract_common::testSerializationAnyPoly<tesseract_common::JointState>(any_type, "any_joint_state_poly");
+  tesseract::common::testSerializationAnyPoly<tesseract::common::JointState>(any_type, "any_joint_state_poly");
 
-  tesseract_common::AnyPoly nany_type;
-  tesseract_common::testSerialization<tesseract_common::AnyPoly>(nany_type, "any_null_poly");
+  tesseract::common::AnyPoly nany_type;
+  tesseract::common::testSerialization<tesseract::common::AnyPoly>(nany_type, "any_null_poly");
 
 // Test bad cast
 #ifndef _MSC_VER
   // Horrible compilation errors on MSVC
-  EXPECT_ANY_THROW(any_type.as<tesseract_common::Toolpath>());  // NOLINT
+  EXPECT_ANY_THROW(any_type.as<tesseract::common::Toolpath>());  // NOLINT
 #endif
 }
 
 template <typename T>
 void runAnyPolyIntegralTest(const T& value, const std::string& type_str)
 {
-  tesseract_common::AnyPoly any_type{ value };
+  tesseract::common::AnyPoly any_type{ value };
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(T)));
   EXPECT_TRUE(any_type.as<T>() == value);
 
   // Check clone
-  tesseract_common::AnyPoly any_copy = any_type;
+  tesseract::common::AnyPoly any_copy = any_type;
   EXPECT_TRUE(any_copy == any_type);
   EXPECT_TRUE(any_copy.as<T>() == value);
 
-  tesseract_common::testSerializationAnyPoly<T>(any_type, "any_" + type_str + "_poly");
+  tesseract::common::testSerializationAnyPoly<T>(any_type, "any_" + type_str + "_poly");
 }
 
 TEST(TesseractCommonUnit, anyIntegralTypesUnit)  // NOLINT
@@ -630,18 +630,18 @@ void runAnyPolyUnorderedMapIntegralTest(T value, const std::string& type_str)
 {
   std::unordered_map<std::string, T> data;
   data["test"] = std::move(value);
-  tesseract_common::AnyPoly any_type{ data };
+  tesseract::common::AnyPoly any_type{ data };
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(std::unordered_map<std::string, T>)));
   bool check = any_type.as<std::unordered_map<std::string, T>>() == data;
   EXPECT_TRUE(check);
 
   // Check clone
-  tesseract_common::AnyPoly any_copy = any_type;
+  tesseract::common::AnyPoly any_copy = any_type;
   EXPECT_TRUE(any_copy == any_type);
   check = any_copy.as<std::unordered_map<std::string, T>>() == data;
   EXPECT_TRUE(check);
 
-  tesseract_common::testSerializationAnyPoly<std::unordered_map<std::string, T>>(
+  tesseract::common::testSerializationAnyPoly<std::unordered_map<std::string, T>>(
       any_type, "any_unordered_map_string_" + type_str + "_poly");
 }
 
@@ -658,10 +658,10 @@ TEST(TesseractCommonUnit, anyUnorderedMapIntegralTypesUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
 {
-  tesseract_common::AnyPoly any_type;
+  tesseract::common::AnyPoly any_type;
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
 
-  tesseract_common::JointState joint_state;
+  tesseract::common::JointState joint_state;
   joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
@@ -669,30 +669,30 @@ TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
   joint_state.effort = Eigen::VectorXd::Constant(3, 8);
   joint_state.time = 100;
 
-  auto joint_state_ptr = std::make_shared<tesseract_common::JointState>(joint_state);
+  auto joint_state_ptr = std::make_shared<tesseract::common::JointState>(joint_state);
   any_type = joint_state_ptr;
-  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(std::shared_ptr<tesseract_common::JointState>)));
-  EXPECT_TRUE(*any_type.as<std::shared_ptr<tesseract_common::JointState>>() == joint_state);
-  EXPECT_TRUE(any_type.as<std::shared_ptr<tesseract_common::JointState>>() == joint_state_ptr);
+  EXPECT_TRUE(any_type.getType() == std::type_index(typeid(std::shared_ptr<tesseract::common::JointState>)));
+  EXPECT_TRUE(*any_type.as<std::shared_ptr<tesseract::common::JointState>>() == joint_state);
+  EXPECT_TRUE(any_type.as<std::shared_ptr<tesseract::common::JointState>>() == joint_state_ptr);
 
   // Check clone
-  tesseract_common::AnyPoly any_copy = any_type;
+  tesseract::common::AnyPoly any_copy = any_type;
   EXPECT_TRUE(any_copy == any_type);
 
   // Check to make sure it is not making a copy during cast
-  auto& any_type_ref1 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
-  auto& any_type_ref2 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
-  auto& any_copy_ref = any_copy.as<std::shared_ptr<tesseract_common::JointState>>();
+  auto& any_type_ref1 = any_type.as<std::shared_ptr<tesseract::common::JointState>>();
+  auto& any_type_ref2 = any_type.as<std::shared_ptr<tesseract::common::JointState>>();
+  auto& any_copy_ref = any_copy.as<std::shared_ptr<tesseract::common::JointState>>();
   EXPECT_TRUE(&any_type_ref1 == &any_type_ref2);
   EXPECT_TRUE(&any_type_ref1 != &any_copy_ref);
   EXPECT_TRUE(&any_type_ref2 != &any_copy_ref);
 
-  const auto& any_type_const_ref1 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
-  const auto& any_type_const_ref2 = any_type.as<std::shared_ptr<tesseract_common::JointState>>();
+  const auto& any_type_const_ref1 = any_type.as<std::shared_ptr<tesseract::common::JointState>>();
+  const auto& any_type_const_ref2 = any_type.as<std::shared_ptr<tesseract::common::JointState>>();
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
-  auto compare = tesseract_common::testSerializationComparePtrEqual<std::shared_ptr<tesseract_common::JointState>>;
-  tesseract_common::testSerializationAnyPoly<std::shared_ptr<tesseract_common::JointState>>(
+  auto compare = tesseract::common::testSerializationComparePtrEqual<std::shared_ptr<tesseract::common::JointState>>;
+  tesseract::common::testSerializationAnyPoly<std::shared_ptr<tesseract::common::JointState>>(
       any_type, "any_shared_ptr_poly", compare);
 }
 
@@ -704,61 +704,61 @@ TEST(TesseractCommonUnit, boundsUnit)  // NOLINT
   limits.col(0) = -Eigen::VectorXd::Ones(6);
   limits.col(1) = Eigen::VectorXd::Ones(6);
 
-  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
-  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
-  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforceLimits<double>(v, limits);
-  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  EXPECT_FALSE(tesseract::common::isWithinLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract::common::enforceLimits<double>(v, limits);
+  EXPECT_TRUE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
 
   v = -Eigen::VectorXd::Ones(6);
   v = v.array() - std::numeric_limits<float>::epsilon();
 
-  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
-  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
-  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforceLimits<double>(v, limits);
-  EXPECT_TRUE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  EXPECT_FALSE(tesseract::common::isWithinLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract::common::enforceLimits<double>(v, limits);
+  EXPECT_TRUE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
 
   // Check that clamp is done correctly on both sides
   v = Eigen::VectorXd::Constant(6, -2);
-  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
-  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforceLimits<double>(v, limits);
+  EXPECT_FALSE(tesseract::common::isWithinLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract::common::enforceLimits<double>(v, limits);
   ASSERT_EQ((v - limits.col(0)).norm(), 0);
 
   v = Eigen::VectorXd::Constant(6, 2);
-  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
-  EXPECT_FALSE(tesseract_common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforceLimits<double>(v, limits);
+  EXPECT_FALSE(tesseract::common::isWithinLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract::common::satisfiesLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract::common::enforceLimits<double>(v, limits);
   ASSERT_EQ((v - limits.col(1)).norm(), 0);
 
   v = Eigen::VectorXd::Ones(6);
   v = v.array() - std::numeric_limits<float>::epsilon();
-  EXPECT_TRUE(tesseract_common::isWithinLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract::common::isWithinLimits<double>(v, limits));
 
   v = Eigen::VectorXd::Ones(6);
   v(3) = v(3) + std::numeric_limits<float>::epsilon();
-  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract::common::isWithinLimits<double>(v, limits));
 
   v = -Eigen::VectorXd::Ones(6);
   v(3) = v(3) - std::numeric_limits<float>::epsilon();
-  EXPECT_FALSE(tesseract_common::isWithinLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract::common::isWithinLimits<double>(v, limits));
 }
 
 TEST(TesseractCommonUnit, isIdenticalUnit)  // NOLINT
 {
   std::vector<std::string> v1{ "a", "b", "c" };
   std::vector<std::string> v2{ "a", "b", "c" };
-  EXPECT_TRUE(tesseract_common::isIdentical(v1, v2, false));
-  EXPECT_TRUE(tesseract_common::isIdentical(v1, v2, true));
+  EXPECT_TRUE(tesseract::common::isIdentical(v1, v2, false));
+  EXPECT_TRUE(tesseract::common::isIdentical(v1, v2, true));
 
   v2 = { "c", "b", "a" };
-  EXPECT_TRUE(tesseract_common::isIdentical(v1, v2, false));
-  EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, true));
+  EXPECT_TRUE(tesseract::common::isIdentical(v1, v2, false));
+  EXPECT_FALSE(tesseract::common::isIdentical(v1, v2, true));
 
   v2 = { "a", "b", "d" };
-  EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, false));
-  EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, true));
+  EXPECT_FALSE(tesseract::common::isIdentical(v1, v2, false));
+  EXPECT_FALSE(tesseract::common::isIdentical(v1, v2, true));
 }
 
 TEST(TesseractCommonUnit, isIdenticalMapUnit)  // NOLINT
@@ -767,19 +767,19 @@ TEST(TesseractCommonUnit, isIdenticalMapUnit)  // NOLINT
   v1["1"] = 1;
   v1["2"] = 2;
   std::map<std::string, int> v2;
-  bool equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  bool equal = tesseract::common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
   EXPECT_FALSE(equal);
 
   v2["2"] = 2;
-  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  equal = tesseract::common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
   EXPECT_FALSE(equal);
 
   v2 = v1;
-  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  equal = tesseract::common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
   EXPECT_TRUE(equal);
 
   v1.clear();
-  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  equal = tesseract::common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
   EXPECT_FALSE(equal);
 }
 
@@ -787,20 +787,20 @@ TEST(TesseractCommonUnit, isIdenticalSetUnit)  // NOLINT
 {
   std::set<int> v1;
   std::set<int> v2;
-  bool equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  bool equal = tesseract::common::isIdenticalSet<int>(v1, v2);
   EXPECT_TRUE(equal);
 
   v1.insert(1);
-  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  equal = tesseract::common::isIdenticalSet<int>(v1, v2);
   EXPECT_FALSE(equal);
 
   v2.insert(1);
   v2.insert(2);
-  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  equal = tesseract::common::isIdenticalSet<int>(v1, v2);
   EXPECT_FALSE(equal);
 
   v1.insert(2);
-  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  equal = tesseract::common::isIdenticalSet<int>(v1, v2);
   EXPECT_TRUE(equal);
 }
 
@@ -809,20 +809,20 @@ TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
   {
     std::array<int, 4> v1 = { 1, 2, 3, 4 };
     std::array<int, 4> v2 = { 1, 2, 3, 4 };
-    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    bool equal = tesseract::common::isIdenticalArray<int, 4>(v1, v2);
     EXPECT_TRUE(equal);
   }
   {
     std::array<int, 4> v1 = { 1, 2, 3, 4 };
     std::array<int, 4> v2 = { -1, 2, 3, 4 };
-    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    bool equal = tesseract::common::isIdenticalArray<int, 4>(v1, v2);
     EXPECT_FALSE(equal);
   }
   {
     // Clang-tidy catches initialized arrays anyway, but check it just in case the caller isn't running clang-tidy
     std::array<int, 4> v1 = { 1, 2, 3, 6 };
     std::array<int, 4> v2;  // NOLINT
-    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    bool equal = tesseract::common::isIdenticalArray<int, 4>(v1, v2);
     EXPECT_FALSE(equal);
   }
 }
@@ -832,31 +832,31 @@ TEST(TesseractCommonUnit, pointersEqual)  // NOLINT
   {
     auto p1 = std::make_shared<int>(1);
     auto p2 = std::make_shared<int>(2);
-    bool equal = tesseract_common::pointersEqual(p1, p2);
+    bool equal = tesseract::common::pointersEqual(p1, p2);
     EXPECT_FALSE(equal);
   }
   {
     auto p1 = std::make_shared<int>(1);
     auto p2 = nullptr;
-    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    bool equal = tesseract::common::pointersEqual<int>(p1, p2);
     EXPECT_FALSE(equal);
   }
   {
     auto p1 = nullptr;
     auto p2 = std::make_shared<int>(2);
-    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    bool equal = tesseract::common::pointersEqual<int>(p1, p2);
     EXPECT_FALSE(equal);
   }
   {
     auto p1 = nullptr;
     auto p2 = nullptr;
-    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    bool equal = tesseract::common::pointersEqual<int>(p1, p2);
     EXPECT_TRUE(equal);
   }
   {
     auto p1 = std::make_shared<int>(1);
     auto p2 = std::make_shared<int>(1);
-    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    bool equal = tesseract::common::pointersEqual<int>(p1, p2);
     EXPECT_TRUE(equal);
   }
 }
@@ -867,38 +867,38 @@ TEST(TesseractCommonUnit, pointersComparison)  // NOLINT
   {
     auto p1 = std::make_shared<int>(1);
     auto p2 = std::make_shared<int>(2);
-    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    bool equal = tesseract::common::pointersComparison<int>(p1, p2);
     EXPECT_TRUE(equal);
   }
   {
     auto p1 = std::make_shared<int>(1);
     auto p2 = nullptr;
-    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    bool equal = tesseract::common::pointersComparison<int>(p1, p2);
     EXPECT_FALSE(equal);
   }
   {
     auto p1 = nullptr;
     auto p2 = std::make_shared<int>(2);
-    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    bool equal = tesseract::common::pointersComparison<int>(p1, p2);
     EXPECT_TRUE(equal);
   }
   {
     auto p1 = nullptr;
     auto p2 = nullptr;
-    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    bool equal = tesseract::common::pointersComparison<int>(p1, p2);
     EXPECT_FALSE(equal);
   }
   {
     auto p1 = std::make_shared<int>(1);
     auto p2 = std::make_shared<int>(1);
-    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    bool equal = tesseract::common::pointersComparison<int>(p1, p2);
     EXPECT_FALSE(equal);
   }
 }
 
 TEST(TesseractCommonUnit, getTimestampStringUnit)  // NOLINT
 {
-  std::string s1 = tesseract_common::getTimestampString();
+  std::string s1 = tesseract::common::getTimestampString();
   EXPECT_FALSE(s1.empty());
 }
 
@@ -913,7 +913,7 @@ TEST(TesseractCommonUnit, reorder)  // NOLINT
   for (const auto& check : checks)
   {
     Eigen::VectorXd v_copy = v;
-    tesseract_common::reorder(v_copy, check);
+    tesseract::common::reorder(v_copy, check);
 
     for (std::size_t i = 0; i < check.size(); ++i)
     {
@@ -924,7 +924,7 @@ TEST(TesseractCommonUnit, reorder)  // NOLINT
 
 TEST(TesseractCommonUnit, getTempPathUnit)  // NOLINT
 {
-  std::string s1 = tesseract_common::getTempPath();
+  std::string s1 = tesseract::common::getTempPath();
   EXPECT_FALSE(s1.empty());
   EXPECT_TRUE(std::filesystem::exists(s1));
 }
@@ -940,7 +940,7 @@ TEST(TesseractCommonUnit, QueryStringValueUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    int status = tesseract_common::QueryStringValue(element, string_value);
+    int status = tesseract::common::QueryStringValue(element, string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "box");
   }
@@ -957,7 +957,7 @@ TEST(TesseractCommonUnit, QueryStringTextUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    int status = tesseract_common::QueryStringText(element, string_value);
+    int status = tesseract::common::QueryStringText(element, string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "Test");
   }
@@ -971,7 +971,7 @@ TEST(TesseractCommonUnit, QueryStringTextUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    int status = tesseract_common::QueryStringText(element, string_value);
+    int status = tesseract::common::QueryStringText(element, string_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 }
@@ -987,7 +987,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    int status = tesseract_common::QueryStringAttribute(element, "name", string_value);
+    int status = tesseract::common::QueryStringAttribute(element, "name", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "test");
   }
@@ -1001,7 +1001,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    int status = tesseract_common::QueryStringAttribute(element, "name", string_value);
+    int status = tesseract::common::QueryStringAttribute(element, "name", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 }
@@ -1016,7 +1016,7 @@ TEST(TesseractCommonUnit, StringAttributeUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    std::string string_value = tesseract_common::StringAttribute(element, "name", "default");
+    std::string string_value = tesseract::common::StringAttribute(element, "name", "default");
     EXPECT_TRUE(string_value == "test");
   }
 
@@ -1028,7 +1028,7 @@ TEST(TesseractCommonUnit, StringAttributeUnit)  // NOLINT
     tinyxml2::XMLElement* element = xml_doc.FirstChildElement("box");
     EXPECT_TRUE(element != nullptr);
 
-    std::string string_value = tesseract_common::StringAttribute(element, "missing", "default");
+    std::string string_value = tesseract::common::StringAttribute(element, "missing", "default");
     EXPECT_TRUE(string_value == "default");
   }
 }
@@ -1044,7 +1044,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    int status = tesseract_common::QueryStringAttributeRequired(element, "name", string_value);
+    int status = tesseract::common::QueryStringAttributeRequired(element, "name", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_TRUE(string_value == "test");
   }
@@ -1058,7 +1058,7 @@ TEST(TesseractCommonUnit, QueryStringAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     std::string string_value;
-    int status = tesseract_common::QueryStringAttributeRequired(element, "missing", string_value);
+    int status = tesseract::common::QueryStringAttributeRequired(element, "missing", string_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 }
@@ -1074,7 +1074,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     double double_value{ 0 };
-    int status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
+    int status = tesseract::common::QueryDoubleAttributeRequired(element, "name", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_NEAR(double_value, 1.5, 1e-6);
   }
@@ -1088,7 +1088,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     double double_value{ 0 };
-    int status = tesseract_common::QueryDoubleAttributeRequired(element, "missing", double_value);
+    int status = tesseract::common::QueryDoubleAttributeRequired(element, "missing", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 
@@ -1101,7 +1101,7 @@ TEST(TesseractCommonUnit, QueryDoubleAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     double double_value{ 0 };
-    int status = tesseract_common::QueryDoubleAttributeRequired(element, "name", double_value);
+    int status = tesseract::common::QueryDoubleAttributeRequired(element, "name", double_value);
     EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
   }
 }
@@ -1117,7 +1117,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     int int_value{ 0 };
-    int status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
+    int status = tesseract::common::QueryIntAttributeRequired(element, "name", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_SUCCESS);
     EXPECT_NEAR(int_value, 1, 1e-6);
   }
@@ -1131,7 +1131,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     int int_value{ 0 };
-    int status = tesseract_common::QueryIntAttributeRequired(element, "missing", int_value);
+    int status = tesseract::common::QueryIntAttributeRequired(element, "missing", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_NO_ATTRIBUTE);
   }
 
@@ -1144,7 +1144,7 @@ TEST(TesseractCommonUnit, QueryIntAttributeRequiredUnit)  // NOLINT
     EXPECT_TRUE(element != nullptr);
 
     int int_value{ 0 };
-    int status = tesseract_common::QueryIntAttributeRequired(element, "name", int_value);
+    int status = tesseract::common::QueryIntAttributeRequired(element, "name", int_value);
     EXPECT_TRUE(status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE);
   }
 }
@@ -1170,7 +1170,7 @@ TEST(TesseractCommonUnit, printNestedExceptionUnit)  // NOLINT
   }
   catch (const std::exception& e)
   {
-    tesseract_common::printNestedException(e);
+    tesseract::common::printNestedException(e);
   }
 }
 
@@ -1184,73 +1184,73 @@ TEST(TesseractCommonUnit, checkForUnknownKeys)  // NOLINT
                                  search_libraries:
                                    - tesseract_kinematics_kdl_factories)";
 
-  YAML::Node config = tesseract_common::fromYAMLString(yaml_string);
-  EXPECT_NO_THROW(tesseract_common::checkForUnknownKeys(config["kinematic_plugins"], expected_keys));  // NOLINT
+  YAML::Node config = tesseract::common::fromYAMLString(yaml_string);
+  EXPECT_NO_THROW(tesseract::common::checkForUnknownKeys(config["kinematic_plugins"], expected_keys));  // NOLINT
 
   // Not a map
   EXPECT_ANY_THROW(
-      tesseract_common::checkForUnknownKeys(config["kinematic_plugins"]["search_paths"], expected_keys));  // NOLINT
+      tesseract::common::checkForUnknownKeys(config["kinematic_plugins"]["search_paths"], expected_keys));  // NOLINT
 
   expected_keys = { "search_paths" };
-  EXPECT_ANY_THROW(tesseract_common::checkForUnknownKeys(config["kinematic_plugins"], expected_keys));  // NOLINT
+  EXPECT_ANY_THROW(tesseract::common::checkForUnknownKeys(config["kinematic_plugins"], expected_keys));  // NOLINT
 }
 
 TEST(TesseractCommonUnit, almostEqualRelativeAndAbsUnit)  // NOLINT
 {
   double a = 1e-5;
   double b = 0;
-  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+  EXPECT_FALSE(tesseract::common::almostEqualRelativeAndAbs(a, b));
 
   a = 1e-7;
-  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+  EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(a, b));
 
   a = 100000000000000.01;
   b = 100000000000000;
-  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+  EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(a, b));
 
   a = 100000000000000.1;
   b = 100000000000000;
-  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(a, b));
+  EXPECT_FALSE(tesseract::common::almostEqualRelativeAndAbs(a, b));
 
   Eigen::VectorXd v1 = Eigen::VectorXd::Constant(3, 1e-5);
   Eigen::VectorXd v2 = Eigen::VectorXd::Constant(3, 0);
-  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+  EXPECT_FALSE(tesseract::common::almostEqualRelativeAndAbs(v1, v2));
 
   v1 = Eigen::VectorXd::Constant(3, 1e-7);
-  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+  EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(v1, v2));
 
   v1 = Eigen::VectorXd::Constant(3, 100000000000000.01);
   v2 = Eigen::VectorXd::Constant(3, 100000000000000);
-  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+  EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(v1, v2));
 
   v1 = Eigen::VectorXd::Constant(3, 100000000000000.1);
   v2 = Eigen::VectorXd::Constant(3, 100000000000000);
-  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+  EXPECT_FALSE(tesseract::common::almostEqualRelativeAndAbs(v1, v2));
 
   v2 = Eigen::VectorXd::Constant(1, 100000000000000);
-  EXPECT_FALSE(tesseract_common::almostEqualRelativeAndAbs(v1, v2));
+  EXPECT_FALSE(tesseract::common::almostEqualRelativeAndAbs(v1, v2));
 
-  EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(Eigen::VectorXd(), Eigen::VectorXd()));
+  EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(Eigen::VectorXd(), Eigen::VectorXd()));
 }
 
 TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
 {
-  tesseract_common::KinematicsPluginInfo kpi;
+  tesseract::common::KinematicsPluginInfo kpi;
   EXPECT_TRUE(kpi.empty());
 
-  tesseract_common::KinematicsPluginInfo kpi_insert;
+  tesseract::common::KinematicsPluginInfo kpi_insert;
   kpi_insert.search_paths.emplace_back("/usr/local/lib");
   kpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "KDLFwdKin";
     kpi_insert.fwd_plugin_infos["manipulator"].plugins = { std::make_pair("KDLFwdKin", pi) };
     kpi_insert.fwd_plugin_infos["manipulator"].default_plugin = "KDLFwdKin";
   }
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "KDLInvKin";
     kpi_insert.inv_plugin_infos["manipulator"].plugins = { std::make_pair("KDLInvKin", pi) };
     kpi_insert.inv_plugin_infos["manipulator"].default_plugin = "KDLInvKin";
@@ -1269,22 +1269,22 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
 {
-  tesseract_common::ContactManagersPluginInfo cmpi;
+  tesseract::common::ContactManagersPluginInfo cmpi;
   EXPECT_TRUE(cmpi.empty());
 
-  tesseract_common::ContactManagersPluginInfo cmpi_insert;
+  tesseract::common::ContactManagersPluginInfo cmpi_insert;
   cmpi_insert.search_paths.emplace_back("/usr/local/lib");
   cmpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "DiscretePluginFactory";
     cmpi_insert.discrete_plugin_infos.plugins = { std::make_pair("DiscretePlugin", pi) };
     cmpi_insert.discrete_plugin_infos.default_plugin = "DiscretePlugin";
   }
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "ContinuousPluginFactory";
     cmpi_insert.continuous_plugin_infos.plugins = { std::make_pair("ContinuousPlugin", pi) };
     cmpi_insert.continuous_plugin_infos.default_plugin = "ContinuousPlugin";
@@ -1303,21 +1303,21 @@ TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, ProfilePluginInfoUnit)  // NOLINT
 {
-  tesseract_common::ProfilesPluginInfo kpi;
+  tesseract::common::ProfilesPluginInfo kpi;
   EXPECT_TRUE(kpi.empty());
 
-  tesseract_common::ProfilesPluginInfo kpi_insert;
+  tesseract::common::ProfilesPluginInfo kpi_insert;
   kpi_insert.search_paths.emplace_back("/usr/local/lib");
   kpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "Profile";
     kpi_insert.plugin_infos["manipulator"]["KDLFwdKin"] = pi;
   }
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "Profile";
     kpi_insert.plugin_infos["manipulator"]["KDLInvKin"] = pi;
   }
@@ -1335,22 +1335,22 @@ TEST(TesseractCommonUnit, ProfilePluginInfoUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
 {
-  tesseract_common::TaskComposerPluginInfo tcpi;
+  tesseract::common::TaskComposerPluginInfo tcpi;
   EXPECT_TRUE(tcpi.empty());
 
-  tesseract_common::TaskComposerPluginInfo tcpi_insert;
+  tesseract::common::TaskComposerPluginInfo tcpi_insert;
   tcpi_insert.search_paths.emplace_back("/usr/local/lib");
   tcpi_insert.search_libraries.emplace_back("tesseract_collision");
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "TaskComposerExecutorPluginFactory";
     tcpi_insert.executor_plugin_infos.plugins = { std::make_pair("TaskComposerExecutorPlugin", pi) };
     tcpi_insert.executor_plugin_infos.default_plugin = "TaskComposerExecutorPlugin";
   }
 
   {
-    tesseract_common::PluginInfo pi;
+    tesseract::common::PluginInfo pi;
     pi.class_name = "TaskComposerNodePluginFactory";
     tcpi_insert.task_plugin_infos.plugins = { std::make_pair("TaskComposerNodePlugin", pi) };
     tcpi_insert.task_plugin_infos.default_plugin = "TaskComposerNodePlugin";
@@ -1399,10 +1399,10 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                            tip_link: tool0)";
 
   {  // Success
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-    auto cmpi = config.as<tesseract_common::KinematicsPluginInfo>();
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+    auto cmpi = config.as<tesseract::common::KinematicsPluginInfo>();
 
     const YAML::Node& plugin_info = plugin_config["kinematic_plugins"];
     const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -1469,10 +1469,10 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::KinematicsPluginInfo>());  // NOLINT
   }
 
   {  // search_libraries failure
@@ -1505,10 +1505,10 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::KinematicsPluginInfo>());  // NOLINT
   }
 
   {  // missing fwd plugins failure
@@ -1535,10 +1535,10 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::KinematicsPluginInfo>());  // NOLINT
   }
 
   {  // fwd plugins is not map failure
@@ -1567,10 +1567,10 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                              base_link: base_link
                                              tip_link: tool0)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::KinematicsPluginInfo>());  // NOLINT
   }
 
   {  // missing inv plugins failure
@@ -1592,10 +1592,10 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                      iiwa_manipulator:
                                        default: KDLInvKinChainLMA)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::KinematicsPluginInfo>());  // NOLINT
   }
 
   {  // inv plugins is not map failure
@@ -1618,10 +1618,10 @@ TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
                                        - tesseract_collision_bullet_factories
                                        - tesseract_collision_fcl_factories)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::KinematicsPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::KinematicsPluginInfo>());  // NOLINT
   }
 }
 
@@ -1651,10 +1651,10 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                        class: BulletCastSimpleManagerFactory)";
 
   {  // Success
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-    auto cmpi = config.as<tesseract_common::ContactManagersPluginInfo>();
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+    auto cmpi = config.as<tesseract::common::ContactManagersPluginInfo>();
 
     const YAML::Node& plugin_info = plugin_config["contact_manager_plugins"];
     const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -1714,10 +1714,10 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ContactManagersPluginInfo>());  // NOLINT
   }
 
   {  // search_libraries failure
@@ -1742,10 +1742,10 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ContactManagersPluginInfo>());  // NOLINT
   }
 
   {  // missing discrete plugins failure
@@ -1764,10 +1764,10 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ContactManagersPluginInfo>());  // NOLINT
   }
 
   {  // discrete plugins is not map failure
@@ -1787,10 +1787,10 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: BulletCastBVHManagerFactory
                                        BulletCastSimpleManager:
                                          class: BulletCastSimpleManagerFactory)";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ContactManagersPluginInfo>());  // NOLINT
   }
 
   {  // missing continuous plugins failure
@@ -1811,10 +1811,10 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                          class: FCLDiscreteBVHManagerFactory
                                    continuous_plugins:
                                      default: BulletCastBVHManager)";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ContactManagersPluginInfo>());  // NOLINT
   }
 
   {  // continuous plugins is not map failure
@@ -1836,10 +1836,10 @@ TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
                                    continuous_plugins:
                                      - tesseract_collision_bullet_factories
                                      - tesseract_collision_fcl_factories)";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ContactManagersPluginInfo>());  // NOLINT
   }
 }
 
@@ -1871,10 +1871,10 @@ TEST(TesseractPluginFactoryUnit, ProfilePluginInfoYamlUnit)  // NOLINT
                                          threshold: 0.01)";
 
   {  // Success
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
-    auto cmpi = config.as<tesseract_common::ProfilesPluginInfo>();
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ProfilesPluginInfo::CONFIG_KEY];
+    auto cmpi = config.as<tesseract::common::ProfilesPluginInfo>();
 
     const YAML::Node& plugin_info = plugin_config["profile_plugins"];
     const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -1932,10 +1932,10 @@ TEST(TesseractPluginFactoryUnit, ProfilePluginInfoYamlUnit)  // NOLINT
                                        config:
                                          threshold: 0.01)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ProfilesPluginInfo>());  // NOLINT
   }
 
   {  // search_libraries failure
@@ -1964,10 +1964,10 @@ TEST(TesseractPluginFactoryUnit, ProfilePluginInfoYamlUnit)  // NOLINT
                                        config:
                                          threshold: 0.01)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ProfilesPluginInfo>());  // NOLINT
   }
 
   {  // missing cost plugins failure
@@ -1988,10 +1988,10 @@ TEST(TesseractPluginFactoryUnit, ProfilePluginInfoYamlUnit)  // NOLINT
                                        config:
                                          threshold: 0.01)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ProfilesPluginInfo>());  // NOLINT
   }
 
   {  // profiles is not map failure
@@ -2004,10 +2004,10 @@ TEST(TesseractPluginFactoryUnit, ProfilePluginInfoYamlUnit)  // NOLINT
                                    - TrajOptCollisionCost
                                    - TrajOptCollisionConstraint)";
 
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::ProfilesPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::ProfilesPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::ProfilesPluginInfo>());  // NOLINT
   }
 }
 
@@ -2049,10 +2049,10 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          output_key: "output")";
 
   {  // Success
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
-    auto tcpi = config.as<tesseract_common::TaskComposerPluginInfo>();
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::TaskComposerPluginInfo::CONFIG_KEY];
+    auto tcpi = config.as<tesseract::common::TaskComposerPluginInfo>();
 
     const YAML::Node& plugin_info = plugin_config["task_composer_plugins"];
     const YAML::Node& search_paths = plugin_info["search_paths"];
@@ -2124,10 +2124,10 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::TaskComposerPluginInfo>());  // NOLINT
   }
 
   {  // search_libraries failure
@@ -2164,10 +2164,10 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::TaskComposerPluginInfo>());  // NOLINT
   }
 
   {  // missing executor plugins failure
@@ -2192,10 +2192,10 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::TaskComposerPluginInfo>());  // NOLINT
   }
 
   {  // executor plugins is not map failure
@@ -2231,10 +2231,10 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::TaskComposerPluginInfo>());  // NOLINT
   }
 
   {  // missing node plugins failure
@@ -2261,10 +2261,10 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                            threads: 15
                                    tasks:
                                      default: CartesianMotionPipeline)";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::TaskComposerPluginInfo>());  // NOLINT
   }
 
   {  // continuous plugins is not map failure
@@ -2300,10 +2300,10 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
                                          config:
                                            input_key: "input"
                                            output_key: "output")";
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node plugin_config = tesseract_common::loadYamlString(yaml_string, locator);
-    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
-    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node plugin_config = tesseract::common::loadYamlString(yaml_string, locator);
+    YAML::Node config = plugin_config[tesseract::common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract::common::TaskComposerPluginInfo>());  // NOLINT
   }
 }
 
@@ -2333,9 +2333,9 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
                w: 1)";
 
   {  // valid string
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node node = tesseract_common::loadYamlString(yaml_string, locator);
-    auto trans_map = node["joints"].as<tesseract_common::TransformMap>();
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node node = tesseract::common::loadYamlString(yaml_string, locator);
+    auto trans_map = node["joints"].as<tesseract::common::TransformMap>();
     EXPECT_EQ(trans_map.size(), 2);
     EXPECT_FALSE(trans_map.empty());
     EXPECT_TRUE(trans_map.find("joint_1") != trans_map.end());
@@ -2365,9 +2365,9 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
                  z: 0
                  w: 1)";
   {  // invalid string
-    tesseract_common::GeneralResourceLocator locator;
-    YAML::Node node = tesseract_common::loadYamlString(bad_yaml_string, locator);
-    EXPECT_ANY_THROW(node["joints"].as<tesseract_common::TransformMap>());  // NOLINT
+    tesseract::common::GeneralResourceLocator locator;
+    YAML::Node node = tesseract::common::loadYamlString(bad_yaml_string, locator);
+    EXPECT_ANY_THROW(node["joints"].as<tesseract::common::TransformMap>());  // NOLINT
   }
 }
 
@@ -2397,14 +2397,14 @@ TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
                  z: 0
                  w: 1)";
 
-  tesseract_common::GeneralResourceLocator locator;
-  YAML::Node node = tesseract_common::loadYamlString(yaml_string, locator);
-  auto cal_info = node[tesseract_common::CalibrationInfo::CONFIG_KEY].as<tesseract_common::CalibrationInfo>();
+  tesseract::common::GeneralResourceLocator locator;
+  YAML::Node node = tesseract::common::loadYamlString(yaml_string, locator);
+  auto cal_info = node[tesseract::common::CalibrationInfo::CONFIG_KEY].as<tesseract::common::CalibrationInfo>();
   EXPECT_FALSE(cal_info.empty());
   EXPECT_TRUE(cal_info.joints.find("joint_1") != cal_info.joints.end());
   EXPECT_TRUE(cal_info.joints.find("joint_2") != cal_info.joints.end());
 
-  tesseract_common::CalibrationInfo cal_insert;
+  tesseract::common::CalibrationInfo cal_insert;
   EXPECT_TRUE(cal_insert.empty());
   cal_insert.insert(cal_info);
   EXPECT_FALSE(cal_insert.empty());
@@ -2418,35 +2418,35 @@ TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
 TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
 {
   {
-    tesseract_common::LinkNamesPair p1 = tesseract_common::makeOrderedLinkPair("link_1", "link_2");
-    tesseract_common::LinkNamesPair p2 = tesseract_common::makeOrderedLinkPair("link_2", "link_1");
+    tesseract::common::LinkNamesPair p1 = tesseract::common::makeOrderedLinkPair("link_1", "link_2");
+    tesseract::common::LinkNamesPair p2 = tesseract::common::makeOrderedLinkPair("link_2", "link_1");
 
     EXPECT_EQ(p1.first, p2.first);
     EXPECT_EQ(p1.second, p2.second);
 
-    EXPECT_EQ(std::hash<tesseract_common::LinkNamesPair>()(p1), std::hash<tesseract_common::LinkNamesPair>()(p2));
+    EXPECT_EQ(std::hash<tesseract::common::LinkNamesPair>()(p1), std::hash<tesseract::common::LinkNamesPair>()(p2));
   }
 
   {
-    tesseract_common::LinkNamesPair p1;
-    tesseract_common::makeOrderedLinkPair(p1, "link_1", "link_2");
-    tesseract_common::LinkNamesPair p2;
-    tesseract_common::makeOrderedLinkPair(p2, "link_2", "link_1");
+    tesseract::common::LinkNamesPair p1;
+    tesseract::common::makeOrderedLinkPair(p1, "link_1", "link_2");
+    tesseract::common::LinkNamesPair p2;
+    tesseract::common::makeOrderedLinkPair(p2, "link_2", "link_1");
 
     EXPECT_EQ(p1.first, p2.first);
     EXPECT_EQ(p1.second, p2.second);
 
-    EXPECT_EQ(std::hash<tesseract_common::LinkNamesPair>()(p1), std::hash<tesseract_common::LinkNamesPair>()(p2));
+    EXPECT_EQ(std::hash<tesseract::common::LinkNamesPair>()(p1), std::hash<tesseract::common::LinkNamesPair>()(p2));
   }
 
   {
-    tesseract_common::LinkNamesPair p1 = tesseract_common::makeOrderedLinkPair("link_1", "link_2");
-    tesseract_common::LinkNamesPair p2 = tesseract_common::makeOrderedLinkPair("link_2", "link_1");
+    tesseract::common::LinkNamesPair p1 = tesseract::common::makeOrderedLinkPair("link_1", "link_2");
+    tesseract::common::LinkNamesPair p2 = tesseract::common::makeOrderedLinkPair("link_2", "link_1");
 
-    tesseract_common::LinkNamesPair mp1;
-    tesseract_common::makeOrderedLinkPair(mp1, "link_1", "link_2");
-    tesseract_common::LinkNamesPair mp2;
-    tesseract_common::makeOrderedLinkPair(mp2, "link_2", "link_1");
+    tesseract::common::LinkNamesPair mp1;
+    tesseract::common::makeOrderedLinkPair(mp1, "link_1", "link_2");
+    tesseract::common::LinkNamesPair mp2;
+    tesseract::common::makeOrderedLinkPair(mp2, "link_2", "link_1");
 
     EXPECT_EQ(p1.first, mp1.first);
     EXPECT_EQ(p1.second, mp1.second);
@@ -2460,60 +2460,60 @@ TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
 {
   Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI - 0.0001, Eigen::Vector3d::UnitZ());
-  Eigen::Vector3d rot_err = tesseract_common::calcRotationalError(pi_rot.rotation());
+  Eigen::Vector3d rot_err = tesseract::common::calcRotationalError(pi_rot.rotation());
   EXPECT_NEAR(rot_err.norm(), M_PI - 0.0001, 1e-6);
   EXPECT_TRUE(rot_err.normalized().isApprox(Eigen::Vector3d::UnitZ(), 1e-6));
 
   pi_rot = identity * Eigen::AngleAxisd(-M_PI + 0.0001, Eigen::Vector3d::UnitZ());
-  rot_err = tesseract_common::calcRotationalError(pi_rot.rotation());
+  rot_err = tesseract::common::calcRotationalError(pi_rot.rotation());
   EXPECT_NEAR(rot_err.norm(), M_PI - 0.0001, 1e-6);
   EXPECT_TRUE(rot_err.normalized().isApprox(-Eigen::Vector3d::UnitZ(), 1e-6));
 
   // Test greater than PI
   pi_rot = identity * Eigen::AngleAxisd(3 * M_PI_2, Eigen::Vector3d::UnitZ());
-  rot_err = tesseract_common::calcRotationalError(pi_rot.rotation());
+  rot_err = tesseract::common::calcRotationalError(pi_rot.rotation());
   EXPECT_NEAR(rot_err.norm(), M_PI_2, 1e-6);
   EXPECT_TRUE(rot_err.normalized().isApprox(-Eigen::Vector3d::UnitZ(), 1e-6));
 
   // Test less than than -PI
   pi_rot = identity * Eigen::AngleAxisd(-3 * M_PI_2, Eigen::Vector3d::UnitZ());
-  rot_err = tesseract_common::calcRotationalError(pi_rot.rotation());
+  rot_err = tesseract::common::calcRotationalError(pi_rot.rotation());
   EXPECT_NEAR(rot_err.norm(), M_PI_2, 1e-6);
   EXPECT_TRUE(rot_err.normalized().isApprox(Eigen::Vector3d::UnitZ(), 1e-6));
 
   // Test for angle between [0, PI]
   Eigen::Isometry3d pi_rot_plus = identity * Eigen::AngleAxisd(M_PI_2 + 0.001, Eigen::Vector3d::UnitZ());
   Eigen::Isometry3d pi_rot_minus = identity * Eigen::AngleAxisd(M_PI_2 - 0.001, Eigen::Vector3d::UnitZ());
-  Eigen::Vector3d pi_rot_delta = tesseract_common::calcRotationalError(pi_rot_plus.rotation()) -
-                                 tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+  Eigen::Vector3d pi_rot_delta = tesseract::common::calcRotationalError(pi_rot_plus.rotation()) -
+                                 tesseract::common::calcRotationalError(pi_rot_minus.rotation());
   EXPECT_NEAR(pi_rot_delta.norm(), 0.002, 1e-6);
 
   // Test for angle between [-PI, 0]
   pi_rot_plus = identity * Eigen::AngleAxisd(-M_PI_2 + 0.001, Eigen::Vector3d::UnitZ());
   pi_rot_minus = identity * Eigen::AngleAxisd(-M_PI_2 - 0.001, Eigen::Vector3d::UnitZ());
-  pi_rot_delta = tesseract_common::calcRotationalError(pi_rot_plus.rotation()) -
-                 tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+  pi_rot_delta = tesseract::common::calcRotationalError(pi_rot_plus.rotation()) -
+                 tesseract::common::calcRotationalError(pi_rot_minus.rotation());
   EXPECT_NEAR(pi_rot_delta.norm(), 0.002, 1e-6);
 
   // Test for angle at 0
   pi_rot_plus = identity * Eigen::AngleAxisd(0.001, Eigen::Vector3d::UnitZ());
   pi_rot_minus = identity * Eigen::AngleAxisd(-0.001, Eigen::Vector3d::UnitZ());
-  pi_rot_delta = tesseract_common::calcRotationalError(pi_rot_plus.rotation()) -
-                 tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+  pi_rot_delta = tesseract::common::calcRotationalError(pi_rot_plus.rotation()) -
+                 tesseract::common::calcRotationalError(pi_rot_minus.rotation());
   EXPECT_NEAR(pi_rot_delta.norm(), 0.002, 1e-6);
 
   // Test for angle at PI
   pi_rot_plus = identity * Eigen::AngleAxisd(M_PI + 0.001, Eigen::Vector3d::UnitZ());
   pi_rot_minus = identity * Eigen::AngleAxisd(M_PI - 0.001, Eigen::Vector3d::UnitZ());
-  pi_rot_delta = tesseract_common::calcRotationalError(pi_rot_plus.rotation()) -
-                 tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+  pi_rot_delta = tesseract::common::calcRotationalError(pi_rot_plus.rotation()) -
+                 tesseract::common::calcRotationalError(pi_rot_minus.rotation());
   EXPECT_TRUE(pi_rot_delta.norm() > M_PI);  // This is because calcRotationalError breaks down at PI or -PI
 
   // Test for angle at -PI
   pi_rot_plus = identity * Eigen::AngleAxisd(-M_PI + 0.001, Eigen::Vector3d::UnitZ());
   pi_rot_minus = identity * Eigen::AngleAxisd(-M_PI - 0.001, Eigen::Vector3d::UnitZ());
-  pi_rot_delta = tesseract_common::calcRotationalError(pi_rot_plus.rotation()) -
-                 tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+  pi_rot_delta = tesseract::common::calcRotationalError(pi_rot_plus.rotation()) -
+                 tesseract::common::calcRotationalError(pi_rot_minus.rotation());
   EXPECT_TRUE(pi_rot_delta.norm() > M_PI);  // This is because calcRotationalError breaks down at PI or -PI
 
   // Test random axis
@@ -2527,8 +2527,8 @@ TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
     {
       pi_rot_plus = identity * Eigen::AngleAxisd(angles(j) + 0.001, axis);
       pi_rot_minus = identity * Eigen::AngleAxisd(angles(j) - 0.001, axis);
-      Eigen::Vector3d e1 = tesseract_common::calcRotationalError(pi_rot_plus.rotation());
-      Eigen::Vector3d e2 = tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+      Eigen::Vector3d e1 = tesseract::common::calcRotationalError(pi_rot_plus.rotation());
+      Eigen::Vector3d e2 = tesseract::common::calcRotationalError(pi_rot_minus.rotation());
       EXPECT_FALSE((e1.norm() < -M_PI));
       EXPECT_FALSE((e1.norm() > M_PI));
       EXPECT_FALSE((e2.norm() < -M_PI));
@@ -2543,8 +2543,8 @@ TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
     {
       pi_rot_plus = identity * Eigen::AngleAxisd(angles(j) + 0.001, axis);
       pi_rot_minus = identity * Eigen::AngleAxisd(angles(j) - 0.001, axis);
-      Eigen::Vector3d e1 = tesseract_common::calcRotationalError(pi_rot_plus.rotation());
-      Eigen::Vector3d e2 = tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+      Eigen::Vector3d e1 = tesseract::common::calcRotationalError(pi_rot_plus.rotation());
+      Eigen::Vector3d e2 = tesseract::common::calcRotationalError(pi_rot_minus.rotation());
       EXPECT_FALSE((e1.norm() < -M_PI));
       EXPECT_FALSE((e1.norm() > M_PI));
       EXPECT_FALSE((e2.norm() < -M_PI));
@@ -2559,8 +2559,8 @@ TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
     {
       pi_rot_plus = identity * Eigen::AngleAxisd(angles(j) + 0.001, axis);
       pi_rot_minus = identity * Eigen::AngleAxisd(angles(j) - 0.001, axis);
-      Eigen::Vector3d e1 = tesseract_common::calcRotationalError(pi_rot_plus.rotation());
-      Eigen::Vector3d e2 = tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+      Eigen::Vector3d e1 = tesseract::common::calcRotationalError(pi_rot_plus.rotation());
+      Eigen::Vector3d e2 = tesseract::common::calcRotationalError(pi_rot_minus.rotation());
       EXPECT_FALSE((e1.norm() < -M_PI));
       EXPECT_FALSE((e1.norm() > M_PI));
       EXPECT_FALSE((e2.norm() < -M_PI));
@@ -2573,8 +2573,8 @@ TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
     {
       pi_rot_plus = identity * Eigen::AngleAxisd(M_PI + 0.001, axis);
       pi_rot_minus = identity * Eigen::AngleAxisd(M_PI - 0.001, axis);
-      Eigen::Vector3d e1 = tesseract_common::calcRotationalError(pi_rot_plus.rotation());
-      Eigen::Vector3d e2 = tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+      Eigen::Vector3d e1 = tesseract::common::calcRotationalError(pi_rot_plus.rotation());
+      Eigen::Vector3d e2 = tesseract::common::calcRotationalError(pi_rot_minus.rotation());
       EXPECT_FALSE((e1.norm() < -M_PI));
       EXPECT_FALSE((e1.norm() > M_PI));
       EXPECT_FALSE((e2.norm() < -M_PI));
@@ -2585,8 +2585,8 @@ TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
     {
       pi_rot_plus = identity * Eigen::AngleAxisd(-M_PI + 0.001, axis);
       pi_rot_minus = identity * Eigen::AngleAxisd(-M_PI - 0.001, axis);
-      Eigen::Vector3d e1 = tesseract_common::calcRotationalError(pi_rot_plus.rotation());
-      Eigen::Vector3d e2 = tesseract_common::calcRotationalError(pi_rot_minus.rotation());
+      Eigen::Vector3d e1 = tesseract::common::calcRotationalError(pi_rot_plus.rotation());
+      Eigen::Vector3d e2 = tesseract::common::calcRotationalError(pi_rot_minus.rotation());
       EXPECT_FALSE((e1.norm() < -M_PI));
       EXPECT_FALSE((e1.norm() > M_PI));
       EXPECT_FALSE((e2.norm() < -M_PI));
@@ -2604,28 +2604,28 @@ TEST(TesseractCommonUnit, calcTransformError)  // NOLINT
 
   {  // X-Axis
     Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    Eigen::VectorXd err = tesseract::common::calcTransformError(identity, pi_rot);
     EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(M_PI_2, 0, 0)));
   }
 
   {  // Y-Axis
     Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    Eigen::VectorXd err = tesseract::common::calcTransformError(identity, pi_rot);
     EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(0, M_PI_2, 0)));
   }
 
   {  // Z-Axis
     Eigen::Isometry3d pi_rot = identity * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    Eigen::VectorXd err = tesseract::common::calcTransformError(identity, pi_rot);
     EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d(0, 0, M_PI_2)));
   }
 
   {  // Translation
     Eigen::Isometry3d pi_rot = identity * Eigen::Translation3d(1, 2, 3);
-    Eigen::VectorXd err = tesseract_common::calcTransformError(identity, pi_rot);
+    Eigen::VectorXd err = tesseract::common::calcTransformError(identity, pi_rot);
     EXPECT_TRUE(err.head(3).isApprox(Eigen::Vector3d(1, 2, 3)));
     EXPECT_TRUE(err.tail(3).isApprox(Eigen::Vector3d::Zero()));
   }
@@ -2640,7 +2640,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(eps, 0, 0)));
   }
@@ -2650,7 +2650,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(-eps, 0, 0)));
   }
@@ -2660,7 +2660,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(-2 * eps, 0, 0)));
   }
@@ -2671,7 +2671,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitX());
     source_tf_perturbed.translation() += Eigen::Vector3d(eps, -eps, eps);
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(eps, -eps, eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(-eps, 0, 0)));
   }
@@ -2681,7 +2681,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, eps, 0)));
   }
@@ -2691,7 +2691,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, -eps, 0)));
   }
@@ -2701,7 +2701,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, -2 * eps, 0)));
   }
@@ -2712,7 +2712,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitY());
     source_tf_perturbed.translation() += Eigen::Vector3d(-eps, eps, -eps);
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(-eps, eps, -eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, -eps, 0)));
   }
@@ -2722,7 +2722,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, eps)));
   }
@@ -2732,7 +2732,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, -eps)));
   }
@@ -2742,7 +2742,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     target_tf.translation() = Eigen::Vector3d(1, 2, 3);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge + eps, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, -2 * eps)));
   }
@@ -2753,7 +2753,7 @@ void runCalcJacobianTransformErrorDiffTest(double anlge)
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(anlge, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(anlge - eps, Eigen::Vector3d::UnitZ());
     source_tf_perturbed.translation() += Eigen::Vector3d(-eps, -eps, eps);
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(-eps, -eps, eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, -eps)));
   }
@@ -2769,9 +2769,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitX()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(2 * eps, 0, 0)));
   }
 
@@ -2781,9 +2781,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(-2 * eps, 0, 0)));
   }
 
@@ -2793,9 +2793,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(-3 * eps, 0, 0)));
   }
 
@@ -2807,7 +2807,7 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     ;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitX());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(-eps, eps, -eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(-2 * eps, 0, 0)));
@@ -2819,9 +2819,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitY()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 2 * eps, 0)));
   }
 
@@ -2831,9 +2831,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, -2 * eps, 0)));
   }
 
@@ -2843,9 +2843,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, -3 * eps, 0)));
   }
 
@@ -2856,7 +2856,7 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
         Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitY()) * target_tf * Eigen::Translation3d(-eps, eps, -eps);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitY());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitY());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(eps, -eps, eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, -2 * eps, 0)));
@@ -2868,9 +2868,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitZ()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, 2 * eps)));
   }
 
@@ -2880,9 +2880,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, -2 * eps)));
   }
 
@@ -2892,9 +2892,9 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
     Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ()) * target_tf;
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle + eps, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
-    EXPECT_TRUE(tesseract_common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
+    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(diff.head(3), Eigen::Vector3d::Zero()));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, -3 * eps)));
   }
 
@@ -2905,7 +2905,7 @@ void runCalcJacobianTransformErrorDiffDynamicTargetTest(double angle)
         Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitZ()) * target_tf * Eigen::Translation3d(-eps, -eps, eps);
     Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ());
     Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(angle - eps, Eigen::Vector3d::UnitZ());
-    Eigen::VectorXd diff = tesseract_common::calcJacobianTransformErrorDiff(
+    Eigen::VectorXd diff = tesseract::common::calcJacobianTransformErrorDiff(
         target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
     EXPECT_TRUE(diff.head(3).isApprox(Eigen::Vector3d(eps, eps, -eps)));
     EXPECT_TRUE(diff.tail(3).isApprox(Eigen::Vector3d(0, 0, -2 * eps)));
@@ -2931,7 +2931,7 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff)  // NOLINT
 /** @brief Tests calcTransformError */
 TEST(TesseractCommonUnit, computeRandomColor)  // NOLINT
 {
-  Eigen::Vector4d color = tesseract_common::computeRandomColor();
+  Eigen::Vector4d color = tesseract::common::computeRandomColor();
   EXPECT_FALSE(color(0) < 0);
   EXPECT_FALSE(color(1) < 0);
   EXPECT_FALSE(color(2) < 0);
@@ -2948,7 +2948,7 @@ TEST(TesseractCommonUnit, concat)  // NOLINT
   Eigen::Vector3d a(1, 2, 3);
   Eigen::Vector3d b(4, 5, 6);
 
-  Eigen::VectorXd c = tesseract_common::concat(a, b);
+  Eigen::VectorXd c = tesseract::common::concat(a, b);
   EXPECT_EQ(c.rows(), a.rows() + b.rows());
   EXPECT_TRUE(c.head(3).isApprox(a));
   EXPECT_TRUE(c.tail(3).isApprox(b));
@@ -2956,7 +2956,7 @@ TEST(TesseractCommonUnit, concat)  // NOLINT
 
 TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
 {
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::common::AllowedCollisionMatrix acm;
   acm.reserveAllowedCollisionMatrix(2);
 
   acm.addAllowedCollision("link1", "link2", "test");
@@ -2965,14 +2965,14 @@ TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
   // but now between link2 and link3
   EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
 
-  tesseract_common::AllowedCollisionMatrix acm_copy(acm);
+  tesseract::common::AllowedCollisionMatrix acm_copy(acm);
   EXPECT_TRUE(acm_copy == acm);
   // collision between link1 and link2 should be allowed
   EXPECT_TRUE(acm_copy.isCollisionAllowed("link1", "link2"));
   // but now between link2 and link3
   EXPECT_FALSE(acm_copy.isCollisionAllowed("link2", "link3"));
 
-  tesseract_common::AllowedCollisionMatrix acm_move(std::move(acm_copy));
+  tesseract::common::AllowedCollisionMatrix acm_move(std::move(acm_copy));
   EXPECT_TRUE(acm_move == acm);
   // collision between link1 and link2 should be allowed
   EXPECT_TRUE(acm_move.isCollisionAllowed("link1", "link2"));
@@ -2988,7 +2988,7 @@ TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
   acm.clearAllowedCollisions();
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
 
-  tesseract_common::AllowedCollisionMatrix acm2;
+  tesseract::common::AllowedCollisionMatrix acm2;
   acm.addAllowedCollision("link1", "link2", "test");
   acm2.addAllowedCollision("link1", "link2", "test");
   acm2.addAllowedCollision("link1", "link3", "test");
@@ -3015,10 +3015,10 @@ TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
 
 TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT
 {
-  tesseract_common::AllowedCollisionMatrix acm1;
+  tesseract::common::AllowedCollisionMatrix acm1;
   acm1.addAllowedCollision("link1", "link2", "test");
 
-  tesseract_common::AllowedCollisionMatrix acm2;
+  tesseract::common::AllowedCollisionMatrix acm2;
   acm2.addAllowedCollision("link1", "link2", "test");
 
   EXPECT_TRUE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
@@ -3040,7 +3040,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   double tol = std::numeric_limits<double>::epsilon();
 
   {  // Test Default Constructor
-    tesseract_common::CollisionMarginData data;
+    tesseract::common::CollisionMarginData data;
     EXPECT_NEAR(data.getDefaultCollisionMargin(), 0, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), 0, tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), 0, tol);
@@ -3064,7 +3064,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
 
   {  // Test construction with non zero default distance
     double default_margin = 0.0254;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), default_margin, tol);
@@ -3086,7 +3086,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
 
   {  // Test changing default margin
     double default_margin = 0.0254;
-    tesseract_common::CollisionMarginData data;
+    tesseract::common::CollisionMarginData data;
     data.setDefaultCollisionMargin(default_margin);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), default_margin, tol);
@@ -3097,9 +3097,9 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test construction with default margin and pair margins
     double default_margin = 0.0;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginPairData pair_margins;
+    tesseract::common::CollisionMarginPairData pair_margins;
     pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
-    tesseract_common::CollisionMarginData data(pair_margins);
+    tesseract::common::CollisionMarginData data(pair_margins);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3109,9 +3109,9 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test construction with non default margin and pair margins
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginPairData pair_margins;
+    tesseract::common::CollisionMarginPairData pair_margins;
     pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
-    tesseract_common::CollisionMarginData data(default_margin, pair_margins);
+    tesseract::common::CollisionMarginData data(default_margin, pair_margins);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3121,11 +3121,11 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test construction with non default margin and pair margins
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::PairsCollisionMarginData temp;
+    tesseract::common::PairsCollisionMarginData temp;
     temp[std::make_pair("link_1", "link_2")] = pair_margin;
 
-    tesseract_common::CollisionMarginPairData pair_margins(temp);
-    tesseract_common::CollisionMarginData data(default_margin, pair_margins);
+    tesseract::common::CollisionMarginPairData pair_margins(temp);
+    tesseract::common::CollisionMarginData data(default_margin, pair_margins);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3135,10 +3135,10 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test construction with default margin and pair margins
     double default_margin = 0.0;
     double pair_margin = 0.5;
-    tesseract_common::PairsCollisionMarginData temp;
+    tesseract::common::PairsCollisionMarginData temp;
     temp[std::make_pair("link_1", "link_2")] = pair_margin;
-    tesseract_common::CollisionMarginPairData pair_margins(temp);
-    tesseract_common::CollisionMarginData data(pair_margins);
+    tesseract::common::CollisionMarginPairData pair_margins(temp);
+    tesseract::common::CollisionMarginData data(pair_margins);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3148,7 +3148,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test adding pair margin larger than default
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
@@ -3159,7 +3159,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test adding pair margin less than default
     double default_margin = 0.0254;
     double pair_margin = 0.01;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
@@ -3170,7 +3170,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test setting default larger than the current max margin
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = 2 * pair_margin;
@@ -3184,7 +3184,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test setting pair_margin larger than default and then set it lower so the max should be the default
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
     data.setCollisionMargin("link_1", "link_2", default_margin);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
@@ -3196,7 +3196,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test setting default larger than pair the change to lower than pair and the max should be the pair
     double default_margin = 0.05;
     double pair_margin = 0.0254;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = 0.0;
@@ -3211,7 +3211,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     double default_margin = 0.0254;
     double pair_margin = 0.5;
     double increment = 0.01;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
     data.incrementMargins(increment);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin + increment, tol);
@@ -3224,7 +3224,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     double default_margin = 0.0254;
     double pair_margin = 0.5;
     double increment = -0.01;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
     data.incrementMargins(increment);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin + increment, tol);
@@ -3237,7 +3237,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     double default_margin = 0.0254;
     double pair_margin = 0.5;
     double scale = 1.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
     data.scaleMargins(scale);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin * scale, tol);
@@ -3250,7 +3250,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
     double default_margin = 0.0254;
     double pair_margin = 0.5;
     double scale = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
     data.scaleMargins(scale);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin * scale, tol);
@@ -3262,7 +3262,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override Default
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = default_margin * 3;
@@ -3276,15 +3276,15 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override Link Pair
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = default_margin * 3;
     pair_margin = pair_margin * 3;
-    tesseract_common::CollisionMarginPairData override_pair_margins;
+    tesseract::common::CollisionMarginPairData override_pair_margins;
     override_pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
     data.setDefaultCollisionMargin(default_margin);
-    data.apply(override_pair_margins, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    data.apply(override_pair_margins, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3294,15 +3294,15 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override Replace
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = default_margin * 3;
     pair_margin = pair_margin * 3;
-    tesseract_common::CollisionMarginPairData override_pair_margins;
+    tesseract::common::CollisionMarginPairData override_pair_margins;
     override_pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
     data.setDefaultCollisionMargin(default_margin);
-    data.apply(override_pair_margins, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+    data.apply(override_pair_margins, tesseract::common::CollisionMarginPairOverrideType::REPLACE);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3312,14 +3312,14 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override None
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = default_margin * 3;
-    tesseract_common::CollisionMarginPairData override_pair_margins;
+    tesseract::common::CollisionMarginPairData override_pair_margins;
     override_pair_margins.setCollisionMargin("link_1", "link_2", pair_margin * 3);
     data.setDefaultCollisionMargin(default_margin);
-    data.apply(override_pair_margins, tesseract_common::CollisionMarginPairOverrideType::NONE);
+    data.apply(override_pair_margins, tesseract::common::CollisionMarginPairOverrideType::NONE);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3329,14 +3329,14 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override Modify
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = default_margin * 3;
-    tesseract_common::CollisionMarginPairData override_pair_margins;
+    tesseract::common::CollisionMarginPairData override_pair_margins;
     override_pair_margins.setCollisionMargin("link_1", "link_3", pair_margin * 3);
     data.setDefaultCollisionMargin(default_margin);
-    data.apply(override_pair_margins, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    data.apply(override_pair_margins, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin * 3), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3355,16 +3355,16 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override Modify with pair that already exists
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     pair_margin = pair_margin * 3;
     default_margin = default_margin * 3;
-    tesseract_common::CollisionMarginPairData override_pair_margins;
+    tesseract::common::CollisionMarginPairData override_pair_margins;
     override_pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
     override_pair_margins.setCollisionMargin("link_1", "link_3", pair_margin * 3);
     data.setDefaultCollisionMargin(default_margin);
-    data.apply(override_pair_margins, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    data.apply(override_pair_margins, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin * 3), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3375,14 +3375,14 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override Modify Pair
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     default_margin = default_margin * 3;
-    tesseract_common::CollisionMarginPairData override_pair_margins;
+    tesseract::common::CollisionMarginPairData override_pair_margins;
     override_pair_margins.setCollisionMargin("link_1", "link_3", pair_margin * 3);
     data.setDefaultCollisionMargin(default_margin);
-    data.apply(override_pair_margins, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    data.apply(override_pair_margins, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin * 3), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3393,16 +3393,16 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test Apply Override Modify Pair that already exists
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
     data.setCollisionMargin("link_1", "link_2", pair_margin);
 
     pair_margin = pair_margin * 3;
     default_margin = default_margin * 3;
-    tesseract_common::CollisionMarginPairData override_pair_margins;
+    tesseract::common::CollisionMarginPairData override_pair_margins;
     override_pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
     override_pair_margins.setCollisionMargin("link_1", "link_3", pair_margin * 3);
     data.setDefaultCollisionMargin(default_margin);
-    data.apply(override_pair_margins, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    data.apply(override_pair_margins, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin * 3), tol);
     EXPECT_NEAR(data.getCollisionMargin("link_1", "link_2"), pair_margin, tol);
@@ -3416,13 +3416,13 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   double tol = std::numeric_limits<double>::epsilon();
 
   {  // Test Empty should return no value
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     std::optional<double> result = data.getMaxCollisionMargin("link1");
     EXPECT_FALSE(result.has_value());
   }
 
   {  // Test adding collision margins
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     data.setCollisionMargin("link1", "link2", 0.5);
     data.setCollisionMargin("link1", "link3", 0.8);
     data.setCollisionMargin("link2", "link3", 0.3);
@@ -3450,7 +3450,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test increment margins
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     data.setCollisionMargin("link1", "link2", 0.5);
     data.setCollisionMargin("link1", "link3", 0.8);
     data.setCollisionMargin("link2", "link3", 0.3);
@@ -3472,7 +3472,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test scale margins
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     data.setCollisionMargin("link1", "link2", 0.5);
     data.setCollisionMargin("link1", "link3", 0.8);
     data.setCollisionMargin("link2", "link3", 0.3);
@@ -3494,7 +3494,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test clear data
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     data.setCollisionMargin("link1", "link2", 0.5);
     data.setCollisionMargin("link1", "link3", 0.8);
 
@@ -3508,7 +3508,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test updating existing pair with different margin
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     data.setCollisionMargin("link1", "link2", 0.8);
     data.setCollisionMargin("link1", "link3", 0.5);
 
@@ -3529,15 +3529,15 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test apply with MODIFY override type
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     data.setCollisionMargin("link1", "link2", 0.5);
     data.setCollisionMargin("link2", "link3", 0.3);
 
-    tesseract_common::CollisionMarginPairData override_data;
+    tesseract::common::CollisionMarginPairData override_data;
     override_data.setCollisionMargin("link1", "link3", 0.9);
     override_data.setCollisionMargin("link2", "link4", 0.4);
 
-    data.apply(override_data, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    data.apply(override_data, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
 
     // link1 should have max margin of 0.9 (from new link1-link3 pair)
     std::optional<double> result = data.getMaxCollisionMargin("link1");
@@ -3557,14 +3557,14 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test apply with REPLACE override type
-    tesseract_common::CollisionMarginPairData data;
+    tesseract::common::CollisionMarginPairData data;
     data.setCollisionMargin("link1", "link2", 0.5);
     data.setCollisionMargin("link2", "link3", 0.3);
 
-    tesseract_common::CollisionMarginPairData override_data;
+    tesseract::common::CollisionMarginPairData override_data;
     override_data.setCollisionMargin("link1", "link3", 0.9);
 
-    data.apply(override_data, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+    data.apply(override_data, tesseract::common::CollisionMarginPairOverrideType::REPLACE);
 
     // After replace, only the override data should remain
     std::optional<double> result = data.getMaxCollisionMargin("link1");
@@ -3579,12 +3579,12 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test construction from PairsCollisionMarginData
-    tesseract_common::PairsCollisionMarginData temp;
+    tesseract::common::PairsCollisionMarginData temp;
     temp[std::make_pair("link1", "link2")] = 0.7;
     temp[std::make_pair("link1", "link3")] = 0.4;
     temp[std::make_pair("link2", "link4")] = 0.6;
 
-    tesseract_common::CollisionMarginPairData data(temp);
+    tesseract::common::CollisionMarginPairData data(temp);
 
     // link1 should have max margin of 0.7
     std::optional<double> result = data.getMaxCollisionMargin("link1");
@@ -3605,7 +3605,7 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
 
   {  // Test CollisionMarginData getMaxCollisionMargin for specific object
     double default_margin = 0.1;
-    tesseract_common::CollisionMarginData data(default_margin);
+    tesseract::common::CollisionMarginData data(default_margin);
 
     // When no pairs exist, should return default margin
     std::optional<double> result = data.getMaxCollisionMargin("link1");
@@ -3640,7 +3640,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
   const double tol = 1e-6;
 
   // Create original data with comprehensive margin setup
-  tesseract_common::CollisionMarginData original_data(0.1);
+  tesseract::common::CollisionMarginData original_data(0.1);
   original_data.setCollisionMargin("link1", "link2", 0.5);
   original_data.setCollisionMargin("link1", "link3", 0.8);
   original_data.setCollisionMargin("link2", "link3", 0.3);
@@ -3664,7 +3664,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
   }
 
   // Deserialize into new object
-  tesseract_common::CollisionMarginData deserialized_data;
+  tesseract::common::CollisionMarginData deserialized_data;
   {
     cereal::XMLInputArchive ia(ss);
     ia >> cereal::make_nvp("collision_margin_data", deserialized_data);
@@ -3712,32 +3712,32 @@ TEST(TesseractCommonUnit, CollisionMarginDataSerialization)  // NOLINT
 TEST(TesseractCommonUnit, CollisionMarginDataCompare)  // NOLINT
 {
   {  // EQUAL Default
-    tesseract_common::CollisionMarginData margin_data1;
-    tesseract_common::CollisionMarginData margin_data2;
+    tesseract::common::CollisionMarginData margin_data1;
+    tesseract::common::CollisionMarginData margin_data2;
 
     EXPECT_TRUE(margin_data1 == margin_data2);
   }
 
   {  // EQUAL with pair data
-    tesseract_common::CollisionMarginData margin_data1;
+    tesseract::common::CollisionMarginData margin_data1;
     margin_data1.setCollisionMargin("link_1", "link_2", 1);
-    tesseract_common::CollisionMarginData margin_data2;
+    tesseract::common::CollisionMarginData margin_data2;
     margin_data2.setCollisionMargin("link_1", "link_2", 1);
 
     EXPECT_TRUE(margin_data1 == margin_data2);
   }
 
   {  // Not EQUAL Default
-    tesseract_common::CollisionMarginData margin_data1(0.1);
-    tesseract_common::CollisionMarginData margin_data2(0.2);
+    tesseract::common::CollisionMarginData margin_data1(0.1);
+    tesseract::common::CollisionMarginData margin_data2(0.2);
 
     EXPECT_FALSE(margin_data1 == margin_data2);
   }
 
   {  // Not EQUAL with pair data
-    tesseract_common::CollisionMarginData margin_data1;
+    tesseract::common::CollisionMarginData margin_data1;
     margin_data1.setCollisionMargin("link_1", "link_2", 1);
-    tesseract_common::CollisionMarginData margin_data2;
+    tesseract::common::CollisionMarginData margin_data2;
     margin_data2.setCollisionMargin("link_1", "link_2", 1);
     margin_data2.setCollisionMargin("link_1", "link_3", 1);
 
@@ -3745,18 +3745,18 @@ TEST(TesseractCommonUnit, CollisionMarginDataCompare)  // NOLINT
   }
 
   {  // Not EQUAL with pair data
-    tesseract_common::CollisionMarginData margin_data1;
+    tesseract::common::CollisionMarginData margin_data1;
     margin_data1.setCollisionMargin("link_1", "link_2", 1);
-    tesseract_common::CollisionMarginData margin_data2;
+    tesseract::common::CollisionMarginData margin_data2;
     margin_data2.setCollisionMargin("link_1", "link_2", 2);
 
     EXPECT_FALSE(margin_data1 == margin_data2);
   }
 
   {  // Not EQUAL with pair data
-    tesseract_common::CollisionMarginData margin_data1;
+    tesseract::common::CollisionMarginData margin_data1;
     margin_data1.setCollisionMargin("link_1", "link_2", 1);
-    tesseract_common::CollisionMarginData margin_data2;
+    tesseract::common::CollisionMarginData margin_data2;
     margin_data2.setCollisionMargin("link_1", "link_3", 1);
 
     EXPECT_FALSE(margin_data1 == margin_data2);
@@ -3775,13 +3775,13 @@ void createTestYamlWithIncludeDirectivesFile(const std::string& filePath, const 
 TEST(TesseractCommonUnit, YamlBasicIncludeTest)  // NOLINT
 {
   std::string separator(1, std::filesystem::path::preferred_separator);
-  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_1" + separator;
+  std::string test_dir = tesseract::common::getTempPath() + "test_yaml_1" + separator;
 
   // Create a temporary test directory
   std::filesystem::create_directory(test_dir);
 
   // Resource locator
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   // Create test files
   createTestYamlWithIncludeDirectivesFile(test_dir + "main.yaml", R"(
@@ -3795,7 +3795,7 @@ included_key2: included_value2
 
   // Load the main file
   YAML::Node root = loadYamlFile(test_dir + "main.yaml", locator);
-  tesseract_common::writeYamlToFile(root, test_dir + "processed.yaml");
+  tesseract::common::writeYamlToFile(root, test_dir + "processed.yaml");
 
   // Validate the structure
   ASSERT_TRUE(root["key1"].IsScalar());
@@ -3812,13 +3812,13 @@ included_key2: included_value2
 TEST(TesseractCommonUnit, YamlIncludeNestedIncludesTest)  // NOLINT
 {
   std::string separator(1, std::filesystem::path::preferred_separator);
-  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_2" + separator;
+  std::string test_dir = tesseract::common::getTempPath() + "test_yaml_2" + separator;
 
   // Create a temporary test directory
   std::filesystem::create_directory(test_dir);
 
   // Resource locator
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   // Create test files
   createTestYamlWithIncludeDirectivesFile(test_dir + "main.yaml", R"(
@@ -3834,7 +3834,7 @@ deep_key1: deep_value1
 
   // Load the main file
   YAML::Node root = loadYamlFile(test_dir + "main.yaml", locator);
-  tesseract_common::writeYamlToFile(root, test_dir + "processed.yaml");
+  tesseract::common::writeYamlToFile(root, test_dir + "processed.yaml");
 
   // Validate the structure
   ASSERT_TRUE(root["key2"].IsMap());
@@ -3848,13 +3848,13 @@ deep_key1: deep_value1
 TEST(TesseractCommonUnit, YamlIncludeSequenceIncludesTest)  // NOLINT
 {
   std::string separator(1, std::filesystem::path::preferred_separator);
-  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_3" + separator;
+  std::string test_dir = tesseract::common::getTempPath() + "test_yaml_3" + separator;
 
   // Create a temporary test directory
   std::filesystem::create_directory(test_dir);
 
   // Resource locator
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   // Create test files
   createTestYamlWithIncludeDirectivesFile(test_dir + "main.yaml", R"(
@@ -3869,7 +3869,7 @@ key1:
 
   // Load the main file
   YAML::Node root = loadYamlFile(test_dir + "main.yaml", locator);
-  tesseract_common::writeYamlToFile(root, test_dir + "processed.yaml");
+  tesseract::common::writeYamlToFile(root, test_dir + "processed.yaml");
 
   // Validate the structure
   ASSERT_TRUE(root["key1"].IsSequence());
@@ -3885,13 +3885,13 @@ key1:
 TEST(TesseractCommonUnit, YamlIncludeSequenceIncludesMapTest)  // NOLINT
 {
   std::string separator(1, std::filesystem::path::preferred_separator);
-  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_4" + separator;
+  std::string test_dir = tesseract::common::getTempPath() + "test_yaml_4" + separator;
 
   // Create a temporary test directory
   std::filesystem::create_directory(test_dir);
 
   // Resource locator
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   // Create test files
   createTestYamlWithIncludeDirectivesFile(test_dir + "main.yaml", R"(
@@ -3906,7 +3906,7 @@ keyB: valueB
 
   // Load the main file
   YAML::Node root = loadYamlFile(test_dir + "main.yaml", locator);
-  tesseract_common::writeYamlToFile(root, test_dir + "processed.yaml");
+  tesseract::common::writeYamlToFile(root, test_dir + "processed.yaml");
 
   // Validate the structure
   ASSERT_TRUE(root["key1"].IsSequence());
@@ -3925,13 +3925,13 @@ keyB: valueB
 TEST(TesseractCommonUnit, YamlIncludeMissingIncludeFileTest)  // NOLINT
 {
   std::string separator(1, std::filesystem::path::preferred_separator);
-  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_5" + separator;
+  std::string test_dir = tesseract::common::getTempPath() + "test_yaml_5" + separator;
 
   // Create a temporary test directory
   std::filesystem::create_directory(test_dir);
 
   // Resource locator
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   // Create a test file
   createTestYamlWithIncludeDirectivesFile(test_dir + "main.yaml", R"(
@@ -3948,13 +3948,13 @@ key1: !include missing.yaml
 TEST(TesseractCommonUnit, YamlIncludeInvalidIncludeTagTest)  // NOLINT
 {
   std::string separator(1, std::filesystem::path::preferred_separator);
-  std::string test_dir = tesseract_common::getTempPath() + "test_yaml_6" + separator;
+  std::string test_dir = tesseract::common::getTempPath() + "test_yaml_6" + separator;
 
   // Create a temporary test directory
   std::filesystem::create_directory(test_dir);
 
   // Resource locator
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   // Create a test file with an invalid !include tag
   createTestYamlWithIncludeDirectivesFile(test_dir + "main.yaml", R"(
@@ -3972,48 +3972,48 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairOverrideType)  // NOLINT
 {
   {
     YAML::Node n = YAML::Load(R"(NONE)");
-    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
-    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::NONE);
+    auto v = n.as<tesseract::common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract::common::CollisionMarginPairOverrideType::NONE);
   }
 
   {
     YAML::Node n = YAML::Load(R"(MODIFY)");
-    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
-    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    auto v = n.as<tesseract::common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
   }
 
   {
     YAML::Node n = YAML::Load(R"(REPLACE)");
-    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
-    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+    auto v = n.as<tesseract::common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract::common::CollisionMarginPairOverrideType::REPLACE);
   }
 
   {
-    YAML::Node n(tesseract_common::CollisionMarginPairOverrideType::NONE);
-    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
-    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::NONE);
+    YAML::Node n(tesseract::common::CollisionMarginPairOverrideType::NONE);
+    auto v = n.as<tesseract::common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract::common::CollisionMarginPairOverrideType::NONE);
   }
 
   {
-    YAML::Node n(tesseract_common::CollisionMarginPairOverrideType::MODIFY);
-    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
-    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::MODIFY);
+    YAML::Node n(tesseract::common::CollisionMarginPairOverrideType::MODIFY);
+    auto v = n.as<tesseract::common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract::common::CollisionMarginPairOverrideType::MODIFY);
   }
 
   {
-    YAML::Node n(tesseract_common::CollisionMarginPairOverrideType::REPLACE);
-    auto v = n.as<tesseract_common::CollisionMarginPairOverrideType>();
-    EXPECT_EQ(v, tesseract_common::CollisionMarginPairOverrideType::REPLACE);
+    YAML::Node n(tesseract::common::CollisionMarginPairOverrideType::REPLACE);
+    auto v = n.as<tesseract::common::CollisionMarginPairOverrideType>();
+    EXPECT_EQ(v, tesseract::common::CollisionMarginPairOverrideType::REPLACE);
   }
 
   {
     YAML::Node n = YAML::Load(R"(DOES_NOT_EXIST)");
-    EXPECT_ANY_THROW(n.as<tesseract_common::CollisionMarginPairOverrideType>());  // NOLINT
+    EXPECT_ANY_THROW(n.as<tesseract::common::CollisionMarginPairOverrideType>());  // NOLINT
   }
 
   {
     YAML::Node n = YAML::Load(R"(["test", "test"])");
-    EXPECT_ANY_THROW(n.as<tesseract_common::CollisionMarginPairOverrideType>());  // NOLINT
+    EXPECT_ANY_THROW(n.as<tesseract::common::CollisionMarginPairOverrideType>());  // NOLINT
   }
 }
 
@@ -4024,13 +4024,13 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
   ["base","tool0"]: 1.5
 )";
 
-  tesseract_common::PairsCollisionMarginData data_original;
+  tesseract::common::PairsCollisionMarginData data_original;
   data_original[std::make_pair("link1", "link2")] = 0.8;
   data_original[std::make_pair("base", "tool0")] = 1.5;
 
   {
     YAML::Node n(data_original);
-    auto data = n.as<tesseract_common::PairsCollisionMarginData>();
+    auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
     EXPECT_DOUBLE_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
     EXPECT_DOUBLE_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
@@ -4038,7 +4038,7 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
 
   {
     YAML::Node n = YAML::Load(yaml_string);
-    auto data = n.as<tesseract_common::PairsCollisionMarginData>();
+    auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
     EXPECT_DOUBLE_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
     EXPECT_DOUBLE_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
@@ -4046,7 +4046,7 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
 
   {  // Failure: Is not map
     YAML::Node n = YAML::Load(R"(["test", "test"])");
-    EXPECT_ANY_THROW(n.as<tesseract_common::PairsCollisionMarginData>());  // NOLINT
+    EXPECT_ANY_THROW(n.as<tesseract::common::PairsCollisionMarginData>());  // NOLINT
   }
 
   {  // Failure: Invalid Key
@@ -4055,7 +4055,7 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
   ["base","tool0"]: 1.5
 )";
     YAML::Node n = YAML::Load(invalid_yaml);
-    EXPECT_ANY_THROW(n.as<tesseract_common::PairsCollisionMarginData>());  // NOLINT
+    EXPECT_ANY_THROW(n.as<tesseract::common::PairsCollisionMarginData>());  // NOLINT
   }
 }
 
@@ -4066,17 +4066,17 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairData)  // NOLINT
   ["base","tool0"]: 1.5
 )";
 
-  tesseract_common::CollisionMarginPairData data_original;
+  tesseract::common::CollisionMarginPairData data_original;
   {
-    tesseract_common::PairsCollisionMarginData pair_data;
+    tesseract::common::PairsCollisionMarginData pair_data;
     pair_data[std::make_pair("link1", "link2")] = 0.8;
     pair_data[std::make_pair("base", "tool0")] = 1.5;
-    data_original = tesseract_common::CollisionMarginPairData(pair_data);
+    data_original = tesseract::common::CollisionMarginPairData(pair_data);
   }
 
   {
     YAML::Node n = YAML::Load(yaml_string);
-    auto data = n.as<tesseract_common::CollisionMarginPairData>();
+    auto data = n.as<tesseract::common::CollisionMarginPairData>();
     EXPECT_EQ(data.getCollisionMargins().size(), 2U);
     // NOLINTNEXTLINE
     EXPECT_DOUBLE_EQ(data.getCollisionMargin("link1", "link2").value(),
@@ -4088,7 +4088,7 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairData)  // NOLINT
 
   {
     YAML::Node n(data_original);
-    auto data = n.as<tesseract_common::CollisionMarginPairData>();
+    auto data = n.as<tesseract::common::CollisionMarginPairData>();
     EXPECT_EQ(data.getCollisionMargins().size(), 2U);
     // NOLINTNEXTLINE
     EXPECT_DOUBLE_EQ(data.getCollisionMargin("link1", "link2").value(),
@@ -4106,13 +4106,13 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
   ["base","tool0"]: "never"
 )";
 
-  tesseract_common::AllowedCollisionEntries data_original;
+  tesseract::common::AllowedCollisionEntries data_original;
   data_original[std::make_pair("link1", "link2")] = "adjacent";
   data_original[std::make_pair("base", "tool0")] = "never";
 
   {
     YAML::Node n(data_original);
-    auto data = n.as<tesseract_common::AllowedCollisionEntries>();
+    auto data = n.as<tesseract::common::AllowedCollisionEntries>();
     EXPECT_EQ(data.size(), 2U);
     EXPECT_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
     EXPECT_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
@@ -4120,7 +4120,7 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
 
   {
     YAML::Node n = YAML::Load(yaml_string);
-    auto data = n.as<tesseract_common::AllowedCollisionEntries>();
+    auto data = n.as<tesseract::common::AllowedCollisionEntries>();
     EXPECT_EQ(data.size(), 2U);
     EXPECT_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
     EXPECT_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
@@ -4128,7 +4128,7 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
 
   {  // Failure: Is not map
     YAML::Node n = YAML::Load(R"(["test", "test"])");
-    EXPECT_ANY_THROW(n.as<tesseract_common::AllowedCollisionEntries>());  // NOLINT
+    EXPECT_ANY_THROW(n.as<tesseract::common::AllowedCollisionEntries>());  // NOLINT
   }
 
   {  // Failure: Invalid Key
@@ -4137,7 +4137,7 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
   ["base","tool0"]: 1.5
 )";
     YAML::Node n = YAML::Load(invalid_yaml);
-    EXPECT_ANY_THROW(n.as<tesseract_common::AllowedCollisionEntries>());  // NOLINT
+    EXPECT_ANY_THROW(n.as<tesseract::common::AllowedCollisionEntries>());  // NOLINT
   }
 }
 
@@ -4148,17 +4148,17 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionMatrix)  // NOLINT
   ["base","tool0"]: "never"
 )";
 
-  tesseract_common::AllowedCollisionMatrix data_original;
+  tesseract::common::AllowedCollisionMatrix data_original;
   {
-    tesseract_common::AllowedCollisionEntries pair_data;
+    tesseract::common::AllowedCollisionEntries pair_data;
     pair_data[std::make_pair("link1", "link2")] = "adjacent";
     pair_data[std::make_pair("base", "tool0")] = "never";
-    data_original = tesseract_common::AllowedCollisionMatrix(pair_data);
+    data_original = tesseract::common::AllowedCollisionMatrix(pair_data);
   }
 
   {
     YAML::Node n(data_original);
-    auto data = n.as<tesseract_common::AllowedCollisionMatrix>();
+    auto data = n.as<tesseract::common::AllowedCollisionMatrix>();
     EXPECT_EQ(data.getAllAllowedCollisions().size(), 2U);
     EXPECT_EQ(data.isCollisionAllowed("link1", "link2"), data_original.isCollisionAllowed("link1", "link2"));
     EXPECT_EQ(data.isCollisionAllowed("base", "tool0"), data_original.isCollisionAllowed("base", "tool0"));
@@ -4166,7 +4166,7 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionMatrix)  // NOLINT
 
   {
     YAML::Node n = YAML::Load(yaml_string);
-    auto data = n.as<tesseract_common::AllowedCollisionMatrix>();
+    auto data = n.as<tesseract::common::AllowedCollisionMatrix>();
     EXPECT_EQ(data.getAllAllowedCollisions().size(), 2U);
     EXPECT_EQ(data.isCollisionAllowed("link1", "link2"), data_original.isCollisionAllowed("link1", "link2"));
     EXPECT_EQ(data.isCollisionAllowed("base", "tool0"), data_original.isCollisionAllowed("base", "tool0"));
@@ -4509,7 +4509,7 @@ static constexpr char const* MISSING_PLY = "no_such_file.ply";
 TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColor)  // NOLINT
 {
   // Prepare a single quad (4 verts, 1 face)
-  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 } };
+  tesseract::common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 } };
 
   // One face: quad with 4 vertex indices
   Eigen::VectorXi faces(5);
@@ -4518,13 +4518,13 @@ TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColor)  // NOLINT
 
   // Write PLY (no color)
   EXPECT_TRUE(
-      tesseract_common::writeSimplePlyFile(tesseract_common::getTempPath() + NO_COLOR_PLY, verts, faces, num_faces));
+      tesseract::common::writeSimplePlyFile(tesseract::common::getTempPath() + NO_COLOR_PLY, verts, faces, num_faces));
 
   // Load back
-  tesseract_common::VectorVector3d loaded_verts;
+  tesseract::common::VectorVector3d loaded_verts;
   Eigen::VectorXi loaded_faces;
-  int ret = tesseract_common::loadSimplePlyFile(
-      tesseract_common::getTempPath() + NO_COLOR_PLY, loaded_verts, loaded_faces, /*triangles_only=*/false);
+  int ret = tesseract::common::loadSimplePlyFile(
+      tesseract::common::getTempPath() + NO_COLOR_PLY, loaded_verts, loaded_faces, /*triangles_only=*/false);
 
   // Should get exactly one face back
   EXPECT_EQ(ret, num_faces);
@@ -4545,7 +4545,7 @@ TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColor)  // NOLINT
 TEST(TesseractCommonUnit, PlyIO_WriteWithSingleColor)  // NOLINT
 {
   // Two vertices, single default color
-  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 } };
+  tesseract::common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 } };
   std::vector<Eigen::Vector3i> colors{ Eigen::Vector3i{ 255, 128, 64 } };
 
   // One edge (treated as face of 2 verts here for demonstration)
@@ -4554,11 +4554,11 @@ TEST(TesseractCommonUnit, PlyIO_WriteWithSingleColor)  // NOLINT
   int num_faces = 1;
 
   // Write PLY with per-vertex default color
-  EXPECT_TRUE(tesseract_common::writeSimplePlyFile(
-      tesseract_common::getTempPath() + SINGLE_COLOR_PLY, verts, colors, faces, num_faces));
+  EXPECT_TRUE(tesseract::common::writeSimplePlyFile(
+      tesseract::common::getTempPath() + SINGLE_COLOR_PLY, verts, colors, faces, num_faces));
 
   // Open file and inspect header + first vertex line
-  std::ifstream ifs(tesseract_common::getTempPath() + SINGLE_COLOR_PLY);
+  std::ifstream ifs(tesseract::common::getTempPath() + SINGLE_COLOR_PLY);
   ASSERT_TRUE(ifs.is_open());
 
   std::string line;
@@ -4596,7 +4596,7 @@ TEST(TesseractCommonUnit, PlyIO_WriteWithSingleColor)  // NOLINT
 TEST(TesseractCommonUnit, PlyIO_WriteWithPerVertexColors)
 {
   // 3 vertices, each with its own color
-  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  tesseract::common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
   std::vector<Eigen::Vector3i> colors{ Eigen::Vector3i{ 10, 20, 30 },
                                        Eigen::Vector3i{ 40, 50, 60 },
                                        Eigen::Vector3i{ 70, 80, 90 } };
@@ -4607,11 +4607,11 @@ TEST(TesseractCommonUnit, PlyIO_WriteWithPerVertexColors)
   int num_faces = 1;
 
   // Write PLY with per-vertex colors
-  EXPECT_TRUE(tesseract_common::writeSimplePlyFile(
-      tesseract_common::getTempPath() + PER_VERTEX_COLOR_PLY, verts, colors, faces, num_faces));
+  EXPECT_TRUE(tesseract::common::writeSimplePlyFile(
+      tesseract::common::getTempPath() + PER_VERTEX_COLOR_PLY, verts, colors, faces, num_faces));
 
   // Read the entire file
-  std::ifstream ifs(tesseract_common::getTempPath() + PER_VERTEX_COLOR_PLY);
+  std::ifstream ifs(tesseract::common::getTempPath() + PER_VERTEX_COLOR_PLY);
   ASSERT_TRUE(ifs.is_open());
   std::string line;
   std::vector<std::string> lines;
@@ -4652,7 +4652,7 @@ TEST(TesseractCommonUnit, PlyIO_WriteWithPerVertexColors)
 TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColorAndUseTriangles)  // NOLINT
 {
   // Prepare a single quad (4 verts, 1 face)
-  tesseract_common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 } };
+  tesseract::common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 } };
 
   // One face: quad with 4 vertex indices
   Eigen::VectorXi faces(5);
@@ -4660,14 +4660,14 @@ TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColorAndUseTriangles)  // NOL
   int num_faces = 1;
 
   // Write PLY (no color)
-  EXPECT_TRUE(tesseract_common::writeSimplePlyFile(
-      tesseract_common::getTempPath() + NO_COLOR_USE_TRIANGLE_PLY, verts, faces, num_faces));
+  EXPECT_TRUE(tesseract::common::writeSimplePlyFile(
+      tesseract::common::getTempPath() + NO_COLOR_USE_TRIANGLE_PLY, verts, faces, num_faces));
 
   // Load back
-  tesseract_common::VectorVector3d loaded_verts;
+  tesseract::common::VectorVector3d loaded_verts;
   Eigen::VectorXi loaded_faces;
-  int ret = tesseract_common::loadSimplePlyFile(
-      tesseract_common::getTempPath() + NO_COLOR_USE_TRIANGLE_PLY, loaded_verts, loaded_faces, true);
+  int ret = tesseract::common::loadSimplePlyFile(
+      tesseract::common::getTempPath() + NO_COLOR_USE_TRIANGLE_PLY, loaded_verts, loaded_faces, true);
 
   // Should get exactly one face back
   EXPECT_EQ(ret, num_faces + 1);
@@ -4691,7 +4691,7 @@ TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColorAndUseTriangles)  // NOL
 TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
 {
   {  // Test failure when the "element vertex" line is malformed
-    const std::string path = tesseract_common::getTempPath() + "bad_vertex_header.ply";
+    const std::string path = tesseract::common::getTempPath() + "bad_vertex_header.ply";
     {
       std::ofstream ofs(path);
       ofs << "ply\n";
@@ -4705,16 +4705,16 @@ TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
       // dummy data
       ofs << "0 0 0\n0 0 0 0\n";
     }
-    tesseract_common::VectorVector3d verts;
+    tesseract::common::VectorVector3d verts;
     Eigen::VectorXi faces;
-    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, /*triangles_only=*/false);
+    int ret = tesseract::common::loadSimplePlyFile(path, verts, faces, /*triangles_only=*/false);
     EXPECT_EQ(ret, 0);
     EXPECT_TRUE(verts.empty());
     EXPECT_EQ(faces.size(), 0);
   }
 
   {  // Test failure when the "element face" line is malformed
-    const std::string path = tesseract_common::getTempPath() + "bad_face_header.ply";
+    const std::string path = tesseract::common::getTempPath() + "bad_face_header.ply";
     {
       std::ofstream ofs(path);
       ofs << "ply\n";
@@ -4729,16 +4729,16 @@ TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
       ofs << "0 0 0\n";    // one vertex
       ofs << "3 0 0 0\n";  // dummy face
     }
-    tesseract_common::VectorVector3d verts;
+    tesseract::common::VectorVector3d verts;
     Eigen::VectorXi faces;
-    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    int ret = tesseract::common::loadSimplePlyFile(path, verts, faces, false);
     EXPECT_EQ(ret, 0);
     EXPECT_TRUE(verts.empty());
     EXPECT_EQ(faces.size(), 0);
   }
 
   {  // Test failure when the "end_header" line is missing or wrong
-    const std::string path = tesseract_common::getTempPath() + "no_end_header.ply";
+    const std::string path = tesseract::common::getTempPath() + "no_end_header.ply";
     {
       std::ofstream ofs(path);
       ofs << "ply\n";
@@ -4753,16 +4753,16 @@ TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
       ofs << "0 0 0\n";    // one vertex
       ofs << "3 0 0 0\n";  // one face
     }
-    tesseract_common::VectorVector3d verts;
+    tesseract::common::VectorVector3d verts;
     Eigen::VectorXi faces;
-    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    int ret = tesseract::common::loadSimplePlyFile(path, verts, faces, false);
     EXPECT_EQ(ret, 0);
     EXPECT_TRUE(verts.empty());
     EXPECT_EQ(faces.size(), 0);
   }
 
   {  // Test failure on a malformed vertex data line (not exactly 3 floats)
-    const std::string path = tesseract_common::getTempPath() + "bad_vertex_data.ply";
+    const std::string path = tesseract::common::getTempPath() + "bad_vertex_data.ply";
     {
       std::ofstream ofs(path);
       ofs << "ply\n";
@@ -4777,16 +4777,16 @@ TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
       ofs << "1 1 1\n";    // correct line
       ofs << "3 0 1 1\n";  // face
     }
-    tesseract_common::VectorVector3d verts;
+    tesseract::common::VectorVector3d verts;
     Eigen::VectorXi faces;
-    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    int ret = tesseract::common::loadSimplePlyFile(path, verts, faces, false);
     EXPECT_EQ(ret, 0);
     EXPECT_TRUE(verts.empty());
     EXPECT_EQ(faces.size(), 0);
   }
 
   {  // Test failure on a malformed face data line (fewer than 3 indices)
-    const std::string path = tesseract_common::getTempPath() + "bad_face_data.ply";
+    const std::string path = tesseract::common::getTempPath() + "bad_face_data.ply";
     {
       std::ofstream ofs(path);
       ofs << "ply\n";
@@ -4800,9 +4800,9 @@ TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
       ofs << "0 0 0\n1 1 1\n2 2 2\n";  // three vertices
       ofs << "2 0 1\n";                // only 2 indices → error
     }
-    tesseract_common::VectorVector3d verts;
+    tesseract::common::VectorVector3d verts;
     Eigen::VectorXi faces;
-    int ret = tesseract_common::loadSimplePlyFile(path, verts, faces, false);
+    int ret = tesseract::common::loadSimplePlyFile(path, verts, faces, false);
     EXPECT_EQ(ret, 0);
     EXPECT_FALSE(verts.empty());
     EXPECT_EQ(faces.size(), 0);
@@ -4811,10 +4811,10 @@ TEST(TesseractCommonUnit, PlyIO_LoadSimplePlyFileFailures)
 
 TEST(TesseractCommonUnit, PlyIO_LoadNonexistentFile)  // NOLINT
 {
-  tesseract_common::VectorVector3d verts;
+  tesseract::common::VectorVector3d verts;
   Eigen::VectorXi faces;
   // Should return 0 and print an error
-  int ret = tesseract_common::loadSimplePlyFile(tesseract_common::getTempPath() + MISSING_PLY, verts, faces, false);
+  int ret = tesseract::common::loadSimplePlyFile(tesseract::common::getTempPath() + MISSING_PLY, verts, faces, false);
   EXPECT_EQ(ret, 0);
   EXPECT_TRUE(verts.empty());
   EXPECT_EQ(faces.size(), 0);

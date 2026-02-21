@@ -27,7 +27,7 @@
 #include <tesseract_collision/core/convex_decomposition.h>
 #include <tesseract_geometry/fwd.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 struct HACDParameters
 {
@@ -52,14 +52,15 @@ public:
   ConvexDecompositionHACD() = default;
   ConvexDecompositionHACD(const HACDParameters& params);
 
-  std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>> compute(const tesseract_common::VectorVector3d& vertices,
-                                                                       const Eigen::VectorXi& faces,
-                                                                       bool verbose = true) const override;
+  std::vector<std::shared_ptr<tesseract::geometry::ConvexMesh>>
+  compute(const tesseract::common::VectorVector3d& vertices,
+          const Eigen::VectorXi& faces,
+          bool verbose = true) const override;
 
 private:
   HACDParameters params_;
 };
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_CONVEX_DECOMPOSITION_HACD_H

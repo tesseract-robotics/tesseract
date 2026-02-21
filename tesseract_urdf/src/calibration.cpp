@@ -34,15 +34,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/calibration.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XMLElement* xml_element)
+tesseract::scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XMLElement* xml_element)
 {
   if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") == nullptr)
     std::throw_with_nested(std::runtime_error("Calibration: Missing both attribute 'rising' and 'falling', either "
                                               "remove tag add attributes and values!"));
 
-  auto calibration = std::make_shared<tesseract_scene_graph::JointCalibration>();
+  auto calibration = std::make_shared<tesseract::scene_graph::JointCalibration>();
   if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") != nullptr)
     CONSOLE_BRIDGE_logDebug("Calibration: Missing attribute 'rising', using default value 0!");
 
@@ -61,7 +61,7 @@ tesseract_scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::XM
 }
 
 tinyxml2::XMLElement*
-writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibration>& calibration,
+writeCalibration(const std::shared_ptr<const tesseract::scene_graph::JointCalibration>& calibration,
                  tinyxml2::XMLDocument& doc)
 {
   if (calibration == nullptr)
@@ -72,4 +72,4 @@ writeCalibration(const std::shared_ptr<const tesseract_scene_graph::JointCalibra
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

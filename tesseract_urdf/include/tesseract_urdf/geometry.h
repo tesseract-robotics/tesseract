@@ -39,7 +39,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view GEOMETRY_ELEMENT_NAME = "geometry";
 
@@ -51,10 +51,10 @@ static constexpr std::string_view GEOMETRY_ELEMENT_NAME = "geometry";
  * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Tesseract Geometry
  */
-std::shared_ptr<tesseract_geometry::Geometry> parseGeometry(const tinyxml2::XMLElement* xml_element,
-                                                            const tesseract_common::ResourceLocator& locator,
-                                                            bool visual,
-                                                            bool make_convex_meshes);
+std::shared_ptr<tesseract::geometry::Geometry> parseGeometry(const tinyxml2::XMLElement* xml_element,
+                                                             const tesseract::common::ResourceLocator& locator,
+                                                             bool visual,
+                                                             bool make_convex_meshes);
 
 /**
  * @brief writeGeometry Write geometry to URDF XML
@@ -67,11 +67,11 @@ std::shared_ptr<tesseract_geometry::Geometry> parseGeometry(const tinyxml2::XMLE
  * should be an absolute path (e.g. "/tmp/link1_geometry")
  * @return xml element representing the geometry in URDF format.
  */
-tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract_geometry::Geometry>& geometry,
+tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract::geometry::Geometry>& geometry,
                                     tinyxml2::XMLDocument& doc,
                                     const std::string& package_path,
                                     const std::string& filename);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_GEOMETRY_H

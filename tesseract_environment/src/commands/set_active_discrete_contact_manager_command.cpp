@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 SetActiveDiscreteContactManagerCommand::SetActiveDiscreteContactManagerCommand()
   : Command(CommandType::SET_ACTIVE_DISCRETE_CONTACT_MANAGER)
@@ -53,4 +53,4 @@ bool SetActiveDiscreteContactManagerCommand::operator!=(const SetActiveDiscreteC
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

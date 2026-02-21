@@ -27,7 +27,7 @@
 
 #include <cstdint>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 // joint.h
 class JointDynamics;
@@ -51,6 +51,6 @@ class SceneGraph;
 
 // scene_state.h
 struct SceneState;
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_FWD_H

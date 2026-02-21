@@ -62,11 +62,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/mesh_material.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 /**
  * The template type must have a constructor as follows
- * Constructor(std::shared_ptr<tesseract_geometry::VectorVector3d> vertices, std::shared_ptr<std::vector<int>> faces,
+ * Constructor(std::shared_ptr<tesseract::geometry::VectorVector3d> vertices, std::shared_ptr<std::vector<int>> faces,
  * int face_count)
  */
 
@@ -75,7 +75,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                                                 const aiNode* node,
                                                 const aiMatrix4x4& parent_transform,
                                                 const Eigen::Vector3d& scale,
-                                                tesseract_common::Resource::Ptr resource,
+                                                tesseract::common::Resource::Ptr resource,
                                                 bool normals,
                                                 bool vertex_colors,
                                                 bool material_and_texture)
@@ -87,10 +87,10 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
   transform *= node->mTransformation;
   for (unsigned int j = 0; j < node->mNumMeshes; ++j)
   {
-    auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
     auto triangles = std::make_shared<Eigen::VectorXi>();
-    std::shared_ptr<tesseract_common::VectorVector3d> vertex_normals = nullptr;
-    std::shared_ptr<tesseract_common::VectorVector4d> vertex_colors = nullptr;
+    std::shared_ptr<tesseract::common::VectorVector3d> vertex_normals = nullptr;
+    std::shared_ptr<tesseract::common::VectorVector4d> vertex_colors = nullptr;
     MeshMaterial::Ptr material = nullptr;
     std::shared_ptr<std::vector<MeshTexture::Ptr>> textures = nullptr;
 
@@ -128,7 +128,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
 
     if (normals && a->HasNormals())
     {
-      vertex_normals = std::make_shared<tesseract_common::VectorVector3d>();
+      vertex_normals = std::make_shared<tesseract::common::VectorVector3d>();
       vertex_normals->reserve(a->mNumVertices);
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
@@ -141,7 +141,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
 
     if (vertex_colors && a->HasVertexColors(0))
     {
-      vertex_colors = std::make_shared<tesseract_common::VectorVector4d>();
+      vertex_colors = std::make_shared<tesseract::common::VectorVector4d>();
       vertex_colors->reserve(a->mNumVertices);
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
@@ -211,8 +211,8 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
             unsigned int uvIndex{ 0 };
             if (mat->GetTexture(aiTextureType_DIFFUSE, i, &texName, &mapping, &uvIndex) == AI_SUCCESS)
             {
-              tesseract_common::Resource::Ptr texture_image;
-              tesseract_common::VectorVector2d uvs;
+              tesseract::common::Resource::Ptr texture_image;
+              tesseract::common::VectorVector2d uvs;
               // https://stackoverflow.com/questions/56820244/assimp-doenst-return-texture-data
               const char* texNamec = texName.C_Str();
               if ('*' == *texNamec)
@@ -225,7 +225,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                 std::string file_type = texture_data->achFormatHint;
                 if (file_type == "jpg" || file_type == "png")
                 {
-                  texture_image = std::make_shared<tesseract_common::BytesResource>(
+                  texture_image = std::make_shared<tesseract::common::BytesResource>(
                       "data://", (const uint8_t*)texture_data->pcData, texture_data->mWidth);  // NOLINT
                 }
                 else
@@ -255,7 +255,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                 uvs.emplace_back(static_cast<double>(v.x), static_cast<double>(v.y));
               }
               auto tex = std::make_shared<MeshTexture>(
-                  texture_image, std::make_shared<tesseract_common::VectorVector2d>(std::move(uvs)));
+                  texture_image, std::make_shared<tesseract::common::VectorVector2d>(std::move(uvs)));
               if (!textures)
               {
                 textures = std::make_shared<std::vector<MeshTexture::Ptr>>();
@@ -300,7 +300,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
 template <class T>
 std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
                                                     const Eigen::Vector3d& scale,
-                                                    tesseract_common::Resource::Ptr resource,
+                                                    tesseract::common::Resource::Ptr resource,
                                                     bool normals,
                                                     bool vertex_colors,
                                                     bool material_and_texture)
@@ -417,7 +417,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
  * @return
  */
 template <class T>
-std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
+std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract::common::Resource::Ptr resource,
                                                        const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
                                                        bool triangulate = false,
                                                        bool flatten = false,
@@ -544,12 +544,12 @@ static std::vector<std::shared_ptr<T>> createMeshFromBytes(const std::string& ur
                                                            bool vertex_colors = false,
                                                            bool material_and_texture = false)
 {
-  std::shared_ptr<tesseract_common::Resource> resource =
-      std::make_shared<tesseract_common::BytesResource>(url, bytes, bytes_len);
-  return tesseract_geometry::createMeshFromResource<T>(
+  std::shared_ptr<tesseract::common::Resource> resource =
+      std::make_shared<tesseract::common::BytesResource>(url, bytes, bytes_len);
+  return tesseract::geometry::createMeshFromResource<T>(
       resource, scale, triangulate, flatten, normals, vertex_colors, material_and_texture);
 }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif

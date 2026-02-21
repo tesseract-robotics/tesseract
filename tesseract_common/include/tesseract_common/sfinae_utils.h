@@ -16,7 +16,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
  *     any alias we pass it.
  */
 
-namespace tesseract_common
+namespace tesseract::common
 {
 // Variadic to force ambiguity of class members.  C++11 and up.
 template <typename... Args>
@@ -71,7 +71,7 @@ struct has_member
   struct Alias_##member;                                                                                               \
                                                                                                                        \
   template <typename T>                                                                                                \
-  struct Alias_##member<T, std::integral_constant<bool, tesseract_common::got_type<decltype(&T::member)>::value>>      \
+  struct Alias_##member<T, std::integral_constant<bool, tesseract::common::got_type<decltype(&T::member)>::value>>     \
   {                                                                                                                    \
     static const decltype(&T::member) value;                                                                           \
   };                                                                                                                   \
@@ -85,8 +85,8 @@ struct has_member
   struct has_member_##member                                                                                           \
   {                                                                                                                    \
     static const bool value =                                                                                          \
-        tesseract_common::has_member<Alias_##member<tesseract_common::ambiguate<T, AmbiguitySeed_##member>>,           \
-                                     Alias_##member<AmbiguitySeed_##member>>::value;                                   \
+        tesseract::common::has_member<Alias_##member<tesseract::common::ambiguate<T, AmbiguitySeed_##member>>,         \
+                                      Alias_##member<AmbiguitySeed_##member>>::value;                                  \
   }
 
 /**
@@ -208,6 +208,6 @@ struct has_member
   {                                                                                                                    \
   };
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSEACT_COMMON_SFINAE_UTILS_H

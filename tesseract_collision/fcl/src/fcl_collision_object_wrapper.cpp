@@ -24,7 +24,7 @@
 
 #include <tesseract_collision/fcl/fcl_collision_object_wrapper.h>
 
-namespace tesseract_collision::tesseract_collision_fcl
+namespace tesseract::collision::fcl_internal
 {
 void FCLCollisionObjectWrapper::setContactDistanceThreshold(double contact_distance)
 {
@@ -60,4 +60,4 @@ int FCLCollisionObjectWrapper::getShapeIndex() const
   return shape_index_;
 }
 
-}  // namespace tesseract_collision::tesseract_collision_fcl
+}  // namespace tesseract::collision::fcl_internal

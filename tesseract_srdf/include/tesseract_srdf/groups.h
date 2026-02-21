@@ -38,7 +38,7 @@ namespace tinyxml2
 class XMLElement;  // NOLINT
 }
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 /**
  * @brief Parse groups from srdf xml element
@@ -48,10 +48,10 @@ namespace tesseract_srdf
  * @return GroupNames, ChainGroups, JointGroups, LinkGroups
  */
 std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups>
-parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
+parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
             const tinyxml2::XMLElement* srdf_xml,
             const std::array<int, 3>& version);
 
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
 
 #endif  // TESSERACT_SRDF_GROUPS_H

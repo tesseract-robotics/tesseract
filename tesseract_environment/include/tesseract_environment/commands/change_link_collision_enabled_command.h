@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class ChangeLinkCollisionEnabledCommand;
 template <class Archive>
@@ -64,8 +64,8 @@ private:
   bool enabled_{ false };
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, ChangeLinkCollisionEnabledCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, ChangeLinkCollisionEnabledCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_LINK_COLLISION_ENABLED_COMMAND_H

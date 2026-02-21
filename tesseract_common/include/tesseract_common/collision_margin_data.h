@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class CollisionMarginPairData;
 class CollisionMarginData;
@@ -63,7 +63,7 @@ enum class CollisionMarginPairOverrideType : std::uint8_t
   MODIFY
 };
 
-using PairsCollisionMarginData = std::unordered_map<tesseract_common::LinkNamesPair, double>;
+using PairsCollisionMarginData = std::unordered_map<tesseract::common::LinkNamesPair, double>;
 
 class CollisionMarginPairData
 {
@@ -162,7 +162,7 @@ private:
   void updateMaxMargins();
 
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, CollisionMarginPairData& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, CollisionMarginPairData& obj);
 };
 
 /** @brief Stores information about how the margins allowed between collision objects */
@@ -267,8 +267,8 @@ private:
   CollisionMarginPairData pair_margins_;
 
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, CollisionMarginData& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, CollisionMarginData& obj);
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_COLLISION_MARGIN_DATA_H

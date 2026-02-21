@@ -37,24 +37,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_urdf/material.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::Material::Ptr
+tesseract::scene_graph::Material::Ptr
 parseMaterial(const tinyxml2::XMLElement* xml_element,
-              std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+              std::unordered_map<std::string, tesseract::scene_graph::Material::Ptr>& available_materials,
               bool allow_anonymous)
 {
   std::string material_name;
-  if (tesseract_common::QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing attribute 'name'!"));
 
-  auto m = std::make_shared<tesseract_scene_graph::Material>(material_name);
+  auto m = std::make_shared<tesseract::scene_graph::Material>(material_name);
 
   m->texture_filename = "";
   const tinyxml2::XMLElement* texture = xml_element->FirstChildElement("texture");
   if (texture != nullptr)
   {
-    if (tesseract_common::QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
+    if (tesseract::common::QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing texture attribute 'filename'!"));
   }
 
@@ -62,22 +62,22 @@ parseMaterial(const tinyxml2::XMLElement* xml_element,
   if (color != nullptr)
   {
     std::string color_string;
-    if (tesseract_common::QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
+    if (tesseract::common::QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("Material: Missing or failed parsing color attribute 'rgba'!"));
 
     if (!color_string.empty())
     {
       std::vector<std::string> tokens;
       boost::split(tokens, color_string, boost::is_any_of(" "), boost::token_compress_on);
-      if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
+      if (tokens.size() != 4 || !tesseract::common::isNumeric(tokens))
         std::throw_with_nested(std::runtime_error("Material: Failed to parse color attribute 'rgba' from string!"));
 
       double r{ 0 }, g{ 0 }, b{ 0 }, a{ 0 };
       // No need to check return values because the tokens are verified above
-      tesseract_common::toNumeric<double>(tokens[0], r);
-      tesseract_common::toNumeric<double>(tokens[1], g);
-      tesseract_common::toNumeric<double>(tokens[2], b);
-      tesseract_common::toNumeric<double>(tokens[3], a);
+      tesseract::common::toNumeric<double>(tokens[0], r);
+      tesseract::common::toNumeric<double>(tokens[1], g);
+      tesseract::common::toNumeric<double>(tokens[2], b);
+      tesseract::common::toNumeric<double>(tokens[3], a);
 
       m->color = Eigen::Vector4d(r, g, b, a);
     }
@@ -119,7 +119,7 @@ parseMaterial(const tinyxml2::XMLElement* xml_element,
   return m;
 }
 
-tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract_scene_graph::Material>& material,
+tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract::scene_graph::Material>& material,
                                     tinyxml2::XMLDocument& doc)
 {
   if (material == nullptr)
@@ -145,4 +145,4 @@ tinyxml2::XMLElement* writeMaterial(const std::shared_ptr<const tesseract_scene_
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

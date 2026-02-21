@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 void processYamlIncludeDirective(YAML::Node& node, const ResourceLocator& locator)
 {
@@ -238,4 +238,4 @@ bool compareYAML(const YAML::Node& node1, const YAML::Node& node2)
 
   return std::equal(node1.begin(), node1.end(), node2.begin(), compareYAML);
 }
-}  // namespace tesseract_common
+}  // namespace tesseract::common

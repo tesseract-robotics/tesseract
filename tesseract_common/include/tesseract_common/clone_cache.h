@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/sfinae_utils.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /** @brief Used to create a cache of objects
  *
@@ -231,5 +231,5 @@ protected:
   mutable std::mutex cache_mutex_;
 };
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif

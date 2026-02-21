@@ -39,7 +39,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view POINT_CLOUD_ELEMENT_NAME = "tesseract:point_cloud";
 
@@ -52,10 +52,10 @@ static constexpr std::string_view POINT_CLOUD_ELEMENT_NAME = "tesseract:point_cl
  * @param version The version number
  * @return A Tesseract Geometry Octree
  */
-std::shared_ptr<tesseract_geometry::Octree> parsePointCloud(const tinyxml2::XMLElement* xml_element,
-                                                            const tesseract_common::ResourceLocator& locator,
-                                                            tesseract_geometry::OctreeSubType shape_type,
-                                                            bool prune);
-}  // namespace tesseract_urdf
+std::shared_ptr<tesseract::geometry::Octree> parsePointCloud(const tinyxml2::XMLElement* xml_element,
+                                                             const tesseract::common::ResourceLocator& locator,
+                                                             tesseract::geometry::OctreeSubType shape_type,
+                                                             bool prune);
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_POINT_CLOUD_H

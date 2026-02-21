@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/profile.h>
 #include <tesseract_common/any_poly.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class ProfileDictionary;
 
@@ -157,11 +157,11 @@ protected:
 
 private:
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, ProfileDictionary& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, ProfileDictionary& obj);
 };
 
-using ProfileDictionaryPtrAnyPoly = tesseract_common::AnyWrapper<std::shared_ptr<ProfileDictionary>>;
+using ProfileDictionaryPtrAnyPoly = tesseract::common::AnyWrapper<std::shared_ptr<ProfileDictionary>>;
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_PROFILE_DICTIONARY_H

@@ -38,18 +38,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/octree.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_element,
-                                            const tesseract_common::ResourceLocator& locator,
-                                            tesseract_geometry::OctreeSubType shape_type,
-                                            bool prune)
+tesseract::geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_element,
+                                             const tesseract::common::ResourceLocator& locator,
+                                             tesseract::geometry::OctreeSubType shape_type,
+                                             bool prune)
 {
   std::string filename;
-  if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Octree: Missing or failed parsing attribute 'filename'!"));
 
-  tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
+  tesseract::common::Resource::Ptr resource = locator.locateResource(filename);
   if (!resource || !resource->isFile())
     std::throw_with_nested(std::runtime_error("Octree: Missing resource '" + filename + "'!"));
 
@@ -59,16 +59,16 @@ tesseract_geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_elem
     std::throw_with_nested(std::runtime_error("Octree: Error importing from '" + filename + "'!"));
 
   if (prune)
-    tesseract_geometry::Octree::prune(*ot);
+    tesseract::geometry::Octree::prune(*ot);
 
-  auto geom = std::make_shared<tesseract_geometry::Octree>(ot, shape_type);
+  auto geom = std::make_shared<tesseract::geometry::Octree>(ot, shape_type);
   if (geom == nullptr)
     std::throw_with_nested(std::runtime_error("Octree: Error creating octree geometry type from octomap::octree!"));
 
   return geom;
 }
 
-tinyxml2::XMLElement* writeOctree(const tesseract_geometry::Octree::ConstPtr& octree,
+tinyxml2::XMLElement* writeOctree(const tesseract::geometry::Octree::ConstPtr& octree,
                                   tinyxml2::XMLDocument& doc,
                                   const std::string& package_path,
                                   const std::string& filename)
@@ -91,4 +91,4 @@ tinyxml2::XMLElement* writeOctree(const tesseract_geometry::Octree::ConstPtr& oc
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

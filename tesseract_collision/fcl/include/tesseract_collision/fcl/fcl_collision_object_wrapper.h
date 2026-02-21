@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/narrowphase/collision_object-inl.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_collision::tesseract_collision_fcl
+namespace tesseract::collision::fcl_internal
 {
 /**
  * @brief This is a wrapper around FCL Collision Object Class which allows you to expand the AABB by the contact dist.
@@ -81,6 +81,6 @@ protected:
   int shape_index_{ -1 };
 };
 
-}  // namespace tesseract_collision::tesseract_collision_fcl
+}  // namespace tesseract::collision::fcl_internal
 
 #endif  // TESSERACT_COLLISION_FCL_COLLISION_OBJECT_WRAPPER_H

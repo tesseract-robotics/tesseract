@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <atomic>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /** @brief A timer which calls a callback every interval on a separate thread */
 class Timer
@@ -60,5 +60,5 @@ private:
   std::thread timer_thread_;
 };
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_TIMER_H

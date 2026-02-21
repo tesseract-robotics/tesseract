@@ -38,7 +38,7 @@ namespace tinyxml2
 class XMLElement;  // NOLINT
 }
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 /**
  * @brief Parse groups tool center points from srdf xml element
@@ -47,10 +47,10 @@ namespace tesseract_srdf
  * @param version The srdf version number
  * @return Group Tool Center Points
  */
-GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& scene_graph,
+GroupTCPs parseGroupTCPs(const tesseract::scene_graph::SceneGraph& scene_graph,
                          const tinyxml2::XMLElement* srdf_xml,
                          const std::array<int, 3>& version);
 
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
 
 #endif  // TESSERACT_SRDF_TOOL_CENTER_POINTS_H

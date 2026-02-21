@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /** @brief Store kinematic limits */
 struct KinematicLimits
@@ -152,6 +152,6 @@ void enforceLimits(Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> value
 {
   values = ((values.array().min)(limits.col(1).array()).max)(limits.col(0).array());
 }
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_KINEMATIC_LIMITS_H

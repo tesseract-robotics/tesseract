@@ -25,9 +25,9 @@
 #ifndef TESSERACT_SRDF_FWD_H
 #define TESSERACT_SRDF_FWD_H
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 class SRDFModel;
 struct KinematicsInformation;
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_FWD_H

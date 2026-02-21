@@ -29,12 +29,12 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
-tesseract_common::TransformMap
+tesseract::common::TransformMap
 ForwardKinematics::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  tesseract_common::TransformMap transforms;
+  tesseract::common::TransformMap transforms;
   calcFwdKin(transforms, joint_angles);
   return transforms;
 }  // LCOV_EXCL_LINE
@@ -46,4 +46,4 @@ Eigen::MatrixXd ForwardKinematics::calcJacobian(const Eigen::Ref<const Eigen::Ve
   calcJacobian(jacobian, joint_angles, link_name);
   return jacobian;
 }
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics

@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 class TrajectoryInterpolator;
 
@@ -51,7 +51,7 @@ public:
    * @brief Set the the trajectory for the trajectory player
    * @param program The trajectory to play
    */
-  void setTrajectory(const tesseract_common::JointTrajectory& trajectory);
+  void setTrajectory(const tesseract::common::JointTrajectory& trajectory);
 
   /**
    * @brief Set the scale factor for the play back of the trajectory
@@ -64,27 +64,27 @@ public:
    * @param index The input trajectory index for which to set the current time from
    * @return The trajectory state at the input trajectory index
    */
-  tesseract_common::JointState setCurrentDurationByIndex(long index);
+  tesseract::common::JointState setCurrentDurationByIndex(long index);
 
   /**
    * @brief Set the current time for the player by duration
    * @param duration The duration for which to set the current time from
    * @return The trajectory state at the provided duration
    */
-  tesseract_common::JointState setCurrentDuration(double duration);
+  tesseract::common::JointState setCurrentDuration(double duration);
 
   /**
    * @brief Get the next move instruction from the player
    * @return The move instruction at the next time interval
    */
-  tesseract_common::JointState getNext();
+  tesseract::common::JointState getNext();
 
   /**
    * @brief Get move instruction by index
    * @param index The index of the input program to extract the move instruction from
    * @return The move instruction at the input index
    */
-  tesseract_common::JointState getByIndex(long index) const;
+  tesseract::common::JointState getByIndex(long index) const;
 
   /**
    * @brief Get the current duration populated by the last call to getNext()
@@ -140,6 +140,6 @@ private:
   std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
 };
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 
 #endif  // TESSERACT_VISUALIZATION_TRAJECTORY_PLAYER_H

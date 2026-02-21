@@ -36,9 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
 
-using namespace tesseract_common;
-using namespace tesseract_scene_graph;
-using namespace tesseract_srdf;
+using namespace tesseract::common;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
 
 SceneGraph getSceneGraph()
 {
@@ -128,7 +128,7 @@ SceneGraph getSceneGraph()
   return g;
 }
 
-SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract_common::ResourceLocator& locator)
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::common::ResourceLocator& locator)
 {
   std::string path = locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath();
 
@@ -144,7 +144,7 @@ TEST(TesseractSRDFSerializeUnit, KinematicsInformation)  // NOLINT
   auto graph = getSceneGraph();
   auto srdf = getSRDFModel(graph, locator);
 
-  tesseract_common::testSerialization<KinematicsInformation>(srdf->kinematics_information, "KinematicsInformation");
+  tesseract::common::testSerialization<KinematicsInformation>(srdf->kinematics_information, "KinematicsInformation");
 }
 
 TEST(TesseractSRDFSerializeUnit, SRDFModel)  // NOLINT
@@ -153,7 +153,7 @@ TEST(TesseractSRDFSerializeUnit, SRDFModel)  // NOLINT
   auto graph = getSceneGraph();
   auto srdf = getSRDFModel(graph, locator);
 
-  tesseract_common::testSerialization<SRDFModel>(*srdf, "SRDFModel");
+  tesseract::common::testSerialization<SRDFModel>(*srdf, "SRDFModel");
 }
 
 int main(int argc, char** argv)

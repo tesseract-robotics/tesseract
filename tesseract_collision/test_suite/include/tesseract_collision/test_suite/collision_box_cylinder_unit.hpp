@@ -4,7 +4,7 @@
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision::test_suite
+namespace tesseract::collision::test_suite
 {
 namespace detail
 {
@@ -13,12 +13,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   //////////////////////
   // Add box to checker
   //////////////////////
-  CollisionShapePtr box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  CollisionShapePtr box = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  tesseract_common::VectorIsometry3d obj1_poses;
+  tesseract::common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -27,12 +27,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  CollisionShapePtr thin_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  CollisionShapePtr thin_box = std::make_shared<tesseract::geometry::Box>(0.1, 1, 1);
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
   CollisionShapesConst obj2_shapes;
-  tesseract_common::VectorIsometry3d obj2_poses;
+  tesseract::common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -42,12 +42,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   // Add cylinder to checker. If use_convex_mesh = true then this
   // cylinder will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
-  CollisionShapePtr cylinder = std::make_shared<tesseract_geometry::Cylinder>(0.25, 0.25);
+  CollisionShapePtr cylinder = std::make_shared<tesseract::geometry::Cylinder>(0.25, 0.25);
   Eigen::Isometry3d cylinder_pose;
   cylinder_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  tesseract_common::VectorIsometry3d obj3_poses;
+  tesseract::common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(cylinder);
   obj3_poses.push_back(cylinder_pose);
 
@@ -56,12 +56,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Add box and remove
   /////////////////////////////////////////////
-  CollisionShapePtr remove_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  CollisionShapePtr remove_box = std::make_shared<tesseract::geometry::Box>(0.1, 1, 1);
   Eigen::Isometry3d remove_box_pose;
   remove_box_pose.setIdentity();
 
   CollisionShapesConst obj4_shapes;
-  tesseract_common::VectorIsometry3d obj4_poses;
+  tesseract::common::VectorIsometry3d obj4_poses;
   obj4_shapes.push_back(remove_box);
   obj4_poses.push_back(remove_box_pose);
 
@@ -82,7 +82,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   // Try to add empty Collision Object
   /////////////////////////////////////////////
   EXPECT_FALSE(
-      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract_common::VectorIsometry3d()));
+      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract::common::VectorIsometry3d()));
 
   /////////////////////////////////////////////
   // Check sizes
@@ -114,7 +114,7 @@ inline void runTest(DiscreteContactManager& checker)
   std::vector<std::string> active_links{ "box_link", "cylinder_link" };
   checker.setActiveCollisionObjects(active_links);
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -122,7 +122,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["cylinder_link"] = Eigen::Isometry3d::Identity();
   location["cylinder_link"].translation()(0) = 0.2;
@@ -169,7 +169,7 @@ inline void runTest(DiscreteContactManager& checker)
 
   // Use different method for setting transforms
   std::vector<std::string> names = { "cylinder_link" };
-  tesseract_common::VectorIsometry3d transforms = { location["cylinder_link"] };
+  tesseract::common::VectorIsometry3d transforms = { location["cylinder_link"] };
   checker.setCollisionObjectsTransform(names, transforms);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenCopyResults(result_vector);
@@ -212,5 +212,5 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 }
-}  // namespace tesseract_collision::test_suite
+}  // namespace tesseract::collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_BOX_CYLINDER_UNIT_HPP

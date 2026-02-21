@@ -58,7 +58,7 @@ static const std::string AXES_MODEL_NAME = "tesseract_axes_model";
 static const std::string ARROW_MODEL_NAME = "tesseract_arrow_model";
 static const std::string TOOL_PATH_MODEL_NAME = "tesseract_tool_path_model";
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 TesseractIgnitionVisualization::TesseractIgnitionVisualization()
 {
@@ -259,7 +259,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
       long cnt = 0;
       for (size_t i = 0; i < m.dist_results.size(); ++i)
       {
-        const tesseract_collision::ContactResult& dist = m.dist_results[i];
+        const tesseract::collision::ContactResult& dist = m.dist_results[i];
         double safety_distance = m.margin_data.getPairCollisionMargin(dist.link_names[0], dist.link_names[1]);
 
         std::string link_name = model_name + std::to_string(++cnt);
@@ -281,7 +281,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
           base_material->color << 0.0, 1.0, 0.0, 1.0;
         }
 
-        if (dist.cc_type[0] == tesseract_collision::ContinuousCollisionType::CCType_Between)
+        if (dist.cc_type[0] == tesseract::collision::ContinuousCollisionType::CCType_Between)
         {
           ArrowMarker am(dist.transform[0] * dist.nearest_points_local[0],
                          dist.cc_transform[0] * dist.nearest_points_local[0]);
@@ -290,7 +290,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
           addArrow(entity_manager_, *link_msg, cnt, am);
         }
 
-        if (dist.cc_type[1] == tesseract_collision::ContinuousCollisionType::CCType_Between)
+        if (dist.cc_type[1] == tesseract::collision::ContinuousCollisionType::CCType_Between)
         {
           ArrowMarker am(dist.transform[1] * dist.nearest_points_local[1],
                          dist.cc_transform[1] * dist.nearest_points_local[1]);
@@ -601,7 +601,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
 //}
 
 TESSERACT_PLUGIN_ANCHOR_IMPL(IgnitionVisualizationAnchor)
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 
 TESSERACT_ADD_VISUALIZATION_PLUGIN(tesseract_visualization::TesseractIgnitionVisualization,
                                    TesseractIgnitionVisualizationPlugin)

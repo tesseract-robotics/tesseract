@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/fwd.h>
 #include <tesseract_common/eigen_types.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 /**
  * @brief Represents material information extracted from a mesh file
@@ -144,8 +144,8 @@ public:
    * @param texture_image Resource representing the texture image (jpg or png)
    * @param uvs UV coordinates for texture on mesh
    */
-  MeshTexture(std::shared_ptr<tesseract_common::Resource> texture_image,
-              std::shared_ptr<const tesseract_common::VectorVector2d> uvs);
+  MeshTexture(std::shared_ptr<tesseract::common::Resource> texture_image,
+              std::shared_ptr<const tesseract::common::VectorVector2d> uvs);
 
   /**
    * @brief Get the texture image
@@ -154,21 +154,21 @@ public:
    *
    * @return Resource to the texture image
    */
-  std::shared_ptr<tesseract_common::Resource> getTextureImage() const;
+  std::shared_ptr<tesseract::common::Resource> getTextureImage() const;
 
   /**
    * @brief Get the texture UV coordinates
    *
    * @return UV coordinate vector
    */
-  const std::shared_ptr<const tesseract_common::VectorVector2d>& getUVs();
+  const std::shared_ptr<const tesseract::common::VectorVector2d>& getUVs();
 
 private:
-  std::shared_ptr<const tesseract_common::VectorVector2d> uvs_;
+  std::shared_ptr<const tesseract::common::VectorVector2d> uvs_;
 
   // texture_image shall be jpg or png
-  std::shared_ptr<tesseract_common::Resource> texture_image_;
+  std::shared_ptr<tesseract::common::Resource> texture_image_;
 };
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif

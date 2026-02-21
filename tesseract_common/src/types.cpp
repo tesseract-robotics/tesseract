@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
 {
@@ -50,12 +50,12 @@ void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, con
   }
 }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 namespace std
 {
 std::size_t
-hash<tesseract_common::LinkNamesPair>::operator()(const tesseract_common::LinkNamesPair& pair) const noexcept
+hash<tesseract::common::LinkNamesPair>::operator()(const tesseract::common::LinkNamesPair& pair) const noexcept
 {
   std::size_t seed{ 0 };
   boost::hash_combine(seed, pair.first);

@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view CONE_ELEMENT_NAME = "tesseract:cone";
 
@@ -47,11 +47,11 @@ static constexpr std::string_view CONE_ELEMENT_NAME = "tesseract:cone";
  * @param xml_element The xml element
  * @return Tesseract Geometry Cone
  */
-std::shared_ptr<tesseract_geometry::Cone> parseCone(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::geometry::Cone> parseCone(const tinyxml2::XMLElement* xml_element);
 
-tinyxml2::XMLElement* writeCone(const std::shared_ptr<const tesseract_geometry::Cone>& cone,
+tinyxml2::XMLElement* writeCone(const std::shared_ptr<const tesseract::geometry::Cone>& cone,
                                 tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_CONE_H

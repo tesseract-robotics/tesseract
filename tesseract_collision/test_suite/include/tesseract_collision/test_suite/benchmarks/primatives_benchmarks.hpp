@@ -11,7 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <Eigen/Eigen>
 
-namespace tesseract_collision::test_suite
+namespace tesseract::collision::test_suite
 {
 /**
  * @brief Contains the information necessary to run the benchmarks for discrete collision checking
@@ -19,9 +19,9 @@ namespace tesseract_collision::test_suite
 struct DiscreteBenchmarkInfo
 {
   DiscreteBenchmarkInfo(const DiscreteContactManager::ConstPtr& contact_manager,
-                        const tesseract_geometry::Geometry::ConstPtr& geom1,
+                        const tesseract::geometry::Geometry::ConstPtr& geom1,
                         const Eigen::Isometry3d& pose1,
-                        const tesseract_geometry::Geometry::ConstPtr& geom2,
+                        const tesseract::geometry::Geometry::ConstPtr& geom2,
                         const Eigen::Isometry3d& pose2,
                         ContactTestType contact_test_type)
     : contact_test_type_(contact_test_type)
@@ -35,9 +35,9 @@ struct DiscreteBenchmarkInfo
   }
   DiscreteContactManager::Ptr contact_manager_;
   CollisionShapesConst geom1_;
-  tesseract_common::VectorIsometry3d obj1_poses;
+  tesseract::common::VectorIsometry3d obj1_poses;
   CollisionShapesConst geom2_;
-  tesseract_common::VectorIsometry3d obj2_poses;
+  tesseract::common::VectorIsometry3d obj2_poses;
   ContactTestType contact_test_type_;
 };
 
@@ -117,7 +117,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state,
 }
 
 /** @brief Benchmark that checks the setCollisionObjectsTransform(const std::vector<std::string>& names, const
-   tesseract_common::VectorIsometry3d& poses) method in discrete contact managers. Moves only a single random link*/
+   tesseract::common::VectorIsometry3d& poses) method in discrete contact managers. Moves only a single random link*/
 static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
                                                       DiscreteBenchmarkInfo info,  // NOLINT
                                                       std::size_t num_obj)
@@ -144,7 +144,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
   }
 }
 
-/** @brief Benchmark that checks the setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
+/** @brief Benchmark that checks the setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
  * method in discrete contact managers. Moves only a single random link*/
 static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
                                                    DiscreteBenchmarkInfo info,
@@ -161,7 +161,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
   info.contact_manager_->setActiveCollisionObjects(active_obj);
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
-  tesseract_common::TransformMap selected_link;
+  tesseract::common::TransformMap selected_link;
   for (auto _ : state)  // NOLINT
   {
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
@@ -172,6 +172,6 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
   }
 }
 
-}  // namespace tesseract_collision::test_suite
+}  // namespace tesseract::collision::test_suite
 
 #endif

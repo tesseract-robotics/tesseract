@@ -8,41 +8,41 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 
-using namespace tesseract_collision;
+using namespace tesseract::collision;
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteSimpleCollisionMultiThreadedConvexHullUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
+  BulletDiscreteSimpleManager checker;
   test_suite::runTest(checker, true);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteSimpleCollisionMultiThreadedUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
+  BulletDiscreteSimpleManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreadedConvexHullUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
+  BulletDiscreteBVHManager checker;
   test_suite::runTest(checker, true);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreadedUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
+  BulletDiscreteBVHManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedConvexHullUnit)  // NOLINT
 {
-  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  FCLDiscreteBVHManager checker;
   test_suite::runTest(checker, true);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedUnit)  // NOLINT
 {
-  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  FCLDiscreteBVHManager checker;
   test_suite::runTest(checker);
 }
 

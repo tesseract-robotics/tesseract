@@ -60,7 +60,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 extern btScalar gContactBreakingThreshold;  // NOLINT
 
 // LCOV_EXCL_START
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision::bullet_internal
 {
 static SIMD_FORCE_INLINE void segmentsClosestPoints(btVector3& ptsVector,
                                                     btVector3& offsetA,
@@ -943,5 +943,5 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 
   return resultFraction;
 }
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision::bullet_internal
 // LCOV_EXCL_STOP

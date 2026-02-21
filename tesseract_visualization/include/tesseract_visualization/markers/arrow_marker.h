@@ -4,7 +4,7 @@
 #include <tesseract_visualization/markers/marker.h>
 #include <tesseract_scene_graph/link.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 /**
  * @brief An arrow marker
@@ -59,8 +59,8 @@ public:
   Eigen::Isometry3d pose{ Eigen::Isometry3d::Identity() };
 
   /** @brief The material information for the marker */
-  tesseract_scene_graph::Material::Ptr material;
+  tesseract::scene_graph::Material::Ptr material;
 };
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 #endif  // TESSERACT_VISUALIZATION_MARKERS_ARROW_MARKER_H

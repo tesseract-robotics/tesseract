@@ -55,7 +55,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometries.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision::bullet_internal
 {
 btVector3 convertEigenToBt(const Eigen::Vector3d& v)
 {
@@ -108,7 +108,7 @@ Eigen::Isometry3d convertBtToEigen(const btTransform& t)
   return i;
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::Box::ConstPtr& geom)
 {
   auto a = static_cast<btScalar>(geom->getX() / 2);
   auto b = static_cast<btScalar>(geom->getY() / 2);
@@ -117,38 +117,38 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
   return std::make_shared<BulletCollisionShape>(std::make_shared<btBoxShape>(btVector3(a, b, c)));
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Sphere::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::Sphere::ConstPtr& geom)
 {
   return std::make_shared<BulletCollisionShape>(
       std::make_shared<btSphereShape>(static_cast<btScalar>(geom->getRadius())));
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::Cylinder::ConstPtr& geom)
 {
   auto radius = static_cast<btScalar>(geom->getRadius());
   auto length = static_cast<btScalar>(geom->getLength() / 2);
   return std::make_shared<BulletCollisionShape>(std::make_shared<btCylinderShapeZ>(btVector3(radius, radius, length)));
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::Cone::ConstPtr& geom)
 {
   auto radius = static_cast<btScalar>(geom->getRadius());
   auto length = static_cast<btScalar>(geom->getLength());
   return std::make_shared<BulletCollisionShape>(std::make_shared<btConeShapeZ>(radius, length));
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::Capsule::ConstPtr& geom)
 {
   auto radius = static_cast<btScalar>(geom->getRadius());
   auto length = static_cast<btScalar>(geom->getLength());
   return std::make_shared<BulletCollisionShape>(std::make_shared<btCapsuleShapeZ>(radius, length));
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::Mesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
-  const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
+  const tesseract::common::VectorVector3d& vertices = *(geom->getVertices());
   const Eigen::VectorXi& triangles = *(geom->getFaces());
 
   auto collision_shape = std::make_shared<BulletCollisionShape>();
@@ -189,11 +189,11 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
   return nullptr;
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::ConvexMesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVertexCount();
   int triangle_count = geom->getFaceCount();
-  const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
+  const tesseract::common::VectorVector3d& vertices = *(geom->getVertices());
 
   if (vertice_count > 0 && triangle_count > 0)
   {
@@ -208,7 +208,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
   return nullptr;
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::Octree::ConstPtr& geom)
 {
   const octomap::OcTree& octree = *(geom->getOctree());
   double occupancy_threshold = octree.getOccupancyThres();
@@ -218,7 +218,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
   managed_shapes.resize(octree.getTreeDepth() + 1);
   switch (geom->getSubType())
   {
-    case tesseract_geometry::OctreeSubType::BOX:
+    case tesseract::geometry::OctreeSubType::BOX:
     {
       for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
@@ -255,7 +255,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
 
       return collision_shape;
     }
-    case tesseract_geometry::OctreeSubType::SPHERE_INSIDE:
+    case tesseract::geometry::OctreeSubType::SPHERE_INSIDE:
     {
       for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
@@ -291,7 +291,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
 
       return collision_shape;
     }
-    case tesseract_geometry::OctreeSubType::SPHERE_OUTSIDE:
+    case tesseract::geometry::OctreeSubType::SPHERE_OUTSIDE:
     {
       for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
@@ -335,7 +335,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geome
   return nullptr;
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract_geometry::CompoundMesh::ConstPtr& geom)
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::CompoundMesh::ConstPtr& geom)
 {
   const auto& meshes = geom->getMeshes();
   auto compound_mesh =
@@ -369,57 +369,57 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
 
   switch (geom->getType())
   {
-    case tesseract_geometry::GeometryType::BOX:
+    case tesseract::geometry::GeometryType::BOX:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Box>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Box>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
-    case tesseract_geometry::GeometryType::SPHERE:
+    case tesseract::geometry::GeometryType::SPHERE:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Sphere>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Sphere>(geom));
       // Sphere is a special case where you do not modify the margin which is internally set to the radius
       break;
     }
-    case tesseract_geometry::GeometryType::CYLINDER:
+    case tesseract::geometry::GeometryType::CYLINDER:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Cylinder>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
-    case tesseract_geometry::GeometryType::CONE:
+    case tesseract::geometry::GeometryType::CONE:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Cone>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
-    case tesseract_geometry::GeometryType::CAPSULE:
+    case tesseract::geometry::GeometryType::CAPSULE:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Capsule>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Capsule>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
-    case tesseract_geometry::GeometryType::MESH:
+    case tesseract::geometry::GeometryType::MESH:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Mesh>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
-    case tesseract_geometry::GeometryType::CONVEX_MESH:
+    case tesseract::geometry::GeometryType::CONVEX_MESH:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::ConvexMesh>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
-    case tesseract_geometry::GeometryType::OCTREE:
+    case tesseract::geometry::GeometryType::OCTREE:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Octree>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
-    case tesseract_geometry::GeometryType::COMPOUND_MESH:
+    case tesseract::geometry::GeometryType::COMPOUND_MESH:
     {
-      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::CompoundMesh>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::CompoundMesh>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
@@ -459,7 +459,7 @@ void updateCollisionObjectFilters(const std::vector<std::string>& active, const 
 CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
-                                               tesseract_common::VectorIsometry3d shape_poses)
+                                               tesseract::common::VectorIsometry3d shape_poses)
   : m_name(std::move(name)), m_type_id(type_id), m_shapes(std::move(shapes)), m_shape_poses(std::move(shape_poses))
 {
   assert(!m_shapes.empty());
@@ -520,7 +520,7 @@ bool CollisionObjectWrapper::sameObject(const CollisionObjectWrapper& other) con
 
 const CollisionShapesConst& CollisionObjectWrapper::getCollisionGeometries() const { return m_shapes; }
 
-const tesseract_common::VectorIsometry3d& CollisionObjectWrapper::getCollisionGeometriesTransforms() const
+const tesseract::common::VectorIsometry3d& CollisionObjectWrapper::getCollisionGeometriesTransforms() const
 {
   return m_shape_poses;
 }
@@ -697,7 +697,7 @@ btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow)
 
 bool needsCollisionCheck(const COW& cow1,
                          const COW& cow2,
-                         const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                          bool verbose)
 {
   return cow1.m_enabled && cow2.m_enabled && (cow2.m_collisionFilterGroup & cow1.m_collisionFilterMask) &&  // NOLINT
@@ -717,8 +717,8 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair key;
-  tesseract_common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
+  tesseract::common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
 
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
@@ -858,8 +858,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  TESSERACT_THREAD_LOCAL tesseract_common::LinkNamesPair key;
-  tesseract_common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
+  tesseract::common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
 
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
@@ -1168,7 +1168,7 @@ bool TesseractOverlapFilterCallback::needBroadphaseCollision(btBroadphaseProxy* 
 COW::Ptr createCollisionObject(const std::string& name,
                                const int& type_id,
                                const CollisionShapesConst& shapes,
-                               const tesseract_common::VectorIsometry3d& shape_poses,
+                               const tesseract::common::VectorIsometry3d& shape_poses,
                                bool enabled)
 {
   // dont add object that does not have geometry
@@ -1434,4 +1434,4 @@ void refreshBroadphaseProxy(const COW::Ptr& cow,
                                                      dispatcher.get()));
   }
 }
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision::bullet_internal

@@ -47,7 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/fwd.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 class Link;
 class Joint;
@@ -315,11 +315,11 @@ private:
   std::string name_;
 
   template <class Archive>
-  friend void ::tesseract_scene_graph::serialize(Archive& ar, Joint& obj);
+  friend void ::tesseract::scene_graph::serialize(Archive& ar, Joint& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const JointType& type);
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_JOINT_H

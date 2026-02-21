@@ -12,9 +12,9 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
 {
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="1" offset="2" extra="0 0 0"/>)";
-    tesseract_scene_graph::JointMimic::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(
-        elem, &tesseract_urdf::parseMimic, str, tesseract_urdf::MIMIC_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointMimic::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointMimic::Ptr>(
+        elem, &tesseract::urdf::parseMimic, str, tesseract::urdf::MIMIC_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 2, 1e-8);
@@ -22,9 +22,9 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
 
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="1"/>)";
-    tesseract_scene_graph::JointMimic::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(
-        elem, &tesseract_urdf::parseMimic, str, tesseract_urdf::MIMIC_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointMimic::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointMimic::Ptr>(
+        elem, &tesseract::urdf::parseMimic, str, tesseract::urdf::MIMIC_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 0, 1e-8);
@@ -32,9 +32,9 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
 
   {
     std::string str = R"(<mimic joint="joint_1" offset="2"/>)";
-    tesseract_scene_graph::JointMimic::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(
-        elem, &tesseract_urdf::parseMimic, str, tesseract_urdf::MIMIC_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointMimic::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointMimic::Ptr>(
+        elem, &tesseract::urdf::parseMimic, str, tesseract::urdf::MIMIC_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 2, 1e-8);
@@ -42,9 +42,9 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
 
   {
     std::string str = R"(<mimic joint="joint_1"/>)";
-    tesseract_scene_graph::JointMimic::Ptr elem;
-    EXPECT_TRUE(runTest<tesseract_scene_graph::JointMimic::Ptr>(
-        elem, &tesseract_urdf::parseMimic, str, tesseract_urdf::MIMIC_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointMimic::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointMimic::Ptr>(
+        elem, &tesseract::urdf::parseMimic, str, tesseract::urdf::MIMIC_ELEMENT_NAME.data()));
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 0, 1e-8);
@@ -52,39 +52,39 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
 
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="a" offset="2"/>)";
-    tesseract_scene_graph::JointMimic::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointMimic::Ptr>(
-        elem, &tesseract_urdf::parseMimic, str, tesseract_urdf::MIMIC_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointMimic::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointMimic::Ptr>(
+        elem, &tesseract::urdf::parseMimic, str, tesseract::urdf::MIMIC_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = R"(<mimic joint="joint_1" multiplier="1" offset="a"/>)";
-    tesseract_scene_graph::JointMimic::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointMimic::Ptr>(
-        elem, &tesseract_urdf::parseMimic, str, tesseract_urdf::MIMIC_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointMimic::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointMimic::Ptr>(
+        elem, &tesseract::urdf::parseMimic, str, tesseract::urdf::MIMIC_ELEMENT_NAME.data()));
   }
 
   {
     std::string str = "<mimic />";
-    tesseract_scene_graph::JointMimic::Ptr elem;
-    EXPECT_FALSE(runTest<tesseract_scene_graph::JointMimic::Ptr>(
-        elem, &tesseract_urdf::parseMimic, str, tesseract_urdf::MIMIC_ELEMENT_NAME.data()));
+    tesseract::scene_graph::JointMimic::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointMimic::Ptr>(
+        elem, &tesseract::urdf::parseMimic, str, tesseract::urdf::MIMIC_ELEMENT_NAME.data()));
   }
 }
 
 TEST(TesseractURDFUnit, write_mimic)  // NOLINT
 {
   {
-    tesseract_scene_graph::JointMimic::Ptr mimic = std::make_shared<tesseract_scene_graph::JointMimic>();
+    tesseract::scene_graph::JointMimic::Ptr mimic = std::make_shared<tesseract::scene_graph::JointMimic>();
     std::string text;
-    EXPECT_EQ(0, writeTest<tesseract_scene_graph::JointMimic::Ptr>(mimic, &tesseract_urdf::writeMimic, text));
+    EXPECT_EQ(0, writeTest<tesseract::scene_graph::JointMimic::Ptr>(mimic, &tesseract::urdf::writeMimic, text));
     EXPECT_NE(text, "");
   }
 
   {
-    tesseract_scene_graph::JointMimic::Ptr mimic = nullptr;
+    tesseract::scene_graph::JointMimic::Ptr mimic = nullptr;
     std::string text;
-    EXPECT_EQ(1, writeTest<tesseract_scene_graph::JointMimic::Ptr>(mimic, &tesseract_urdf::writeMimic, text));
+    EXPECT_EQ(1, writeTest<tesseract::scene_graph::JointMimic::Ptr>(mimic, &tesseract::urdf::writeMimic, text));
     EXPECT_EQ(text, "");
   }
 }

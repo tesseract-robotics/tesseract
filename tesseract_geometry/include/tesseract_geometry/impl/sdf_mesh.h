@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/polygon_mesh.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 class SDFMesh : public PolygonMesh
 {
@@ -58,12 +58,12 @@ public:
    * @param mesh_material A MeshMaterial describing the color and material properties of the mesh (optional)
    * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
-  SDFMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+  SDFMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
           std::shared_ptr<const Eigen::VectorXi> triangles,
-          std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
+          std::shared_ptr<const tesseract::common::Resource> resource = nullptr,
           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-          std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-          std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+          std::shared_ptr<const tesseract::common::VectorVector3d> normals = nullptr,
+          std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors = nullptr,
           std::shared_ptr<MeshMaterial> mesh_material = nullptr,
           std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
 
@@ -82,13 +82,13 @@ public:
    * @param mesh_material A MeshMaterial describing the color and material properties of the mesh (optional)
    * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
-  SDFMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+  SDFMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
           std::shared_ptr<const Eigen::VectorXi> triangles,
           int triangle_count,
-          std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
+          std::shared_ptr<const tesseract::common::Resource> resource = nullptr,
           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-          std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-          std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+          std::shared_ptr<const tesseract::common::VectorVector3d> normals = nullptr,
+          std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors = nullptr,
           std::shared_ptr<MeshMaterial> mesh_material = nullptr,
           std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
   SDFMesh() = default;
@@ -99,6 +99,6 @@ public:
   bool operator==(const SDFMesh& rhs) const;
   bool operator!=(const SDFMesh& rhs) const;
 };
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif

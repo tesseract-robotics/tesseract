@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ChangeLinkOriginCommand::ChangeLinkOriginCommand() : Command(CommandType::CHANGE_LINK_ORIGIN) {}
 
@@ -49,4 +49,4 @@ bool ChangeLinkOriginCommand::operator==(const ChangeLinkOriginCommand& rhs) con
 }
 bool ChangeLinkOriginCommand::operator!=(const ChangeLinkOriginCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

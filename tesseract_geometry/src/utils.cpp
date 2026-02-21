@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_geometry/conversions.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 bool isIdentical(const Geometry& geom1, const Geometry& geom2)
 {
@@ -252,52 +252,52 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
   return true;
 }
 
-tesseract_common::VectorVector3d extractVertices(const Geometry& geom, const Eigen::Isometry3d& origin)
+tesseract::common::VectorVector3d extractVertices(const Geometry& geom, const Eigen::Isometry3d& origin)
 {
-  tesseract_common::VectorVector3d vertices;
+  tesseract::common::VectorVector3d vertices;
   switch (geom.getType())
   {
-    case tesseract_geometry::GeometryType::BOX:
-    case tesseract_geometry::GeometryType::SPHERE:
-    case tesseract_geometry::GeometryType::CYLINDER:
-    case tesseract_geometry::GeometryType::CONE:
-    case tesseract_geometry::GeometryType::CAPSULE:
-    case tesseract_geometry::GeometryType::PLANE:
+    case tesseract::geometry::GeometryType::BOX:
+    case tesseract::geometry::GeometryType::SPHERE:
+    case tesseract::geometry::GeometryType::CYLINDER:
+    case tesseract::geometry::GeometryType::CONE:
+    case tesseract::geometry::GeometryType::CAPSULE:
+    case tesseract::geometry::GeometryType::PLANE:
     {
-      std::unique_ptr<tesseract_geometry::Mesh> mesh = tesseract_geometry::toTriangleMesh(geom, 0.002, origin);
+      std::unique_ptr<tesseract::geometry::Mesh> mesh = tesseract::geometry::toTriangleMesh(geom, 0.002, origin);
       return { mesh->getVertices()->begin(), mesh->getVertices()->end() };
     }
-    case tesseract_geometry::GeometryType::MESH:
+    case tesseract::geometry::GeometryType::MESH:
     {
-      const auto& mesh = static_cast<const tesseract_geometry::Mesh&>(geom);
+      const auto& mesh = static_cast<const tesseract::geometry::Mesh&>(geom);
       for (const auto& v : *mesh.getVertices())
         vertices.emplace_back(origin * v);
       return vertices;
     }
-    case tesseract_geometry::GeometryType::CONVEX_MESH:
+    case tesseract::geometry::GeometryType::CONVEX_MESH:
     {
-      const auto& convex_mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geom);
+      const auto& convex_mesh = static_cast<const tesseract::geometry::ConvexMesh&>(geom);
       for (const auto& v : *convex_mesh.getVertices())
         vertices.emplace_back(origin * v);
       return vertices;
     }
-    case tesseract_geometry::GeometryType::SDF_MESH:
+    case tesseract::geometry::GeometryType::SDF_MESH:
     {
-      const auto& sdf_mesh = static_cast<const tesseract_geometry::SDFMesh&>(geom);
+      const auto& sdf_mesh = static_cast<const tesseract::geometry::SDFMesh&>(geom);
       for (const auto& v : *sdf_mesh.getVertices())
         vertices.emplace_back(origin * v);
       return vertices;
     }
-    case tesseract_geometry::GeometryType::POLYGON_MESH:
+    case tesseract::geometry::GeometryType::POLYGON_MESH:
     {
-      const auto& polygon_mesh = static_cast<const tesseract_geometry::PolygonMesh&>(geom);
+      const auto& polygon_mesh = static_cast<const tesseract::geometry::PolygonMesh&>(geom);
       for (const auto& v : *polygon_mesh.getVertices())
         vertices.emplace_back(origin * v);
       return vertices;
     }
-    case tesseract_geometry::GeometryType::COMPOUND_MESH:
+    case tesseract::geometry::GeometryType::COMPOUND_MESH:
     {
-      const auto& compound_mesh = static_cast<const tesseract_geometry::CompoundMesh&>(geom);
+      const auto& compound_mesh = static_cast<const tesseract::geometry::CompoundMesh&>(geom);
       for (const auto& mesh : compound_mesh.getMeshes())
       {
         for (const auto& v : *mesh->getVertices())
@@ -305,7 +305,7 @@ tesseract_common::VectorVector3d extractVertices(const Geometry& geom, const Eig
       }
       return vertices;
     }
-    case tesseract_geometry::GeometryType::OCTREE:
+    case tesseract::geometry::GeometryType::OCTREE:
     default:
     {
       const std::string type_str = std::to_string(static_cast<int>(geom.getType()));
@@ -316,4 +316,4 @@ tesseract_common::VectorVector3d extractVertices(const Geometry& geom, const Eig
   }
 }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

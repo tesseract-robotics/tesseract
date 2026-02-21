@@ -33,8 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <opw_kinematics/opw_parameters.h>
 #include <tesseract_kinematics/core/kinematic_group.h>
 
-using namespace tesseract_kinematics::test_suite;
-using namespace tesseract_kinematics;
+using namespace tesseract::kinematics::test_suite;
+using namespace tesseract::kinematics;
 
 inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB()
 {
@@ -64,7 +64,7 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
   // Setup test
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphABB(locator);
   std::string manip_name = "manip";
   std::string base_link_name = "base_link";
@@ -113,7 +113,7 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(6);
 
   // Setup test
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphABB(locator);
   std::string manip_name = "manip";
   std::string base_link_name = "base_link";
@@ -127,8 +127,8 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
 
   auto inv_kin = std::make_unique<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_names);
 
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   // Check Inverse Kinematics
   KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);

@@ -26,9 +26,9 @@
 
 #include <tesseract_visualization/trajectory_interpolator.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
-TrajectoryInterpolator::TrajectoryInterpolator(tesseract_common::JointTrajectory trajectory)
+TrajectoryInterpolator::TrajectoryInterpolator(tesseract::common::JointTrajectory trajectory)
   : trajectory_(std::move(trajectory))
 {
   double last_time = 0;
@@ -96,7 +96,7 @@ void TrajectoryInterpolator::findStateIndices(const double& duration, long& befo
     blend = (duration - before_time) / duration_from_previous_[index];
 }
 
-tesseract_common::JointState TrajectoryInterpolator::getState(double request_duration) const
+tesseract::common::JointState TrajectoryInterpolator::getState(double request_duration) const
 {
   // If there are no waypoints we can't do anything
   if (trajectory_.empty())
@@ -118,8 +118,8 @@ tesseract_common::JointState TrajectoryInterpolator::getState(double request_dur
 
   if (before >= 0 && after > 0)
   {
-    const tesseract_common::JointState& swp0 = trajectory_[static_cast<std::size_t>(before)];
-    const tesseract_common::JointState& swp1 = trajectory_[static_cast<std::size_t>(after)];
+    const tesseract::common::JointState& swp0 = trajectory_[static_cast<std::size_t>(before)];
+    const tesseract::common::JointState& swp1 = trajectory_[static_cast<std::size_t>(after)];
     return interpolate(swp0, swp1, blend);
   }
 
@@ -140,15 +140,15 @@ double TrajectoryInterpolator::getStateDuration(long index) const
 
 long TrajectoryInterpolator::getStateCount() const { return static_cast<long>(trajectory_.size()); }
 
-tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract_common::JointState& start,
-                                                                 const tesseract_common::JointState& end,
-                                                                 double f)
+tesseract::common::JointState TrajectoryInterpolator::interpolate(const tesseract::common::JointState& start,
+                                                                  const tesseract::common::JointState& end,
+                                                                  double f)
 {
   assert(!start.joint_names.empty());
   assert(!end.joint_names.empty());
   assert(start.position.rows() != 0);
   assert(end.position.rows() != 0);
-  tesseract_common::JointState out;
+  tesseract::common::JointState out;
   out.time = start.time + (end.time - start.time) * f;
   out.joint_names = start.joint_names;
   out.position.resize(static_cast<long>(out.joint_names.size()));
@@ -161,4 +161,4 @@ tesseract_common::JointState TrajectoryInterpolator::interpolate(const tesseract
 
 bool TrajectoryInterpolator::empty() const { return trajectory_.empty(); }
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization

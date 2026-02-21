@@ -13,7 +13,7 @@
 #define TESSERACT_CEREAL_SANITIZE_DENORMALS 1
 #endif
 
-namespace tesseract_common::serialization
+namespace tesseract::common::serialization
 {
 // -------- helpers --------
 namespace detail
@@ -175,6 +175,6 @@ inline array_wrapper<const T> make_array(const T* ptr, Size count)
   return array_wrapper<const T>(ptr, static_cast<std::size_t>(count));
 }
 
-}  // namespace tesseract_common::serialization
+}  // namespace tesseract::common::serialization
 
 #endif  // TESSERACT_COMMON_CEREAL_MAKE_ARRAY_H

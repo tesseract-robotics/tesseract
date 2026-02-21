@@ -8,7 +8,7 @@
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/ply_io.h>
 
-namespace tesseract_collision::test_suite
+namespace tesseract::collision::test_suite
 {
 namespace detail
 {
@@ -17,12 +17,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   //////////////////////
   // Add box to checker
   //////////////////////
-  CollisionShapePtr box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  CollisionShapePtr box = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  tesseract_common::VectorIsometry3d obj1_poses;
+  tesseract::common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -32,12 +32,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  CollisionShapePtr thin_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  CollisionShapePtr thin_box = std::make_shared<tesseract::geometry::Box>(0.1, 1, 1);
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
   CollisionShapesConst obj2_shapes;
-  tesseract_common::VectorIsometry3d obj2_poses;
+  tesseract::common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -52,29 +52,29 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
 
   if (use_convex_mesh)
   {
-    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_vertices = std::make_shared<tesseract::common::VectorVector3d>();
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
-    tesseract_common::GeneralResourceLocator locator;
-    EXPECT_GT(tesseract_common::loadSimplePlyFile(
+    tesseract::common::GeneralResourceLocator locator;
+    EXPECT_GT(tesseract::common::loadSimplePlyFile(
                   locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
                   *mesh_vertices,
                   *mesh_faces,
                   true),
               0);
 
-    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    auto mesh = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
     sphere = makeConvexMesh(*mesh);
   }
   else
   {
-    sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
+    sphere = std::make_shared<tesseract::geometry::Sphere>(0.25);
   }
 
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  tesseract_common::VectorIsometry3d obj3_poses;
+  tesseract::common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(sphere);
   obj3_poses.push_back(sphere_pose);
 
@@ -83,12 +83,12 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   /////////////////////////////////////////////
   // Add box and remove
   /////////////////////////////////////////////
-  CollisionShapePtr remove_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  CollisionShapePtr remove_box = std::make_shared<tesseract::geometry::Box>(0.1, 1, 1);
   Eigen::Isometry3d remove_box_pose;
   remove_box_pose.setIdentity();
 
   CollisionShapesConst obj4_shapes;
-  tesseract_common::VectorIsometry3d obj4_poses;
+  tesseract::common::VectorIsometry3d obj4_poses;
   obj4_shapes.push_back(remove_box);
   obj4_poses.push_back(remove_box_pose);
 
@@ -109,7 +109,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   // Try to add empty Collision Object
   /////////////////////////////////////////////
   EXPECT_FALSE(
-      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract_common::VectorIsometry3d()));
+      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract::common::VectorIsometry3d()));
 
   /////////////////////////////////////////////
   // Check sizes
@@ -134,7 +134,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   std::vector<std::string> active_links{ "box_link", "sphere_link" };
   checker.setActiveCollisionObjects(active_links);
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -142,7 +142,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;
@@ -247,7 +247,7 @@ inline void runTestConvex(DiscreteContactManager& checker)
   std::vector<std::string> active_links{ "box_link", "sphere_link" };
   checker.setActiveCollisionObjects(active_links);
   std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -255,7 +255,7 @@ inline void runTestConvex(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract_common::TransformMap location;
+  tesseract::common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;
@@ -356,5 +356,5 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
     detail::runTestPrimitive(checker);
 }
 
-}  // namespace tesseract_collision::test_suite
+}  // namespace tesseract::collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_BOX_SPHERE_UNIT_HPP

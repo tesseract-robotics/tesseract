@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ChangeJointPositionLimitsCommand::ChangeJointPositionLimitsCommand()
   : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS){};
@@ -53,13 +53,13 @@ const std::unordered_map<std::string, std::pair<double, double>>& ChangeJointPos
 bool ChangeJointPositionLimitsCommand::operator==(const ChangeJointPositionLimitsCommand& rhs) const
 {
   auto fn = [](const std::pair<double, double>& p1, const std::pair<double, double>& p2) {
-    return tesseract_common::almostEqualRelativeAndAbs(p1.first, p2.first) &&
-           tesseract_common::almostEqualRelativeAndAbs(p1.second, p2.second);
+    return tesseract::common::almostEqualRelativeAndAbs(p1.first, p2.first) &&
+           tesseract::common::almostEqualRelativeAndAbs(p1.second, p2.second);
   };
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract_common::isIdenticalMap<std::unordered_map<std::string, std::pair<double, double>>,
-                                            std::pair<double, double>>(limits_, rhs.limits_, fn);
+  equal &= tesseract::common::isIdenticalMap<std::unordered_map<std::string, std::pair<double, double>>,
+                                             std::pair<double, double>>(limits_, rhs.limits_, fn);
   return equal;
 }
 bool ChangeJointPositionLimitsCommand::operator!=(const ChangeJointPositionLimitsCommand& rhs) const
@@ -67,4 +67,4 @@ bool ChangeJointPositionLimitsCommand::operator!=(const ChangeJointPositionLimit
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

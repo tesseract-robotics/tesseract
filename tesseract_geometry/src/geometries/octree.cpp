@@ -28,7 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/octree.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 Octree::Octree(std::shared_ptr<const octomap::OcTree> octree, OctreeSubType sub_type, bool pruned, bool binary_octree)
   : Geometry(GeometryType::OCTREE)
@@ -150,7 +150,7 @@ void Octree::prune(octomap::OcTree& octree)
 
 bool Octree::operator==(const Octree& rhs) const
 {
-  using namespace tesseract_common;
+  using namespace tesseract::common;
 
   bool equal = true;
   equal &= Geometry::operator==(rhs);
@@ -184,4 +184,4 @@ bool Octree::operator==(const Octree& rhs) const
 }
 bool Octree::operator!=(const Octree& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

@@ -31,7 +31,7 @@ Changelog for package tesseract_environment
 
 0.31.0 (2025-07-05)
 -------------------
-* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Make sure serialized objects have friend struct tesseract::common::Serialization
 * Contributors: Levi Armstrong
 
 0.30.0 (2025-04-23)

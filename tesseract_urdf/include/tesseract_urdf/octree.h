@@ -39,7 +39,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view OCTREE_ELEMENT_NAME = "tesseract:octree";
 
@@ -51,10 +51,10 @@ static constexpr std::string_view OCTREE_ELEMENT_NAME = "tesseract:octree";
  * @param prune Indicate if the octree should be pruned
  * @return A Tesseract Geometry Octree
  */
-std::shared_ptr<tesseract_geometry::Octree> parseOctree(const tinyxml2::XMLElement* xml_element,
-                                                        const tesseract_common::ResourceLocator& locator,
-                                                        tesseract_geometry::OctreeSubType shape_type,
-                                                        bool prune);
+std::shared_ptr<tesseract::geometry::Octree> parseOctree(const tinyxml2::XMLElement* xml_element,
+                                                         const tesseract::common::ResourceLocator& locator,
+                                                         tesseract::geometry::OctreeSubType shape_type,
+                                                         bool prune);
 
 /**
  * @brief writeOctree Write octree out to file, and generate appropriate xml
@@ -65,11 +65,11 @@ std::shared_ptr<tesseract_geometry::Octree> parseOctree(const tinyxml2::XMLEleme
  * @param filename Desired filename relative to the working directory ("octree.ot" or "collision/octree.ot")
  * @return An XML element containing information on the saved file.
  */
-tinyxml2::XMLElement* writeOctree(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
+tinyxml2::XMLElement* writeOctree(const std::shared_ptr<const tesseract::geometry::Octree>& octree,
                                   tinyxml2::XMLDocument& doc,
                                   const std::string& package_path,
                                   const std::string& filename);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_OCTREE_H

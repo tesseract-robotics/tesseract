@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/calibration_info.h>
 
 /// Main namespace
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 /** @brief Representation of semantic information about the robot */
 class SRDFModel
@@ -64,17 +64,17 @@ public:
    * @brief Load Model given a filename
    * @throws std::nested_exception if an error occurs during parsing srdf
    */
-  void initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
+  void initFile(const tesseract::scene_graph::SceneGraph& scene_graph,
                 const std::string& filename,
-                const tesseract_common::ResourceLocator& locator);
+                const tesseract::common::ResourceLocator& locator);
 
   /**
    * @brief Load Model from a XML-string
    * @throws std::nested_exception if an error occurs during parsing srdf
    */
-  void initString(const tesseract_scene_graph::SceneGraph& scene_graph,
+  void initString(const tesseract::scene_graph::SceneGraph& scene_graph,
                   const std::string& xmlstring,
-                  const tesseract_common::ResourceLocator& locator);
+                  const tesseract::common::ResourceLocator& locator);
 
   /** @brief Save the model to a file */
   bool saveToFile(const std::string& file_path) const;
@@ -92,21 +92,21 @@ public:
   KinematicsInformation kinematics_information;
 
   /** @brief The contact managers plugin information */
-  tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info;
+  tesseract::common::ContactManagersPluginInfo contact_managers_plugin_info;
 
   /** @brief The allowed collision matrix */
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::common::AllowedCollisionMatrix acm;
 
   /** @brief Collision margin data */
-  std::shared_ptr<tesseract_common::CollisionMarginData> collision_margin_data;
+  std::shared_ptr<tesseract::common::CollisionMarginData> collision_margin_data;
 
   /** @brief The calibration information */
-  tesseract_common::CalibrationInfo calibration_info;
+  tesseract::common::CalibrationInfo calibration_info;
 
   bool operator==(const SRDFModel& rhs) const;
   bool operator!=(const SRDFModel& rhs) const;
 };
 
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
 
 #endif  // TESSERACT_SRDF_SRDF_MODEL_H

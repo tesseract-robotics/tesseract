@@ -25,7 +25,7 @@
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 ManipulatorInfo::ManipulatorInfo(std::string manipulator_,
                                  std::string working_frame_,
@@ -86,4 +86,4 @@ bool ManipulatorInfo::operator==(const ManipulatorInfo& rhs) const
 }
 bool ManipulatorInfo::operator!=(const ManipulatorInfo& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

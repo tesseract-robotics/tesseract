@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/any_poly.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class JointState
 {
@@ -221,6 +221,6 @@ public:
 
 using JointStateAnyPoly = AnyWrapper<JointState>;
 using JointStatePtrAnyPoly = AnyWrapper<std::shared_ptr<JointState>>;
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_JOINT_STATE_H

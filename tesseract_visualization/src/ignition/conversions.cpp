@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_scene_graph/graph.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 bool isMeshWithColor(const std::string& file_path)
 {
@@ -322,4 +322,4 @@ bool toMsg(gz::msgs::Scene& scene_msg,
   return true;
 }
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization

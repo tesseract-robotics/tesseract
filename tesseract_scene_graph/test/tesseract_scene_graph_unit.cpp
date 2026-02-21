@@ -17,9 +17,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/scene_state.h>
 
 // getLinks and getJoint use an internal map so need to check against graph
-void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
+void checkSceneGraph(tesseract::scene_graph::SceneGraph& scene_graph)
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
   std::vector<Link::ConstPtr> links = scene_graph.getLinks();
   std::vector<Link::ConstPtr> check_links;
@@ -37,9 +37,9 @@ void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
   }
 }
 
-tesseract_scene_graph::SceneGraph createTestSceneGraph()
+tesseract::scene_graph::SceneGraph createTestSceneGraph()
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g;
 
   Link link_1("link_1");
@@ -92,9 +92,9 @@ tesseract_scene_graph::SceneGraph createTestSceneGraph()
   return g;
 }
 
-void runTest(tesseract_scene_graph::SceneGraph& g)
+void runTest(tesseract::scene_graph::SceneGraph& g)
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
   // Check getAdjacentLinkNames Method
   std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
@@ -160,7 +160,7 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
   checkSceneGraph(g);
 
   // Save Graph
-  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_tree_example.dot");
+  g.saveDOT(tesseract::common::getTempPath() + "graph_acyclic_tree_example.dot");
 
   // Test if the graph is Acyclic
   std::cout << "Is Acyclic: " << g.isAcyclic() << "\n";
@@ -197,7 +197,7 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
   checkSceneGraph(g);
 
   // Save Graph
-  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_not_tree_example.dot");
+  g.saveDOT(tesseract::common::getTempPath() + "graph_acyclic_not_tree_example.dot");
 
   // Test if the graph is Acyclic
   std::cout << "Is Acyclic: " << g.isAcyclic() << "\n";
@@ -218,7 +218,7 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
   checkSceneGraph(g);
 
   // Save Graph
-  g.saveDOT(tesseract_common::getTempPath() + "graph_cyclic_not_tree_example.dot");
+  g.saveDOT(tesseract::common::getTempPath() + "graph_cyclic_not_tree_example.dot");
 
   // Test if the graph is Acyclic
   std::cout << "Is Acyclic: " << g.isAcyclic() << "\n";
@@ -265,27 +265,27 @@ void runTest(tesseract_scene_graph::SceneGraph& g)
   }
 
   // Should throw since this is a directory and not a file
-  EXPECT_ANY_THROW(g.saveDOT(tesseract_common::getTempPath()));  // NOLINT
-  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));        // NOLINT
-  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));            // NOLINT
+  EXPECT_ANY_THROW(g.saveDOT(tesseract::common::getTempPath()));  // NOLINT
+  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));         // NOLINT
+  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));             // NOLINT
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
 {
   {
-    tesseract_scene_graph::SceneGraph g = createTestSceneGraph();
+    tesseract::scene_graph::SceneGraph g = createTestSceneGraph();
     runTest(g);
   }
 
   {  // Move Constructor
-    tesseract_scene_graph::SceneGraph g = createTestSceneGraph();
-    tesseract_scene_graph::SceneGraph g_move(std::move(g));
+    tesseract::scene_graph::SceneGraph g = createTestSceneGraph();
+    tesseract::scene_graph::SceneGraph g_move(std::move(g));
     runTest(g_move);
   }
 
   {  // Move Assignment Constructor
-    tesseract_scene_graph::SceneGraph g = createTestSceneGraph();
-    tesseract_scene_graph::SceneGraph g_move;
+    tesseract::scene_graph::SceneGraph g = createTestSceneGraph();
+    tesseract::scene_graph::SceneGraph g_move;
     g_move = std::move(g);
     runTest(g_move);
   }
@@ -293,7 +293,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphClearUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   EXPECT_EQ(g.getLinks().size(), 5);
@@ -309,7 +309,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphClearUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphRootLinkUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   EXPECT_EQ(g.getRoot(), "link_1");
@@ -319,7 +319,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRootLinkUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphGetLinkJointUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   EXPECT_TRUE(g.getLink("link_1") != nullptr);
@@ -331,7 +331,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphGetLinkJointUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkJointPairUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Link link_6("link_6");
@@ -378,7 +378,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkJointPairUnit)  // NOLIN
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Link replace_link("link_5");
@@ -402,7 +402,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddLinkUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveLinkUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   {  // Remove Link
     SceneGraph g = createTestSceneGraph();
     EXPECT_EQ(g.getLinks().size(), 5);
@@ -458,7 +458,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveLinkUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveLinkUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint::ConstPtr j = g.getJoint("joint_4");
@@ -500,7 +500,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveLinkUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveAllowedCollisionUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
   SceneGraph g = createTestSceneGraph();
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 4);
@@ -516,7 +516,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveAllowedCollisionUnit)  //
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointOriginUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint::ConstPtr j = g.getJoint("joint_4");
@@ -537,7 +537,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointOriginUnit)  // NOLI
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointLimitsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   JointLimits::ConstPtr jl = g.getJointLimits("joint_4");
@@ -569,7 +569,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointLimitsUnit)  // NOLI
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointPositionLimitsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint::ConstPtr j = g.getJoint("joint_4");
@@ -591,7 +591,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointPositionLimitsUnit) 
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointVelocityLimitsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint::ConstPtr j = g.getJoint("joint_4");
@@ -612,7 +612,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointVelocityLimitsUnit) 
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointAccelerationLimitsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint::ConstPtr j = g.getJoint("joint_4");
@@ -633,7 +633,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointAccelerationLimitsUn
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointJerkLimitsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint::ConstPtr j = g.getJoint("joint_4");
@@ -654,7 +654,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointJerkLimitsUnit)  // 
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveJointUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint::ConstPtr j = g.getJoint("joint_4");
@@ -684,7 +684,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveJointUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = createTestSceneGraph();
 
   Joint joint_6("joint_5");
@@ -761,7 +761,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAddJointUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveJointUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   {
     SceneGraph g = createTestSceneGraph();
 
@@ -808,9 +808,9 @@ void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string
     printKDLTree(child, prefix + "  ");
 }
 
-tesseract_scene_graph::SceneGraph buildTestSceneGraph()
+tesseract::scene_graph::SceneGraph buildTestSceneGraph()
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g;
 
   Link base_link("base_link");
@@ -867,9 +867,9 @@ tesseract_scene_graph::SceneGraph buildTestSceneGraph()
   return g;
 }
 
-tesseract_scene_graph::SceneGraph buildTestSceneGraphForSubTree()
+tesseract::scene_graph::SceneGraph buildTestSceneGraphForSubTree()
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   std::vector<std::string> prefix{ "left_", "right_" };
   std::vector<std::string> link_names = { "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
   SceneGraph g;
@@ -949,28 +949,28 @@ void testSceneGraphKDLTree(KDL::Tree& tree)
   {
     KDL::Frame frame;
     solver.JntToCart(joints, frame, "base_link");
-    Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
+    Eigen::Isometry3d e_frame = tesseract::scene_graph::convert(frame);
     EXPECT_TRUE(e_frame.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
     KDL::Frame frame;
     solver.JntToCart(joints, frame, "link_1");
-    Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
+    Eigen::Isometry3d e_frame = tesseract::scene_graph::convert(frame);
     EXPECT_TRUE(e_frame.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
     KDL::Frame frame;
     solver.JntToCart(joints, frame, "link_2");
-    Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
+    Eigen::Isometry3d e_frame = tesseract::scene_graph::convert(frame);
     EXPECT_TRUE(e_frame.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
   }
 
   {
     KDL::Frame frame;
     solver.JntToCart(joints, frame, "link_3");
-    Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
+    Eigen::Isometry3d e_frame = tesseract::scene_graph::convert(frame);
     Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
     c_frame.translation()(0) = 1.25;
     EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
@@ -979,7 +979,7 @@ void testSceneGraphKDLTree(KDL::Tree& tree)
   {
     KDL::Frame frame;
     solver.JntToCart(joints, frame, "link_4");
-    Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
+    Eigen::Isometry3d e_frame = tesseract::scene_graph::convert(frame);
     Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
     c_frame.translation()(0) = 2 * 1.25;
     EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
@@ -988,15 +988,15 @@ void testSceneGraphKDLTree(KDL::Tree& tree)
   {
     KDL::Frame frame;
     solver.JntToCart(joints, frame, "link_5");
-    Eigen::Isometry3d e_frame = tesseract_scene_graph::convert(frame);
+    Eigen::Isometry3d e_frame = tesseract::scene_graph::convert(frame);
     Eigen::Isometry3d c_frame{ Eigen::Isometry3d::Identity() };
     c_frame.translation()(1) = 1.25;
     EXPECT_TRUE(e_frame.isApprox(c_frame, 1e-8));
   }
 }
 
-void testSubSceneGraphKDLTree(tesseract_scene_graph::KDLTreeData& data,
-                              tesseract_scene_graph::KDLTreeData& full_data,
+void testSubSceneGraphKDLTree(tesseract::scene_graph::KDLTreeData& data,
+                              tesseract::scene_graph::KDLTreeData& full_data,
                               const std::unordered_map<std::string, double>& joint_values)
 {
   std::vector<std::string> prefix{ "left_", "right_" };
@@ -1025,7 +1025,7 @@ void testSubSceneGraphKDLTree(tesseract_scene_graph::KDLTreeData& data,
       KDL::Frame c_frame;
       full_solver.JntToCart(full_joints, c_frame, p + "link_2");
 
-      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
+      EXPECT_TRUE(tesseract::scene_graph::convert(frame).isApprox(tesseract::scene_graph::convert(c_frame), 1e-8));
     }
 
     {
@@ -1035,7 +1035,7 @@ void testSubSceneGraphKDLTree(tesseract_scene_graph::KDLTreeData& data,
       KDL::Frame c_frame;
       full_solver.JntToCart(full_joints, c_frame, p + "link_3");
 
-      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
+      EXPECT_TRUE(tesseract::scene_graph::convert(frame).isApprox(tesseract::scene_graph::convert(c_frame), 1e-8));
     }
 
     {
@@ -1045,7 +1045,7 @@ void testSubSceneGraphKDLTree(tesseract_scene_graph::KDLTreeData& data,
       KDL::Frame c_frame;
       full_solver.JntToCart(full_joints, c_frame, p + "link_4");
 
-      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
+      EXPECT_TRUE(tesseract::scene_graph::convert(frame).isApprox(tesseract::scene_graph::convert(c_frame), 1e-8));
     }
 
     {
@@ -1055,14 +1055,14 @@ void testSubSceneGraphKDLTree(tesseract_scene_graph::KDLTreeData& data,
       KDL::Frame c_frame;
       full_solver.JntToCart(full_joints, c_frame, p + "link_5");
 
-      EXPECT_TRUE(tesseract_scene_graph::convert(frame).isApprox(tesseract_scene_graph::convert(c_frame), 1e-8));
+      EXPECT_TRUE(tesseract::scene_graph::convert(frame).isApprox(tesseract::scene_graph::convert(c_frame), 1e-8));
     }
   }
 }
 
 TEST(TesseractSceneGraphUnit, GetSourceLinkUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
   for (int i = 1; i <= 3; ++i)
@@ -1079,7 +1079,7 @@ TEST(TesseractSceneGraphUnit, GetSourceLinkUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, GetTargetLinkUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
   for (int i = 1; i <= 3; ++i)
@@ -1096,7 +1096,7 @@ TEST(TesseractSceneGraphUnit, GetTargetLinkUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, GetInboundJointsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
   for (int i = 2; i <= 4; ++i)
@@ -1114,7 +1114,7 @@ TEST(TesseractSceneGraphUnit, GetInboundJointsUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, GetOutboundJointsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
   for (int i = 1; i <= 3; ++i)
@@ -1146,7 +1146,7 @@ TEST(TesseractSceneGraphUnit, GetOutboundJointsUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
   // Check to make sure all links are enabled
@@ -1163,10 +1163,10 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
   {
     KDLTreeData data = parseSceneGraph(g);
 
-    EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, joint_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, joint_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
 
     testSceneGraphKDLTree(data.tree);
 
@@ -1193,10 +1193,10 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
   {
     KDLTreeData data = parseSceneGraph(*g_clone);
 
-    EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, joint_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, joint_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
 
     testSceneGraphKDLTree(data.tree);
 
@@ -1214,7 +1214,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g = buildTestSceneGraphForSubTree();
   std::vector<std::string> joint_names{ "left_joint_1",  "left_joint_2",  "left_joint_3",  "left_joint_4",
                                         "right_joint_1", "right_joint_2", "right_joint_3", "right_joint_4" };
@@ -1233,17 +1233,17 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
   {
     auto jnt = g.getJoint(joint_name);
     std::uniform_real_distribution<double> sample(jnt->limits->lower, jnt->limits->upper);
-    joint_values[joint_name] = sample(tesseract_common::mersenne);
+    joint_values[joint_name] = sample(tesseract::common::mersenne);
   }
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values, tesseract_common::TransformMap());
+    KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values, tesseract::common::TransformMap());
 
-    EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, sub_joint_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
 
     testSubSceneGraphKDLTree(data, full_data, joint_values);
 
@@ -1269,12 +1269,12 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values, tesseract_common::TransformMap());
+    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values, tesseract::common::TransformMap());
 
-    EXPECT_TRUE(tesseract_common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_joint_names, sub_joint_names, false));
-    EXPECT_TRUE(tesseract_common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, sub_joint_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
 
     testSubSceneGraphKDLTree(data, full_data, joint_values);
 
@@ -1292,7 +1292,7 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   SceneGraph g;
 
   Link link_1("link_n1");
@@ -1313,7 +1313,7 @@ TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 
   // Check that the transform got updated and the edge was recalculated.
   EXPECT_TRUE(g.getJoint("joint_n1")->parent_to_joint_origin_transform.isApprox(new_origin));
-  tesseract_scene_graph::SceneGraph::edge_descriptor e = g.getEdge("joint_n1");
+  tesseract::scene_graph::SceneGraph::edge_descriptor e = g.getEdge("joint_n1");
   double d = boost::get(boost::edge_weight_t(), g)[e];
   EXPECT_EQ(d, g.getJoint("joint_n1")->parent_to_joint_origin_transform.translation().norm());
 }
@@ -1321,14 +1321,14 @@ TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract::common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
-  tesseract_scene_graph::SceneGraph ng;
+  tesseract::scene_graph::SceneGraph ng;
   EXPECT_TRUE(ng.insertSceneGraph(g));
 
   // Check Graph
@@ -1355,20 +1355,20 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
   }
 
   // Save Graph
-  ng.saveDOT(tesseract_common::getTempPath() + "graph_insert_empty_example.dot");
+  ng.saveDOT(tesseract::common::getTempPath() + "graph_insert_empty_example.dot");
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract::common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
-  tesseract_scene_graph::SceneGraph ng = buildTestSceneGraph();
+  tesseract::scene_graph::SceneGraph ng = buildTestSceneGraph();
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
@@ -1398,14 +1398,14 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract::common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
-  tesseract_scene_graph::SceneGraph ng = buildTestSceneGraph();
+  tesseract::scene_graph::SceneGraph ng = buildTestSceneGraph();
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
 
@@ -1441,14 +1441,14 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
   }
 
   // Save Graph
-  ng.saveDOT(tesseract_common::getTempPath() + "graph_insert_example.dot");
+  ng.saveDOT(tesseract::common::getTempPath() + "graph_insert_example.dot");
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit)  // NOLINT
 {
   // Test inserting graph into empty graph
-  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract::common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link1", "link2", "test");
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
@@ -1456,7 +1456,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
   EXPECT_TRUE(g.isCollisionAllowed("link1", "link2"));
   EXPECT_TRUE(g.isCollisionAllowed("link1", "link3"));
 
-  tesseract_scene_graph::SceneGraph ng = buildTestSceneGraph();
+  tesseract::scene_graph::SceneGraph ng = buildTestSceneGraph();
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
   EXPECT_TRUE(ng.isCollisionAllowed("link1", "link2"));
@@ -1464,10 +1464,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 
   std::string prefix = "r1::";
 
-  tesseract_scene_graph::Joint new_joint("insert_graph_joint");
+  tesseract::scene_graph::Joint new_joint("insert_graph_joint");
   new_joint.parent_link_name = "base_link";
   new_joint.child_link_name = prefix + new_joint.parent_link_name;
-  new_joint.type = tesseract_scene_graph::JointType::FIXED;
+  new_joint.type = tesseract::scene_graph::JointType::FIXED;
   new_joint.parent_to_joint_origin_transform = Eigen::Translation3d(1, 0, 0) * Eigen::Isometry3d::Identity();
   EXPECT_TRUE(ng.insertSceneGraph(g, new_joint, prefix));
   EXPECT_TRUE(ng.isTree());
@@ -1500,12 +1500,12 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
   }
 
   // Save Graph
-  ng.saveDOT(tesseract_common::getTempPath() + "graph_insert_with_joint_example.dot");
+  ng.saveDOT(tesseract::common::getTempPath() + "graph_insert_with_joint_example.dot");
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneState)  // NOLINT
 {
-  tesseract_scene_graph::SceneState state;
+  tesseract::scene_graph::SceneState state;
   state.joints["j1"] = 1;
   state.joints["j2"] = 2;
   state.joints["j3"] = 3;
@@ -1525,7 +1525,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
   {  // Eigen to KDL
     Eigen::Isometry3d t = Eigen::Isometry3d::Identity();
     t.translation() = Eigen::Vector3d(1, 2, 3);
-    KDL::Frame kdl_t = tesseract_scene_graph::convert(t);
+    KDL::Frame kdl_t = tesseract::scene_graph::convert(t);
     for (int i = 0; i < 4; ++i)
     {
       for (int j = 0; j < 4; ++j)
@@ -1538,7 +1538,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
   {  // KDL to Eigen
     KDL::Frame kdl_t = KDL::Frame::Identity();
     kdl_t.p = KDL::Vector(1, 2, 3);
-    Eigen::Isometry3d t = tesseract_scene_graph::convert(kdl_t);
+    Eigen::Isometry3d t = tesseract::scene_graph::convert(kdl_t);
     for (int i = 0; i < 4; ++i)
     {
       for (int j = 0; j < 4; ++j)
@@ -1550,7 +1550,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
 
   {  // Eigen to KDL
     Eigen::Vector3d v(1, 2, 3);
-    KDL::Vector kdl_v = tesseract_scene_graph::convert(v);
+    KDL::Vector kdl_v = tesseract::scene_graph::convert(v);
     for (int i = 0; i < 3; ++i)
     {
       EXPECT_DOUBLE_EQ(kdl_v(i), v(i));
@@ -1559,7 +1559,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
 
   {  // KDL to Eigen
     KDL::Vector kdl_v(1, 2, 3);
-    Eigen::Vector3d v = tesseract_scene_graph::convert(kdl_v);
+    Eigen::Vector3d v = tesseract::scene_graph::convert(kdl_v);
     for (int i = 0; i < 3; ++i)
     {
       EXPECT_DOUBLE_EQ(kdl_v(i), v(i));
@@ -1568,7 +1568,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
 
   {  // Eigen to KDL
     Eigen::MatrixXd t = Eigen::MatrixXd::Random(6, 6);
-    KDL::Jacobian kdl_t = tesseract_scene_graph::convert(t);
+    KDL::Jacobian kdl_t = tesseract::scene_graph::convert(t);
     for (int i = 0; i < 6; ++i)
     {
       for (int j = 0; j < 6; ++j)
@@ -1578,14 +1578,14 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
     }
 
     Eigen::MatrixXd t_wrong_size = Eigen::MatrixXd::Random(7, 7);
-    EXPECT_ANY_THROW(tesseract_scene_graph::convert(t_wrong_size));  // NOLINT
+    EXPECT_ANY_THROW(tesseract::scene_graph::convert(t_wrong_size));  // NOLINT
   }
 
   {  // KDL to Eigen
     KDL::Jacobian kdl_t;
     kdl_t.resize(6);
     kdl_t.data = Eigen::MatrixXd::Random(6, 6);
-    Eigen::MatrixXd t = tesseract_scene_graph::convert(kdl_t);
+    Eigen::MatrixXd t = tesseract::scene_graph::convert(kdl_t);
     EXPECT_EQ(t.cols(), 6);
     EXPECT_EQ(t.rows(), 6);
     for (int i = 0; i < 6; ++i)
@@ -1603,7 +1603,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT
     kdl_t.data = Eigen::MatrixXd::Random(6, 6);
 
     std::vector<int> q_nrs{ 0, 2, 5 };
-    Eigen::MatrixXd t = tesseract_scene_graph::convert(kdl_t, q_nrs);
+    Eigen::MatrixXd t = tesseract::scene_graph::convert(kdl_t, q_nrs);
     EXPECT_EQ(t.cols(), 3);
     EXPECT_EQ(t.rows(), 6);
     for (int i = 0; i < 6; ++i)

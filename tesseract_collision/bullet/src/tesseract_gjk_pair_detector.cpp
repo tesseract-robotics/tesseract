@@ -41,7 +41,7 @@ static const btScalar gGjkEpaPenetrationTolerance = 1.0e-12;
 static const btScalar gGjkEpaPenetrationTolerance = 0.001f;
 #endif
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision::bullet_internal
 {
 TesseractGjkPairDetector::TesseractGjkPairDetector(const btConvexShape* objectA,
                                                    const btConvexShape* objectB,
@@ -1170,4 +1170,4 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
     // printf("invalid gjk query\n");
   }
 }
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision::bullet_internal

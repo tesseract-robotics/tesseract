@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class AddLinkCommand;
 template <class Archive>
@@ -64,7 +64,7 @@ public:
    * @param link The link to be added to the graph
    * @param replace_allowed If true then if the link exists it will be replaced, otherwise if false it will fail.
    */
-  AddLinkCommand(const tesseract_scene_graph::Link& link, bool replace_allowed = false);
+  AddLinkCommand(const tesseract::scene_graph::Link& link, bool replace_allowed = false);
 
   /**
    * @brief Adds a link and joint in the environment
@@ -86,25 +86,25 @@ public:
    * @param replace_allowed If true then if the link and joint exists it will be replaced, otherwise if false it will
    * fail.
    */
-  AddLinkCommand(const tesseract_scene_graph::Link& link,
-                 const tesseract_scene_graph::Joint& joint,
+  AddLinkCommand(const tesseract::scene_graph::Link& link,
+                 const tesseract::scene_graph::Joint& joint,
                  bool replace_allowed = false);
 
-  const std::shared_ptr<const tesseract_scene_graph::Link>& getLink() const;
-  const std::shared_ptr<const tesseract_scene_graph::Joint>& getJoint() const;
+  const std::shared_ptr<const tesseract::scene_graph::Link>& getLink() const;
+  const std::shared_ptr<const tesseract::scene_graph::Joint>& getJoint() const;
   bool replaceAllowed() const;
 
   bool operator==(const AddLinkCommand& rhs) const;
   bool operator!=(const AddLinkCommand& rhs) const;
 
 private:
-  std::shared_ptr<const tesseract_scene_graph::Link> link_;
-  std::shared_ptr<const tesseract_scene_graph::Joint> joint_;
+  std::shared_ptr<const tesseract::scene_graph::Link> link_;
+  std::shared_ptr<const tesseract::scene_graph::Joint> joint_;
   bool replace_allowed_{ false };
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, AddLinkCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, AddLinkCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_COMMAND_H

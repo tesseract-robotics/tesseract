@@ -27,7 +27,7 @@
 
 #include <cstdint>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 // types.h
 struct PluginInfo;
@@ -79,6 +79,6 @@ class Timer;
 class Profile;
 class ProfileDictionary;
 class ProfilePluginFactory;
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_TESSERACT_COMMON_FWD_H

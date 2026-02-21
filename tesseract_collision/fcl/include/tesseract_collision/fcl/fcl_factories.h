@@ -27,7 +27,7 @@
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <boost_plugin_loader/macros.h>
 
-namespace tesseract_collision::tesseract_collision_fcl
+namespace tesseract::collision
 {
 class FCLDiscreteBVHManagerFactory : public DiscreteContactManagerFactory
 {
@@ -38,5 +38,5 @@ public:
 
 PLUGIN_ANCHOR_DECL(FCLFactoriesAnchor)
 
-}  // namespace tesseract_collision::tesseract_collision_fcl
+}  // namespace tesseract::collision
 #endif  // TESSERACT_COLLISION_FCL_FCL_FACTORIES_H

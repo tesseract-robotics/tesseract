@@ -39,7 +39,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view COLLISION_ELEMENT_NAME = "collision";
 
@@ -50,9 +50,9 @@ static constexpr std::string_view COLLISION_ELEMENT_NAME = "collision";
  * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Collision object
  */
-std::shared_ptr<tesseract_scene_graph::Collision> parseCollision(const tinyxml2::XMLElement* xml_element,
-                                                                 const tesseract_common::ResourceLocator& locator,
-                                                                 bool make_convex_meshes);
+std::shared_ptr<tesseract::scene_graph::Collision> parseCollision(const tinyxml2::XMLElement* xml_element,
+                                                                  const tesseract::common::ResourceLocator& locator,
+                                                                  bool make_convex_meshes);
 
 /**
  * @brief writeCollision Write collision object to URDF XML
@@ -65,12 +65,12 @@ std::shared_ptr<tesseract_scene_graph::Collision> parseCollision(const tinyxml2:
  * geometries on the same link.
  * @return An XML element representing the collision object in URDF format.
  */
-tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract_scene_graph::Collision>& collision,
+tinyxml2::XMLElement* writeCollision(const std::shared_ptr<const tesseract::scene_graph::Collision>& collision,
                                      tinyxml2::XMLDocument& doc,
                                      const std::string& package_path,
                                      const std::string& link_name,
                                      int id);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_COLLISION_H

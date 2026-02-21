@@ -27,29 +27,29 @@
 
 #include <memory>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ReplaceJointCommand::ReplaceJointCommand() : Command(CommandType::REPLACE_JOINT) {}
 
-ReplaceJointCommand::ReplaceJointCommand(const tesseract_scene_graph::Joint& joint)
-  : Command(CommandType::REPLACE_JOINT), joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+ReplaceJointCommand::ReplaceJointCommand(const tesseract::scene_graph::Joint& joint)
+  : Command(CommandType::REPLACE_JOINT), joint_(std::make_shared<tesseract::scene_graph::Joint>(joint.clone()))
 {
-  if (joint_->type != tesseract_scene_graph::JointType::FIXED)
+  if (joint_->type != tesseract::scene_graph::JointType::FIXED)
   {
     //      if ()
     /** @todo check limits */
   }
 }
 
-const tesseract_scene_graph::Joint::ConstPtr& ReplaceJointCommand::getJoint() const { return joint_; }
+const tesseract::scene_graph::Joint::ConstPtr& ReplaceJointCommand::getJoint() const { return joint_; }
 
 bool ReplaceJointCommand::operator==(const ReplaceJointCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract_common::pointersEqual(joint_, rhs.joint_);
+  equal &= tesseract::common::pointersEqual(joint_, rhs.joint_);
   return equal;
 }
 bool ReplaceJointCommand::operator!=(const ReplaceJointCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 RemoveJointCommand::RemoveJointCommand() : Command(CommandType::REMOVE_JOINT) {}
 
@@ -46,4 +46,4 @@ bool RemoveJointCommand::operator==(const RemoveJointCommand& rhs) const
 }
 bool RemoveJointCommand::operator!=(const RemoveJointCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

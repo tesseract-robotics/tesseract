@@ -91,18 +91,18 @@ int main(int argc, char** argv)
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  tesseract_common::VectorVector3d mesh_vertices;
+  tesseract::common::VectorVector3d mesh_vertices;
   Eigen::VectorXi mesh_faces;
-  int num_faces = tesseract_common::loadSimplePlyFile(input, mesh_vertices, mesh_faces);
+  int num_faces = tesseract::common::loadSimplePlyFile(input, mesh_vertices, mesh_faces);
   if (num_faces < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to read mesh from file!");
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  tesseract_common::VectorVector3d ch_vertices;
+  tesseract::common::VectorVector3d ch_vertices;
   Eigen::VectorXi ch_faces;
-  int ch_num_faces = tesseract_collision::createConvexHull(ch_vertices, ch_faces, mesh_vertices);
+  int ch_num_faces = tesseract::collision::createConvexHull(ch_vertices, ch_faces, mesh_vertices);
 
   if (ch_num_faces < 0)
   {
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  if (!tesseract_common::writeSimplePlyFile(output, ch_vertices, ch_faces, ch_num_faces))
+  if (!tesseract::common::writeSimplePlyFile(output, ch_vertices, ch_faces, ch_num_faces))
   {
     CONSOLE_BRIDGE_logError("Failed to write convex hull to file!");
     return ERROR_UNHANDLED_EXCEPTION;

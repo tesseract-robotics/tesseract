@@ -3,7 +3,7 @@
 
 #include <tesseract_visualization/markers/marker.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 /** @brief An axis */
 class AxisMarker : public Marker
@@ -20,6 +20,6 @@ public:
   Eigen::Isometry3d axis{ Eigen::Isometry3d::Identity() };
 };
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 
 #endif  // TESSERACT_VISUALIZATION_MARKERS_AXIS_MARKER_H

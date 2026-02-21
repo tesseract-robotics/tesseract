@@ -53,7 +53,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/fcl/fcl_collision_object_wrapper.h>
 
-namespace tesseract_collision::tesseract_collision_fcl
+namespace tesseract::collision::fcl_internal
 {
 using CollisionGeometryPtr = std::shared_ptr<fcl::CollisionGeometryd>;
 using CollisionObjectPtr = std::shared_ptr<FCLCollisionObjectWrapper>;
@@ -84,7 +84,7 @@ public:
   CollisionObjectWrapper(std::string name,
                          const int& type_id,
                          CollisionShapesConst shapes,
-                         tesseract_common::VectorIsometry3d shape_poses);
+                         tesseract::common::VectorIsometry3d shape_poses);
 
   short int m_collisionFilterGroup{ CollisionFilterGroups::KinematicFilter };
   short int m_collisionFilterMask{ CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter };
@@ -106,7 +106,7 @@ public:
 
   const CollisionShapesConst& getCollisionGeometries() const { return shapes_; }
 
-  const tesseract_common::VectorIsometry3d& getCollisionGeometriesTransforms() const { return shape_poses_; }
+  const tesseract::common::VectorIsometry3d& getCollisionGeometriesTransforms() const { return shape_poses_; }
 
   void setCollisionObjectsTransform(const Eigen::Isometry3d& pose)
   {
@@ -172,7 +172,7 @@ protected:
   int type_id_{ -1 };                                             // user defined type id
   Eigen::Isometry3d world_pose_{ Eigen::Isometry3d::Identity() }; /**< @brief Collision Object World Transformation */
   CollisionShapesConst shapes_;
-  tesseract_common::VectorIsometry3d shape_poses_;
+  tesseract::common::VectorIsometry3d shape_poses_;
   std::vector<CollisionGeometryPtr> collision_geometries_;
   std::vector<CollisionObjectPtr> collision_objects_;
   /**
@@ -193,7 +193,7 @@ using Link2ConstCOW = std::map<std::string, COW::ConstPtr>;
 inline COW::Ptr createFCLCollisionObject(const std::string& name,
                                          const int& type_id,
                                          const CollisionShapesConst& shapes,
-                                         const tesseract_common::VectorIsometry3d& shape_poses,
+                                         const tesseract::common::VectorIsometry3d& shape_poses,
                                          bool enabled)
 {
   // dont add object that does not have geometry
@@ -276,12 +276,12 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
  */
 bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
                          const CollisionObjectWrapper* cd2,
-                         const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                          bool verbose);
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
-}  // namespace tesseract_collision::tesseract_collision_fcl
+}  // namespace tesseract::collision::fcl_internal
 #endif  // TESSERACT_COLLISION_FCL_UTILS_H

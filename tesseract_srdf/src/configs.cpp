@@ -34,19 +34,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/yaml_extensions.h>
 #include <tesseract_srdf/configs.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
-std::filesystem::path parseConfigFilePath(const tesseract_common::ResourceLocator& locator,
+std::filesystem::path parseConfigFilePath(const tesseract::common::ResourceLocator& locator,
                                           const tinyxml2::XMLElement* xml_element,
                                           const std::array<int, 3>& /*version*/)
 {
   std::string filename;
-  int status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
+  int status = tesseract::common::QueryStringAttributeRequired(xml_element, "filename", filename);
   if (status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error(std::string(xml_element->Value()) + ": Missing or failed to parse "
                                                                                   "'filename' attribute."));
 
-  tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
+  tesseract::common::Resource::Ptr resource = locator.locateResource(filename);
   if (resource == nullptr)
     std::throw_with_nested(
         std::runtime_error(std::string(xml_element->Value()) + ": Failed to locate resource '" + filename + "'."));
@@ -60,17 +60,17 @@ std::filesystem::path parseConfigFilePath(const tesseract_common::ResourceLocato
   return file_path;
 }
 
-tesseract_common::CalibrationInfo parseCalibrationConfig(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                         const tesseract_common::ResourceLocator& locator,
-                                                         const tinyxml2::XMLElement* xml_element,
-                                                         const std::array<int, 3>& version)
+tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                          const tesseract::common::ResourceLocator& locator,
+                                                          const tinyxml2::XMLElement* xml_element,
+                                                          const std::array<int, 3>& version)
 {
   std::filesystem::path cal_config_file_path = parseConfigFilePath(locator, xml_element, version);
   YAML::Node config;
   try
   {
     config = YAML::LoadFile(cal_config_file_path.string());
-    tesseract_common::processYamlIncludeDirective(config, locator);
+    tesseract::common::processYamlIncludeDirective(config, locator);
   }
   // LCOV_EXCL_START
   catch (...)
@@ -81,8 +81,8 @@ tesseract_common::CalibrationInfo parseCalibrationConfig(const tesseract_scene_g
   }
   // LCOV_EXCL_STOP
 
-  const YAML::Node& cal_info = config[tesseract_common::CalibrationInfo::CONFIG_KEY];
-  auto info = cal_info.as<tesseract_common::CalibrationInfo>();
+  const YAML::Node& cal_info = config[tesseract::common::CalibrationInfo::CONFIG_KEY];
+  auto info = cal_info.as<tesseract::common::CalibrationInfo>();
 
   // Check to make sure calibration joints exist
   for (const auto& cal_joint : info.joints)
@@ -94,16 +94,16 @@ tesseract_common::CalibrationInfo parseCalibrationConfig(const tesseract_scene_g
   return info;
 }
 
-tesseract_common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract_common::ResourceLocator& locator,
-                                                                   const tinyxml2::XMLElement* xml_element,
-                                                                   const std::array<int, 3>& version)
+tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
+                                                                    const tinyxml2::XMLElement* xml_element,
+                                                                    const std::array<int, 3>& version)
 {
   std::filesystem::path kin_plugin_file_path = parseConfigFilePath(locator, xml_element, version);
   YAML::Node config;
   try
   {
     config = YAML::LoadFile(kin_plugin_file_path.string());
-    tesseract_common::processYamlIncludeDirective(config, locator);
+    tesseract::common::processYamlIncludeDirective(config, locator);
   }
   // LCOV_EXCL_START
   catch (...)
@@ -114,13 +114,13 @@ tesseract_common::KinematicsPluginInfo parseKinematicsPluginConfig(const tessera
   }
   // LCOV_EXCL_STOP
 
-  const YAML::Node& kin_plugin_info = config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
+  const YAML::Node& kin_plugin_info = config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
 
-  return kin_plugin_info.as<tesseract_common::KinematicsPluginInfo>();
+  return kin_plugin_info.as<tesseract::common::KinematicsPluginInfo>();
 }
 
-tesseract_common::ContactManagersPluginInfo
-parseContactManagersPluginConfig(const tesseract_common::ResourceLocator& locator,
+tesseract::common::ContactManagersPluginInfo
+parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locator,
                                  const tinyxml2::XMLElement* xml_element,
                                  const std::array<int, 3>& version)
 {
@@ -129,7 +129,7 @@ parseContactManagersPluginConfig(const tesseract_common::ResourceLocator& locato
   try
   {
     config = YAML::LoadFile(cm_plugin_file_path.string());
-    tesseract_common::processYamlIncludeDirective(config, locator);
+    tesseract::common::processYamlIncludeDirective(config, locator);
   }
   // LCOV_EXCL_START
   catch (...)
@@ -141,7 +141,7 @@ parseContactManagersPluginConfig(const tesseract_common::ResourceLocator& locato
   }
   // LCOV_EXCL_STOP
 
-  const YAML::Node& cm_plugin_info = config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-  return cm_plugin_info.as<tesseract_common::ContactManagersPluginInfo>();
+  const YAML::Node& cm_plugin_info = config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+  return cm_plugin_info.as<tesseract::common::ContactManagersPluginInfo>();
 }
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf

@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 static const int NULL_ENTITY_ID = -1;
 using EntityID = int;
@@ -132,6 +132,6 @@ private:
   EntityMap sensor_id_map_;         /**< Stores entity id for each sensor */
   EntityID entity_counter_{ 1000 }; /**< Start entity counter to avoid clashing with gazebo */
 };
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 
 #endif  // TESSERACT_VISUALIZATION_IGNITION_ENTITY_MANAGER_H

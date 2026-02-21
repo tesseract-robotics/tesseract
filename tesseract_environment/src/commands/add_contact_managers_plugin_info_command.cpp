@@ -24,7 +24,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_environment/commands/add_contact_managers_plugin_info_command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 AddContactManagersPluginInfoCommand::AddContactManagersPluginInfoCommand()
   : Command(CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO)
@@ -32,13 +32,13 @@ AddContactManagersPluginInfoCommand::AddContactManagersPluginInfoCommand()
 }
 
 AddContactManagersPluginInfoCommand::AddContactManagersPluginInfoCommand(
-    tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info)
+    tesseract::common::ContactManagersPluginInfo contact_managers_plugin_info)
   : Command(CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO)
   , contact_managers_plugin_info_(std::move(contact_managers_plugin_info))
 {
 }
 
-const tesseract_common::ContactManagersPluginInfo&
+const tesseract::common::ContactManagersPluginInfo&
 AddContactManagersPluginInfoCommand::getContactManagersPluginInfo() const
 {
   return contact_managers_plugin_info_;
@@ -56,4 +56,4 @@ bool AddContactManagersPluginInfoCommand::operator!=(const AddContactManagersPlu
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

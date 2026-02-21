@@ -35,12 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/mimic.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xml_element)
+tesseract::scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xml_element)
 {
-  auto m = std::make_shared<tesseract_scene_graph::JointMimic>();
-  if (tesseract_common::QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
+  auto m = std::make_shared<tesseract::scene_graph::JointMimic>();
+  if (tesseract::common::QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Mimic: Missing or failed to parse mimic attribute 'joint'!"));
 
   if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") == nullptr)
@@ -61,7 +61,7 @@ tesseract_scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xm
   return m;
 }
 
-tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic,
+tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract::scene_graph::JointMimic>& mimic,
                                  tinyxml2::XMLDocument& doc)
 {
   if (mimic == nullptr)
@@ -75,4 +75,4 @@ tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_gra
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

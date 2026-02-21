@@ -30,11 +30,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/bullet/convex_hull_utils.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
-int createConvexHull(tesseract_common::VectorVector3d& vertices,
+int createConvexHull(tesseract::common::VectorVector3d& vertices,
                      Eigen::VectorXi& faces,
-                     const tesseract_common::VectorVector3d& input,
+                     const tesseract::common::VectorVector3d& input,
                      double shrink,
                      double shrinkClamp)
 {
@@ -106,15 +106,16 @@ int createConvexHull(tesseract_common::VectorVector3d& vertices,
   return conv.faces.size();
 }
 
-tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geometry::Mesh& mesh)
+tesseract::geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract::geometry::Mesh& mesh)
 {
-  std::shared_ptr<tesseract_common::VectorVector3d> ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  std::shared_ptr<tesseract::common::VectorVector3d> ch_vertices =
+      std::make_shared<tesseract::common::VectorVector3d>();
   std::shared_ptr<Eigen::VectorXi> ch_faces = std::make_shared<Eigen::VectorXi>();
   int ch_num_faces = createConvexHull(*ch_vertices, *ch_faces, *mesh.getVertices());
-  auto convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
+  auto convex_mesh = std::make_shared<tesseract::geometry::ConvexMesh>(
       ch_vertices, ch_faces, ch_num_faces, mesh.getResource(), mesh.getScale());
-  convex_mesh->setCreationMethod(tesseract_geometry::ConvexMesh::CONVERTED);
+  convex_mesh->setCreationMethod(tesseract::geometry::ConvexMesh::CONVERTED);
   return convex_mesh;
 }
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

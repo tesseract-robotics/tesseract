@@ -23,7 +23,7 @@
 
 #include <tesseract_environment/environment_monitor_interface.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 EnvironmentMonitorInterface::EnvironmentMonitorInterface(std::string env_name) : env_name_(std::move(env_name)) {}
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

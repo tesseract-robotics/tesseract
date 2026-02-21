@@ -31,7 +31,7 @@
 
 #include <tesseract_state_solver/ofkt/ofkt_node.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 /*********************************************************************/
 /*************************** BASE NODE *******************************/
@@ -84,7 +84,7 @@ public:
   const std::vector<const OFKTNode*>& getChildren() const override;
 
 protected:
-  tesseract_scene_graph::JointType type_;
+  tesseract::scene_graph::JointType type_;
   OFKTNode* parent_{ nullptr };
   std::string link_name_;
   std::string joint_name_;
@@ -262,6 +262,6 @@ private:
 
   friend class OFKTStateSolver;
 };
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_STATE_SOLVER_OFKT_NODES_H

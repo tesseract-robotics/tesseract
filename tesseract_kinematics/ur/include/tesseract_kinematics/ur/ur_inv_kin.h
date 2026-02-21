@@ -41,12 +41,12 @@
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/core/types.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 static const std::string UR_INV_KIN_CHAIN_SOLVER_NAME = "URInvKin";
 
 /**@brief Universal Robot Inverse Kinematics Implementation. */
-class URInvKin : public tesseract_kinematics::InverseKinematics
+class URInvKin : public InverseKinematics
 {
 public:
   // LCOV_EXCL_START
@@ -78,8 +78,8 @@ public:
            std::vector<std::string> joint_names,
            std::string solver_name = UR_INV_KIN_CHAIN_SOLVER_NAME);
 
-  void calcInvKin(tesseract_kinematics::IKSolutions& solutions,
-                  const tesseract_common::TransformMap& tip_link_poses,
+  void calcInvKin(IKSolutions& solutions,
+                  const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   Eigen::Index numJoints() const override final;
@@ -97,6 +97,6 @@ protected:
   std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
   std::string solver_name_{ UR_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
 };
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_UR_INV_KIN_H

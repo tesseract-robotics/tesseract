@@ -37,9 +37,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace YAML
 {
 template <>
-struct convert<tesseract_common::PluginInfo>
+struct convert<tesseract::common::PluginInfo>
 {
-  static Node encode(const tesseract_common::PluginInfo& rhs)
+  static Node encode(const tesseract::common::PluginInfo& rhs)
   {
     Node node;
     node["class"] = rhs.class_name;
@@ -50,7 +50,7 @@ struct convert<tesseract_common::PluginInfo>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_common::PluginInfo& rhs)
+  static bool decode(const Node& node, tesseract::common::PluginInfo& rhs)
   {
     // Check for required entries
     if (!node["class"])
@@ -66,9 +66,9 @@ struct convert<tesseract_common::PluginInfo>
 };
 
 template <>
-struct convert<tesseract_common::PluginInfoContainer>
+struct convert<tesseract::common::PluginInfoContainer>
 {
-  static Node encode(const tesseract_common::PluginInfoContainer& rhs)
+  static Node encode(const tesseract::common::PluginInfoContainer& rhs)
   {
     Node node;
     if (!rhs.default_plugin.empty())
@@ -79,7 +79,7 @@ struct convert<tesseract_common::PluginInfoContainer>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_common::PluginInfoContainer& rhs)
+  static bool decode(const Node& node, tesseract::common::PluginInfoContainer& rhs)
   {
     if (node["default"])  // NOLINT
       rhs.default_plugin = node["default"].as<std::string>();
@@ -93,12 +93,12 @@ struct convert<tesseract_common::PluginInfoContainer>
 
     try
     {
-      rhs.plugins = plugins.as<tesseract_common::PluginInfoMap>();
+      rhs.plugins = plugins.as<tesseract::common::PluginInfoMap>();
     }
     catch (const std::exception& e)
     {
       throw std::runtime_error(std::string("PluginInfoContainer: Constructor failed to cast 'plugins' to "
-                                           "tesseract_common::PluginInfoMap! Details: ") +
+                                           "tesseract::common::PluginInfoMap! Details: ") +
                                e.what());
     }
 
@@ -297,12 +297,12 @@ struct convert<Eigen::Matrix<double, 6, 1>>
 };
 
 template <>
-struct convert<tesseract_common::ProfilesPluginInfo>
+struct convert<tesseract::common::ProfilesPluginInfo>
 {
   inline static const std::string SEARCH_PATHS_KEY{ "search_paths" };
   inline static const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
   inline static const std::string PROFILE_PLUGINS_KEY{ "profiles" };
-  static Node encode(const tesseract_common::ProfilesPluginInfo& rhs)
+  static Node encode(const tesseract::common::ProfilesPluginInfo& rhs)
   {
     YAML::Node plugins;
     if (!rhs.search_paths.empty())
@@ -317,7 +317,7 @@ struct convert<tesseract_common::ProfilesPluginInfo>
     return plugins;
   }
 
-  static bool decode(const Node& node, tesseract_common::ProfilesPluginInfo& rhs)
+  static bool decode(const Node& node, tesseract::common::ProfilesPluginInfo& rhs)
   {
     if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
     {
@@ -360,13 +360,13 @@ struct convert<tesseract_common::ProfilesPluginInfo>
 
       try
       {
-        rhs.plugin_infos = profile_plugins.as<std::map<std::string, tesseract_common::PluginInfoMap>>();
+        rhs.plugin_infos = profile_plugins.as<std::map<std::string, tesseract::common::PluginInfoMap>>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("ProfilePluginInfo: Constructor failed to cast '" + PROFILE_PLUGINS_KEY +
                                  "' to std::map<std::string, "
-                                 "tesseract_common::PluginInfoContainer>! Details: " +
+                                 "tesseract::common::PluginInfoContainer>! Details: " +
                                  e.what());
       }
     }
@@ -376,9 +376,9 @@ struct convert<tesseract_common::ProfilesPluginInfo>
 };
 
 template <>
-struct convert<tesseract_common::KinematicsPluginInfo>
+struct convert<tesseract::common::KinematicsPluginInfo>
 {
-  static Node encode(const tesseract_common::KinematicsPluginInfo& rhs)
+  static Node encode(const tesseract::common::KinematicsPluginInfo& rhs)
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
@@ -401,7 +401,7 @@ struct convert<tesseract_common::KinematicsPluginInfo>
     return kinematic_plugins;
   }
 
-  static bool decode(const Node& node, tesseract_common::KinematicsPluginInfo& rhs)
+  static bool decode(const Node& node, tesseract::common::KinematicsPluginInfo& rhs)
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
@@ -449,13 +449,13 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 
       try
       {
-        rhs.fwd_plugin_infos = fwd_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoContainer>>();
+        rhs.fwd_plugin_infos = fwd_kin_plugins.as<std::map<std::string, tesseract::common::PluginInfoContainer>>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + FWD_KIN_PLUGINS_KEY +
                                  "' to std::map<std::string, "
-                                 "tesseract_common::PluginInfoContainer>! Details: " +
+                                 "tesseract::common::PluginInfoContainer>! Details: " +
                                  e.what());
       }
     }
@@ -467,13 +467,13 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 
       try
       {
-        rhs.inv_plugin_infos = inv_kin_plugins.as<std::map<std::string, tesseract_common::PluginInfoContainer>>();
+        rhs.inv_plugin_infos = inv_kin_plugins.as<std::map<std::string, tesseract::common::PluginInfoContainer>>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + INV_KIN_PLUGINS_KEY +
                                  "' to std::map<std::string, "
-                                 "tesseract_common::PluginInfoContainer>! Details: " +
+                                 "tesseract::common::PluginInfoContainer>! Details: " +
                                  e.what());
       }
     }
@@ -483,9 +483,9 @@ struct convert<tesseract_common::KinematicsPluginInfo>
 };
 
 template <>
-struct convert<tesseract_common::ContactManagersPluginInfo>
+struct convert<tesseract::common::ContactManagersPluginInfo>
 {
-  static Node encode(const tesseract_common::ContactManagersPluginInfo& rhs)
+  static Node encode(const tesseract::common::ContactManagersPluginInfo& rhs)
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
@@ -508,7 +508,7 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
     return contact_manager_plugins;
   }
 
-  static bool decode(const Node& node, tesseract_common::ContactManagersPluginInfo& rhs)
+  static bool decode(const Node& node, tesseract::common::ContactManagersPluginInfo& rhs)
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
@@ -556,12 +556,12 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
 
       try
       {
-        rhs.discrete_plugin_infos = discrete_plugins.as<tesseract_common::PluginInfoContainer>();
+        rhs.discrete_plugin_infos = discrete_plugins.as<tesseract::common::PluginInfoContainer>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + DISCRETE_PLUGINS_KEY +
-                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+                                 "' to tesseract::common::PluginInfoContainer! Details: " + e.what());
       }
     }
 
@@ -572,12 +572,12 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
 
       try
       {
-        rhs.continuous_plugin_infos = continuous_plugins.as<tesseract_common::PluginInfoContainer>();
+        rhs.continuous_plugin_infos = continuous_plugins.as<tesseract::common::PluginInfoContainer>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + CONTINUOUS_PLUGINS_KEY +
-                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+                                 "' to tesseract::common::PluginInfoContainer! Details: " + e.what());
       }
     }
 
@@ -586,9 +586,9 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
 };
 
 template <>
-struct convert<tesseract_common::TaskComposerPluginInfo>
+struct convert<tesseract::common::TaskComposerPluginInfo>
 {
-  static Node encode(const tesseract_common::TaskComposerPluginInfo& rhs)
+  static Node encode(const tesseract::common::TaskComposerPluginInfo& rhs)
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
@@ -611,7 +611,7 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
     return task_composer_plugins;
   }
 
-  static bool decode(const Node& node, tesseract_common::TaskComposerPluginInfo& rhs)
+  static bool decode(const Node& node, tesseract::common::TaskComposerPluginInfo& rhs)
   {
     const std::string SEARCH_PATHS_KEY{ "search_paths" };
     const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
@@ -660,12 +660,12 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
 
       try
       {
-        rhs.executor_plugin_infos = executor_plugins.as<tesseract_common::PluginInfoContainer>();
+        rhs.executor_plugin_infos = executor_plugins.as<tesseract::common::PluginInfoContainer>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + EXECUTOR_PLUGINS_KEY +
-                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+                                 "' to tesseract::common::PluginInfoContainer! Details: " + e.what());
       }
     }
 
@@ -676,12 +676,12 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
 
       try
       {
-        rhs.task_plugin_infos = node_plugins.as<tesseract_common::PluginInfoContainer>();
+        rhs.task_plugin_infos = node_plugins.as<tesseract::common::PluginInfoContainer>();
       }
       catch (const std::exception& e)
       {
         throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + NODE_PLUGINS_KEY +
-                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+                                 "' to tesseract::common::PluginInfoContainer! Details: " + e.what());
       }
     }
 
@@ -690,9 +690,9 @@ struct convert<tesseract_common::TaskComposerPluginInfo>
 };
 
 template <>
-struct convert<tesseract_common::TransformMap>
+struct convert<tesseract::common::TransformMap>
 {
-  static Node encode(const tesseract_common::TransformMap& rhs)
+  static Node encode(const tesseract::common::TransformMap& rhs)
   {
     Node node;
     for (const auto& pair : rhs)
@@ -701,7 +701,7 @@ struct convert<tesseract_common::TransformMap>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_common::TransformMap& rhs)
+  static bool decode(const Node& node, tesseract::common::TransformMap& rhs)
   {
     if (!node.IsMap())
       return false;
@@ -714,9 +714,9 @@ struct convert<tesseract_common::TransformMap>
 };
 
 template <>
-struct convert<tesseract_common::CalibrationInfo>
+struct convert<tesseract::common::CalibrationInfo>
 {
-  static Node encode(const tesseract_common::CalibrationInfo& rhs)
+  static Node encode(const tesseract::common::CalibrationInfo& rhs)
   {
     Node node;
     node["joints"] = rhs.joints;
@@ -724,20 +724,20 @@ struct convert<tesseract_common::CalibrationInfo>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_common::CalibrationInfo& rhs)
+  static bool decode(const Node& node, tesseract::common::CalibrationInfo& rhs)
   {
     const YAML::Node& joints_node = node["joints"];
 
-    rhs.joints = joints_node.as<tesseract_common::TransformMap>();
+    rhs.joints = joints_node.as<tesseract::common::TransformMap>();
 
     return true;
   }
 };
 
 template <>
-struct convert<tesseract_common::Toolpath>
+struct convert<tesseract::common::Toolpath>
 {
-  static Node encode(const tesseract_common::Toolpath& rhs)
+  static Node encode(const tesseract::common::Toolpath& rhs)
   {
     Node node;
     for (const auto& seg : rhs)
@@ -752,7 +752,7 @@ struct convert<tesseract_common::Toolpath>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_common::Toolpath& rhs)
+  static bool decode(const Node& node, tesseract::common::Toolpath& rhs)
   {
     if (!node.IsSequence())
       return false;
@@ -760,7 +760,7 @@ struct convert<tesseract_common::Toolpath>
     rhs.reserve(node.size());
     for (const auto& seg_node : node)
     {
-      tesseract_common::VectorIsometry3d seg;
+      tesseract::common::VectorIsometry3d seg;
       seg.reserve(seg_node.size());
       for (const auto& p_node : seg_node)
         seg.push_back(p_node.as<Eigen::Isometry3d>());
@@ -774,27 +774,27 @@ struct convert<tesseract_common::Toolpath>
 
 //=========================== CollisionMarginPairOverrideType Enum ===========================
 template <>
-struct convert<tesseract_common::CollisionMarginPairOverrideType>
+struct convert<tesseract::common::CollisionMarginPairOverrideType>
 {
-  static Node encode(const tesseract_common::CollisionMarginPairOverrideType& rhs)
+  static Node encode(const tesseract::common::CollisionMarginPairOverrideType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<tesseract_common::CollisionMarginPairOverrideType, std::string> m = {
-      { tesseract_common::CollisionMarginPairOverrideType::NONE, "NONE" },
-      { tesseract_common::CollisionMarginPairOverrideType::MODIFY, "MODIFY" },
-      { tesseract_common::CollisionMarginPairOverrideType::REPLACE, "REPLACE" }
+    static const std::map<tesseract::common::CollisionMarginPairOverrideType, std::string> m = {
+      { tesseract::common::CollisionMarginPairOverrideType::NONE, "NONE" },
+      { tesseract::common::CollisionMarginPairOverrideType::MODIFY, "MODIFY" },
+      { tesseract::common::CollisionMarginPairOverrideType::REPLACE, "REPLACE" }
     };
     // LCOV_EXCL_STOP
     return Node(m.at(rhs));
   }
 
-  static bool decode(const Node& node, tesseract_common::CollisionMarginPairOverrideType& rhs)
+  static bool decode(const Node& node, tesseract::common::CollisionMarginPairOverrideType& rhs)
   {
     // LCOV_EXCL_START
-    static const std::map<std::string, tesseract_common::CollisionMarginPairOverrideType> inv = {
-      { "NONE", tesseract_common::CollisionMarginPairOverrideType::NONE },
-      { "MODIFY", tesseract_common::CollisionMarginPairOverrideType::MODIFY },
-      { "REPLACE", tesseract_common::CollisionMarginPairOverrideType::REPLACE }
+    static const std::map<std::string, tesseract::common::CollisionMarginPairOverrideType> inv = {
+      { "NONE", tesseract::common::CollisionMarginPairOverrideType::NONE },
+      { "MODIFY", tesseract::common::CollisionMarginPairOverrideType::MODIFY },
+      { "REPLACE", tesseract::common::CollisionMarginPairOverrideType::REPLACE }
     };
     // LCOV_EXCL_STOP
 
@@ -812,9 +812,9 @@ struct convert<tesseract_common::CollisionMarginPairOverrideType>
 
 //============================ PairsCollisionMarginData ============================
 template <>
-struct convert<tesseract_common::PairsCollisionMarginData>
+struct convert<tesseract::common::PairsCollisionMarginData>
 {
-  static Node encode(const tesseract_common::PairsCollisionMarginData& rhs)
+  static Node encode(const tesseract::common::PairsCollisionMarginData& rhs)
   {
     Node node(NodeType::Map);
     for (const auto& pair : rhs)
@@ -832,7 +832,7 @@ struct convert<tesseract_common::PairsCollisionMarginData>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_common::PairsCollisionMarginData& rhs)
+  static bool decode(const Node& node, tesseract::common::PairsCollisionMarginData& rhs)
   {
     if (!node.IsMap())
       return false;
@@ -856,27 +856,27 @@ struct convert<tesseract_common::PairsCollisionMarginData>
 
 //================================== CollisionMarginPairData =================================
 template <>
-struct convert<tesseract_common::CollisionMarginPairData>
+struct convert<tesseract::common::CollisionMarginPairData>
 {
-  static Node encode(const tesseract_common::CollisionMarginPairData& rhs)
+  static Node encode(const tesseract::common::CollisionMarginPairData& rhs)
   {
-    const tesseract_common::PairsCollisionMarginData& data = rhs.getCollisionMargins();
+    const tesseract::common::PairsCollisionMarginData& data = rhs.getCollisionMargins();
     return Node(data);
   }
 
-  static bool decode(const Node& node, tesseract_common::CollisionMarginPairData& rhs)
+  static bool decode(const Node& node, tesseract::common::CollisionMarginPairData& rhs)
   {
-    auto data = node.as<tesseract_common::PairsCollisionMarginData>();
-    rhs = tesseract_common::CollisionMarginPairData(data);
+    auto data = node.as<tesseract::common::PairsCollisionMarginData>();
+    rhs = tesseract::common::CollisionMarginPairData(data);
     return true;
   }
 };
 
 //============================ AllowedCollisionEntries ============================
 template <>
-struct convert<tesseract_common::AllowedCollisionEntries>
+struct convert<tesseract::common::AllowedCollisionEntries>
 {
-  static Node encode(const tesseract_common::AllowedCollisionEntries& rhs)
+  static Node encode(const tesseract::common::AllowedCollisionEntries& rhs)
   {
     Node node(NodeType::Map);
     for (const auto& pair : rhs)
@@ -894,7 +894,7 @@ struct convert<tesseract_common::AllowedCollisionEntries>
     return node;
   }
 
-  static bool decode(const Node& node, tesseract_common::AllowedCollisionEntries& rhs)
+  static bool decode(const Node& node, tesseract::common::AllowedCollisionEntries& rhs)
   {
     if (!node.IsMap())
       return false;
@@ -918,18 +918,18 @@ struct convert<tesseract_common::AllowedCollisionEntries>
 
 //================================== AllowedCollisionMatrix =================================
 template <>
-struct convert<tesseract_common::AllowedCollisionMatrix>
+struct convert<tesseract::common::AllowedCollisionMatrix>
 {
-  static Node encode(const tesseract_common::AllowedCollisionMatrix& rhs)
+  static Node encode(const tesseract::common::AllowedCollisionMatrix& rhs)
   {
-    const tesseract_common::AllowedCollisionEntries& data = rhs.getAllAllowedCollisions();
+    const tesseract::common::AllowedCollisionEntries& data = rhs.getAllAllowedCollisions();
     return Node(data);
   }
 
-  static bool decode(const Node& node, tesseract_common::AllowedCollisionMatrix& rhs)
+  static bool decode(const Node& node, tesseract::common::AllowedCollisionMatrix& rhs)
   {
-    auto data = node.as<tesseract_common::AllowedCollisionEntries>();
-    rhs = tesseract_common::AllowedCollisionMatrix(data);
+    auto data = node.as<tesseract::common::AllowedCollisionEntries>();
+    rhs = tesseract::common::AllowedCollisionMatrix(data);
     return true;
   }
 };

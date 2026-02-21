@@ -38,15 +38,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/point_cloud.h>
 #include <tesseract_common/resource_locator.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml_element,
-                                                const tesseract_common::ResourceLocator& locator,
-                                                tesseract_geometry::OctreeSubType shape_type,
-                                                bool prune)
+tesseract::geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml_element,
+                                                 const tesseract::common::ResourceLocator& locator,
+                                                 tesseract::geometry::OctreeSubType shape_type,
+                                                 bool prune)
 {
   std::string filename;
-  if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
+  if (tesseract::common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("PointCloud: Missing or failed parsing attribute 'filename'!"));
 
   double resolution{ 0 };
@@ -56,7 +56,7 @@ tesseract_geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml_
 
   auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
-  tesseract_common::Resource::Ptr located_resource = locator.locateResource(filename);
+  tesseract::common::Resource::Ptr located_resource = locator.locateResource(filename);
   if (!located_resource || !located_resource->isFile() || !std::filesystem::exists(located_resource->getFilePath()))
   {
     // TODO: Handle point clouds that are not files
@@ -70,8 +70,8 @@ tesseract_geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml_
   if (cloud->points.empty())
     std::throw_with_nested(std::runtime_error("PointCloud: Imported point cloud from '" + filename + "' is empty!"));
 
-  auto octree = tesseract_geometry::createOctree(*cloud, resolution, prune);
-  auto geom = std::make_shared<tesseract_geometry::Octree>(std::move(octree), shape_type, prune);
+  auto octree = tesseract::geometry::createOctree(*cloud, resolution, prune);
+  auto geom = std::make_shared<tesseract::geometry::Octree>(std::move(octree), shape_type, prune);
   if (geom == nullptr)
     std::throw_with_nested(std::runtime_error("PointCloud: Failed to create Tesseract Octree Geometry from point "
                                               "cloud!"));
@@ -79,4 +79,4 @@ tesseract_geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml_
   return geom;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

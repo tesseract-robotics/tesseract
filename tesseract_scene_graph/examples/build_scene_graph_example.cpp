@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_common/utils.h>
 
-using namespace tesseract_scene_graph;
+using namespace tesseract::scene_graph;
 
 std::string toString(const ShortestPath& path)
 {
@@ -101,7 +101,7 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:9: Check getJointChildrenNames
 
   // documentation:start:10: Save Graph
-  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_tree_example.dot");
+  g.saveDOT(tesseract::common::getTempPath() + "graph_acyclic_tree_example.dot");
   // documentation:end:10: Save Graph
 
   // documentation:start:11: Test if the graph is Acyclic
@@ -137,7 +137,7 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:15: Add new joint
 
   // documentation:start:16: Save new graph
-  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_not_tree_example.dot");
+  g.saveDOT(tesseract::common::getTempPath() + "graph_acyclic_not_tree_example.dot");
   // documentation:end:16: Save new graph
 
   // documentation:start:17: Test again if the graph is Acyclic

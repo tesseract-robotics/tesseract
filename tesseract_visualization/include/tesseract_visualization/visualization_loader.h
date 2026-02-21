@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <boost_plugin_loader/plugin_loader.hpp>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 class Visualization;
 
@@ -53,6 +53,6 @@ public:
   std::shared_ptr<Visualization> get(std::string plugin_name = "") const;
 };
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 
 #endif  // TESSERACT_VISUALIZATION_VISUALIZATION_LOADER_H

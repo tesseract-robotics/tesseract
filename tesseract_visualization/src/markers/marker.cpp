@@ -1,7 +1,7 @@
 
 #include <tesseract_visualization/markers/marker.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 void Marker::setParentLink(std::string parent_link) { parent_link_ = std::move(parent_link); }
 
@@ -19,4 +19,4 @@ void Marker::setScale(const Eigen::Vector3d& scale) { scale_ = scale; }
 
 const Eigen::Vector3d& Marker::getScale() const { return scale_; }
 
-};  // namespace tesseract_visualization
+};  // namespace tesseract::visualization

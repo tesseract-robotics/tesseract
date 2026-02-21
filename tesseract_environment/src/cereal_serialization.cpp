@@ -5,69 +5,71 @@
 #include <cereal/archives/xml.hpp>
 #include <cereal/archives/json.hpp>
 
-CEREAL_REGISTER_TYPE(tesseract_environment::EnvironmentContactAllowedValidator)
-CEREAL_REGISTER_TYPE(tesseract_environment::EnvironmentPtrAnyPoly)
-CEREAL_REGISTER_TYPE(tesseract_environment::EnvironmentConstPtrAnyPoly)
-CEREAL_REGISTER_TYPE(tesseract_environment::AddContactManagersPluginInfoCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::AddKinematicsInformationCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::AddLinkCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::AddSceneGraphCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::AddTrajectoryLinkCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeCollisionMarginsCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeJointAccelerationLimitsCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeJointOriginCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeJointPositionLimitsCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeJointVelocityLimitsCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeLinkCollisionEnabledCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeLinkOriginCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ChangeLinkVisibilityCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ModifyAllowedCollisionsCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::MoveJointCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::MoveLinkCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::RemoveAllowedCollisionLinkCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::RemoveJointCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::RemoveLinkCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::ReplaceJointCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::SetActiveContinuousContactManagerCommand)
-CEREAL_REGISTER_TYPE(tesseract_environment::SetActiveDiscreteContactManagerCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::EnvironmentContactAllowedValidator)
+CEREAL_REGISTER_TYPE(tesseract::environment::EnvironmentPtrAnyPoly)
+CEREAL_REGISTER_TYPE(tesseract::environment::EnvironmentConstPtrAnyPoly)
+CEREAL_REGISTER_TYPE(tesseract::environment::AddContactManagersPluginInfoCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::AddKinematicsInformationCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::AddLinkCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::AddSceneGraphCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::AddTrajectoryLinkCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeCollisionMarginsCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeJointAccelerationLimitsCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeJointOriginCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeJointPositionLimitsCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeJointVelocityLimitsCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeLinkCollisionEnabledCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeLinkOriginCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ChangeLinkVisibilityCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ModifyAllowedCollisionsCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::MoveJointCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::MoveLinkCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::RemoveAllowedCollisionLinkCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::RemoveJointCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::RemoveLinkCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::ReplaceJointCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::SetActiveContinuousContactManagerCommand)
+CEREAL_REGISTER_TYPE(tesseract::environment::SetActiveDiscreteContactManagerCommand)
 
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::ContactAllowedValidator,
-                                     tesseract_environment::EnvironmentContactAllowedValidator)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_environment::EnvironmentPtrAnyPoly)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_common::AnyInterface, tesseract_environment::EnvironmentConstPtrAnyPoly)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::AddContactManagersPluginInfoCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::AddKinematicsInformationCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::AddLinkCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::AddSceneGraphCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::AddTrajectoryLinkCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::ChangeCollisionMarginsCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::ChangeJointAccelerationLimitsCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::ChangeJointOriginCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::ChangeJointPositionLimitsCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::ChangeJointVelocityLimitsCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::ChangeLinkCollisionEnabledCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::ChangeLinkOriginCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::ChangeLinkVisibilityCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::ModifyAllowedCollisionsCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::MoveJointCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::MoveLinkCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::RemoveAllowedCollisionLinkCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::RemoveJointCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::RemoveLinkCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command, tesseract_environment::ReplaceJointCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::SetActiveContinuousContactManagerCommand)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract_environment::Command,
-                                     tesseract_environment::SetActiveDiscreteContactManagerCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::ContactAllowedValidator,
+                                     tesseract::environment::EnvironmentContactAllowedValidator)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface, tesseract::environment::EnvironmentPtrAnyPoly)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface,
+                                     tesseract::environment::EnvironmentConstPtrAnyPoly)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::AddContactManagersPluginInfoCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::AddKinematicsInformationCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::AddLinkCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::AddSceneGraphCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::AddTrajectoryLinkCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::ChangeCollisionMarginsCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::ChangeJointAccelerationLimitsCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::ChangeJointOriginCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::ChangeJointPositionLimitsCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::ChangeJointVelocityLimitsCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::ChangeLinkCollisionEnabledCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::ChangeLinkOriginCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::ChangeLinkVisibilityCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::ModifyAllowedCollisionsCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::MoveJointCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::MoveLinkCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::RemoveAllowedCollisionLinkCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::RemoveJointCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::RemoveLinkCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command, tesseract::environment::ReplaceJointCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::SetActiveContinuousContactManagerCommand)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
+                                     tesseract::environment::SetActiveDiscreteContactManagerCommand)
 
 // LCOV_EXCL_START
 CEREAL_REGISTER_DYNAMIC_INIT(tesseract_environment_cereal)

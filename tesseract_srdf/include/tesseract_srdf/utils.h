@@ -30,7 +30,7 @@
 #include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_scene_graph/fwd.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 class SRDFModel;
 
@@ -39,7 +39,7 @@ class SRDFModel;
  * @param scene_graph The scene graph to add allowed collisions data
  * @param srdf_model The srdf model to extract allowed collisions
  */
-void processSRDFAllowedCollisions(tesseract_scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model);
+void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model);
 
 /**
  * @brief Used to sort a pair of strings alphabetically - first by the pair.first and then by pair.second
@@ -47,15 +47,15 @@ void processSRDFAllowedCollisions(tesseract_scene_graph::SceneGraph& scene_graph
  * @param pair2 Second pair of strings
  * @return True if pair1 should go before pair2 (is closer to A)
  */
-bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract_common::LinkNamesPair> pair1,
-                                   std::reference_wrapper<const tesseract_common::LinkNamesPair> pair2);
+bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkNamesPair> pair1,
+                                   std::reference_wrapper<const tesseract::common::LinkNamesPair> pair2);
 
 /**
  * @brief Returns an alphabetically sorted vector of ACM keys (the link pairs)
  * @param allowed_collision_entries Entries to be sorted
  * @return An alphabetically sorted vector of ACM keys (the link pairs)
  */
-std::vector<std::reference_wrapper<const tesseract_common::LinkNamesPair>>
-getAlphabeticalACMKeys(const tesseract_common::AllowedCollisionEntries& allowed_collision_entries);
-}  // namespace tesseract_srdf
+std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>>
+getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
+}  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_UTILS_H

@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <unordered_map>
 #include <tesseract_common/serialization.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 template <typename T>
 class AnyWrapper;
@@ -101,7 +101,7 @@ public:
 
 private:
   template <class Archive, class U>
-  friend void ::tesseract_common::serialize(Archive& ar, AnyWrapper<U>& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, AnyWrapper<U>& obj);
 };
 
 class AnyPoly
@@ -222,7 +222,7 @@ public:
 private:
   std::unique_ptr<AnyInterface> impl_;
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, AnyPoly& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, AnyPoly& obj);
 };
 
 using BoolAnyPoly = AnyWrapper<bool>;
@@ -249,6 +249,6 @@ using UMapStringDoubleAnyPoly = AnyWrapper<std::unordered_map<std::string, doubl
 using UMapStringFloatAnyPoly = AnyWrapper<std::unordered_map<std::string, float>>;
 using UMapStringSizeTAnyPoly = AnyWrapper<std::unordered_map<std::string, std::size_t>>;
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_ANY_POLY_H

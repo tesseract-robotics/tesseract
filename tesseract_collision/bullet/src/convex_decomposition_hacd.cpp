@@ -12,12 +12,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/convex_decomposition_hacd.h>
 #include <tesseract_collision/bullet/convex_hull_utils.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 ConvexDecompositionHACD::ConvexDecompositionHACD(const HACDParameters& params) : params_(params) {}
 
-std::vector<tesseract_geometry::ConvexMesh::Ptr>
-ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertices,
+std::vector<tesseract::geometry::ConvexMesh::Ptr>
+ConvexDecompositionHACD::compute(const tesseract::common::VectorVector3d& vertices,
                                  const Eigen::VectorXi& faces,
                                  bool verbose) const
 {
@@ -63,7 +63,7 @@ ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertice
 
   bool res = my_hacd.Compute();
 
-  std::vector<tesseract_geometry::ConvexMesh::Ptr> output;
+  std::vector<tesseract::geometry::ConvexMesh::Ptr> output;
   if (res)
   {
     std::size_t num_convex_hulls = my_hacd.GetNClusters();
@@ -80,7 +80,7 @@ ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertice
       my_hacd.GetCH(p, &points_ch[0], &triangles_ch[0]);
 
       // points
-      auto hacd_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+      auto hacd_vertices = std::make_shared<tesseract::common::VectorVector3d>();
       hacd_vertices->reserve(num_points);
       for (size_t v = 0; v < num_points; v++)
       {
@@ -88,10 +88,10 @@ ConvexDecompositionHACD::compute(const tesseract_common::VectorVector3d& vertice
         hacd_vertices->push_back(vert);
       }
 
-      auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+      auto ch_vertices = std::make_shared<tesseract::common::VectorVector3d>();
       auto ch_faces = std::make_shared<Eigen::VectorXi>();
       int ch_num_faces = createConvexHull(*ch_vertices, *ch_faces, *hacd_vertices);
-      output.push_back(std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces));
+      output.push_back(std::make_shared<tesseract::geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces));
     }
   }
   else
@@ -117,4 +117,4 @@ void HACDParameters::print() const
   std::cout << msg.str();
 }
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

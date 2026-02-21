@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ChangeLinkCollisionEnabledCommand::ChangeLinkCollisionEnabledCommand()
   : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED)
@@ -54,4 +54,4 @@ bool ChangeLinkCollisionEnabledCommand::operator!=(const ChangeLinkCollisionEnab
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

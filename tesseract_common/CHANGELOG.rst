@@ -55,7 +55,7 @@ Changelog for package tesseract_common
 * Add AllowedCollisionMatrix and CollisionMarginData to yaml extensions (`#1152 <https://github.com/tesseract-robotics/tesseract/issues/1152>`_)
 * Fix boost::archive type for binary serialization
 * Remove PluginLoader and ClassLoader from tesseract_common fwd.h
-* Make sure serialized objects have friend struct tesseract_common::Serialization
+* Make sure serialized objects have friend struct tesseract::common::Serialization
 * Contributors: Levi Armstrong, Roelof Oomen
 
 0.30.0 (2025-04-23)
@@ -132,7 +132,7 @@ Changelog for package tesseract_common
 0.27.0 (2024-12-01)
 -------------------
 * Simplify type erasure
-* Add uuid to tesseract_common::JointTrajectory
+* Add uuid to tesseract::common::JointTrajectory
 * Contributors: Levi Armstrong
 
 0.26.0 (2024-10-27)
@@ -179,7 +179,7 @@ Changelog for package tesseract_common
 * Improve any poly serialization macros
 * Fixes for building on Ubuntu Noble (`#1016 <https://github.com/tesseract-robotics/tesseract/issues/1016>`_)
 * Add missing serialization header to AnyPoly
-* Add support for shared pointers to tesseract_common::AnyPoly
+* Add support for shared pointers to tesseract::common::AnyPoly
 * Contributors: Levi Armstrong, Roelof Oomen
 
 0.22.2 (2024-06-10)
@@ -573,7 +573,7 @@ Changelog for package tesseract_common
 * Improve clone cache unit tests and fix issues with getting clone
 * Allow almostEqualRelativeAndAbs handle empty vectors
 * Refactor tesseract_environment to use applyCommands
-* Add tesseract_common::BytesResource unit test (`#545 <https://github.com/ros-industrial-consortium/tesseract/issues/545>`_)
+* Add tesseract::common::BytesResource unit test (`#545 <https://github.com/ros-industrial-consortium/tesseract/issues/545>`_)
 * Add simple timer class
 * Add vectorized version of almostEqualRelativeAndAbs to compare if two vectors are equal
 * Update cmake_common_scripts to ros_industrial_cmake_boilerplate

@@ -17,7 +17,7 @@
 #include <tesseract_common/cereal_serialization.h>
 #include <tesseract_geometry/cereal_serialization.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 template <class Archive>
 void serialize(Archive& ar, SceneState& obj)
@@ -189,6 +189,6 @@ void serialize(Archive& ar, SceneGraph& obj)
     ar(cereal::make_nvp("root_link_name", root_link_name));
   }
 }
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_CEREAL_SERIALIZATION_H

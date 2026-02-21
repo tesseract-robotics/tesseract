@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/convex_decomposition.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 struct VHACDParameters
 {
@@ -70,13 +70,14 @@ public:
   ConvexDecompositionVHACD() = default;
   ConvexDecompositionVHACD(const VHACDParameters& params);
 
-  std::vector<std::shared_ptr<tesseract_geometry::ConvexMesh>> compute(const tesseract_common::VectorVector3d& vertices,
-                                                                       const Eigen::VectorXi& faces,
-                                                                       bool verbose = true) const override;
+  std::vector<std::shared_ptr<tesseract::geometry::ConvexMesh>>
+  compute(const tesseract::common::VectorVector3d& vertices,
+          const Eigen::VectorXi& faces,
+          bool verbose = true) const override;
 
 private:
   VHACDParameters params_;
 };
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 #endif  // TESSERACT_COLLISION_CONVEX_DECOMPOSITION_VHACD_H

@@ -23,4 +23,4 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::IKFastInvKinFactory, iiwa7Kinematics)
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract::kinematics::IKFastInvKinFactory, iiwa7Kinematics)

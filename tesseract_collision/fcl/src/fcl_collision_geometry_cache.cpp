@@ -27,7 +27,7 @@
 #include <tesseract_geometry/geometry.h>
 #include <mutex>
 
-namespace tesseract_collision::tesseract_collision_fcl
+namespace tesseract::collision::fcl_internal
 {
 // Static member definitions
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -35,7 +35,7 @@ std::map<boost::uuids::uuid, std::weak_ptr<fcl::CollisionGeometryd>> FCLCollisio
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::mutex FCLCollisionGeometryCache::mutex_;
 
-void FCLCollisionGeometryCache::insert(const std::shared_ptr<const tesseract_geometry::Geometry>& key,
+void FCLCollisionGeometryCache::insert(const std::shared_ptr<const tesseract::geometry::Geometry>& key,
                                        const std::shared_ptr<fcl::CollisionGeometryd>& value)
 {
   assert(!key->getUUID().is_nil());
@@ -44,7 +44,7 @@ void FCLCollisionGeometryCache::insert(const std::shared_ptr<const tesseract_geo
 }
 
 std::shared_ptr<fcl::CollisionGeometryd>
-FCLCollisionGeometryCache::get(const std::shared_ptr<const tesseract_geometry::Geometry>& key)
+FCLCollisionGeometryCache::get(const std::shared_ptr<const tesseract::geometry::Geometry>& key)
 {
   assert(!key->getUUID().is_nil());
   std::scoped_lock lock(mutex_);
@@ -72,4 +72,4 @@ void FCLCollisionGeometryCache::prune()
   }
 }
 
-}  // namespace tesseract_collision::tesseract_collision_fcl
+}  // namespace tesseract::collision::fcl_internal

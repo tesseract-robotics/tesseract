@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 static const std::string KDL_FWD_KIN_CHAIN_SOLVER_NAME = "KDLFwdKinChain";
 
@@ -70,7 +70,7 @@ public:
    * @param tip_link The name of the tip link for the kinematic chain
    * @param solver_name The solver name of the kinematic chain
    */
-  KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
+  KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
                  const std::string& base_link,
                  const std::string& tip_link,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
@@ -82,11 +82,11 @@ public:
    * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
    * @param solver_name The solver name of the kinematic chain
    */
-  KDLFwdKinChain(const tesseract_scene_graph::SceneGraph& scene_graph,
+  KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
                  const std::vector<std::pair<std::string, std::string> >& chains,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
-  void calcFwdKin(tesseract_common::TransformMap& transforms,
+  void calcFwdKin(tesseract::common::TransformMap& transforms,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
   void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
@@ -111,7 +111,7 @@ private:
   static thread_local KDL::JntArray kdl_joints_cache;  // NOLINT
 
   /** @brief calcFwdKin helper function */
-  void calcFwdKinHelperAll(tesseract_common::TransformMap& transforms,
+  void calcFwdKinHelperAll(tesseract::common::TransformMap& transforms,
                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcJacobian helper function */
@@ -121,5 +121,5 @@ private:
 
 };  // class KDLKinematicChain
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KDL_KINEMATIC_CHAIN_H

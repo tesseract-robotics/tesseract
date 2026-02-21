@@ -14,7 +14,7 @@
 
 #include <tesseract_common/cereal_serialization.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 template <class Archive>
 void serialize(Archive& ar, KinematicsInformation& obj)
@@ -39,6 +39,6 @@ void serialize(Archive& ar, SRDFModel& obj)
   ar(cereal::make_nvp("group_names", obj.collision_margin_data));
   ar(cereal::make_nvp("group_names", obj.calibration_info));
 }
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
 
 #endif  // TESSERACT_SRDF_CEREAL_SERIALIZATION_H

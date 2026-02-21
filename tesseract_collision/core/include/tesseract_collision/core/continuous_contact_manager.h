@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_common/fwd.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 class ContinuousContactManager
 {
@@ -87,7 +87,7 @@ public:
   virtual bool addCollisionObject(const std::string& name,
                                   const int& mask_id,
                                   const CollisionShapesConst& shapes,
-                                  const tesseract_common::VectorIsometry3d& shape_poses,
+                                  const tesseract::common::VectorIsometry3d& shape_poses,
                                   bool enabled = true) = 0;
 
   /**
@@ -102,7 +102,7 @@ public:
    * @param name  The collision objects name
    * @return A vector of collision geometries transforms. The vector will be empty if the collision object is not found.
    */
-  virtual const tesseract_common::VectorIsometry3d&
+  virtual const tesseract::common::VectorIsometry3d&
   getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
 
   /**
@@ -151,13 +151,13 @@ public:
    * @param poses The tranformation in world
    */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const tesseract_common::VectorIsometry3d& poses) = 0;
+                                            const tesseract::common::VectorIsometry3d& poses) = 0;
 
   /**
    * @brief Set a series of static collision object's tranforms
    * @param transforms A transform map <name, pose>
    */
-  virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) = 0;
 
   /**
    * @brief Set a single cast(moving) collision object's tansforms
@@ -184,8 +184,8 @@ public:
    * @param pose2 The end tranformations in world
    */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const tesseract_common::VectorIsometry3d& pose1,
-                                            const tesseract_common::VectorIsometry3d& pose2) = 0;
+                                            const tesseract::common::VectorIsometry3d& pose1,
+                                            const tesseract::common::VectorIsometry3d& pose2) = 0;
 
   /**
    * @brief Set a series of cast(moving) collision object's tranforms
@@ -196,8 +196,8 @@ public:
    * @param pose1 A start transform map <name, pose>
    * @param pose2 A end transform map <name, pose>
    */
-  virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1,
-                                            const tesseract_common::TransformMap& pose2) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract::common::TransformMap& pose1,
+                                            const tesseract::common::TransformMap& pose2) = 0;
 
   /**
    * @brief Get all collision objects
@@ -264,10 +264,10 @@ public:
 
   /** @brief Set the active function for determining if two links are allowed to be in collision */
   virtual void
-  setContactAllowedValidator(std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator) = 0;
+  setContactAllowedValidator(std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator) = 0;
 
   /** @brief Get the active function for determining if two links are allowed to be in collision */
-  virtual std::shared_ptr<const tesseract_common::ContactAllowedValidator> getContactAllowedValidator() const = 0;
+  virtual std::shared_ptr<const tesseract::common::ContactAllowedValidator> getContactAllowedValidator() const = 0;
 
   /**
    * @brief Perform a contact test for all objects based
@@ -283,6 +283,6 @@ public:
   virtual void applyContactManagerConfig(const ContactManagerConfig& config);
 };
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H

@@ -27,7 +27,7 @@
 #include <tesseract_collision/core/contact_result_validator.h>
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 /**
  * @brief Combines two ContactAllowedValidator using the override type
@@ -36,9 +36,9 @@ namespace tesseract_collision
  * @param type Override type used to combine the ContactAllowedValidator
  * @return One ContactAllowedValidator that combines the two
  */
-tesseract_common::ContactAllowedValidator::ConstPtr
-combineContactAllowedValidators(tesseract_common::ContactAllowedValidator::ConstPtr original,
-                                tesseract_common::ContactAllowedValidator::ConstPtr override,
+tesseract::common::ContactAllowedValidator::ConstPtr
+combineContactAllowedValidators(tesseract::common::ContactAllowedValidator::ConstPtr original,
+                                tesseract::common::ContactAllowedValidator::ConstPtr override,
                                 ACMOverrideType type = ACMOverrideType::OR);
 
 /**
@@ -49,11 +49,11 @@ combineContactAllowedValidators(tesseract_common::ContactAllowedValidator::Const
  */
 template <typename ManagerType>
 inline void applyContactAllowedValidatorOverride(ManagerType& manager,
-                                                 const tesseract_common::AllowedCollisionMatrix& acm,
+                                                 const tesseract::common::AllowedCollisionMatrix& acm,
                                                  ACMOverrideType type)
 {
-  tesseract_common::ContactAllowedValidator::ConstPtr original = manager.getContactAllowedValidator();
-  auto override = std::make_shared<tesseract_common::ACMContactAllowedValidator>(acm);
+  tesseract::common::ContactAllowedValidator::ConstPtr original = manager.getContactAllowedValidator();
+  auto override = std::make_shared<tesseract::common::ACMContactAllowedValidator>(acm);
   manager.setContactAllowedValidator(combineContactAllowedValidators(original, override, type));
 }
 
@@ -75,6 +75,6 @@ inline void applyModifyObjectEnabled(ManagerType& manager,
       manager.disableCollisionObject(entry.first);
   }
 }
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_CORE_UTILS_H

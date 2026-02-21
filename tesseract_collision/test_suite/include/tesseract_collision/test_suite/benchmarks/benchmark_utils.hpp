@@ -5,33 +5,33 @@
 #include <Eigen/Eigen>
 #include <console_bridge/console.h>
 
-using namespace tesseract_collision;
+using namespace tesseract::collision;
 using namespace test_suite;
-using namespace tesseract_geometry;
+using namespace tesseract::geometry;
 
-inline tesseract_geometry::Geometry::Ptr CreateUnitPrimative(const tesseract_geometry::GeometryType type,
-                                                             const double scale = 1.0)
+inline tesseract::geometry::Geometry::Ptr CreateUnitPrimative(const tesseract::geometry::GeometryType type,
+                                                              const double scale = 1.0)
 {
-  tesseract_geometry::Geometry::Ptr geom;
+  tesseract::geometry::Geometry::Ptr geom;
   switch (type)
   {
-    case tesseract_geometry::GeometryType::BOX:
-      geom = std::make_shared<tesseract_geometry::Box>(scale, scale, scale);
+    case tesseract::geometry::GeometryType::BOX:
+      geom = std::make_shared<tesseract::geometry::Box>(scale, scale, scale);
       break;
-    case tesseract_geometry::GeometryType::CONE:
-      geom = std::make_shared<tesseract_geometry::Cone>(scale, scale);
+    case tesseract::geometry::GeometryType::CONE:
+      geom = std::make_shared<tesseract::geometry::Cone>(scale, scale);
       break;
-    case tesseract_geometry::GeometryType::PLANE:
-      geom = std::make_shared<tesseract_geometry::Plane>(scale, scale, scale, scale);
+    case tesseract::geometry::GeometryType::PLANE:
+      geom = std::make_shared<tesseract::geometry::Plane>(scale, scale, scale, scale);
       break;
-    case tesseract_geometry::GeometryType::SPHERE:
-      geom = std::make_shared<tesseract_geometry::Sphere>(scale);
+    case tesseract::geometry::GeometryType::SPHERE:
+      geom = std::make_shared<tesseract::geometry::Sphere>(scale);
       break;
-    case tesseract_geometry::GeometryType::CAPSULE:
-      geom = std::make_shared<tesseract_geometry::Capsule>(scale, scale);
+    case tesseract::geometry::GeometryType::CAPSULE:
+      geom = std::make_shared<tesseract::geometry::Capsule>(scale, scale);
       break;
-    case tesseract_geometry::GeometryType::CYLINDER:
-      geom = std::make_shared<tesseract_geometry::Cylinder>(scale, scale);
+    case tesseract::geometry::GeometryType::CYLINDER:
+      geom = std::make_shared<tesseract::geometry::Cylinder>(scale, scale);
       break;
     default:
       CONSOLE_BRIDGE_logError("Invalid Geometry Type. Can only create primatives");

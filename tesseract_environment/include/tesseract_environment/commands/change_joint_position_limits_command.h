@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class ChangeJointPositionLimitsCommand;
 template <class Archive>
@@ -70,8 +70,8 @@ private:
   std::unordered_map<std::string, std::pair<double, double>> limits_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, ChangeJointPositionLimitsCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, ChangeJointPositionLimitsCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_CHANGE_JOINT_POSITION_LIMITS_COMMAND_H

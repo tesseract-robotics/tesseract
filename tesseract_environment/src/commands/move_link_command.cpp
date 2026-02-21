@@ -27,24 +27,24 @@
 
 #include <memory>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 MoveLinkCommand::MoveLinkCommand() : Command(CommandType::MOVE_LINK) {}
 
-MoveLinkCommand::MoveLinkCommand(const tesseract_scene_graph::Joint& joint)
-  : Command(CommandType::MOVE_LINK), joint_(std::make_shared<tesseract_scene_graph::Joint>(joint.clone()))
+MoveLinkCommand::MoveLinkCommand(const tesseract::scene_graph::Joint& joint)
+  : Command(CommandType::MOVE_LINK), joint_(std::make_shared<tesseract::scene_graph::Joint>(joint.clone()))
 {
 }
 
-const tesseract_scene_graph::Joint::ConstPtr& MoveLinkCommand::getJoint() const { return joint_; }
+const tesseract::scene_graph::Joint::ConstPtr& MoveLinkCommand::getJoint() const { return joint_; }
 
 bool MoveLinkCommand::operator==(const MoveLinkCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract_common::pointersEqual(joint_, rhs.joint_);
+  equal &= tesseract::common::pointersEqual(joint_, rhs.joint_);
   return equal;
 }
 bool MoveLinkCommand::operator!=(const MoveLinkCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

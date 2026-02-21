@@ -26,7 +26,7 @@
 
 #include <tesseract_common/profile.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class TestProfile : public Profile
 {
@@ -40,5 +40,5 @@ public:
 
   bool enabled{ false };
 };
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_TEST_PROFILE_H

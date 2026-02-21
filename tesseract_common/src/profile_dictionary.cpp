@@ -25,7 +25,7 @@
 #include <tesseract_common/profile_dictionary.h>
 #include <mutex>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 // NOLINTNEXTLINE(cppcoreguidelines-prefer-member-initializer)
 ProfileDictionary::ProfileDictionary(const ProfileDictionary& other)
@@ -258,4 +258,4 @@ void ProfileDictionary::clear()
   profiles_.clear();
 }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

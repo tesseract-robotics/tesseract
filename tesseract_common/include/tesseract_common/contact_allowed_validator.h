@@ -31,7 +31,7 @@
 
 #include <tesseract_common/allowed_collision_matrix.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class ACMContactAllowedValidator;
 class CombinedContactAllowedValidator;
@@ -65,16 +65,16 @@ public:
   using ConstUPtr = std::unique_ptr<const ACMContactAllowedValidator>;
 
   ACMContactAllowedValidator() = default;  // Required for serialization
-  ACMContactAllowedValidator(tesseract_common::AllowedCollisionMatrix acm);
+  ACMContactAllowedValidator(tesseract::common::AllowedCollisionMatrix acm);
 
   bool operator()(const std::string& link_name1, const std::string& link_name2) const override;
 
 protected:
-  tesseract_common::AllowedCollisionMatrix acm_;
+  tesseract::common::AllowedCollisionMatrix acm_;
 
 private:
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, ACMContactAllowedValidator& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, ACMContactAllowedValidator& obj);
 };
 
 /** @brief Identify how the two should be combined */
@@ -106,9 +106,9 @@ protected:
 
 private:
   template <class Archive>
-  friend void ::tesseract_common::serialize(Archive& ar, CombinedContactAllowedValidator& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, CombinedContactAllowedValidator& obj);
 };
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_CONTACT_ALLOWED_VALIDATOR_H

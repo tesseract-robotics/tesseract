@@ -24,7 +24,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 enum class MarkerType : int
 {
@@ -154,5 +154,5 @@ protected:
   Eigen::Vector3d scale_{ Eigen::Vector3d(1, 1, 1) };
 };
 
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization
 #endif  // TESSERACT_VISUALIZATION_MARKERS_MARKER_H

@@ -26,7 +26,7 @@
 #include <cereal/types/base_class.hpp>
 #include <cereal/details/traits.hpp>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
@@ -223,6 +223,6 @@ void serialize(Archive& ar, ProfileDictionary& obj)
   ar(cereal::make_nvp("profiles", obj.profiles_));
 }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_CEREAL_SERIALIZATION_H

@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/polygon_mesh.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 class ConvexMesh;
 template <class Archive>
@@ -70,12 +70,12 @@ public:
    * @param mesh_material A MeshMaterial describing the color and material properties of the mesh (optional)
    * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
-  ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+  ConvexMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
              std::shared_ptr<const Eigen::VectorXi> faces,
-             std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
+             std::shared_ptr<const tesseract::common::Resource> resource = nullptr,
              const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-             std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-             std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+             std::shared_ptr<const tesseract::common::VectorVector3d> normals = nullptr,
+             std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors = nullptr,
              std::shared_ptr<MeshMaterial> mesh_material = nullptr,
              std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
 
@@ -96,13 +96,13 @@ public:
    * @param mesh_material Describes the color and material properties of the mesh (optional)
    * @param mesh_textures A vector of MeshTexture to apply to the mesh (optional)
    */
-  ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+  ConvexMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
              std::shared_ptr<const Eigen::VectorXi> faces,
              int face_count,
-             std::shared_ptr<const tesseract_common::Resource> resource = nullptr,
+             std::shared_ptr<const tesseract::common::Resource> resource = nullptr,
              const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-             std::shared_ptr<const tesseract_common::VectorVector3d> normals = nullptr,
-             std::shared_ptr<const tesseract_common::VectorVector4d> vertex_colors = nullptr,
+             std::shared_ptr<const tesseract::common::VectorVector3d> normals = nullptr,
+             std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors = nullptr,
              std::shared_ptr<MeshMaterial> mesh_material = nullptr,
              std::shared_ptr<const std::vector<std::shared_ptr<MeshTexture>>> mesh_textures = nullptr);
   ConvexMesh() = default;
@@ -130,8 +130,8 @@ public:
 private:
   CreationMethod creation_method_{ DEFAULT };
   template <class Archive>
-  friend void ::tesseract_geometry::serialize(Archive& ar, ConvexMesh& obj);
+  friend void ::tesseract::geometry::serialize(Archive& ar, ConvexMesh& obj);
 };
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 
 #endif

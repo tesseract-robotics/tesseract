@@ -40,7 +40,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view LINK_ELEMENT_NAME = "link";
 
@@ -52,11 +52,11 @@ static constexpr std::string_view LINK_ELEMENT_NAME = "link";
  * @param make_convex_meshes Flag to indicate if the meshes should be converted to convex hulls
  * @return A Tesseract Link
  */
-std::shared_ptr<tesseract_scene_graph::Link>
+std::shared_ptr<tesseract::scene_graph::Link>
 parseLink(const tinyxml2::XMLElement* xml_element,
-          const tesseract_common::ResourceLocator& locator,
+          const tesseract::common::ResourceLocator& locator,
           bool make_convex_meshes,
-          std::unordered_map<std::string, std::shared_ptr<tesseract_scene_graph::Material>>& available_materials);
+          std::unordered_map<std::string, std::shared_ptr<tesseract::scene_graph::Material>>& available_materials);
 
 /**
  * @brief writeLink Write a link to URDF XML
@@ -66,9 +66,9 @@ parseLink(const tinyxml2::XMLElement* xml_element,
  * set, geometry will be saved with absolute paths.
  * @return XML element representing link in URDF format
  */
-tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract_scene_graph::Link>& link,
+tinyxml2::XMLElement* writeLink(const std::shared_ptr<const tesseract::scene_graph::Link>& link,
                                 tinyxml2::XMLDocument& doc,
                                 const std::string& package_path);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 #endif  // TESSERACT_URDF_LINK_H

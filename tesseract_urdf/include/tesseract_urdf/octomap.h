@@ -39,7 +39,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view OCTOMAP_ELEMENT_NAME = "tesseract:octomap";
 
@@ -51,9 +51,9 @@ static constexpr std::string_view OCTOMAP_ELEMENT_NAME = "tesseract:octomap";
  * @param version The version number
  * @return A Tesseract Geometry Octree
  */
-std::shared_ptr<tesseract_geometry::Octree> parseOctomap(const tinyxml2::XMLElement* xml_element,
-                                                         const tesseract_common::ResourceLocator& locator,
-                                                         bool visual);
+std::shared_ptr<tesseract::geometry::Octree> parseOctomap(const tinyxml2::XMLElement* xml_element,
+                                                          const tesseract::common::ResourceLocator& locator,
+                                                          bool visual);
 
 /**
  * @brief writeOctomap Write octomap to URDF XML. This is non-standard URDF / tesseract-exclusive
@@ -65,10 +65,10 @@ std::shared_ptr<tesseract_geometry::Octree> parseOctomap(const tinyxml2::XMLElem
  * this should be an absolute path.
  * @return XML element representing the octomap object in URDF Format
  */
-tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract_geometry::Octree>& octree,
+tinyxml2::XMLElement* writeOctomap(const std::shared_ptr<const tesseract::geometry::Octree>& octree,
                                    tinyxml2::XMLDocument& doc,
                                    const std::string& package_path,
                                    const std::string& filename);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 #endif  // TESSERACT_URDF_OCTOMAP_H

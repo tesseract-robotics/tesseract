@@ -27,7 +27,7 @@
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/core/types.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
 
@@ -46,7 +46,7 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  *
  * namespace fanuc_p50ib_15_ikfast_wrapper
  * {
- * class FanucP50iBInvKinematics : public tesseract_kinematics::IKFastInvKin
+ * class FanucP50iBInvKinematics : public tesseract::kinematics::IKFastInvKin
  * {
  * public:
  *   FanucP50iBInvKinematics(const std::string base_link_name,
@@ -104,7 +104,7 @@ public:
                std::vector<std::vector<double>> free_joint_states = {});
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract_common::TransformMap& tip_link_poses,
+                  const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
   Eigen::Index numJoints() const override;
@@ -136,6 +136,6 @@ protected:
   std::vector<std::vector<double>> free_joint_states_;
 };
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 
 #endif  // TESSERACT_KINEMATICS_IKFAST_INV_KIN_H

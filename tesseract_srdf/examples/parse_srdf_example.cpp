@@ -8,8 +8,8 @@
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
 
-using namespace tesseract_scene_graph;
-using namespace tesseract_srdf;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
 
 std::string toString(const ShortestPath& path)
 {
@@ -102,7 +102,7 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:1: Create scene graph
 
   // documentation:start:2: Get the srdf file path
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string srdf_file =
       locator.locateResource("package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf")->getFilePath();
   // documentation:end:2: Get the srdf file path
@@ -116,7 +116,7 @@ int main(int /*argc*/, char** /*argv*/)
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
-    tesseract_common::printNestedException(e);
+    tesseract::common::printNestedException(e);
     return 1;
   }
   // documentation:end:3: Parse the srdf
@@ -128,8 +128,8 @@ int main(int /*argc*/, char** /*argv*/)
   // documentation:end:4: Add allowed collision matrix to scene graph
 
   // documentation:start:5: Get info about allowed collision matrix
-  tesseract_common::AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
-  const tesseract_common::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
+  tesseract::common::AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
+  const tesseract::common::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
   CONSOLE_BRIDGE_logInform("ACM Number of entries: %d", acm_entries.size());
   // documentation:end:5: Get info about allowed collision matrix
 }

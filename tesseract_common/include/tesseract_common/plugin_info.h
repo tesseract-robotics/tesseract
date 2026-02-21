@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/eigen_types.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 /** @brief The Plugin Information struct */
 // NOLINTNEXTLINE
@@ -186,6 +186,6 @@ struct TaskComposerPluginInfo
   bool operator!=(const TaskComposerPluginInfo& rhs) const;
 };
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_PLUGIN_INFO_H

@@ -24,7 +24,7 @@
 
 #include <tesseract_common/stopwatch.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 void Stopwatch::start()
 {
@@ -48,4 +48,4 @@ double Stopwatch::elapsedMilliseconds() const
 
 double Stopwatch::elapsedSeconds() const { return (elapsedMilliseconds() / 1000.0); }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

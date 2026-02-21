@@ -34,7 +34,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 /**
  * @brief Generates a sphere mesh using a UV sphere approximation.
@@ -74,8 +74,8 @@ namespace tesseract_geometry
  */
 std::unique_ptr<Mesh> toTriangleMesh(const Sphere& geom, double tolerance, const Eigen::Isometry3d& origin)
 {
-  auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
-  auto normals = std::make_shared<tesseract_common::VectorVector3d>();
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  auto normals = std::make_shared<tesseract::common::VectorVector3d>();
   std::vector<int> triangles;
 
   // Estimate angular step size to satisfy tolerance
@@ -182,15 +182,15 @@ std::unique_ptr<Mesh> toTriangleMesh(const Box& geom, double /*tolerance*/, cons
   const double h = geom.getZ() / 2.0;
 
   // Shared 8 corners
-  auto vertices = std::make_shared<tesseract_common::VectorVector3d>(
-      tesseract_common::VectorVector3d{ origin * Eigen::Vector3d{ -l, -w, -h },   // 0
-                                        origin * Eigen::Vector3d{ +l, -w, -h },   // 1
-                                        origin * Eigen::Vector3d{ +l, +w, -h },   // 2
-                                        origin * Eigen::Vector3d{ -l, +w, -h },   // 3
-                                        origin * Eigen::Vector3d{ -l, -w, +h },   // 4
-                                        origin * Eigen::Vector3d{ +l, -w, +h },   // 5
-                                        origin * Eigen::Vector3d{ +l, +w, +h },   // 6
-                                        origin * Eigen::Vector3d{ -l, +w, +h } }  // 7
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>(
+      tesseract::common::VectorVector3d{ origin * Eigen::Vector3d{ -l, -w, -h },   // 0
+                                         origin * Eigen::Vector3d{ +l, -w, -h },   // 1
+                                         origin * Eigen::Vector3d{ +l, +w, -h },   // 2
+                                         origin * Eigen::Vector3d{ -l, +w, -h },   // 3
+                                         origin * Eigen::Vector3d{ -l, -w, +h },   // 4
+                                         origin * Eigen::Vector3d{ +l, -w, +h },   // 5
+                                         origin * Eigen::Vector3d{ +l, +w, +h },   // 6
+                                         origin * Eigen::Vector3d{ -l, +w, +h } }  // 7
   );
 
   // Triangle indices (2 per face)
@@ -251,7 +251,7 @@ std::unique_ptr<Mesh> toTriangleMesh(const Box& geom, double /*tolerance*/, cons
   };
 
   // Initialize empty normals
-  auto normals = std::make_shared<tesseract_common::VectorVector3d>(vertices->size(), Eigen::Vector3d::Zero());
+  auto normals = std::make_shared<tesseract::common::VectorVector3d>(vertices->size(), Eigen::Vector3d::Zero());
 
   // Accumulate face normals per vertex
   for (std::size_t i = 0; i < triangles.size(); i += 4)
@@ -282,8 +282,8 @@ std::unique_ptr<Mesh> toTriangleMesh(const Box& geom, double /*tolerance*/, cons
 
 std::unique_ptr<Mesh> toTriangleMesh(const Cylinder& geom, double tolerance, const Eigen::Isometry3d& origin)
 {
-  auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
-  auto normals = std::make_shared<tesseract_common::VectorVector3d>();
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  auto normals = std::make_shared<tesseract::common::VectorVector3d>();
 
   // Compute angle step size for tolerance
   const double radius = geom.getRadius();
@@ -385,8 +385,8 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cylinder& geom, double tolerance, con
 
 std::unique_ptr<Mesh> toTriangleMesh(const Cone& geom, double tolerance, const Eigen::Isometry3d& origin)
 {
-  auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
-  auto normals = std::make_shared<tesseract_common::VectorVector3d>();
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  auto normals = std::make_shared<tesseract::common::VectorVector3d>();
 
   // Compute angular step size for tolerance-based deviation
   const double radius{ geom.getRadius() };
@@ -451,8 +451,8 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cone& geom, double tolerance, const E
 
 std::unique_ptr<Mesh> toTriangleMesh(const Capsule& geom, double tolerance, const Eigen::Isometry3d& origin)
 {
-  auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
-  auto normals = std::make_shared<tesseract_common::VectorVector3d>();
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  auto normals = std::make_shared<tesseract::common::VectorVector3d>();
 
   // Estimate angular step size
   const double radius{ geom.getRadius() };
@@ -597,4 +597,4 @@ std::unique_ptr<Mesh> toTriangleMesh(const Geometry& geom, double tolerance, con
     }
   }
 }
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

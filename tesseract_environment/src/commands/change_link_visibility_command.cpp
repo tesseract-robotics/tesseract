@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 ChangeLinkVisibilityCommand::ChangeLinkVisibilityCommand() : Command(CommandType::CHANGE_LINK_VISIBILITY) {}
 
@@ -48,4 +48,4 @@ bool ChangeLinkVisibilityCommand::operator==(const ChangeLinkVisibilityCommand& 
 }
 bool ChangeLinkVisibilityCommand::operator!=(const ChangeLinkVisibilityCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

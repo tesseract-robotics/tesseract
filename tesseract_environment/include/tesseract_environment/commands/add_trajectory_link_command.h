@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/command.h>
 #include <tesseract_common/joint_state.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class AddTrajectoryLinkCommand;
 template <class Archive>
@@ -97,13 +97,13 @@ public:
    */
   AddTrajectoryLinkCommand(std::string link_name,
                            std::string parent_link_name,
-                           tesseract_common::JointTrajectory trajectory,
+                           tesseract::common::JointTrajectory trajectory,
                            bool replace_allowed = false,
                            Method method = Method::PER_STATE_OBJECTS);
 
   const std::string& getLinkName() const;
   const std::string& getParentLinkName() const;
-  const tesseract_common::JointTrajectory& getTrajectory() const;
+  const tesseract::common::JointTrajectory& getTrajectory() const;
   bool replaceAllowed() const;
   AddTrajectoryLinkCommand::Method getMethod() const;
 
@@ -113,13 +113,13 @@ public:
 private:
   std::string link_name_;
   std::string parent_link_name_;
-  tesseract_common::JointTrajectory trajectory_;
+  tesseract::common::JointTrajectory trajectory_;
   bool replace_allowed_{ false };
   Method method_{ Method::PER_STATE_OBJECTS };
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, AddTrajectoryLinkCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, AddTrajectoryLinkCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_ADD_TRAJECTORY_LINK_COMMAND_H

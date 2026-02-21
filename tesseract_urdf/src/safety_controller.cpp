@@ -34,11 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/safety_controller.h>
 #include <tesseract_urdf/utils.h>
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
-tesseract_scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::XMLElement* xml_element)
+tesseract::scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::XMLElement* xml_element)
 {
-  auto s = std::make_shared<tesseract_scene_graph::JointSafety>();
+  auto s = std::make_shared<tesseract::scene_graph::JointSafety>();
   if (xml_element->QueryDoubleAttribute("k_velocity", &(s->k_velocity)) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("SafetyController: Missing or failed to parse attribute 'k_velocity'!"));
 
@@ -71,7 +71,7 @@ tesseract_scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::XM
   return s;
 }
 
-tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesseract_scene_graph::JointSafety>& safety,
+tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesseract::scene_graph::JointSafety>& safety,
                                             tinyxml2::XMLDocument& doc)
 {
   if (safety == nullptr)
@@ -88,4 +88,4 @@ tinyxml2::XMLElement* writeSafetyController(const std::shared_ptr<const tesserac
   return xml_element;
 }
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf

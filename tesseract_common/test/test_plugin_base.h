@@ -27,7 +27,7 @@
 #include <string>
 #include <boost_plugin_loader/fwd.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 class TestPluginBase
 {
@@ -46,6 +46,6 @@ protected:
   friend class boost_plugin_loader::PluginLoader;
 };
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_TEST_PLUGIN_BASE_H

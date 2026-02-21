@@ -10,35 +10,35 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 
-using namespace tesseract_collision;
+using namespace tesseract::collision;
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
+  BulletDiscreteSimpleManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCompoundCompoundUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
+  BulletDiscreteBVHManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCompoundCompoundUnit)  // NOLINT
 {
-  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  FCLDiscreteBVHManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionCompoundCompoundUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletCastSimpleManager checker;
+  BulletCastSimpleManager checker;
   test_suite::runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionCompoundCompoundUnit)  // NOLINT
 {
-  tesseract_collision_bullet::BulletCastBVHManager checker;
+  BulletCastBVHManager checker;
   test_suite::runTest(checker);
 }
 

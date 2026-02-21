@@ -40,10 +40,12 @@
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+using namespace tesseract::collision::bullet_internal;
+
+namespace tesseract::collision
 {
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
-static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
+static const tesseract::common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
 BulletDiscreteSimpleManager::BulletDiscreteSimpleManager(std::string name,
                                                          TesseractCollisionConfigurationInfo config_info)
@@ -93,7 +95,7 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
 bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
                                                      const int& mask_id,
                                                      const CollisionShapesConst& shapes,
-                                                     const tesseract_common::VectorIsometry3d& shape_poses,
+                                                     const tesseract::common::VectorIsometry3d& shape_poses,
                                                      bool enabled)
 {
   if (link2cow_.find(name) != link2cow_.end())
@@ -118,7 +120,7 @@ const CollisionShapesConst& BulletDiscreteSimpleManager::getCollisionObjectGeome
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
-const tesseract_common::VectorIsometry3d&
+const tesseract::common::VectorIsometry3d&
 BulletDiscreteSimpleManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
   auto cow = link2cow_.find(name);
@@ -185,14 +187,14 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const std::string
 }
 
 void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                               const tesseract_common::VectorIsometry3d& poses)
+                                                               const tesseract::common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
-void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
+void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
 {
   for (const auto& transform : transforms)
     setCollisionObjectsTransform(transform.first, transform.second);
@@ -262,11 +264,11 @@ void BulletDiscreteSimpleManager::incrementCollisionMargin(double increment)
 }
 
 void BulletDiscreteSimpleManager::setContactAllowedValidator(
-    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+    std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator)
 {
   contact_test_data_.validator = std::move(validator);
 }
-std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+std::shared_ptr<const tesseract::common::ContactAllowedValidator>
 BulletDiscreteSimpleManager::getContactAllowedValidator() const
 {
   return contact_test_data_.validator;
@@ -363,4 +365,4 @@ void BulletDiscreteSimpleManager::onCollisionMarginDataChanged()
   }
 }
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision

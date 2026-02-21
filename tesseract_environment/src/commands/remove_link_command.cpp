@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 RemoveLinkCommand::RemoveLinkCommand() : Command(CommandType::REMOVE_LINK) {}
 
@@ -46,4 +46,4 @@ bool RemoveLinkCommand::operator==(const RemoveLinkCommand& rhs) const
 }
 bool RemoveLinkCommand::operator!=(const RemoveLinkCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

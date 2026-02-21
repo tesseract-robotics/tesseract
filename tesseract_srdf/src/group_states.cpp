@@ -31,9 +31,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_srdf/group_states.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
-GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene_graph,
+GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scene_graph,
                                   const GroupNames& group_names,
                                   const tinyxml2::XMLElement* srdf_xml,
                                   const std::array<int, 3>& /*version*/)
@@ -44,18 +44,18 @@ GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene
        xml_element = xml_element->NextSiblingElement("group_state"))
   {
     std::string group_name, state_name;
-    int status = tesseract_common::QueryStringAttributeRequired(xml_element, "group", group_name);
+    int status = tesseract::common::QueryStringAttributeRequired(xml_element, "group", group_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("GroupStates: Missing or failed to parse attribute 'group'!"));
 
-    status = tesseract_common::QueryStringAttributeRequired(xml_element, "name", state_name);
+    status = tesseract::common::QueryStringAttributeRequired(xml_element, "name", state_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(
           std::runtime_error("GroupStates: Failed to parse attribute 'name' for group '" + group_name + "'!"));
 
     bool found = std::find(group_names.begin(), group_names.end(), group_name) != group_names.end();
     if (!found)
-      std::throw_with_nested(std::runtime_error(tesseract_common::strFormat(
+      std::throw_with_nested(std::runtime_error(tesseract::common::strFormat(
           "GroupStates: State '%s' group '%s' does not exist!", state_name.c_str(), group_name.c_str())));
 
     GroupsJointState joint_state;
@@ -66,40 +66,43 @@ GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene
     {
       std::string joint_name;
       double joint_value{ 0 };
-      status = tesseract_common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
+      status = tesseract::common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error(tesseract_common::strFormat("GroupStates: Missing or failed to parse "
-                                                                              "attribute 'name' from joint element for "
-                                                                              "state '%s' in group '%s'!",
-                                                                              state_name.c_str(),
-                                                                              group_name.c_str())));
+        std::throw_with_nested(std::runtime_error(tesseract::common::strFormat("GroupStates: Missing or failed to "
+                                                                               "parse "
+                                                                               "attribute 'name' from joint element "
+                                                                               "for "
+                                                                               "state '%s' in group '%s'!",
+                                                                               state_name.c_str(),
+                                                                               group_name.c_str())));
 
       if (!scene_graph.getJoint(joint_name))
-        std::throw_with_nested(std::runtime_error(tesseract_common::strFormat("GroupStates: State '%s' for group '%s' "
-                                                                              "joint name '%s' is not know to the "
-                                                                              "URDF!",
-                                                                              state_name.c_str(),
-                                                                              group_name.c_str(),
-                                                                              joint_name.c_str())));
+        std::throw_with_nested(std::runtime_error(tesseract::common::strFormat("GroupStates: State '%s' for group '%s' "
+                                                                               "joint name '%s' is not know to the "
+                                                                               "URDF!",
+                                                                               state_name.c_str(),
+                                                                               group_name.c_str(),
+                                                                               joint_name.c_str())));
 
-      status = tesseract_common::QueryDoubleAttributeRequired(joint_xml, "value", joint_value);
+      status = tesseract::common::QueryDoubleAttributeRequired(joint_xml, "value", joint_value);
       if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error(tesseract_common::strFormat("GroupStates: State '%s' for group '%s' "
-                                                                              "joint element with joint name '%s' is "
-                                                                              "missing or failed to parse attribute "
-                                                                              "'value'!",
-                                                                              state_name.c_str(),
-                                                                              group_name.c_str(),
-                                                                              joint_name.c_str())));
+        std::throw_with_nested(std::runtime_error(tesseract::common::strFormat("GroupStates: State '%s' for group '%s' "
+                                                                               "joint element with joint name '%s' is "
+                                                                               "missing or failed to parse attribute "
+                                                                               "'value'!",
+                                                                               state_name.c_str(),
+                                                                               group_name.c_str(),
+                                                                               joint_name.c_str())));
 
       joint_state[joint_name] = joint_value;
     }
 
     if (joint_state.empty())
-      std::throw_with_nested(std::runtime_error(tesseract_common::strFormat("GroupStates: State '%s' for group '%s' is "
-                                                                            "missing joint elements!",
-                                                                            state_name.c_str(),
-                                                                            group_name.c_str())));
+      std::throw_with_nested(std::runtime_error(tesseract::common::strFormat("GroupStates: State '%s' for group '%s' "
+                                                                             "is "
+                                                                             "missing joint elements!",
+                                                                             state_name.c_str(),
+                                                                             group_name.c_str())));
 
     auto gs = group_states.find(group_name);
     if (gs == group_states.end())
@@ -114,4 +117,4 @@ GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene
   return group_states;
 }
 
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf

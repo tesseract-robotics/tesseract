@@ -48,7 +48,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/tesseract_compound_compound_collision_algorithm.h>
 #include <tesseract_collision/bullet/tesseract_convex_convex_algorithm.h>
 
-namespace tesseract_collision::tesseract_collision_bullet
+using namespace tesseract::collision::bullet_internal;
+
+namespace tesseract::collision
 {
 TesseractCollisionConfigurationInfo::TesseractCollisionConfigurationInfo(bool create_pool_allocators,
                                                                          bool share_pool_allocators)
@@ -148,4 +150,4 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(const Tesseract
   m_swappedCompoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::SwappedCreateFunc;  // NOLINT
 }
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision

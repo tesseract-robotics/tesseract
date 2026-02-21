@@ -11,41 +11,41 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr_jl.h>
 
-using namespace tesseract_kinematics::test_suite;
+using namespace tesseract::kinematics::test_suite;
 
 TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphIIWA(locator);
 
-  tesseract_kinematics::KDLInvKinChainLMA::Config config;
-  tesseract_kinematics::KDLInvKinChainLMA derived_kin(*scene_graph, "base_link", "tool0", config);
+  tesseract::kinematics::KDLInvKinChainLMA::Config config;
+  tesseract::kinematics::KDLInvKinChainLMA derived_kin(*scene_graph, "base_link", "tool0", config);
 
-  tesseract_kinematics::KinematicsPluginFactory factory;
+  tesseract::kinematics::KinematicsPluginFactory factory;
   runInvKinIIWATest(factory, "KDLInvKinChainLMAFactory", "KDLFwdKinChainFactory");
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphIIWA(locator);
 
-  tesseract_kinematics::KDLInvKinChainNR::Config config;
-  tesseract_kinematics::KDLInvKinChainNR derived_kin(*scene_graph, "base_link", "tool0", config);
+  tesseract::kinematics::KDLInvKinChainNR::Config config;
+  tesseract::kinematics::KDLInvKinChainNR derived_kin(*scene_graph, "base_link", "tool0", config);
 
-  tesseract_kinematics::KinematicsPluginFactory factory;
+  tesseract::kinematics::KinematicsPluginFactory factory;
   runInvKinIIWATest(factory, "KDLInvKinChainNRFactory", "KDLFwdKinChainFactory");
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainNR_JLInverseKinematicUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphIIWA(locator);
 
-  tesseract_kinematics::KDLInvKinChainNR_JL::Config config;
-  tesseract_kinematics::KDLInvKinChainNR_JL derived_kin(*scene_graph, "base_link", "tool0", config);
+  tesseract::kinematics::KDLInvKinChainNR_JL::Config config;
+  tesseract::kinematics::KDLInvKinChainNR_JL derived_kin(*scene_graph, "base_link", "tool0", config);
 
-  tesseract_kinematics::KinematicsPluginFactory factory;
+  tesseract::kinematics::KinematicsPluginFactory factory;
   runInvKinIIWATest(factory, "KDLInvKinChainNR_JLFactory", "KDLFwdKinChainFactory");
 }
 

@@ -25,7 +25,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_srdf/kinematics_information.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
 void KinematicsInformation::clear()
 {
@@ -173,24 +173,24 @@ bool KinematicsInformation::hasGroupTCP(const std::string& group_name, const std
 bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const
 {
   auto double_eq = [](const double& v1, const double& v2) {
-    return tesseract_common::almostEqualRelativeAndAbs(v1, v2, 1e-6, std::numeric_limits<float>::epsilon());
+    return tesseract::common::almostEqualRelativeAndAbs(v1, v2, 1e-6, std::numeric_limits<float>::epsilon());
   };
 
   auto state_eq = [double_eq](const GroupsJointState& v1, const GroupsJointState& v2) {
-    return tesseract_common::isIdenticalMap<GroupsJointState, double>(v1, v2, double_eq);
+    return tesseract::common::isIdenticalMap<GroupsJointState, double>(v1, v2, double_eq);
   };
 
   auto tcp_eq = [](const Eigen::Isometry3d& v1, const Eigen::Isometry3d& v2) { return v1.isApprox(v2, 1e-5); };
 
   auto list_eq = [](const std::vector<std::string>& v1, const std::vector<std::string>& v2) {
-    return tesseract_common::isIdentical<std::string>(v1, v2, false);
+    return tesseract::common::isIdentical<std::string>(v1, v2, false);
   };
 
   bool equal = true;
-  equal &= tesseract_common::isIdenticalSet<std::string>(group_names, rhs.group_names);
-  equal &= tesseract_common::isIdenticalMap<ChainGroups, ChainGroup>(chain_groups, rhs.chain_groups);
-  equal &= tesseract_common::isIdenticalMap<JointGroups, JointGroup>(joint_groups, rhs.joint_groups, list_eq);
-  equal &= tesseract_common::isIdenticalMap<LinkGroups, LinkGroup>(link_groups, rhs.link_groups, list_eq);
+  equal &= tesseract::common::isIdenticalSet<std::string>(group_names, rhs.group_names);
+  equal &= tesseract::common::isIdenticalMap<ChainGroups, ChainGroup>(chain_groups, rhs.chain_groups);
+  equal &= tesseract::common::isIdenticalMap<JointGroups, JointGroup>(joint_groups, rhs.joint_groups, list_eq);
+  equal &= tesseract::common::isIdenticalMap<LinkGroups, LinkGroup>(link_groups, rhs.link_groups, list_eq);
   equal &= (kinematics_plugin_info == rhs.kinematics_plugin_info);
 
   equal &= (group_states.size() == rhs.group_states.size());
@@ -204,7 +204,7 @@ bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const
       if (!equal)
         break;
 
-      equal &= tesseract_common::isIdenticalMap<GroupsJointStates, GroupsJointState>(
+      equal &= tesseract::common::isIdenticalMap<GroupsJointStates, GroupsJointState>(
           group_state.second, it_group->second, state_eq);
       if (!equal)
         break;
@@ -223,7 +223,7 @@ bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const
         break;
 
       equal &=
-          tesseract_common::isIdenticalMap<GroupsTCPs, Eigen::Isometry3d>(group_tcp.second, it_group->second, tcp_eq);
+          tesseract::common::isIdenticalMap<GroupsTCPs, Eigen::Isometry3d>(group_tcp.second, it_group->second, tcp_eq);
       if (!equal)
         break;
     }
@@ -233,4 +233,4 @@ bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const
 }
 bool KinematicsInformation::operator!=(const KinematicsInformation& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf

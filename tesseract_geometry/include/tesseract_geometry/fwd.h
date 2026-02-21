@@ -26,7 +26,7 @@
 
 #include <cstdint>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 enum class GeometryType : std::uint8_t;
 class Geometry;
@@ -44,5 +44,5 @@ class Plane;
 class PolygonMesh;
 class SDFMesh;
 class Sphere;
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry
 #endif  // TESSERACT_GEOMETRY_TESSERACT_GEOMETRY_FWD_H

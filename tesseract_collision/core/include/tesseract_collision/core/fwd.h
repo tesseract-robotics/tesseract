@@ -26,7 +26,7 @@
 
 #include <cstdint>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 // types.h
 enum class ContinuousCollisionType : std::uint8_t;
@@ -58,6 +58,6 @@ class DiscreteContactManager;
 
 // continuous_contact_manager.h
 class ContinuousContactManager;
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_CORE_TESSERACT_COLLISION_FWD_H

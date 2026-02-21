@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view MIMIC_ELEMENT_NAME = "mimic";
 
@@ -48,11 +48,11 @@ static constexpr std::string_view MIMIC_ELEMENT_NAME = "mimic";
  * @param version The version number
  * @return A Tesseract JointMimic
  */
-std::shared_ptr<tesseract_scene_graph::JointMimic> parseMimic(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::scene_graph::JointMimic> parseMimic(const tinyxml2::XMLElement* xml_element);
 
-tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract_scene_graph::JointMimic>& mimic,
+tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract::scene_graph::JointMimic>& mimic,
                                  tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_MIMIC_H

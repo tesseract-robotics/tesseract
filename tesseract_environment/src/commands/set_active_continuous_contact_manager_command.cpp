@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 SetActiveContinuousContactManagerCommand::SetActiveContinuousContactManagerCommand()
   : Command(CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER)
@@ -53,4 +53,4 @@ bool SetActiveContinuousContactManagerCommand::operator!=(const SetActiveContinu
   return !operator==(rhs);
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

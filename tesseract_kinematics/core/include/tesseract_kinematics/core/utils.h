@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/kinematic_limits.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 template <typename FloatType>
 using VectorX = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>;
@@ -53,7 +53,7 @@ class ForwardKinematics;
  */
 void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Isometry3d& change_base,
-                       const tesseract_kinematics::ForwardKinematics& kin,
+                       const ForwardKinematics& kin,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                        const std::string& link_name,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point);
@@ -215,19 +215,19 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
     {
       val = sol[*current_index];
       while ((val -= (2.0 * M_PI)) > limits(*current_index, 0) ||
-             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
+             tesseract::common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
       {
         // It not guaranteed that the provided solution is within limits so this check is needed
         if (val < limits(*current_index, 1) ||
-            tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
+            tesseract::common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
         {
           /** @brief Making this thread_local does not help */
           Eigen::VectorXd new_sol = sol;
           new_sol[*current_index] = val;
 
-          if (tesseract_common::satisfiesLimits<double>(new_sol, limits))
+          if (tesseract::common::satisfiesLimits<double>(new_sol, limits))
           {
-            tesseract_common::enforceLimits<double>(new_sol, limits);
+            tesseract::common::enforceLimits<double>(new_sol, limits);
             redundant_sols.push_back(new_sol.template cast<FloatType>());
           }
 
@@ -246,19 +246,19 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
     {
       val = sol[*current_index];
       while ((val += (2.0 * M_PI)) < limits(*current_index, 1) ||
-             tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
+             tesseract::common::almostEqualRelativeAndAbs(val, limits(*current_index, 1)))
       {
         // It not guaranteed that the provided solution is within limits so this check is needed
         if (val > limits(*current_index, 0) ||
-            tesseract_common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
+            tesseract::common::almostEqualRelativeAndAbs(val, limits(*current_index, 0)))
         {
           /** @brief Making this thread_local does not help */
           Eigen::VectorXd new_sol = sol;
           new_sol[*current_index] = val;
 
-          if (tesseract_common::satisfiesLimits<double>(new_sol, limits))
+          if (tesseract::common::satisfiesLimits<double>(new_sol, limits))
           {
-            tesseract_common::enforceLimits<double>(new_sol, limits);
+            tesseract::common::enforceLimits<double>(new_sol, limits);
             redundant_sols.push_back(new_sol.template cast<FloatType>());
           }
 
@@ -381,5 +381,5 @@ inline void harmonizeTowardMedian(Eigen::Ref<VectorX<FloatType>> qs,
   }
 }
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_UTILS_H

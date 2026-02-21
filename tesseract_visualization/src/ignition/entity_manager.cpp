@@ -23,7 +23,7 @@
  */
 #include <tesseract_visualization/ignition/entity_manager.h>
 
-namespace tesseract_visualization
+namespace tesseract::visualization
 {
 EntityID EntityManager::addModel(const std::string& name)
 {
@@ -103,4 +103,4 @@ void EntityManager::clear()
   sensor_id_map_.clear();
   entity_counter_ = 1000;
 }
-}  // namespace tesseract_visualization
+}  // namespace tesseract::visualization

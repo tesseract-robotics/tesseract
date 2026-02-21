@@ -23,7 +23,7 @@
 #include <tesseract_common/utils.h>
 #include <tesseract_geometry/impl/plane.h>
 
-namespace tesseract_geometry
+namespace tesseract::geometry
 {
 Plane::Plane(double a, double b, double c, double d) : Geometry(GeometryType::PLANE), a_(a), b_(b), c_(c), d_(d) {}
 
@@ -38,12 +38,12 @@ bool Plane::operator==(const Plane& rhs) const
 {
   bool equal = true;
   equal &= Geometry::operator==(rhs);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(a_, rhs.a_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(b_, rhs.b_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(c_, rhs.c_);
-  equal &= tesseract_common::almostEqualRelativeAndAbs(d_, rhs.d_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(a_, rhs.a_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(b_, rhs.b_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(c_, rhs.c_);
+  equal &= tesseract::common::almostEqualRelativeAndAbs(d_, rhs.d_);
   return equal;
 }
 bool Plane::operator!=(const Plane& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_geometry
+}  // namespace tesseract::geometry

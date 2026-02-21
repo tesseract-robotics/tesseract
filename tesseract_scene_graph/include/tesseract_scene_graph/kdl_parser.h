@@ -51,7 +51,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/eigen_types.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 class SceneGraph;
 class Joint;
@@ -134,7 +134,7 @@ struct KDLTreeData
   std::vector<std::string> link_names;
   std::vector<std::string> active_link_names;
   std::vector<std::string> static_link_names;
-  tesseract_common::TransformMap floating_joint_values;
+  tesseract::common::TransformMap floating_joint_values;
 
   bool operator==(const KDLTreeData& rhs) const;
   bool operator!=(const KDLTreeData& rhs) const;
@@ -164,8 +164,8 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph);
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
                             const std::vector<std::string>& joint_names,
                             const std::unordered_map<std::string, double>& joint_values,
-                            const tesseract_common::TransformMap& floating_joint_values = {});
+                            const tesseract::common::TransformMap& floating_joint_values = {});
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_SCENE_GRAPH_KDL_PARSER_H

@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointDynamicsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   JointDynamics j;
 
   EXPECT_NEAR(j.damping, 0, 1e-6);
@@ -28,7 +28,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointDynamicsUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointLimitsUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   JointLimits j;
 
   EXPECT_NEAR(j.lower, 0, 1e-6);
@@ -57,7 +57,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointLimitsUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointSafetyUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   JointSafety j;
 
   EXPECT_NEAR(j.soft_upper_limit, 0, 1e-6);
@@ -83,7 +83,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointSafetyUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointCalibrationUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   JointCalibration j;
 
   EXPECT_NEAR(j.reference_position, 0, 1e-6);
@@ -106,7 +106,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointCalibrationUnit)  // NOLIN
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointMimicUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
   JointMimic j;
 
   EXPECT_NEAR(j.offset, 0, 1e-6);
@@ -129,7 +129,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointMimicUnit)  // NOLINT
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
 {
-  using namespace tesseract_scene_graph;
+  using namespace tesseract::scene_graph;
 
   Joint joint_1("joint_n1");
   EXPECT_TRUE(joint_1.parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity()));

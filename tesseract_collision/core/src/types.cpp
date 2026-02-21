@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/contact_result_validator.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 void ContactResult::clear()
 {
@@ -61,20 +61,20 @@ void ContactResult::clear()
 bool ContactResult::operator==(const ContactResult& rhs) const
 {
   bool ret_val = true;
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(distance, rhs.distance);
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points[0], rhs.nearest_points[0]);
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points[1], rhs.nearest_points[1]);
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points_local[0], rhs.nearest_points_local[0]);
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(nearest_points_local[1], rhs.nearest_points_local[1]);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(distance, rhs.distance);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(nearest_points[0], rhs.nearest_points[0]);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(nearest_points[1], rhs.nearest_points[1]);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(nearest_points_local[0], rhs.nearest_points_local[0]);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(nearest_points_local[1], rhs.nearest_points_local[1]);
   ret_val &= transform[0].isApprox(rhs.transform[0]);
   ret_val &= transform[1].isApprox(rhs.transform[1]);
   ret_val &= (link_names == rhs.link_names);
   ret_val &= (shape_id == rhs.shape_id);
   ret_val &= (subshape_id == rhs.subshape_id);
   ret_val &= (type_id == rhs.type_id);
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(normal, rhs.normal);
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(cc_time[0], rhs.cc_time[0]);
-  ret_val &= tesseract_common::almostEqualRelativeAndAbs(cc_time[1], rhs.cc_time[1]);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(normal, rhs.normal);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(cc_time[0], rhs.cc_time[0]);
+  ret_val &= tesseract::common::almostEqualRelativeAndAbs(cc_time[1], rhs.cc_time[1]);
   ret_val &= (cc_type == rhs.cc_type);
   ret_val &= cc_transform[0].isApprox(rhs.cc_transform[0]);
   ret_val &= cc_transform[1].isApprox(rhs.cc_transform[1]);
@@ -100,7 +100,7 @@ bool ContactRequest::operator!=(const ContactRequest& rhs) const { return !opera
 
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
 {
-  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
   ++count_;
   auto& cv = data_[key];
   return cv.emplace_back(std::move(result));
@@ -109,7 +109,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactRes
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, const MappedType& results)
 {
   assert(!results.empty());
-  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
   count_ += static_cast<long>(results.size());
   auto& cv = data_[key];
   cv.insert(cv.end(), results.begin(), results.end());
@@ -118,7 +118,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, const Mapp
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactResult result)
 {
-  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
   auto& cv = data_[key];
   count_ += (1 - static_cast<long>(cv.size()));
   assert(count_ >= 0);
@@ -129,7 +129,7 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactRes
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, const MappedType& results)
 {
-  assert(tesseract_common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
   assert(!results.empty());
   auto& cv = data_[key];
   count_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
@@ -146,11 +146,11 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
                                                        const std::vector<std::string>& active_link_names,
                                                        double segment_dt,
                                                        bool discrete,
-                                                       const tesseract_collision::ContactResultMap::FilterFn& filter)
+                                                       const tesseract::collision::ContactResultMap::FilterFn& filter)
 {
   for (auto& pair : sub_segment_results.data_)
   {
-    assert(tesseract_common::makeOrderedLinkPair(pair.first.first, pair.first.second) == pair.first);
+    assert(tesseract::common::makeOrderedLinkPair(pair.first.first, pair.first.second) == pair.first);
     // Update cc_time and cc_type
     for (auto& r : pair.second)
     {
@@ -164,13 +164,13 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
                              (static_cast<double>(sub_segment_index) * segment_dt) + (r.cc_time[j] * segment_dt);
           assert(r.cc_time[j] >= 0.0 && r.cc_time[j] <= 1.0);
           if (sub_segment_index == 0 &&
-              (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time0 || discrete))
-            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time0;
+              (r.cc_type[j] == tesseract::collision::ContinuousCollisionType::CCType_Time0 || discrete))
+            r.cc_type[j] = tesseract::collision::ContinuousCollisionType::CCType_Time0;
           else if (sub_segment_index == sub_segment_last_index &&
-                   (r.cc_type[j] == tesseract_collision::ContinuousCollisionType::CCType_Time1 || discrete))
-            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Time1;
+                   (r.cc_type[j] == tesseract::collision::ContinuousCollisionType::CCType_Time1 || discrete))
+            r.cc_type[j] = tesseract::collision::ContinuousCollisionType::CCType_Time1;
           else
-            r.cc_type[j] = tesseract_collision::ContinuousCollisionType::CCType_Between;
+            r.cc_type[j] = tesseract::collision::ContinuousCollisionType::CCType_Between;
 
           // If discrete set cc_transform for discrete continuous
           if (discrete)
@@ -358,7 +358,7 @@ std::string ContactResultMap::getSummary() const
 }
 
 ContactTestData::ContactTestData(CollisionMarginData collision_margin_data,
-                                 std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator,
+                                 std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator,
                                  ContactRequest req,
                                  ContactResultMap& res)
   : collision_margin_data(std::move(collision_margin_data))
@@ -431,7 +431,7 @@ bool CollisionCheckConfig::operator==(const CollisionCheckConfig& rhs) const
   ret_val &= (contact_request == rhs.contact_request);
   ret_val &= (type == rhs.type);
   ret_val &=
-      tesseract_common::almostEqualRelativeAndAbs(longest_valid_segment_length, rhs.longest_valid_segment_length);
+      tesseract::common::almostEqualRelativeAndAbs(longest_valid_segment_length, rhs.longest_valid_segment_length);
   ret_val &= (check_program_mode == rhs.check_program_mode);
   ret_val &= (exit_condition == rhs.exit_condition);
   return ret_val;
@@ -455,7 +455,7 @@ ContactTrajectorySubstepResults::operator bool() const { return !contacts.empty(
 void ContactTrajectorySubstepResults::addContact(int substep_number,
                                                  const Eigen::VectorXd& start_substate,  // NOLINT
                                                  const Eigen::VectorXd& end_substate,    // NOLINT
-                                                 const tesseract_collision::ContactResultMap& new_contacts)
+                                                 const tesseract::collision::ContactResultMap& new_contacts)
 {
   state0 = start_substate;
   state1 = end_substate;
@@ -466,9 +466,9 @@ void ContactTrajectorySubstepResults::addContact(int substep_number,
 
 int ContactTrajectorySubstepResults::numContacts() const { return static_cast<int>(contacts.size()); }
 
-tesseract_collision::ContactResultVector ContactTrajectorySubstepResults::worstCollision() const
+tesseract::collision::ContactResultVector ContactTrajectorySubstepResults::worstCollision() const
 {
-  tesseract_collision::ContactResultVector worst_collision;
+  tesseract::collision::ContactResultVector worst_collision;
   double worst_distance = std::numeric_limits<double>::max();
   for (const auto& collision : contacts)
   {
@@ -514,7 +514,7 @@ void ContactTrajectoryStepResults::addContact(int step_number,
                                               const Eigen::VectorXd& end_state,       // NOLINT
                                               const Eigen::VectorXd& start_substate,  // NOLINT
                                               const Eigen::VectorXd& end_substate,    // NOLINT
-                                              const tesseract_collision::ContactResultMap& contacts)
+                                              const tesseract::collision::ContactResultMap& contacts)
 {
   if (total_substeps < num_substeps)
   {
@@ -557,7 +557,7 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::worstSubstep() con
   double worst_distance = std::numeric_limits<double>::max();
   for (const auto& substep : substeps)
   {
-    tesseract_collision::ContactResultVector substep_worst_collision = substep.worstCollision();
+    tesseract::collision::ContactResultVector substep_worst_collision = substep.worstCollision();
     // Check if the returned worst collision vector is empty before accessing front()
     if (!substep_worst_collision.empty() && substep_worst_collision.front().distance < worst_distance)
     {
@@ -568,7 +568,7 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::worstSubstep() con
   return worst_substep;
 }
 
-tesseract_collision::ContactResultVector ContactTrajectoryStepResults::worstCollision() const
+tesseract::collision::ContactResultVector ContactTrajectoryStepResults::worstCollision() const
 {
   // Get the worst substep first
   ContactTrajectorySubstepResults worst_s = worstSubstep();
@@ -620,7 +620,7 @@ void ContactTrajectoryResults::addContact(int step_number,
                                           const Eigen::VectorXd& end_state,       // NOLINT
                                           const Eigen::VectorXd& start_substate,  // NOLINT
                                           const Eigen::VectorXd& end_substate,    // NOLINT
-                                          const tesseract_collision::ContactResultMap& contacts)
+                                          const tesseract::collision::ContactResultMap& contacts)
 {
   if (step_number < 0 || step_number >= total_steps)
     throw std::out_of_range("ContactTrajectoryResults::addContact: step_number out of range");
@@ -651,7 +651,7 @@ ContactTrajectoryStepResults ContactTrajectoryResults::worstStep() const
   double worst_distance = std::numeric_limits<double>::max();
   for (const auto& step : steps)
   {
-    tesseract_collision::ContactResultVector step_worst_collision = step.worstCollision();
+    tesseract::collision::ContactResultVector step_worst_collision = step.worstCollision();
     if (!step_worst_collision.empty() && step_worst_collision.front().distance < worst_distance)
     {
       worst_distance = step_worst_collision.front().distance;
@@ -661,9 +661,9 @@ ContactTrajectoryStepResults ContactTrajectoryResults::worstStep() const
   return worst_step;
 }
 
-tesseract_collision::ContactResultVector ContactTrajectoryResults::worstCollision() const
+tesseract::collision::ContactResultVector ContactTrajectoryResults::worstCollision() const
 {
-  tesseract_collision::ContactResultVector worst_collision = worstStep().worstCollision();
+  tesseract::collision::ContactResultVector worst_collision = worstStep().worstCollision();
   return worst_collision;
 }
 
@@ -1077,4 +1077,4 @@ std::stringstream ContactTrajectoryResults::condensedSummary() const
   return ss;
 }
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision

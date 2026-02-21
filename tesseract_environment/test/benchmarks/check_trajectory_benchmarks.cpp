@@ -18,23 +18,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_kinematics/core/joint_group.h>
 
-using namespace tesseract_scene_graph;
-using namespace tesseract_srdf;
-using namespace tesseract_collision;
-using namespace tesseract_environment;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
+using namespace tesseract::collision;
+using namespace tesseract::environment;
 
 SceneGraph::Ptr getSceneGraph()
 {
   std::string url = "package://tesseract_support/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_common::GeneralResourceLocator locator;
-  return tesseract_urdf::parseURDFFile(locator.locateResource(url)->getFilePath(), locator);
+  tesseract::common::GeneralResourceLocator locator;
+  return tesseract::urdf::parseURDFFile(locator.locateResource(url)->getFilePath(), locator);
 }
 
 SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 {
   std::string url = "package://tesseract_support/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
 
   auto srdf = std::make_shared<SRDFModel>();
   srdf->initFile(scene_graph, locator.locateResource(url)->getFilePath(), locator);
@@ -43,12 +43,12 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 }
 
 static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
-                                              std::vector<tesseract_collision::ContactResultMap> contacts,
-                                              const tesseract_collision::ContinuousContactManager::Ptr& manager,
-                                              const tesseract_scene_graph::StateSolver::Ptr& state_solver,
+                                              std::vector<tesseract::collision::ContactResultMap> contacts,
+                                              const tesseract::collision::ContinuousContactManager::Ptr& manager,
+                                              const StateSolver::Ptr& state_solver,
                                               const std::vector<std::string>& joint_names,
-                                              const tesseract_common::TrajArray& traj,
-                                              const tesseract_collision::CollisionCheckConfig& config,
+                                              const tesseract::common::TrajArray& traj,
+                                              const tesseract::collision::CollisionCheckConfig& config,
                                               bool log_level_debug)
 {
   if (log_level_debug)
@@ -63,11 +63,11 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
 }
 
 static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
-                                                 std::vector<tesseract_collision::ContactResultMap> contacts,
-                                                 const tesseract_collision::ContinuousContactManager::Ptr& manager,
-                                                 const tesseract_kinematics::JointGroup::ConstPtr& manip,
-                                                 const tesseract_common::TrajArray& traj,
-                                                 const tesseract_collision::CollisionCheckConfig& config,
+                                                 std::vector<tesseract::collision::ContactResultMap> contacts,
+                                                 const tesseract::collision::ContinuousContactManager::Ptr& manager,
+                                                 const tesseract::kinematics::JointGroup::ConstPtr& manip,
+                                                 const tesseract::common::TrajArray& traj,
+                                                 const tesseract::collision::CollisionCheckConfig& config,
                                                  bool log_level_debug)
 {
   if (log_level_debug)
@@ -82,12 +82,12 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
 }
 
 static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
-                                            std::vector<tesseract_collision::ContactResultMap> contacts,
-                                            const tesseract_collision::DiscreteContactManager::Ptr& manager,
-                                            const tesseract_scene_graph::StateSolver::Ptr& state_solver,
+                                            std::vector<tesseract::collision::ContactResultMap> contacts,
+                                            const tesseract::collision::DiscreteContactManager::Ptr& manager,
+                                            const StateSolver::Ptr& state_solver,
                                             const std::vector<std::string>& joint_names,
-                                            const tesseract_common::TrajArray& traj,
-                                            const tesseract_collision::CollisionCheckConfig& config,
+                                            const tesseract::common::TrajArray& traj,
+                                            const tesseract::collision::CollisionCheckConfig& config,
                                             bool log_level_debug)
 {
   if (log_level_debug)
@@ -102,11 +102,11 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
 }
 
 static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
-                                               std::vector<tesseract_collision::ContactResultMap> contacts,
-                                               const tesseract_collision::DiscreteContactManager::Ptr& manager,
-                                               const tesseract_kinematics::JointGroup::ConstPtr& manip,
-                                               const tesseract_common::TrajArray& traj,
-                                               const tesseract_collision::CollisionCheckConfig& config,
+                                               std::vector<tesseract::collision::ContactResultMap> contacts,
+                                               const tesseract::collision::DiscreteContactManager::Ptr& manager,
+                                               const tesseract::kinematics::JointGroup::ConstPtr& manip,
+                                               const tesseract::common::TrajArray& traj,
+                                               const tesseract::collision::CollisionCheckConfig& config,
                                                bool log_level_debug)
 {
   if (log_level_debug)
@@ -123,10 +123,10 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
 int main(int argc, char** argv)
 {
   auto env = std::make_shared<Environment>();
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
+  SceneGraph::Ptr scene_graph = getSceneGraph();
   auto srdf = getSRDFModel(*scene_graph);
   env->init(*scene_graph, srdf);
-  env->setResourceLocator(std::make_shared<tesseract_common::GeneralResourceLocator>());
+  env->setResourceLocator(std::make_shared<tesseract::common::GeneralResourceLocator>());
 
   // Add sphere to environment
   Link link_sphere("sphere_attached");
@@ -134,7 +134,7 @@ int main(int argc, char** argv)
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
-  visual->geometry = std::make_shared<tesseract_geometry::Sphere>(0.15);
+  visual->geometry = std::make_shared<tesseract::geometry::Sphere>(0.15);
   link_sphere.visual.push_back(visual);
 
   Collision::Ptr collision = std::make_shared<Collision>();
@@ -147,7 +147,7 @@ int main(int argc, char** argv)
   joint_sphere.child_link_name = link_sphere.getName();
   joint_sphere.type = JointType::FIXED;
 
-  auto cmd = std::make_shared<tesseract_environment::AddLinkCommand>(link_sphere, joint_sphere);
+  auto cmd = std::make_shared<tesseract::environment::AddLinkCommand>(link_sphere, joint_sphere);
 
   env->applyCommand(cmd);
 
@@ -188,29 +188,29 @@ int main(int argc, char** argv)
   joint_pos_collision(5) = 1.4959;
   joint_pos_collision(6) = 0.0;
 
-  std::vector<tesseract_common::TrajArray> traj_arrays;
+  std::vector<tesseract::common::TrajArray> traj_arrays;
 
   // Only intermediat states are in collision
-  tesseract_common::TrajArray traj(5, joint_start_pos.size());
+  tesseract::common::TrajArray traj(5, joint_start_pos.size());
   for (int i = 0; i < joint_start_pos.size(); ++i)
     traj.col(i) = Eigen::VectorXd::LinSpaced(5, joint_start_pos(i), joint_end_pos(i));
 
   // Only start state is not in collision
-  tesseract_common::TrajArray traj2(3, joint_start_pos.size());
+  tesseract::common::TrajArray traj2(3, joint_start_pos.size());
   for (int i = 0; i < joint_start_pos.size(); ++i)
     traj2.col(i) = Eigen::VectorXd::LinSpaced(3, joint_start_pos(i), joint_pos_collision(i));
 
   // Only start state is not in collision
-  tesseract_common::TrajArray traj3(3, joint_start_pos.size());
+  tesseract::common::TrajArray traj3(3, joint_start_pos.size());
   for (int i = 0; i < joint_start_pos.size(); ++i)
     traj3.col(i) = Eigen::VectorXd::LinSpaced(3, joint_pos_collision(i), joint_end_pos(i));
 
   // Only two states
-  tesseract_common::TrajArray traj4(2, joint_start_pos.size());
+  tesseract::common::TrajArray traj4(2, joint_start_pos.size());
   traj4.row(0) = joint_pos_collision;
   traj4.row(1) = joint_end_pos;
 
-  tesseract_common::TrajArray traj5(2, joint_start_pos.size());
+  tesseract::common::TrajArray traj5(2, joint_start_pos.size());
   traj5.row(0) = joint_start_pos;
   traj5.row(1) = joint_pos_collision;
 
@@ -220,24 +220,24 @@ int main(int argc, char** argv)
   traj_arrays.push_back(traj4);
   traj_arrays.push_back(traj5);
 
-  tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
-  tesseract_collision::ContinuousContactManager::Ptr continuous_manager = env->getContinuousContactManager();
-  tesseract_scene_graph::StateSolver::Ptr state_solver = env->getStateSolver();
-  tesseract_kinematics::JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
-  std::vector<tesseract_collision::ContactResultMap> contacts;
-  tesseract_collision::CollisionCheckConfig discrete_config;
+  tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
+  tesseract::collision::ContinuousContactManager::Ptr continuous_manager = env->getContinuousContactManager();
+  StateSolver::Ptr state_solver = env->getStateSolver();
+  tesseract::kinematics::JointGroup::ConstPtr joint_group = env->getJointGroup("manipulator");
+  std::vector<tesseract::collision::ContactResultMap> contacts;
+  tesseract::collision::CollisionCheckConfig discrete_config;
   discrete_config.type = CollisionEvaluatorType::DISCRETE;
   discrete_config.check_program_mode = CollisionCheckProgramType::ALL;
   discrete_config.exit_condition = CollisionCheckExitType::ALL;
-  tesseract_collision::CollisionCheckConfig discrete_lvs_config;
+  tesseract::collision::CollisionCheckConfig discrete_lvs_config;
   discrete_lvs_config.type = CollisionEvaluatorType::LVS_DISCRETE;
   discrete_lvs_config.check_program_mode = CollisionCheckProgramType::ALL;
   discrete_lvs_config.exit_condition = CollisionCheckExitType::ALL;
-  tesseract_collision::CollisionCheckConfig continuous_config;
+  tesseract::collision::CollisionCheckConfig continuous_config;
   continuous_config.type = CollisionEvaluatorType::CONTINUOUS;
   continuous_config.check_program_mode = CollisionCheckProgramType::ALL;
   continuous_config.exit_condition = CollisionCheckExitType::ALL;
-  tesseract_collision::CollisionCheckConfig continuous_lvs_config;
+  tesseract::collision::CollisionCheckConfig continuous_lvs_config;
   continuous_lvs_config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
   continuous_lvs_config.check_program_mode = CollisionCheckProgramType::ALL;
   continuous_lvs_config.exit_condition = CollisionCheckExitType::ALL;
@@ -248,37 +248,37 @@ int main(int argc, char** argv)
 
   {
     std::function<void(benchmark::State&,
-                       std::vector<tesseract_collision::ContactResultMap>,
-                       tesseract_collision::ContinuousContactManager::Ptr,
-                       tesseract_scene_graph::StateSolver::Ptr,
+                       std::vector<tesseract::collision::ContactResultMap>,
+                       tesseract::collision::ContinuousContactManager::Ptr,
+                       StateSolver::Ptr,
                        std::vector<std::string>,
-                       tesseract_common::TrajArray,
-                       tesseract_collision::CollisionCheckConfig,
+                       tesseract::common::TrajArray,
+                       tesseract::collision::CollisionCheckConfig,
                        bool)>
         BM_CHECK_TRAJ_CS = BM_CHECK_TRAJECTORY_CONTINUOUS_SS;
     std::function<void(benchmark::State&,
-                       std::vector<tesseract_collision::ContactResultMap>,
-                       tesseract_collision::ContinuousContactManager::Ptr,
-                       tesseract_kinematics::JointGroup::ConstPtr,
-                       tesseract_common::TrajArray,
-                       tesseract_collision::CollisionCheckConfig,
+                       std::vector<tesseract::collision::ContactResultMap>,
+                       tesseract::collision::ContinuousContactManager::Ptr,
+                       tesseract::kinematics::JointGroup::ConstPtr,
+                       tesseract::common::TrajArray,
+                       tesseract::collision::CollisionCheckConfig,
                        bool)>
         BM_CHECK_TRAJ_CM = BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP;
     std::function<void(benchmark::State&,
-                       std::vector<tesseract_collision::ContactResultMap>,
-                       tesseract_collision::DiscreteContactManager::Ptr,
-                       tesseract_scene_graph::StateSolver::Ptr,
+                       std::vector<tesseract::collision::ContactResultMap>,
+                       tesseract::collision::DiscreteContactManager::Ptr,
+                       StateSolver::Ptr,
                        std::vector<std::string>,
-                       tesseract_common::TrajArray,
-                       tesseract_collision::CollisionCheckConfig,
+                       tesseract::common::TrajArray,
+                       tesseract::collision::CollisionCheckConfig,
                        bool)>
         BM_CHECK_TRAJ_DS = BM_CHECK_TRAJECTORY_DISCRETE_SS;
     std::function<void(benchmark::State&,
-                       std::vector<tesseract_collision::ContactResultMap>,
-                       tesseract_collision::DiscreteContactManager::Ptr,
-                       tesseract_kinematics::JointGroup::ConstPtr,
-                       tesseract_common::TrajArray,
-                       tesseract_collision::CollisionCheckConfig,
+                       std::vector<tesseract::collision::ContactResultMap>,
+                       tesseract::collision::DiscreteContactManager::Ptr,
+                       tesseract::kinematics::JointGroup::ConstPtr,
+                       tesseract::common::TrajArray,
+                       tesseract::collision::CollisionCheckConfig,
                        bool)>
         BM_CHECK_TRAJ_DM = BM_CHECK_TRAJECTORY_DISCRETE_MANIP;
 
@@ -401,11 +401,11 @@ int main(int argc, char** argv)
 
   {
     std::function<void(benchmark::State&,
-                       std::vector<tesseract_collision::ContactResultMap>,
-                       tesseract_collision::DiscreteContactManager::Ptr,
-                       tesseract_kinematics::JointGroup::ConstPtr,
-                       tesseract_common::TrajArray,
-                       tesseract_collision::CollisionCheckConfig,
+                       std::vector<tesseract::collision::ContactResultMap>,
+                       tesseract::collision::DiscreteContactManager::Ptr,
+                       tesseract::kinematics::JointGroup::ConstPtr,
+                       tesseract::common::TrajArray,
+                       tesseract::collision::CollisionCheckConfig,
                        bool)>
         BM_CHECK_TRAJ_DM = BM_CHECK_TRAJECTORY_DISCRETE_MANIP;
 
@@ -432,7 +432,7 @@ int main(int argc, char** argv)
         for (const auto& exit_condition : exit_conditions)
         {
           // Create discrete LVS config with specific contact request type and exit condition
-          tesseract_collision::CollisionCheckConfig discrete_lvs_test_config;
+          tesseract::collision::CollisionCheckConfig discrete_lvs_test_config;
           discrete_lvs_test_config.type = CollisionEvaluatorType::LVS_DISCRETE;
           discrete_lvs_test_config.contact_request.type = contact_test_type.first;
           discrete_lvs_test_config.check_program_mode = CollisionCheckProgramType::ALL;

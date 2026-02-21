@@ -17,7 +17,7 @@
 #include <cereal/types/chrono.hpp>
 #include <cereal/types/polymorphic.hpp>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 template <class Archive>
 void serialize(Archive& ar, Command& obj)
@@ -206,16 +206,16 @@ void serialize(Archive& ar, Environment& obj)
 {
   if (Archive::is_loading::value)
   {
-    std::shared_ptr<const tesseract_common::ResourceLocator> resource_locator;
+    std::shared_ptr<const tesseract::common::ResourceLocator> resource_locator;
     ar(cereal::make_nvp("resource_locator", resource_locator));
 
-    tesseract_environment::Commands commands;
+    tesseract::environment::Commands commands;
     ar(cereal::make_nvp("commands", commands));
 
     int init_revision{ 0 };
     ar(cereal::make_nvp("init_revision", init_revision));
 
-    tesseract_scene_graph::SceneState current_state;
+    tesseract::scene_graph::SceneState current_state;
     ar(cereal::make_nvp("current_state", current_state));
 
     std::chrono::system_clock::time_point timestamp;
@@ -242,6 +242,6 @@ void serialize(Archive& ar, Environment& obj)
   }
 }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_H

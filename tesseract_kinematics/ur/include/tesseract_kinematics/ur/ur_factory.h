@@ -27,18 +27,18 @@
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
 #include <boost_plugin_loader/macros.h>
 
-namespace tesseract_kinematics
+namespace tesseract::kinematics
 {
 class URInvKinFactory : public InvKinFactory
 {
   std::unique_ptr<InverseKinematics> create(const std::string& solver_name,
-                                            const tesseract_scene_graph::SceneGraph& scene_graph,
-                                            const tesseract_scene_graph::SceneState& scene_state,
+                                            const tesseract::scene_graph::SceneGraph& scene_graph,
+                                            const tesseract::scene_graph::SceneState& scene_state,
                                             const KinematicsPluginFactory& plugin_factory,
                                             const YAML::Node& config) const override final;
 };
 
 PLUGIN_ANCHOR_DECL(URFactoriesAnchor)
 
-}  // namespace tesseract_kinematics
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_UR_FACTORY_H

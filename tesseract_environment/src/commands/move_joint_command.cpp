@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 MoveJointCommand::MoveJointCommand() : Command(CommandType::MOVE_JOINT) {}
 
@@ -48,4 +48,4 @@ bool MoveJointCommand::operator==(const MoveJointCommand& rhs) const
 }
 bool MoveJointCommand::operator!=(const MoveJointCommand& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment

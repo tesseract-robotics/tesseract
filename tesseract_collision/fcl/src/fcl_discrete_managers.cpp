@@ -40,10 +40,12 @@
 #include <tesseract_collision/fcl/fcl_discrete_managers.h>
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace tesseract_collision::tesseract_collision_fcl
+using namespace tesseract::collision::fcl_internal;
+
+namespace tesseract::collision
 {
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
-static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
+static const tesseract::common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
 FCLDiscreteBVHManager::FCLDiscreteBVHManager(std::string name) : name_(std::move(name))
 {
@@ -71,7 +73,7 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
 bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                const int& mask_id,
                                                const CollisionShapesConst& shapes,
-                                               const tesseract_common::VectorIsometry3d& shape_poses,
+                                               const tesseract::common::VectorIsometry3d& shape_poses,
                                                bool enabled)
 {
   if (link2cow_.find(name) != link2cow_.end())
@@ -93,7 +95,7 @@ const CollisionShapesConst& FCLDiscreteBVHManager::getCollisionObjectGeometries(
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
-const tesseract_common::VectorIsometry3d&
+const tesseract::common::VectorIsometry3d&
 FCLDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
   auto cow = link2cow_.find(name);
@@ -195,7 +197,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name
 }
 
 void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                         const tesseract_common::VectorIsometry3d& poses)
+                                                         const tesseract::common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   static_update_.clear();
@@ -232,7 +234,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::
     dynamic_manager_->update(dynamic_update_);
 }
 
-void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
+void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
 {
   static_update_.clear();
   dynamic_update_.clear();
@@ -320,11 +322,11 @@ void FCLDiscreteBVHManager::incrementCollisionMargin(double increment)
 }
 
 void FCLDiscreteBVHManager::setContactAllowedValidator(
-    std::shared_ptr<const tesseract_common::ContactAllowedValidator> validator)
+    std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator)
 {
   validator_ = std::move(validator);
 }
-std::shared_ptr<const tesseract_common::ContactAllowedValidator>
+std::shared_ptr<const tesseract::common::ContactAllowedValidator>
 FCLDiscreteBVHManager::getContactAllowedValidator() const
 {
   return validator_;
@@ -411,4 +413,4 @@ void FCLDiscreteBVHManager::onCollisionMarginDataChanged()
   if (!dynamic_update_.empty())
     dynamic_manager_->update(dynamic_update_);
 }
-}  // namespace tesseract_collision::tesseract_collision_fcl
+}  // namespace tesseract::collision

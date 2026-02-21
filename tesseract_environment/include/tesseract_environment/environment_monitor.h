@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class Environment;
 
@@ -190,10 +190,10 @@ public:
   virtual void shutdown() = 0;
 
 protected:
-  std::shared_ptr<tesseract_environment::Environment> env_;
+  std::shared_ptr<tesseract::environment::Environment> env_;
   std::string monitor_namespace_;
   MonitoredEnvironmentMode mode_{ MonitoredEnvironmentMode::DEFAULT };
 };
 
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_MONITOR_H

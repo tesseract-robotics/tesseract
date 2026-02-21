@@ -27,7 +27,7 @@
 #include <tesseract_geometry/geometry.h>
 #include <mutex>
 
-namespace tesseract_collision::tesseract_collision_bullet
+namespace tesseract::collision
 {
 // Static member definitions
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -40,7 +40,7 @@ BulletCollisionShape::BulletCollisionShape(std::shared_ptr<btCollisionShape> top
 {
 }
 
-void BulletCollisionShapeCache::insert(const std::shared_ptr<const tesseract_geometry::Geometry>& key,
+void BulletCollisionShapeCache::insert(const std::shared_ptr<const tesseract::geometry::Geometry>& key,
                                        const std::shared_ptr<BulletCollisionShape>& value)
 {
   assert(!key->getUUID().is_nil());
@@ -49,7 +49,7 @@ void BulletCollisionShapeCache::insert(const std::shared_ptr<const tesseract_geo
 }
 
 std::shared_ptr<BulletCollisionShape>
-BulletCollisionShapeCache::get(const std::shared_ptr<const tesseract_geometry::Geometry>& key)
+BulletCollisionShapeCache::get(const std::shared_ptr<const tesseract::geometry::Geometry>& key)
 {
   assert(!key->getUUID().is_nil());
   std::scoped_lock lock(mutex_);
@@ -77,4 +77,4 @@ void BulletCollisionShapeCache::prune()
   }
 }
 
-}  // namespace tesseract_collision::tesseract_collision_bullet
+}  // namespace tesseract::collision

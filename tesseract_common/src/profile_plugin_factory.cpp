@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 static const std::string PLUGIN_DIRECTORIES_ENV = "TESSERACT_PROFILES_PLUGIN_DIRECTORIES";
 static const std::string PLUGIN_ENV = "TESSERACT_PROFILES_PLUGINS";
 
-namespace tesseract_common
+namespace tesseract::common
 {
 std::string ProfileFactory::getSection() { return "Profile"; }
 
@@ -50,7 +50,7 @@ struct ProfilePluginFactory::Implementation
 {
   std::shared_ptr<const ProfileFactoryData> factory_data;
   mutable std::map<std::string, ProfileFactory::Ptr> factories;
-  std::map<std::string, tesseract_common::PluginInfoMap> plugin_infos;
+  std::map<std::string, tesseract::common::PluginInfoMap> plugin_infos;
   boost_plugin_loader::PluginLoader plugin_loader;
 };
 
@@ -60,25 +60,25 @@ ProfilePluginFactory::ProfilePluginFactory() : impl_(std::make_unique<Implementa
   impl_->plugin_loader.search_paths_env = PLUGIN_DIRECTORIES_ENV;
 }
 
-ProfilePluginFactory::ProfilePluginFactory(const tesseract_common::ProfilesPluginInfo& config) : ProfilePluginFactory()
+ProfilePluginFactory::ProfilePluginFactory(const tesseract::common::ProfilesPluginInfo& config) : ProfilePluginFactory()
 {
   loadConfig(config);
 }
 
-ProfilePluginFactory::ProfilePluginFactory(const YAML::Node& config, const tesseract_common::ResourceLocator& locator)
+ProfilePluginFactory::ProfilePluginFactory(const YAML::Node& config, const tesseract::common::ResourceLocator& locator)
   : ProfilePluginFactory()
 {
   loadConfig(config, locator);
 }
 
 ProfilePluginFactory::ProfilePluginFactory(const std::filesystem::path& config,
-                                           const tesseract_common::ResourceLocator& locator)
+                                           const tesseract::common::ResourceLocator& locator)
   : ProfilePluginFactory()
 {
   loadConfig(config, locator);
 }
 
-ProfilePluginFactory::ProfilePluginFactory(const std::string& config, const tesseract_common::ResourceLocator& locator)
+ProfilePluginFactory::ProfilePluginFactory(const std::string& config, const tesseract::common::ResourceLocator& locator)
   : ProfilePluginFactory()
 {
   loadConfig(config, locator);
@@ -100,7 +100,7 @@ std::shared_ptr<const ProfileFactoryData> ProfilePluginFactory::getFactoryData()
   return std::as_const(*impl_).factory_data;
 }
 
-void ProfilePluginFactory::loadConfig(const tesseract_common::ProfilesPluginInfo& config)
+void ProfilePluginFactory::loadConfig(const tesseract::common::ProfilesPluginInfo& config)
 {
   impl_->plugin_loader.search_libraries.insert(
       impl_->plugin_loader.search_libraries.end(), config.search_libraries.begin(), config.search_libraries.end());
@@ -111,25 +111,25 @@ void ProfilePluginFactory::loadConfig(const tesseract_common::ProfilesPluginInfo
 
 void ProfilePluginFactory::loadConfig(YAML::Node config)
 {
-  if (const YAML::Node& plugin_info = config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY])
-    loadConfig(plugin_info.as<tesseract_common::ProfilesPluginInfo>());
+  if (const YAML::Node& plugin_info = config[tesseract::common::ProfilesPluginInfo::CONFIG_KEY])
+    loadConfig(plugin_info.as<tesseract::common::ProfilesPluginInfo>());
 }
 
-void ProfilePluginFactory::loadConfig(YAML::Node config, const tesseract_common::ResourceLocator& locator)
+void ProfilePluginFactory::loadConfig(YAML::Node config, const tesseract::common::ResourceLocator& locator)
 {
-  tesseract_common::processYamlIncludeDirective(config, locator);
+  tesseract::common::processYamlIncludeDirective(config, locator);
   loadConfig(config);
 }
 
 void ProfilePluginFactory::loadConfig(const std::filesystem::path& config,
-                                      const tesseract_common::ResourceLocator& locator)
+                                      const tesseract::common::ResourceLocator& locator)
 {
-  loadConfig(tesseract_common::loadYamlFile(config.string(), locator));
+  loadConfig(tesseract::common::loadYamlFile(config.string(), locator));
 }
 
-void ProfilePluginFactory::loadConfig(const std::string& config, const tesseract_common::ResourceLocator& locator)
+void ProfilePluginFactory::loadConfig(const std::string& config, const tesseract::common::ResourceLocator& locator)
 {
-  loadConfig(tesseract_common::loadYamlString(config, locator));
+  loadConfig(tesseract::common::loadYamlString(config, locator));
 }
 
 void ProfilePluginFactory::addSearchPath(const std::string& path) { impl_->plugin_loader.search_paths.push_back(path); }
@@ -155,14 +155,14 @@ void ProfilePluginFactory::clearSearchLibraries() { impl_->plugin_loader.search_
 
 void ProfilePluginFactory::addPlugin(const std::string& ns,
                                      const std::string& name,
-                                     tesseract_common::PluginInfo plugin_info)
+                                     tesseract::common::PluginInfo plugin_info)
 {
   impl_->plugin_infos[ns][name] = std::move(plugin_info);
 }
 
 bool ProfilePluginFactory::hasPlugins() const { return !std::as_const(*impl_).plugin_infos.empty(); }
 
-std::map<std::string, tesseract_common::PluginInfoMap> ProfilePluginFactory::getPlugins() const
+std::map<std::string, tesseract::common::PluginInfoMap> ProfilePluginFactory::getPlugins() const
 {
   return std::as_const(*impl_).plugin_infos;
 }
@@ -210,7 +210,7 @@ std::unique_ptr<Profile> ProfilePluginFactory::create(const std::string& ns, con
 }
 
 std::unique_ptr<Profile> ProfilePluginFactory::create(const std::string& name,
-                                                      const tesseract_common::PluginInfo& plugin_info) const
+                                                      const tesseract::common::PluginInfo& plugin_info) const
 {
   try
   {
@@ -244,13 +244,13 @@ void ProfilePluginFactory::saveConfig(const std::filesystem::path& file_path) co
 
 YAML::Node ProfilePluginFactory::getConfig() const
 {
-  tesseract_common::ProfilesPluginInfo plugins;
+  tesseract::common::ProfilesPluginInfo plugins;
   plugins.search_paths = impl_->plugin_loader.search_paths;
   plugins.search_libraries = impl_->plugin_loader.search_libraries;
   plugins.plugin_infos = impl_->plugin_infos;
 
   YAML::Node config;
-  config[tesseract_common::ProfilesPluginInfo::CONFIG_KEY] = plugins;
+  config[tesseract::common::ProfilesPluginInfo::CONFIG_KEY] = plugins;
 
   return config;
 }
@@ -268,4 +268,4 @@ ProfileDictionary ProfilePluginFactory::getProfileDictionary() const
   }
   return profiles;
 }
-}  // namespace tesseract_common
+}  // namespace tesseract::common

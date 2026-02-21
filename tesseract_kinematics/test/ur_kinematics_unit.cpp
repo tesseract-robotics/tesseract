@@ -31,8 +31,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/ur/ur_inv_kin.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 
-using namespace tesseract_kinematics::test_suite;
-using namespace tesseract_kinematics;
+using namespace tesseract::kinematics::test_suite;
+using namespace tesseract::kinematics;
 
 void runURKinematicsTests(const URParameters& params,
                           double shoulder_offset,

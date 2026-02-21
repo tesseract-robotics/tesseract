@@ -38,7 +38,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view CYLINDER_ELEMENT_NAME = "cylinder";
 
@@ -47,11 +47,11 @@ static constexpr std::string_view CYLINDER_ELEMENT_NAME = "cylinder";
  * @param xml_element The xml element
  * @return Tesseract Geometry Cylinder
  */
-std::shared_ptr<tesseract_geometry::Cylinder> parseCylinder(const tinyxml2::XMLElement* xml_element);
+std::shared_ptr<tesseract::geometry::Cylinder> parseCylinder(const tinyxml2::XMLElement* xml_element);
 
-tinyxml2::XMLElement* writeCylinder(const std::shared_ptr<const tesseract_geometry::Cylinder>& cylinder,
+tinyxml2::XMLElement* writeCylinder(const std::shared_ptr<const tesseract::geometry::Cylinder>& cylinder,
                                     tinyxml2::XMLDocument& doc);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_CYLINDER_H

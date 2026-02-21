@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class SetActiveContinuousContactManagerCommand;
 template <class Archive>
@@ -61,8 +61,8 @@ private:
   std::string active_contact_manager_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, SetActiveContinuousContactManagerCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, SetActiveContinuousContactManagerCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER_COMMAND_H

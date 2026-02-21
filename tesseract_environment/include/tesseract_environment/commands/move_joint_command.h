@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/command.h>
 
-namespace tesseract_environment
+namespace tesseract::environment
 {
 class MoveJointCommand;
 template <class Archive>
@@ -67,8 +67,8 @@ private:
   std::string parent_link_;
 
   template <class Archive>
-  friend void ::tesseract_environment::serialize(Archive& ar, MoveJointCommand& obj);
+  friend void ::tesseract::environment::serialize(Archive& ar, MoveJointCommand& obj);
 };
-}  // namespace tesseract_environment
+}  // namespace tesseract::environment
 
 #endif  // TESSERACT_ENVIRONMENT_MOVE_JOINT_COMMAND_H

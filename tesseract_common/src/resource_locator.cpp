@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/utils.h>
 
-namespace tesseract_common
+namespace tesseract::common
 {
 bool isRelativePath(const std::string& url)
 {
@@ -198,7 +198,7 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
 
 bool GeneralResourceLocator::operator==(const GeneralResourceLocator& rhs) const
 {
-  return tesseract_common::isIdenticalMap<std::unordered_map<std::string, std::string>, std::string>(
+  return tesseract::common::isIdenticalMap<std::unordered_map<std::string, std::string>, std::string>(
       package_paths_, rhs.package_paths_);
 }
 bool GeneralResourceLocator::operator!=(const GeneralResourceLocator& rhs) const { return !operator==(rhs); }
@@ -248,7 +248,7 @@ std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream() 
   return ifs;
 }
 
-tesseract_common::Resource::Ptr SimpleLocatedResource::locateResource(const std::string& url) const
+tesseract::common::Resource::Ptr SimpleLocatedResource::locateResource(const std::string& url) const
 {
   if (parent_ == nullptr || url.empty())
     return nullptr;
@@ -285,7 +285,7 @@ bool SimpleLocatedResource::operator==(const SimpleLocatedResource& rhs) const
   equal &= Resource::operator==(rhs);
   equal &= url_ == rhs.url_;
   equal &= filename_ == rhs.filename_;
-  equal &= tesseract_common::pointersEqual(parent_, rhs.parent_);
+  equal &= tesseract::common::pointersEqual(parent_, rhs.parent_);
   return equal;
 }
 
@@ -320,7 +320,7 @@ Resource::Ptr BytesResource::locateResource(const std::string& url) const
   if (parent_ == nullptr || url.empty())
     return nullptr;
 
-  tesseract_common::Resource::Ptr resource = parent_->locateResource(url);
+  tesseract::common::Resource::Ptr resource = parent_->locateResource(url);
   if (resource != nullptr)
     return resource;
 
@@ -343,10 +343,10 @@ bool BytesResource::operator==(const BytesResource& rhs) const
   equal &= Resource::operator==(rhs);
   equal &= url_ == rhs.url_;
   equal &= bytes_ == rhs.bytes_;
-  equal &= tesseract_common::pointersEqual(parent_, rhs.parent_);
+  equal &= tesseract::common::pointersEqual(parent_, rhs.parent_);
   return equal;
 }
 
 bool BytesResource::operator!=(const BytesResource& rhs) const { return !operator==(rhs); }
 
-}  // namespace tesseract_common
+}  // namespace tesseract::common

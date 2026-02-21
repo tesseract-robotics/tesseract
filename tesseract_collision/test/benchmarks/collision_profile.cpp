@@ -17,8 +17,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 static const std::size_t DIM = 10;
 
-using namespace tesseract_collision;
-using namespace tesseract_geometry;
+using namespace tesseract::collision;
+using namespace tesseract::geometry;
 
 void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, bool use_convex_mesh)
 {
@@ -30,17 +30,17 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, 
 
   if (use_convex_mesh)
   {
-    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_vertices = std::make_shared<tesseract::common::VectorVector3d>();
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
 
-    tesseract_common::GeneralResourceLocator locator;
-    tesseract_common::loadSimplePlyFile(
+    tesseract::common::GeneralResourceLocator locator;
+    tesseract::common::loadSimplePlyFile(
         locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
         *mesh_vertices,
         *mesh_faces,
         true);
 
-    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    auto mesh = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
     sphere = makeConvexMesh(*mesh);
   }
   else
@@ -52,13 +52,13 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, 
   sphere_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  tesseract_common::VectorIsometry3d obj3_poses;
+  tesseract::common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(sphere);
   obj3_poses.push_back(sphere_pose);
   checker.addCollisionObject("move_link", 0, obj3_shapes, obj3_poses);
 
   CollisionShapesConst link_shapes;
-  tesseract_common::VectorIsometry3d link_poses;
+  tesseract::common::VectorIsometry3d link_poses;
   for (std::size_t x = 0; x < DIM; ++x)
   {
     for (std::size_t y = 0; y < DIM; ++y)
@@ -77,7 +77,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, 
         else
         {
           CollisionShapesConst shapes;
-          tesseract_common::VectorIsometry3d poses;
+          tesseract::common::VectorIsometry3d poses;
           shapes.push_back(sphere);
           poses.push_back(sphere_pose);
           std::string link_name = "sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z);
@@ -102,17 +102,17 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link
 
   if (use_convex_mesh)
   {
-    auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto mesh_vertices = std::make_shared<tesseract::common::VectorVector3d>();
     auto mesh_faces = std::make_shared<Eigen::VectorXi>();
 
-    tesseract_common::GeneralResourceLocator locator;
-    tesseract_common::loadSimplePlyFile(
+    tesseract::common::GeneralResourceLocator locator;
+    tesseract::common::loadSimplePlyFile(
         locator.locateResource("package://tesseract_support/meshes/sphere_p25m.ply")->getFilePath(),
         *mesh_vertices,
         *mesh_faces,
         true);
 
-    auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+    auto mesh = std::make_shared<tesseract::geometry::Mesh>(mesh_vertices, mesh_faces);
     sphere = makeConvexMesh(*mesh);
   }
   else
@@ -124,13 +124,13 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link
   sphere_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  tesseract_common::VectorIsometry3d obj3_poses;
+  tesseract::common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(sphere);
   obj3_poses.push_back(sphere_pose);
   checker.addCollisionObject("move_link", 0, obj3_shapes, obj3_poses);
 
   CollisionShapesConst link_shapes;
-  tesseract_common::VectorIsometry3d link_poses;
+  tesseract::common::VectorIsometry3d link_poses;
   for (std::size_t x = 0; x < DIM; ++x)
   {
     for (std::size_t y = 0; y < DIM; ++y)
@@ -149,7 +149,7 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link
         else
         {
           CollisionShapesConst shapes;
-          tesseract_common::VectorIsometry3d poses;
+          tesseract::common::VectorIsometry3d poses;
           shapes.push_back(sphere);
           poses.push_back(sphere_pose);
           std::string link_name = "sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z);
@@ -180,9 +180,9 @@ std::vector<Eigen::Isometry3d> getTransforms(std::size_t num_poses)
 
 void runDiscreteProfile(bool use_single_link, bool use_convex_mesh, double contact_distance)
 {
-  auto bt_simple_checker = std::make_shared<tesseract_collision_bullet::BulletDiscreteSimpleManager>();
-  auto bt_bvh_checker = std::make_shared<tesseract_collision_bullet::BulletDiscreteBVHManager>();
-  auto fcl_bvh_checker = std::make_shared<tesseract_collision_fcl::FCLDiscreteBVHManager>();
+  auto bt_simple_checker = std::make_shared<BulletDiscreteSimpleManager>();
+  auto bt_bvh_checker = std::make_shared<BulletDiscreteBVHManager>();
+  auto fcl_bvh_checker = std::make_shared<FCLDiscreteBVHManager>();
 
   std::vector<Eigen::Isometry3d> poses = getTransforms(50);
   std::vector<DiscreteContactManager::Ptr> checkers = { bt_simple_checker, bt_bvh_checker, fcl_bvh_checker };
@@ -217,8 +217,8 @@ void runDiscreteProfile(bool use_single_link, bool use_convex_mesh, double conta
 
 void runContinuousProfile(bool use_single_link, bool use_convex_mesh, double contact_distance)
 {
-  auto bt_simple_checker = std::make_shared<tesseract_collision_bullet::BulletCastSimpleManager>();
-  auto bt_bvh_checker = std::make_shared<tesseract_collision_bullet::BulletCastBVHManager>();
+  auto bt_simple_checker = std::make_shared<BulletCastSimpleManager>();
+  auto bt_bvh_checker = std::make_shared<BulletCastBVHManager>();
 
   std::vector<Eigen::Isometry3d> poses = getTransforms(50);
   std::vector<ContinuousContactManager::Ptr> checkers = { bt_simple_checker, bt_bvh_checker };

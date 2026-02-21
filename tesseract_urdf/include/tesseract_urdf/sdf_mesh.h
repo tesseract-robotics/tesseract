@@ -39,7 +39,7 @@ class XMLElement;  // NOLINT
 class XMLDocument;
 }  // namespace tinyxml2
 
-namespace tesseract_urdf
+namespace tesseract::urdf
 {
 static constexpr std::string_view SDF_MESH_ELEMENT_NAME = "tesseract:sdf_mesh";
 
@@ -51,9 +51,8 @@ static constexpr std::string_view SDF_MESH_ELEMENT_NAME = "tesseract:sdf_mesh";
  * @param version The version number
  * @return A vector of Tesseract SDFMeshes
  */
-std::vector<std::shared_ptr<tesseract_geometry::SDFMesh>> parseSDFMesh(const tinyxml2::XMLElement* xml_element,
-                                                                       const tesseract_common::ResourceLocator& locator,
-                                                                       bool visual);
+std::vector<std::shared_ptr<tesseract::geometry::SDFMesh>>
+parseSDFMesh(const tinyxml2::XMLElement* xml_element, const tesseract::common::ResourceLocator& locator, bool visual);
 
 /**
  * @brief writeSDFMesh Write SDF Mesh to URDF XML.  This is non-standard URDF / tesseract-exclusive
@@ -65,11 +64,11 @@ std::vector<std::shared_ptr<tesseract_geometry::SDFMesh>> parseSDFMesh(const tin
  * this should be an absolute path
  * @return XML element representing the sdf mesh object in URDF format
  */
-tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract_geometry::SDFMesh>& sdf_mesh,
+tinyxml2::XMLElement* writeSDFMesh(const std::shared_ptr<const tesseract::geometry::SDFMesh>& sdf_mesh,
                                    tinyxml2::XMLDocument& doc,
                                    const std::string& package_path,
                                    const std::string& filename);
 
-}  // namespace tesseract_urdf
+}  // namespace tesseract::urdf
 
 #endif  // TESSERACT_URDF_SDF_MESH_H

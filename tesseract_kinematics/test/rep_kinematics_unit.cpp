@@ -15,8 +15,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_state_solver/kdl/kdl_state_solver.h>
 #include <opw_kinematics/opw_parameters.h>
 
-using namespace tesseract_kinematics::test_suite;
-using namespace tesseract_kinematics;
+using namespace tesseract::kinematics::test_suite;
+using namespace tesseract::kinematics;
 
 inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB()
 {
@@ -34,27 +34,27 @@ inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB()
   return opw_params;
 }
 
-ForwardKinematics::UPtr getRobotFwdKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
+ForwardKinematics::UPtr getRobotFwdKinematics(const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   return std::make_unique<KDLFwdKinChain>(scene_graph, "base_link", "tool0");
 }
 
-ForwardKinematics::UPtr getFullFwdKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
+ForwardKinematics::UPtr getFullFwdKinematics(const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   return std::make_unique<KDLFwdKinChain>(scene_graph, "positioner_tool0", "tool0");
 }
 
-ForwardKinematics::UPtr getPositionerFwdKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
+ForwardKinematics::UPtr getPositionerFwdKinematics(const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   return std::make_unique<KDLFwdKinChain>(scene_graph, "positioner_base_link", "positioner_tool0");
 }
 
-InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneGraph& scene_graph)
+InverseKinematics::UPtr getFullInvKinematics(const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   auto robot_fwd_kin = getRobotFwdKinematics(scene_graph);
 
-  tesseract_scene_graph::KDLStateSolver state_solver(scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::scene_graph::KDLStateSolver state_solver(scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
@@ -69,7 +69,7 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
       scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution);
 
   {  // Test failure
-    tesseract_scene_graph::SceneGraph scene_graph_empty;
+    tesseract::scene_graph::SceneGraph scene_graph_empty;
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
         scene_graph_empty, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
@@ -106,11 +106,11 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract_scene_graph::SceneG
 
 TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphABBExternalPositioner(locator);
 
-  tesseract_scene_graph::KDLStateSolver state_solver(*scene_graph);
-  tesseract_scene_graph::SceneState scene_state = state_solver.getState();
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string manip_name = "robot_external_positioner";
   std::string base_link_name = "base_link";
@@ -119,7 +119,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   std::vector<std::string> joint_names{
     "positioner_joint_1", "positioner_joint_2", "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"
   };
-  tesseract_common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_names);
+  tesseract::common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_names);
 
   auto fwd_kin = getFullFwdKinematics(*scene_graph);
   auto inv_kin = getFullInvKinematics(*scene_graph);
@@ -128,7 +128,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   std::vector<std::string> fwd_joint_names = fwd_kin->getJointNames();
   std::vector<std::string> inv_joint_names = inv_kin->getJointNames();
 
-  EXPECT_TRUE(tesseract_common::isIdentical(fwd_joint_names, inv_joint_names, false));
+  EXPECT_TRUE(tesseract::common::isIdentical(fwd_joint_names, inv_joint_names, false));
 
   Eigen::Isometry3d pose;
   pose.setIdentity();

@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_common/contact_allowed_validator.h>
 
-namespace tesseract_collision
+namespace tesseract::collision
 {
 using ObjectPairKey = std::pair<std::string, std::string>;
 
@@ -48,7 +48,7 @@ using ObjectPairKey = std::pair<std::string, std::string>;
 std::vector<ObjectPairKey>
 getCollisionObjectPairs(const std::vector<std::string>& active_links,
                         const std::vector<std::string>& static_links,
-                        const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator = nullptr);
+                        const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator = nullptr);
 
 /**
  * @brief This will check if a link is active provided a list. If the list is empty the link is considered active.
@@ -67,7 +67,7 @@ bool isLinkActive(const std::vector<std::string>& active, const std::string& nam
  */
 bool isContactAllowed(const std::string& name1,
                       const std::string& name2,
-                      const std::shared_ptr<const tesseract_common::ContactAllowedValidator>& validator,
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose = false);
 
 /**
@@ -90,7 +90,7 @@ ContactResult* processResult(ContactTestData& cdata,
  * @param center The point at which to scale the data about
  * @param scale The scale factor to apply to the vertices.
  */
-void scaleVertices(tesseract_common::VectorVector3d& vertices,
+void scaleVertices(tesseract::common::VectorVector3d& vertices,
                    const Eigen::Vector3d& center,
                    const Eigen::Vector3d& scale);
 
@@ -100,8 +100,8 @@ void scaleVertices(tesseract_common::VectorVector3d& vertices,
  * @param vertices The vertices to scale
  * @param scale The scale factor to apply to the vertices.
  */
-void scaleVertices(tesseract_common::VectorVector3d& vertices, const Eigen::Vector3d& scale);
+void scaleVertices(tesseract::common::VectorVector3d& vertices, const Eigen::Vector3d& scale);
 
-}  // namespace tesseract_collision
+}  // namespace tesseract::collision
 
 #endif  // TESSERACT_COLLISION_COMMON_H

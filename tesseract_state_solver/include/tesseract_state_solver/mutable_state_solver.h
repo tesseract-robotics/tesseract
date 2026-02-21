@@ -26,7 +26,7 @@
 
 #include <tesseract_state_solver/state_solver.h>
 
-namespace tesseract_scene_graph
+namespace tesseract::scene_graph
 {
 /**
  * @brief A mutable state solver allows you to reconfigure the solver's links and joints
@@ -155,6 +155,6 @@ public:
    */
   virtual bool insertSceneGraph(const SceneGraph& scene_graph, const Joint& joint, const std::string& prefix = "") = 0;
 };
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract::scene_graph
 
 #endif  // TESSERACT_STATE_SOLVER_MUTABLE_STATE_SOLVER_H

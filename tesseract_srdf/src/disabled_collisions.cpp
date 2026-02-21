@@ -33,24 +33,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/disabled_collisions.h>
 #include <tesseract_scene_graph/graph.h>
 
-namespace tesseract_srdf
+namespace tesseract::srdf
 {
-tesseract_common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                                                 const tinyxml2::XMLElement* srdf_xml,
-                                                                 const std::array<int, 3>& /*version*/)
+tesseract::common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                                  const tinyxml2::XMLElement* srdf_xml,
+                                                                  const std::array<int, 3>& /*version*/)
 {
-  tesseract_common::AllowedCollisionMatrix acm;
+  tesseract::common::AllowedCollisionMatrix acm;
 
   for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("disable_collisions");
        xml_element != nullptr;
        xml_element = xml_element->NextSiblingElement("disable_collisions"))
   {
     std::string link1_name, link2_name, reason;
-    int status = tesseract_common::QueryStringAttributeRequired(xml_element, "link1", link1_name);
+    int status = tesseract::common::QueryStringAttributeRequired(xml_element, "link1", link1_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'link1'!"));
 
-    status = tesseract_common::QueryStringAttributeRequired(xml_element, "link2", link2_name);
+    status = tesseract::common::QueryStringAttributeRequired(xml_element, "link2", link2_name);
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'link2'!"));
 
@@ -65,7 +65,7 @@ tesseract_common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract
       continue;
     }
 
-    status = tesseract_common::QueryStringAttribute(xml_element, "reason", reason);
+    status = tesseract::common::QueryStringAttribute(xml_element, "reason", reason);
     // LCOV_EXCL_START
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'reason'!"));
@@ -76,4 +76,4 @@ tesseract_common::AllowedCollisionMatrix parseDisabledCollisions(const tesseract
 
   return acm;
 }
-}  // namespace tesseract_srdf
+}  // namespace tesseract::srdf
