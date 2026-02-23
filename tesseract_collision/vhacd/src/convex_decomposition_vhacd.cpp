@@ -28,9 +28,8 @@ public:
   {
     if (!verbose_)
       return;
-    std::cout << std::setfill(' ') << std::setw(3) << ceil(overallProgress) << "% "
-              << "[ " << stage << " " << std::setfill(' ') << std::setw(3) << ceil(stageProgress) << "% ] " << operation
-              << "\n";
+    std::cout << std::setfill(' ') << std::setw(3) << ceil(overallProgress) << "% " << "[ " << stage << " "
+              << std::setfill(' ') << std::setw(3) << ceil(stageProgress) << "% ] " << operation << "\n";
   }
 
 private:

@@ -43,7 +43,7 @@ namespace tesseract::collision::bullet_internal
 /// result in failing/missing collisions. Either improve GJK for large size ratios (testing a 100 units versus a 0.1
 /// unit object) or only enable the util for certain pairs that have a small size ratio
 
-//#define USE_SEPDISTANCE_UTIL2 1
+// #define USE_SEPDISTANCE_UTIL2 1
 
 /// The convexConvexAlgorithm collision algorithm implements time of impact, convex closest points and penetration depth
 /// calculations between two convex objects. Multiple contact points are calculated by perturbing the orientation of the

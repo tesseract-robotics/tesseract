@@ -19,8 +19,8 @@ software.
 /// Specialized capsule-capsule collision algorithm has been added for Bullet 2.75 release to increase ragdoll
 /// performance If you experience problems with capsule-capsule collision, try to define
 /// BT_DISABLE_CAPSULE_CAPSULE_COLLIDER and report it in the Bullet forums with reproduction case
-//#define BT_DISABLE_CAPSULE_CAPSULE_COLLIDER 1
-//#define ZERO_MARGIN
+// #define BT_DISABLE_CAPSULE_CAPSULE_COLLIDER 1
+// #define ZERO_MARGIN
 
 #include <tesseract_collision/bullet/tesseract_convex_convex_algorithm.h>
 #include <tesseract_collision/bullet/tesseract_gjk_pair_detector.h>
@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionShapes/btTriangleShape.h>
 #include <BulletCollision/CollisionShapes/btConvexPolyhedron.h>
 
-//#include <BulletCollision/NarrowPhaseCollision/btGjkPairDetector.h>
+// #include <BulletCollision/NarrowPhaseCollision/btGjkPairDetector.h>
 #include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
@@ -266,7 +266,7 @@ struct btPerturbedContactResult : public btManifoldResult  // NOLINT
       newDepth = (endPt - startPt).dot(normalOnBInWorld);
     }
 
-//#define DEBUG_CONTACTS 1
+// #define DEBUG_CONTACTS 1
 #ifdef DEBUG_CONTACTS
     m_debugDrawer->drawLine(startPt, endPt, btVector3(1, 0, 0));
     m_debugDrawer->drawSphere(startPt, 0.05, btVector3(0, 1, 0));
