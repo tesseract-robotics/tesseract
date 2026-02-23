@@ -24,7 +24,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #if defined(DEBUG) || defined(_DEBUG)
-//#define TEST_NON_VIRTUAL 1
+// #define TEST_NON_VIRTUAL 1
 #include <stdio.h>  //for debug printf
 #ifdef __SPU__
 #include <spu_printf.h>

@@ -978,8 +978,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   const int column_width = static_cast<int>(max_link_name_length) + 2;
 
   // Prepare the header row
-  ss << std::setw(column_width + 5) << " "
-     << "|";
+  ss << std::setw(column_width + 5) << " " << "|";
   for (std::size_t i = 0; i < link_index_map.size(); ++i)
   {
     ss << std::setw(5) << i << "|";
@@ -987,12 +986,10 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   ss << "\n";
 
   // Prepare the separator row
-  ss << std::setw(column_width + 5) << " "
-     << "|";
+  ss << std::setw(column_width + 5) << " " << "|";
   for (std::size_t i = 0; i < link_index_map.size(); ++i)
   {
-    ss << std::setw(5) << "-----"
-       << "|";
+    ss << std::setw(5) << "-----" << "|";
   }
   ss << "\n";
 

@@ -154,8 +154,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
     msg << "*****************************\n";
     if (passed_data.empty())
     {
-      msg << "No Data!"
-          << "\n";
+      msg << "No Data!" << "\n";
     }
     else
     {

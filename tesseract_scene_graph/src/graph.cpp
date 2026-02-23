@@ -1294,18 +1294,15 @@ bool SceneGraph::operator!=(const SceneGraph& rhs) const { return !operator==(rh
 
 std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 {
-  os << "Links:"
-     << "\n";
+  os << "Links:" << "\n";
   for (const auto& l : path.links)
     os << "  " << l << "\n";
 
-  os << "Joints:"
-     << "\n";
+  os << "Joints:" << "\n";
   for (const auto& j : path.joints)
     os << "  " << j << "\n";
 
-  os << "Active Joints:"
-     << "\n";
+  os << "Active Joints:" << "\n";
   for (const auto& j : path.active_joints)
     os << "  " << j << "\n";
   return os;
