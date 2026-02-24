@@ -69,7 +69,7 @@ jobs:
         run: |
           source $GITHUB_WORKSPACE/target_ws/install/setup.bash
           cd $GITHUB_WORKSPACE/target_ws
-          colcon build --cmake-target ccov-all --packages-select tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_srdf tesseract_state_solver tesseract_scene_graph tesseract_urdf
+          colcon build --cmake-target ccov-all --packages-select tesseract
           bash <(curl -s https://codecov.io/bash) -t 758610a6-d851-4185-a01a-5b9465889b62 -s $GITHUB_WORKSPACE/target_ws/build -f *all-merged.info
 
       - name: Upload coverage artifacts

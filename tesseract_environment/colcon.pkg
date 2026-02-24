@@ -1,3 +1,0 @@
-{
-    "hooks": ["share/tesseract_environment/hook/ament_prefix_path.dsv", "share/tesseract_environment/hook/ros_package_path.dsv"]
-}
