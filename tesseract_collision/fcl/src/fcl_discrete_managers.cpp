@@ -136,6 +136,7 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
 
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     link2cow_.erase(name);
+    active_.erase(std::find(active_.begin(), active_.end(), name));
     return true;
   }
   return false;
@@ -375,6 +376,7 @@ void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   }
   else
   {
+    active_.push_back(cow->getName());
     for (auto& co : objects)
       dynamic_manager_->registerObject(co.get());
   }

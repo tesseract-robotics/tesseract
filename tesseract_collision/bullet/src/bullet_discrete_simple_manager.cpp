@@ -140,6 +140,7 @@ bool BulletDiscreteSimpleManager::removeCollisionObject(const std::string& name)
     cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     link2cow_.erase(name);
+    active_.erase(std::find(active_.begin(), active_.end(), name));
     return true;
   }
 
@@ -350,9 +351,14 @@ void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
   collision_objects_.push_back(cow->getName());
 
   if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+  {
     cows_.insert(cows_.begin(), cow);
+    active_.push_back(cow->getName());
+  }
   else
+  {
     cows_.push_back(cow);
+  }
 }
 
 void BulletDiscreteSimpleManager::onCollisionMarginDataChanged()

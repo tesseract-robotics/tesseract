@@ -164,6 +164,8 @@ bool BulletCastBVHManager::removeCollisionObject(const std::string& name)
     removeCollisionObjectFromBroadphase(cow2, broadphase_, dispatcher_);
     link2castcow_.erase(name);
 
+    active_.erase(std::find(active_.begin(), active_.end(), name));
+
     return true;
   }
 
@@ -505,7 +507,16 @@ void BulletCastBVHManager::addCollisionObject(const COW::Ptr& cow)
   // Add it to the cast map
   link2castcow_[cast_cow->getName()] = cast_cow;
 
-  const COW::Ptr& selected_cow = (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) ? cast_cow : cow;
+  COW::Ptr selected_cow;
+  if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+  {
+    active_.push_back(cow->getName());
+    selected_cow = cast_cow;
+  }
+  else
+  {
+    selected_cow = cow;
+  }
 
   btVector3 aabb_min, aabb_max;
   selected_cow->getAABB(aabb_min, aabb_max);

@@ -15,6 +15,8 @@ namespace detail
 {
 inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
+  const std::size_t current_size = checker.getActiveCollisionObjects().size();
+
   //////////////////////
   // Add box to checker
   //////////////////////
@@ -29,6 +31,17 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
 
   checker.addCollisionObject("box_link", 0, obj1_shapes, obj1_poses, false);
   checker.enableCollisionObject("box_link");
+  std::vector<std::string> active = checker.getActiveCollisionObjects();
+  if (current_size == 0)
+  {
+    EXPECT_EQ(active.size(), 1);
+    EXPECT_TRUE(std::find(active.begin(), active.end(), "box_link") != active.end());
+  }
+  else
+  {
+    EXPECT_EQ(active.size(), 3);
+    EXPECT_TRUE(std::find(active.begin(), active.end(), "box_link") != active.end());
+  }
 
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
@@ -44,6 +57,19 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
 
   checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses);
   checker.disableCollisionObject("thin_box_link");
+  active = checker.getActiveCollisionObjects();
+  if (current_size == 0)
+  {
+    EXPECT_EQ(active.size(), 2);
+    EXPECT_TRUE(std::find(active.begin(), active.end(), "box_link") != active.end());
+    EXPECT_TRUE(std::find(active.begin(), active.end(), "thin_box_link") != active.end());
+  }
+  else
+  {
+    EXPECT_EQ(active.size(), 3);
+    EXPECT_TRUE(std::find(active.begin(), active.end(), "box_link") != active.end());
+    EXPECT_TRUE(std::find(active.begin(), active.end(), "thin_box_link") != active.end());
+  }
 
   /////////////////////////////////////////////////////////////////
   // Add second box to checker. If use_convex_mesh = true then this
@@ -81,6 +107,11 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   obj3_poses.push_back(second_box_pose);
 
   checker.addCollisionObject("second_box_link", 0, obj3_shapes, obj3_poses);
+  active = checker.getActiveCollisionObjects();
+  EXPECT_EQ(active.size(), 3);
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "thin_box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "second_box_link") != active.end());
 
   /////////////////////////////////////////////
   // Add box and remove
@@ -96,8 +127,20 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   checker.addCollisionObject("remove_box_link", 0, obj4_shapes, obj4_poses);
   EXPECT_TRUE(checker.getCollisionObjects().size() == 4);
   EXPECT_TRUE(checker.hasCollisionObject("remove_box_link"));
+  active = checker.getActiveCollisionObjects();
+  EXPECT_EQ(active.size(), 4);
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "thin_box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "second_box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "remove_box_link") != active.end());
   checker.removeCollisionObject("remove_box_link");
   EXPECT_FALSE(checker.hasCollisionObject("remove_box_link"));
+  active = checker.getActiveCollisionObjects();
+  EXPECT_EQ(active.size(), 3);
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "thin_box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "second_box_link") != active.end());
+  EXPECT_TRUE(std::find(active.begin(), active.end(), "remove_box_link") == active.end());
 
   /////////////////////////////////////////////
   // Try functions on a link that does not exist

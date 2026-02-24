@@ -139,6 +139,7 @@ bool BulletCastSimpleManager::removeCollisionObject(const std::string& name)
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     link2cow_.erase(name);
     link2castcow_.erase(name);
+    active_.erase(std::find(active_.begin(), active_.end(), name));
     return true;
   }
 
@@ -470,9 +471,14 @@ void BulletCastSimpleManager::addCollisionObject(const COW::Ptr& cow)
   link2castcow_[cast_cow->getName()] = cast_cow;
 
   if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+  {
     cows_.insert(cows_.begin(), cast_cow);
+    active_.push_back(cow->getName());
+  }
   else
+  {
     cows_.push_back(cow);
+  }
 }
 
 void BulletCastSimpleManager::onCollisionMarginDataChanged()

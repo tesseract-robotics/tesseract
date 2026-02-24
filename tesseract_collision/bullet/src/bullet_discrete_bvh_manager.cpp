@@ -154,6 +154,7 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     removeCollisionObjectFromBroadphase(it->second, broadphase_, dispatcher_);
     link2cow_.erase(name);
+    active_.erase(std::find(active_.begin(), active_.end(), name));
     return true;
   }
 
@@ -317,6 +318,9 @@ void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;
   collision_objects_.push_back(cow->getName());
+
+  if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+    active_.push_back(cow->getName());
 
   // Add collision object to broadphase
   addCollisionObjectToBroadphase(cow, broadphase_, dispatcher_);
