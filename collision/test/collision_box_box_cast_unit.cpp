@@ -1,0 +1,29 @@
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract/collision/bullet/bullet_cast_simple_manager.h>
+#include <tesseract/collision/bullet/bullet_cast_bvh_manager.h>
+#include <tesseract/collision/test_suite/collision_box_box_cast_unit.hpp>
+
+using namespace tesseract::collision;
+
+TEST(TesseractCollisionUnit, BulletCastSimpleCollisionBoxBoxUnit)  // NOLINT
+{
+  BulletCastSimpleManager checker;
+  test_suite::runTest(checker);
+}
+
+TEST(TesseractCollisionUnit, BulletCastBVHCollisionBoxBoxUnit)  // NOLINT
+{
+  BulletCastBVHManager checker;
+  test_suite::runTest(checker);
+}
+
+int main(int argc, char** argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+
+  return RUN_ALL_TESTS();
+}

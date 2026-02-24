@@ -1,0 +1,320 @@
+/**
+ * @file environment_commands_serialization_unit.cpp
+ * @brief Tests serialization of environment commands
+ *
+ * @author Levi Armstrong
+ * @author Matthew Powelson
+ * @date June 22, 2021
+ *
+ * @copyright Copyright (c) 2020, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/commands.h>
+#include <tesseract/environment/cereal_serialization.h>
+
+#include <tesseract/common/serialization.h>
+#include <tesseract/common/resource_locator.h>
+#include <tesseract/common/unit_test_utils.h>
+#include <tesseract/common/utils.h>
+
+#include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/link.h>
+#include <tesseract/scene_graph/joint.h>
+
+#include <tesseract/urdf/urdf_parser.h>
+
+#include <tesseract/srdf/srdf_model.h>
+
+using namespace tesseract::common;
+using namespace tesseract::environment;
+using namespace tesseract::scene_graph;
+using namespace tesseract::srdf;
+
+SceneGraph::Ptr getSceneGraph(const tesseract::common::ResourceLocator& locator)
+{
+  std::string path = "package://tesseract/support/urdf/lbr_iiwa_14_r820.urdf";
+  return tesseract::urdf::parseURDFFile(locator.locateResource(path)->getFilePath(), locator);
+}
+
+SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::common::ResourceLocator& locator)
+{
+  std::string path = "package://tesseract/support/urdf/lbr_iiwa_14_r820.srdf";
+
+  auto srdf = std::make_shared<SRDFModel>();
+  srdf->initFile(scene_graph, locator.locateResource(path)->getFilePath(), locator);
+
+  return srdf;
+}
+
+Environment::Ptr getEnvironment()
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto env = std::make_shared<Environment>();
+  tesseract::scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph(locator);
+  auto srdf = getSRDFModel(*scene_graph, locator);
+  env->init(*scene_graph, srdf);
+  env->setResourceLocator(std::make_shared<tesseract::common::GeneralResourceLocator>());
+  return env;
+}
+
+TEST(EnvironmentSerializeUnit, Environment)  // NOLINT
+{
+  Environment::Ptr env = getEnvironment();
+  testSerialization<Environment::Ptr>(env, "Environment", testSerializationComparePtrEqual<Environment::Ptr>);
+}
+
+TEST(EnvironmentSerializeUnit, EnvironmentAnyPoly)  // NOLINT
+{
+  Environment::Ptr env = getEnvironment();
+  tesseract::common::AnyPoly env_any(env);
+  testSerializationAnyPoly<Environment::Ptr>(
+      env_any, "EnvironmentAnyPoly", testSerializationComparePtrEqual<Environment::Ptr>);
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ModifyAllowedCollisionsCommand)  // NOLINT
+{
+  {  // ADD
+    tesseract::common::AllowedCollisionMatrix add_ac;
+    add_ac.addAllowedCollision("link1", "link2", "description");
+    auto object = std::make_shared<ModifyAllowedCollisionsCommand>(add_ac, ModifyAllowedCollisionsType::ADD);
+    testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
+    testSerializationDerivedClass<Command, ModifyAllowedCollisionsCommand>(object, "ModifyAllowedCollisionsCommand");
+  }
+
+  {  // REMOVE
+    tesseract::common::AllowedCollisionMatrix remove_ac;
+    remove_ac.addAllowedCollision("link1", "link2", "description");
+    auto object = std::make_shared<ModifyAllowedCollisionsCommand>(remove_ac, ModifyAllowedCollisionsType::REMOVE);
+    testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
+    testSerializationDerivedClass<Command, ModifyAllowedCollisionsCommand>(object, "ModifyAllowedCollisionsCommand");
+  }
+
+  {  // REMOVE
+    tesseract::common::AllowedCollisionMatrix replace_ac;
+    replace_ac.addAllowedCollision("link1", "link2", "description");
+    auto object = std::make_shared<ModifyAllowedCollisionsCommand>(replace_ac, ModifyAllowedCollisionsType::REPLACE);
+    testSerialization<ModifyAllowedCollisionsCommand>(*object, "ModifyAllowedCollisionsCommand");
+    testSerializationDerivedClass<Command, ModifyAllowedCollisionsCommand>(object, "ModifyAllowedCollisionsCommand");
+  }
+}
+
+TEST(EnvironmentCommandsSerializeUnit, AddContactManagersPluginInfoCommand)  // NOLINT
+{
+  tesseract::common::ContactManagersPluginInfo info = getEnvironment()->getContactManagersPluginInfo();
+  auto object = std::make_shared<AddContactManagersPluginInfoCommand>(info);
+  testSerialization<AddContactManagersPluginInfoCommand>(*object, "AddContactManagersPluginInfoCommand");
+  testSerializationDerivedClass<Command, AddContactManagersPluginInfoCommand>(object,
+                                                                              "AddContactManagersPluginInfoCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, AddKinematicsInformationCommand)  // NOLINT
+{
+  tesseract::srdf::KinematicsInformation info = getEnvironment()->getKinematicsInformation();
+  auto object = std::make_shared<AddKinematicsInformationCommand>(info);
+  testSerialization<AddKinematicsInformationCommand>(*object, "AddKinematicsInformationCommand");
+  testSerializationDerivedClass<Command, AddKinematicsInformationCommand>(object, "AddKinematicsInformationCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, AddLinkCommand)  // NOLINT
+{
+  Link link_1("link_1");
+  Link link_2("link_2");
+  Joint joint_1("joint_1");
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = "link_1";
+  joint_1.child_link_name = "link_2";
+  joint_1.type = JointType::FIXED;
+
+  auto object = std::make_shared<AddLinkCommand>(link_2, joint_1, false);
+  testSerialization<AddLinkCommand>(*object, "AddLinkCommand");
+  testSerializationDerivedClass<Command, AddLinkCommand>(object, "AddLinkCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, AddTrajectoryLinkCommand)  // NOLINT
+{
+  tesseract::common::JointTrajectory trajectory;
+  trajectory.push_back(tesseract::common::JointState({ "j1", "j2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(tesseract::common::JointState({ "j1", "j2" }, Eigen::VectorXd::Ones(2)));
+
+  AddTrajectoryLinkCommand::Method method = AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL;
+  auto object = std::make_shared<AddTrajectoryLinkCommand>("link_name", "parent_link_name", trajectory, false, method);
+  testSerialization<AddTrajectoryLinkCommand>(*object, "AddTrajectoryLinkCommand");
+  testSerializationDerivedClass<Command, AddTrajectoryLinkCommand>(object, "AddTrajectoryLinkCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, AddSceneGraphCommand)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::Joint joint;
+  Joint joint_1("joint_1");
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = "world";
+  joint_1.child_link_name = "joint_a1";
+  joint_1.type = JointType::FIXED;
+  auto object = std::make_shared<AddSceneGraphCommand>(*getSceneGraph(locator), joint, "prefix");
+  testSerialization<AddSceneGraphCommand>(*object, "AddSceneGraphCommand");
+  testSerializationDerivedClass<Command, AddSceneGraphCommand>(object, "AddSceneGraphCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeCollisionMarginsCommand)  // NOLINT
+{
+  CollisionMarginPairData pair_margin_data;
+  pair_margin_data.setCollisionMargin("a", "b", 0.2);
+  auto object =
+      std::make_shared<ChangeCollisionMarginsCommand>(0.1, pair_margin_data, CollisionMarginPairOverrideType::MODIFY);
+  testSerialization<ChangeCollisionMarginsCommand>(*object, "ChangeCollisionMarginsCommand");
+  testSerializationDerivedClass<Command, ChangeCollisionMarginsCommand>(object, "ChangeCollisionMarginsCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeJointAccelerationLimitsCommand)  // NOLINT
+{
+  auto object = std::make_shared<ChangeJointAccelerationLimitsCommand>("joint6", 3001);
+  testSerialization<ChangeJointAccelerationLimitsCommand>(*object, "ChangeJointAccelerationLimitsCommand");
+  testSerializationDerivedClass<Command, ChangeJointAccelerationLimitsCommand>(object,
+                                                                               "ChangeJointAccelerationLimitsCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeJointOriginCommand)  // NOLINT
+{
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  origin.translate(Eigen::Vector3d(1, 5, 9));
+  auto object = std::make_shared<ChangeJointOriginCommand>("joint6", origin);
+  testSerialization<ChangeJointOriginCommand>(*object, "ChangeJointOriginCommand");
+  testSerializationDerivedClass<Command, ChangeJointOriginCommand>(object, "ChangeJointOriginCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeJointPositionLimitsCommand)  // NOLINT
+{
+  auto object = std::make_shared<ChangeJointPositionLimitsCommand>("joint6", -M_PI, M_PI);
+  testSerialization<ChangeJointPositionLimitsCommand>(*object, "ChangeJointPositionLimitsCommand");
+  testSerializationDerivedClass<Command, ChangeJointPositionLimitsCommand>(object, "ChangeJointPositionLimitsCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeJointVelocityLimitsCommand)  // NOLINT
+{
+  auto object = std::make_shared<ChangeJointVelocityLimitsCommand>("joint6", 5001);
+  testSerialization<ChangeJointVelocityLimitsCommand>(*object, "ChangeJointVelocityLimitsCommand");
+  testSerializationDerivedClass<Command, ChangeJointVelocityLimitsCommand>(object, "ChangeJointVelocityLimitsCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeLinkCollisionEnabledCommand)  // NOLINT
+{
+  auto object = std::make_shared<ChangeLinkCollisionEnabledCommand>("joint3", true);
+  testSerialization<ChangeLinkCollisionEnabledCommand>(*object, "ChangeLinkCollisionEnabledCommand");
+  testSerializationDerivedClass<Command, ChangeLinkCollisionEnabledCommand>(object,
+                                                                            "ChangeLinkCollisionEnabledCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeLinkOriginCommand)  // NOLINT
+{
+  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
+  origin.translate(Eigen::Vector3d(1, 5, 9));
+  auto object = std::make_shared<ChangeLinkOriginCommand>("really long test joint name with whitespace", origin);
+  testSerialization<ChangeLinkOriginCommand>(*object, "ChangeLinkOriginCommand");
+  testSerializationDerivedClass<Command, ChangeLinkOriginCommand>(object, "ChangeLinkOriginCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ChangeLinkVisibilityCommand)  // NOLINT
+{
+  auto object = std::make_shared<ChangeLinkVisibilityCommand>("j1", true);
+  testSerialization<ChangeLinkVisibilityCommand>(*object, "ChangeLinkVisibilityCommand");
+  testSerializationDerivedClass<Command, ChangeLinkVisibilityCommand>(object, "ChangeLinkVisibilityCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, MoveJointCommand)  // NOLINT
+{
+  auto object = std::make_shared<MoveJointCommand>("j1", "j2");
+  testSerialization<MoveJointCommand>(*object, "MoveJointCommand");
+  testSerializationDerivedClass<Command, MoveJointCommand>(object, "MoveJointCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, MoveLinkCommand)  // NOLINT
+{
+  auto joint_1 = std::make_shared<Joint>("name");
+  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1->parent_link_name = "l1";
+  joint_1->child_link_name = "l2";
+  joint_1->type = JointType::FIXED;
+
+  auto object = std::make_shared<MoveLinkCommand>(*joint_1);
+  testSerialization<MoveLinkCommand>(*object, "MoveLinkCommand");
+  testSerializationDerivedClass<Command, MoveLinkCommand>(object, "MoveLinkCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, RemoveAllowedCollisionLinkCommand)  // NOLINT
+{
+  auto object = std::make_shared<RemoveAllowedCollisionLinkCommand>("link name");
+  testSerialization<RemoveAllowedCollisionLinkCommand>(*object, "RemoveAllowedCollisionLinkCommand");
+  testSerializationDerivedClass<Command, RemoveAllowedCollisionLinkCommand>(object,
+                                                                            "RemoveAllowedCollisionLinkCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, RemoveJointCommand)  // NOLINT
+{
+  auto object = std::make_shared<RemoveJointCommand>("joint name");
+  testSerialization<RemoveJointCommand>(*object, "RemoveJointCommand");
+  testSerializationDerivedClass<Command, RemoveJointCommand>(object, "RemoveJointCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, RemoveLinkCommand)  // NOLINT
+{
+  auto object = std::make_shared<RemoveLinkCommand>("link name");
+  testSerialization<RemoveLinkCommand>(*object, "RemoveLinkCommand");
+  testSerializationDerivedClass<Command, RemoveLinkCommand>(object, "RemoveLinkCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, ReplaceJointCommand)  // NOLINT
+{
+  auto joint_1 = std::make_shared<Joint>("name");
+  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1->parent_link_name = "l1";
+  joint_1->child_link_name = "l2";
+  joint_1->type = JointType::FIXED;
+  auto object = std::make_shared<ReplaceJointCommand>(*joint_1);
+  testSerialization<ReplaceJointCommand>(*object, "ReplaceJointCommand");
+  testSerializationDerivedClass<Command, ReplaceJointCommand>(object, "ReplaceJointCommand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, SetActiveContinuousContactManagerCommand)  // NOLINT
+{
+  auto object = std::make_shared<SetActiveContinuousContactManagerCommand>("my contact manager");
+  testSerialization<SetActiveContinuousContactManagerCommand>(*object, "SetActiveContinuousContactManagerCommand");
+  testSerializationDerivedClass<Command, SetActiveContinuousContactManagerCommand>(object,
+                                                                                   "SetActiveContinuousContactManagerCo"
+                                                                                   "mmand");
+}
+
+TEST(EnvironmentCommandsSerializeUnit, SetActiveDiscreteContactManagerCommand)  // NOLINT
+{
+  auto object = std::make_shared<SetActiveDiscreteContactManagerCommand>("my contact manager 2");
+  testSerialization<SetActiveDiscreteContactManagerCommand>(*object, "SetActiveDiscreteContactManagerCommand");
+  testSerializationDerivedClass<Command, SetActiveDiscreteContactManagerCommand>(object,
+                                                                                 "SetActiveDiscreteContactManagerComman"
+                                                                                 "d");
+}
+
+int main(int argc, char** argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+
+  return RUN_ALL_TESTS();
+}

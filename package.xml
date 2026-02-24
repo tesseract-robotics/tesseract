@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>tesseract</name>
+  <version>0.34.1</version>
+  <description>Tesseract motion planning framework</description>
+  <maintainer email="levi.armstrong@gmail.com">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <license>BSD</license>
+  <author>Levi Armstrong</author>
+
+  <!-- Following recommendations of REP 136 -->
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+
+  <!-- Boost -->
+  <build_depend>libboost-system-dev</build_depend>
+  <build_export_depend>libboost-system-dev</build_export_depend>
+  <exec_depend>libboost-system</exec_depend>
+
+  <build_depend>libboost-filesystem-dev</build_depend>
+  <build_export_depend>libboost-filesystem-dev</build_export_depend>
+  <exec_depend>libboost-filesystem</exec_depend>
+
+  <build_depend>libboost-program-options-dev</build_depend>
+  <build_export_depend>libboost-program-options-dev</build_export_depend>
+  <exec_depend>libboost-program-options</exec_depend>
+
+  <!-- PCL -->
+  <build_depend>libpcl-all-dev</build_depend>
+  <build_export_depend>libpcl-all-dev</build_export_depend>
+  <exec_depend>libpcl-all</exec_depend>
+
+  <!-- Core dependencies -->
+  <depend>libconsole-bridge-dev</depend>
+  <depend>tinyxml2</depend>
+  <depend>yaml-cpp</depend>
+  <depend>boost_plugin_loader</depend>
+  <depend>cereal</depend>
+  <depend>assimp-dev</depend>
+  <depend>liboctomap-dev</depend>
+  <depend>boost</depend>
+  <depend>liborocos-kdl-dev</depend>
+
+  <!-- Collision -->
+  <depend>bullet</depend>
+  <depend>bullet-extras</depend>
+  <depend>fcl</depend>
+  <depend>libfcl-dev</depend>
+
+  <!-- Kinematics -->
+  <depend>opw_kinematics</depend>
+
+  <!-- Test dependencies -->
+  <test_depend>gtest</test_depend>
+  <test_depend>benchmark</test_depend>
+  <test_depend>lcov</test_depend>
+  <test_depend>libclang-dev</test_depend>
+  <test_depend>libomp-dev</test_depend>
+  <test_depend>liblapack-dev</test_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

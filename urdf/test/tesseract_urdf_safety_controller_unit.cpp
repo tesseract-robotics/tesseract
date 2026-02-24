@@ -1,0 +1,101 @@
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+#include <Eigen/Geometry>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract/scene_graph/joint.h>
+#include <tesseract/urdf/safety_controller.h>
+#include "tesseract_urdf_common_unit.h"
+
+TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
+{
+  {
+    std::string str =
+        R"(<safety_controller soft_lower_limit="1" soft_upper_limit="2" k_position="3" k_velocity="4" extra="0 0 0"/>)";
+    tesseract::scene_graph::JointSafety::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointSafety::Ptr>(
+        elem, &tesseract::urdf::parseSafetyController, str, tesseract::urdf::SAFETY_CONTROLLER_ELEMENT_NAME.data()));
+    EXPECT_NEAR(elem->soft_lower_limit, 1, 1e-8);
+    EXPECT_NEAR(elem->soft_upper_limit, 2, 1e-8);
+    EXPECT_NEAR(elem->k_position, 3, 1e-8);
+    EXPECT_NEAR(elem->k_velocity, 4, 1e-8);
+  }
+
+  {
+    std::string str = R"(<safety_controller soft_upper_limit="2" k_position="3" k_velocity="4"/>)";
+    tesseract::scene_graph::JointSafety::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointSafety::Ptr>(
+        elem, &tesseract::urdf::parseSafetyController, str, tesseract::urdf::SAFETY_CONTROLLER_ELEMENT_NAME.data()));
+    EXPECT_NEAR(elem->soft_lower_limit, 0, 1e-8);
+    EXPECT_NEAR(elem->soft_upper_limit, 2, 1e-8);
+    EXPECT_NEAR(elem->k_position, 3, 1e-8);
+    EXPECT_NEAR(elem->k_velocity, 4, 1e-8);
+  }
+
+  {
+    std::string str = R"(<safety_controller soft_lower_limit="1" k_position="3" k_velocity="4"/>)";
+    tesseract::scene_graph::JointSafety::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointSafety::Ptr>(
+        elem, &tesseract::urdf::parseSafetyController, str, tesseract::urdf::SAFETY_CONTROLLER_ELEMENT_NAME.data()));
+    EXPECT_NEAR(elem->soft_lower_limit, 1, 1e-8);
+    EXPECT_NEAR(elem->soft_upper_limit, 0, 1e-8);
+    EXPECT_NEAR(elem->k_position, 3, 1e-8);
+    EXPECT_NEAR(elem->k_velocity, 4, 1e-8);
+  }
+
+  {
+    std::string str = R"(<safety_controller soft_lower_limit="1" soft_upper_limit="2" k_velocity="4"/>)";
+    tesseract::scene_graph::JointSafety::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointSafety::Ptr>(
+        elem, &tesseract::urdf::parseSafetyController, str, tesseract::urdf::SAFETY_CONTROLLER_ELEMENT_NAME.data()));
+    EXPECT_NEAR(elem->soft_lower_limit, 1, 1e-8);
+    EXPECT_NEAR(elem->soft_upper_limit, 2, 1e-8);
+    EXPECT_NEAR(elem->k_position, 0, 1e-8);
+    EXPECT_NEAR(elem->k_velocity, 4, 1e-8);
+  }
+
+  {
+    std::string str = R"(<safety_controller k_velocity="4"/>)";
+    tesseract::scene_graph::JointSafety::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::scene_graph::JointSafety::Ptr>(
+        elem, &tesseract::urdf::parseSafetyController, str, tesseract::urdf::SAFETY_CONTROLLER_ELEMENT_NAME.data()));
+    EXPECT_NEAR(elem->soft_lower_limit, 0, 1e-8);
+    EXPECT_NEAR(elem->soft_upper_limit, 0, 1e-8);
+    EXPECT_NEAR(elem->k_position, 0, 1e-8);
+    EXPECT_NEAR(elem->k_velocity, 4, 1e-8);
+  }
+
+  {
+    std::string str = R"(<safety_controller soft_lower_limit="1" soft_upper_limit="2" k_position="3"/>)";
+    tesseract::scene_graph::JointSafety::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointSafety::Ptr>(
+        elem, &tesseract::urdf::parseSafetyController, str, tesseract::urdf::SAFETY_CONTROLLER_ELEMENT_NAME.data()));
+  }
+
+  {
+    std::string str = R"(<safety_controller />)";
+    tesseract::scene_graph::JointSafety::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::scene_graph::JointSafety::Ptr>(
+        elem, &tesseract::urdf::parseSafetyController, str, tesseract::urdf::SAFETY_CONTROLLER_ELEMENT_NAME.data()));
+  }
+}
+
+TEST(TesseractURDFUnit, write_safety_controller)  // NOLINT
+{
+  {
+    tesseract::scene_graph::JointSafety::Ptr safety = std::make_shared<tesseract::scene_graph::JointSafety>();
+    std::string text;
+    EXPECT_EQ(
+        0, writeTest<tesseract::scene_graph::JointSafety::Ptr>(safety, &tesseract::urdf::writeSafetyController, text));
+    EXPECT_NE(text, "");
+  }
+
+  {
+    tesseract::scene_graph::JointSafety::Ptr safety = nullptr;
+    std::string text;
+    EXPECT_EQ(
+        1, writeTest<tesseract::scene_graph::JointSafety::Ptr>(safety, &tesseract::urdf::writeSafetyController, text));
+    EXPECT_EQ(text, "");
+  }
+}
