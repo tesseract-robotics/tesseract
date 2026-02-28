@@ -1,7 +1,25 @@
 /**
  * @page tesseract_examples Examples
  *
- * High-level overview of Tesseract examples.
+ * High-level overview of Tesseract examples. These examples demonstrate fundamental
+ * concepts and workflows for using Tesseract in motion planning and collision checking.
  *
- * - \subpage box_box_example  "Tesseract collision example"
- */
+ * @section examples_robot_structure Robot Structure & Description
+ *
+ * Loading and building robot representations:
+ *
+ * - \subpage load_urdf_example "Loading URDF Files" - Parse robot descriptions from URDF format
+ * - \subpage parse_srdf_example "Parsing SRDF Files" - Add semantic information and collision rules
+ * - \subpage build_scene_graph_example "Building Scene Graphs" - Manually construct robot kinematic structures
+ *
+ * @section examples_geometry Geometry & Shapes
+ *
+ * Working with geometric representations:
+ *
+ * - \subpage create_geometries_example "Creating Geometries" - Build primitives, meshes, and volumetric shapes
+ *
+ * @section examples_collision Collision Detection
+ *
+ * Setting up and performing collision queries:
+ *
+ * - \subpage box_box_example "Collision Checking" - Perform distance and contact queries between objects

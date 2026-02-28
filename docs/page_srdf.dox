@@ -1,147 +1,268 @@
 /**
-@page srdf SRDF
+@page srdf Semantic Robot Description Format (SRDF)
 
-The <a href="https://wiki.ros.org/srdf">Semantic Robot Description Format (SRDF)</a> complements the URDF and specifies joint groups, default robot configurations, additional collision checking information, and additional transforms that may be needed to completely specify the robot's pose.
-The recommended way to generate a SRDF is using the Tesseract Setup Assistant.
+@brief SRDF extends URDF with semantic information for planning, collision handling, and operation.
 
-@section tesseract_srdf_supported_features Tesseract SRDF Supported Features
+The <a href="https://wiki.ros.org/srdf">Semantic Robot Description Format (SRDF)</a> is a companion
+to the URDF that adds **semantic meaning** to your robot:
 
-Tesseract supports the following elements defined in SRDF
+- **Planning groups** – Define manipulator arms, mobile bases, and other functional units
+- **Collision rules** – Specify which link pairs are always allowed to collide (self-contact, adjacent joints)
+- **Default poses** – Store named configurations like "home", "stowed", or "ready"
+- **Tool definitions** – Define and store tool center points (TCPs) for end-effectors
+- **Plugins** – Configure kinematics solvers, collision checkers, and other algorithms
 
-@subsection groups Groups
+While your URDF describes **what the robot is**, your SRDF describes **how to use it for planning and control.**
 
-Groups (also referred to as kinematics groups) define collections of links and joints that are used for planning.
+> **Getting Started?** See \ref parse_srdf_example for a complete walkthrough of loading and using SRDF files in code.
 
-@snippet ../tesseract_support/urdf/lbr_iiwa_14_r820.srdf Groups
+@section srdf_key_concepts Key Concepts
 
-Groups can be specified in several ways:
+**Why SRDF Matters**
 
-@subsubsection collection_of_joints Collection of Joints
+Consider a 7-DOF manipulator with a gripper. Your URDF defines every link, joint, mass, and geometry.
+But planners also need to know:
+- Which joints move together as a planning group (the arm, not the gripper in isolation)
+- That the gripper fingers can collide with each other (allowed, not an error)
+- That adjacent joints in the arm occasionally touch (self-contact, expected)
+- Where the tool sits relative to the wrist flange (TCP offset)
 
-A group can be specified as a collection of joints.
-All the child links of each joint are automatically included in the group.
+Without this semantic information, collision checkers flag false positives, and planners can be overconstrained.
+SRDF makes this knowledge explicit and reusable.
 
-@subsubsection serial_chain Serial Chain
+**URDF vs SRDF**
 
-A serial chain is specified using the base link and the tip link.
-The tip link in a chain is the child link of the last joint in the chain.
-The base link in a chain is the parent link for the first joint in the chain.
+| Aspect | URDF | SRDF |
+|--------|------|------|
+| **Purpose** | Kinematic and dynamic structure | Semantic meaning for planning |
+| **Content** | Links, joints, masses, geometry, frames | Groups, collision rules, poses, TCPs |
+| **Use Case** | Load robot structure into tools | Configure planners and collision handlers |
+| **Required** | Yes, always | Often yes (strongly recommended) |
 
-@subsection group_states Group States
+@section srdf_standard_features Standard SRDF Features
 
-The SRDF can also store fixed configurations of the robot.
-A typical example of the SRDF in this case is in defining a home position for a manipulator.
-The configuration is stored with a string id, which can be used to recover the configuration later.
+Tesseract fully supports these core SRDF elements:
 
-@subsection group_tcps Group Tool Center Points
+@subsection groups Planning Groups
 
-Store fixed tool center point (TCP) definitions by string id, which can be used to recover the TCP during operation like planning.
+Pinpoint which joints and links move together as a functional unit. This is essential for planning—you plan the arm without the gripper, the gripper without the arm, or both together depending on your task.
 
-@subsection allowed_collision_matrix Allowed Collision Matrix
+Groups can be defined in two ways:
 
-Define link pairs that are allowed to be in collision with each other.
-This is used during contact checking to avoid checking links that are allowed to be in collision and contact data should not be calculated.
+**By Joint List**
+- Explicitly list joints that belong together
+- All child links of each joint are automatically included
+- Best for custom combinations or multi-robot systems
 
-@section tesseract_srdf_extensions Tesseract SRDF Extensions
+**By Serial Chain**
+- Define a chain by its base link and tip link
+- The chain includes all joints connecting them
+- Most natural for serial manipulators and arms
 
-Tesseract extends SRDF with the following additional elements.
+Example SRDF groups definition:
 
-@subsection contact_manager_plugins Contact Manager Plugins File
+@snippet ../support/urdf/lbr_iiwa_14_r820.srdf Groups
 
-The contact manager plugins file is a YAML-formatted file that defines the plugins to use for collision checking.
-Minimally, this must include the following keys:
+Once defined, you reference groups by name in planning, collision, and kinematics configuration.
 
-    contact_manager_plugins:
-      search_paths: [<(optional) list of directories in which to look for contact manager plugins>]
-      search_libraries: [<(optional) list of libraries in which to search for contact manager plugins>]
-      discrete_plugins:
-        default: <key of the discrete contact manager plugin to use as default>
-        plugins:
-          <discrete contact manager key>:
-            class: <discrete contact manager plugin class name>
-      continuous_plugins:
-        default: <key of the continuous contact manager plugin to use as default>
-        plugins:
-          <continuous contact manager key>:
-            class: <continuous contact manager plugin class name>
+@subsection group_states Named Configurations (Group States)
 
-Here is an example contact manager plugins file:
+Define and store named robot configurations (joint position sets) in your SRDF.
+These are typically used for operational poses like:
+- "home" – default ready position
+- "stowed" – safe transport or storage position
+- "ready" – prepared for work
+- "reset" – known good state for initialization
 
-@include ../tesseract_support/urdf/contact_manager_plugins.yaml
+Once defined, planners can query configurations by name and use them as goal states or initialization points.
+This avoids hard-coding joint angles throughout your application code.
 
-@subsection kinematics_plugins_file Kinematics Plugins File (Optional)
+@subsection group_tcps Tool Center Points (TCPs)
 
-The kinematics plugins file is a YAML-formatted file that defines the plugins to use for forward and inverse kinematics.
-Minimally, it must include the following keys:
+Define the pose of your tool (end-effector) relative to the robot's wrist flange.
+Stored by name, TCPs are retrieved during planning and execution to compute tool positions and orientations
+in the world frame.
 
-    kinematics_plugins:
-      search_paths: [<(optional) list of directories in which to look for kinematics plugins>]
-      search_libraries: [<(optional) list of libraries in which to search for kinematics plugins>]
-      forward_kinematics:
-        <name of srdf kinematic group>:
-          default: <key of the forward kinematics solver that should be used as default>
-          plugins:
-            <FK solver key>
-              class: <FK plugin class name>
-              config: <FK plugin configuration parameters>
-      inverse_kinematics:
-        <name_of_srdf_kinematics_group>:
-          default: <key of the inverse kinematics solver that should be used as default>
-          plugins:
-            <IK solver key>
-            - class: <IK plugin class name>
-              config: <IK plugin configuration parameters>
+Common use cases:
+- Welding torch tip offset from mounting bracket
+- Gripper finger center for grasping
+- Spray nozzle position for painting or coating
+- Camera optical center for inspection tasks
 
-Here is an example kinematics plugins file:
+@subsection allowed_collision_matrix Allowed Collision Matrix (ACM)
 
-@include ../tesseract_support/urdf/pick_and_place_plan_plugins.yaml
+Specify which link pairs are **allowed** to be in collision.
+This is critical for realistic collision checking:
 
-@section fk_solvers Forward Kinematics Solvers
+- **Self-contact** – Adjacent links in a serial chain often come into contact (expected, not an error)
+- **Gripper fingers** – Gripper fingers must collide with each other to grasp
+- **Mounted devices** – Sensors, cables, or mounting brackets that always touch their base
+- **Tool and work** – Your tool intentionally contacts the workpiece
 
-Tesseract supports the following FK solvers
+Without an ACM, collision checkers report self-contact as failures, blocking valid plans.
+The ACM tells planners: "This collision is expected and allowed; don't treat it as a constraint violation."
 
-<ul>
-  <li> @ref kdl_fk </li>
-</ul>
+Example: A 7-DOF arm with a parallel gripper needs to allow:
+- Link 5 ↔ Link 6 (adjacent joint, expected contact)
+- Finger A ↔ Finger B (gripper mechanism)
+- Gripper body ↔ grasped object (intentional contact during work)
 
-@subsection kdl_fk KDL
+@section srdf_tesseract_extensions Tesseract-Specific Extensions
 
-@snippet ../tesseract_support/urdf/abb_irb2400_plugins.yaml KDL FK config
+Beyond standard SRDF, Tesseract adds configuration files for kinematics solvers and collision management.
 
-@section ik_solvers Inverse Kinematics Solvers
+@subsection contact_manager_plugins Collision Management Configuration
 
-Tesseract supports the following IK solvers.
+Tesseract uses a YAML configuration file to define which collision checking algorithm(s) to use
+and which plugins provide those implementations.
 
-<ul>
-  <li> @ref opw_ik </li>
-  <li> @ref kdl_lma_ik </li>
-  <li> @ref kdl_nr_ik </li>
-  <li> @ref rop_ik </li>
-  <li> @ref rep_ik </li>
-</ul>
+You can run multiple collision algorithms simultaneously and configure them with different parameters
+(e.g., discrete collision for planning, continuous collision for trajectory validation). The configuration
+specifies which plugin to use as the default and where to search for plugin libraries.
 
-@subsection opw_ik OPW
+**Configuration Structure**
 
-@snippet ../tesseract_support/urdf/abb_irb2400_plugins.yaml OPW config
+```
+contact_manager_plugins:
+  search_paths: [<directories to search for plugins>]
+  search_libraries: [<optional libraries to search>]
+  discrete_plugins:
+    default: <default discrete collision checker name>
+    plugins:
+      <collision checker name>:
+        class: <C++ class implementing the checker>
+  continuous_plugins:
+    default: <default continuous collision checker name>
+    plugins:
+      <collision checker name>:
+        class: <C++ class implementing the checker>
+```
+
+**Example Configuration**
+
+@include ../support/urdf/contact_manager_plugins.yaml
+
+@subsection kinematics_plugins_file Kinematics Solver Configuration (Optional)
+
+Define which forward kinematics (FK) and inverse kinematics (IK) solvers to use for each planning group.
+Tesseract supports multiple solvers and lets you combine them when appropriate (e.g., an analytical solver
+for speed, plus a numerical solver for redundancy resolution).
+
+You specify solvers per planning group so different arms, positioners, or mobile bases can use different algorithms.
+
+**Configuration Structure**
+
+```
+kinematics_plugins:
+  search_paths: [<directories to search for plugins>]
+  search_libraries: [<optional libraries>]
+  forward_kinematics:
+    <group name>:
+      default: <solver to use by default>
+      plugins:
+        <solver name>:
+          class: <C++ class name>
+          config: {<solver-specific parameters>}
+  inverse_kinematics:
+    <group name>:
+      default: <solver to use by default>
+      plugins:
+        <solver name>:
+          class: <C++ class name>
+          config: {<solver-specific parameters>}
+```
+
+**Example Configuration**
+
+@include ../support/urdf/pick_and_place_plan_plugins.yaml
+
+@section fk_solvers Available Forward Kinematics Solvers
+
+**KDL (Kinematics Dynamics Library)**
+
+A robust, general-purpose numerical FK solver that works with any kinematic structure.
+No configuration needed for basic use.
+
+@snippet ../support/urdf/abb_irb2400_plugins.yaml KDL FK config
+
+See @ref kdl_fk for detailed documentation.
+
+@section ik_solvers Available Inverse Kinematics Solvers
+
+Tesseract provides multiple IK solvers optimized for different robot structures and use cases.
+You can configure one solver as default and provide fallback solvers for redundancy or robustness.
+
+@subsection opw_ik OPW (Open-Loop Payload Workspace)
+
+An **analytical** IK solver optimized for 6-DOF industrial robots (ABB, KUKA, Fanuc, etc.)
+with the geometry pattern: revolute-revolute-revolute-revolute-revolute-revolute.
+
+**Advantages:**
+- Extremely fast (milliseconds to compute all solutions)
+- Closed-form solution (no iterative convergence required)
+- Multiple solutions automatically (arm above/below configurations)
+- Numerically stable
+
+**Requirements:**
+- Robot must match the Pieper arm geometry
+- Configuration parameters needed (arm dimensions, axis offsets)
+
+@snippet ../support/urdf/abb_irb2400_plugins.yaml OPW config
+
+See @ref opw_ik for detailed geometry requirements and configuration.
 
 @subsection kdl_lma_ik KDL Levenberg-Marquardt (LMA)
 
-@snippet ../tesseract_support/urdf/lbr_iiwa_14_r820_plugins.yaml KDL LMA config
+A **numerical** IK solver using the Levenberg-Marquardt optimization algorithm.
+
+**Use when:**
+- Your robot doesn't match the OPW geometry (non-standard D-H parameters)
+- You need IK for robots with non-6-DOF structure
+- Analytical solvers don't exist for your robot type
+
+**Trade-off:** Slower than analytical solvers, but more general.
+
+@snippet ../support/urdf/lbr_iiwa_14_r820_plugins.yaml KDL LMA config
+
+See @ref kdl_lma_ik for additional configuration options.
 
 @subsection kdl_nr_ik KDL Newton-Raphson (NR)
 
-@snippet ../tesseract_support/urdf/lbr_iiwa_14_r820_plugins.yaml KDL NR config
+Another **numerical** IK solver using the Newton-Raphson iterative method.
+
+**Similar to KDL-LMA but:**
+- Often converges faster (fewer iterations)
+- May be less stable for far-from-solution starting points
+- Good choice for real-time execution where speed matters
+
+@snippet ../support/urdf/lbr_iiwa_14_r820_plugins.yaml KDL NR config
+
+See @ref kdl_nr_ik for detailed configuration.
 
 @subsection rop_ik Robot on Positioner (ROP)
 
-Add and assign a Robot on Positioner (ROP) inverse kinematics solver to a predefined group.
-This assumes a custom invserse kinematics solver already exists for the robot, and the positioner is to be sampled at some resolution to find a larger set of inverse kinematic solutions.
+Combine a custom robot IK solver with a sampled external axis (positioner, track, turntable) to find
+a larger solution space.
 
-@snippet ../tesseract_support/urdf/online_planning_example_plugins.yaml ROP config
+**Example:** A 6-DOF arm mounted on a linear track. Your arm has IK, but the track position adds a
+7th DOF. ROP samples the track at discrete intervals and solves arm IK at each track position.
 
-@subsection rep_ik Robot External Positioner (REP)
+**Requirements:**
+- A custom IK solver must already exist for the robot
+- Positioner axis is sampled at specified resolution
 
-Add and assign a Robot with External Positioner (REP) inverse kinematics solver to predefined group.
-This assumes a custom invserse kinematics solver already exists for the robot and the positioner is to be sample at some resolution to find a larger set of inverse kinematic solutions.
+@snippet ../support/urdf/online_planning_example_plugins.yaml ROP config
+
+See @ref rop_ik for additional details.
+
+@subsection rep_ik Robot with External Positioner (REP)
+
+Similar to ROP, but for an **external** positioner that can be reoriented independently
+(e.g., a rotary table holding the workpiece).
+
+**Example:** A 6-DOF welding robot with a workpiece on a turntable. The turntable orientation
+is a 7th DOF. REP samples turntable angles and solves robot IK for each orientation.
+
+See @ref rep_ik for configuration and use cases.
 
 */
