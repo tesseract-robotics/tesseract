@@ -7,7 +7,15 @@ on:
       - 'dev**'
   pull_request:
     paths:
-      - 'tesseract**'
+      - 'collision/**'
+      - 'common/**'
+      - 'geometry/**'
+      - 'kinematics/**'
+      - 'srdf/**'
+      - 'urdf/**'
+      - 'visualization/**'
+      - 'CMakeLists.txt'
+      - 'package.xml'
       - '.github/workflows/code_quality.yml'
       - '.clang-tidy'
   schedule:
