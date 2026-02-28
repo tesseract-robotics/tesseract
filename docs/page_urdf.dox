@@ -1,144 +1,372 @@
 /**
-@page urdf URDF
+@page urdf Universal Robot Description Format (URDF)
 
-Tesseract is compatible with <a href="http://www.ros.org/wiki/urdf">Universal Robot Description Format (URDF)</a>, the native format for describing robots in ROS.
-In this tutorial, you will find resources for the URDF and important tips.
+@brief URDF describes robot kinematic, dynamic, and visual structure in a standardized XML format.
 
-@section important_tips Important Tips
+<a href="http://www.ros.org/wiki/urdf">The Universal Robot Description Format (URDF)</a> is the standard
+way to describe a robot in ROS. It defines:
 
-This section contains a set of tips on making sure that the URDF that you generate can be used with Tesseract. Make sure you go through all these tips before starting to use Tesseract with your robot.
+- **Kinematic structure** – Links (rigid bodies) and joints (connections) forming the robot's skeleton
+- **Masses and inertias** – Dynamics information for simulation and control
+- **Geometry and appearance** – Visual meshes (for display) and collision meshes (for planning and checking)
+- **Coordinate frames** – Links are connected in a tree that defines all reference frames
+- **Joint limits** – Position, velocity, and effort boundaries
 
-@subsection special_characters_in_joint_names Special Characters in Joint Names
+Your URDF essentially answers: **"What does my robot physically consist of?"**
 
-Joint names should not contain any of the following special characters:
+Once you have a valid URDF, tools like Tesseract can parse it, build internal representations, and use it
+for collision detection, motion planning, visualization, and simulation.
 
-<ul>
-  <li>`-`</li>
-  <li>`[`</li>
-  <li>`]`</li>
-  <li>`(`</li>
-  <li>`)`</li>
-</ul>
+> **Getting Started?** See \ref load_urdf_example for a complete walkthrough of loading and using URDF files in code.
 
-@subsection safety_limits Safety Limits
+@section urdf_key_concepts Key Concepts
 
-Some URDFs have safety limits set in addition to the joint limits of the robot.
-Here's an example of the safety controller specified for the Panda robot head pan joint:
+**What You Need to Know About URDF**
 
-    <safety_controller k_position="100" k_velocity="1.5" soft_lower_limit="-2.857" soft_upper_limit="2.857"/>
+A URDF is a tree of links connected by joints:
+- A link is a rigid body (has geometry, mass, inertias)
+- A joint connects two links (position, velocity, effort limits)
+- One link is the root (the "world" or fixed base)
+- All other links hang from the root through their parent joints
 
-The "soft_lower_limit" field and the "soft_upper_limit" field specify the joint position limits for this joint.
-Tesseract will compare these limits to the hard limits for the joint specified in the URDF and choose the limits that are more conservative.
+**Example: 6-DOF Robot Arm**
+- Root link: "base" (fixed to ground)
+- Joint: "joint_1" (revolute, 1 DOF) connects "base" → "link_1"
+- Joint: "joint_2" (revolute, 1 DOF) connects "link_1" → "link_2"
+- ... continue for 6 joints total
+- Tip link: "tool_flange" (where the end-effector attaches)
 
-@note
-If the "soft_lower_limit" and the "soft_upper_limit" in the safety_controller are set to 0.0, your joint will be unable to move.
-Tesseract relies on you to specify the correct robot model.
+**URDF vs SRDF**
 
-@subsection collision_checking Collision Checking
+| Aspect | URDF | SRDF |
+|--------|------|------|
+| **Purpose** | Physical structure and kinematics | Semantic meaning and planning configuration |
+| **Content** | Links, joints, masses, geometry, frames | Planning groups, collision rules, poses, TCPs |
+| **Usage** | Load robot into planning/simulation tools | Configure planners and collision handlers |
+| **Required** | Yes, always | Often yes (strongly recommended with URDF) |
 
-Tesseract uses the meshes specified in the URDF for collision checking.
-The URDF allows you to specify two sets of meshes separately for visualization and collision checking.
-In general, the visualization meshes can be detailed and pretty, but the collision meshes should be much less detailed.
-The number of triangles in a mesh affects the amount of time it takes to collision check a robot link.
-The number of triangles in the whole robot should be on the order of a few thousand.
+See \ref srdf for more details on semantic descriptions.
 
-@subsection test_your_urdf Test your URDF
+@section urdf_anatomy URDF Structure
 
-It is very important to test your URDF out and make sure things are configured properly.
-Consider using the ROS <a href="http://wiki.ros.org/urdf#Verification">`check_urdf` tool</a> to validate your URDF.
+A basic URDF contains:
 
-@section tesseract_urdf_extensions Tesseract URDF Extensions
+**Links** – Represent rigid bodies
 
-Tesseract provides several extensions to the URDF standard.
+```xml
+<link name="link_name">
+  <inertial>
+    <mass value="1.0"/>
+    <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+  </inertial>
+  <visual>
+    <geometry>
+      <mesh filename="package://my_robot/meshes/link.dae"/>
+    </geometry>
+  </visual>
+  <collision>
+    <geometry>
+      <mesh filename="package://my_robot/meshes/link_collision.dae"/>
+    </geometry>
+  </collision>
+</link>
+```
 
-<ul>
-  <li> @ref tesseract_capsule </li>
-  <li> @ref tesseract_cone </li>
-  <li> @ref tesseract_octomap </li>
-  <li> @ref tesseract_octree </li>
-  <li> @ref tesseract_point_cloud </li>
-  <li> @ref tesseract_sdf_mesh </li>
-  <li> @ref tesseract_make_convex </li>
-</ul>
+**Joints** – Connect links and define motion
+
+```xml
+<joint name="joint_name" type="revolute">
+  <parent link="link_1"/>
+  <child link="link_2"/>
+  <origin xyz="0 0 0" rpy="0 0 0"/>
+  <axis xyz="0 0 1"/>
+  <limit lower="-3.14" upper="3.14" effort="100" velocity="2.0"/>
+</joint>
+```
+
+**Joint Types:**
+
+| Type | DOF | Range | Use Case |
+|------|-----|-------|----------|
+| revolute | 1 | Limited rotation | Arm joints, rotation axes |
+| continuous | 1 | Unlimited rotation (-∞ to ∞) | Wheels, continuous spindles |
+| prismatic | 1 | Limited translation | Linear actuators, slides |
+| fixed | 0 | None (rigidly attached) | Sensors, brackets, tools |
+| floating | 6 | Unlimited | Mobile bases, free-floating objects |
+| planar | 3 | Planar motion (x, y, θ) | Mobile bases on flat terrain |
+
+
+
+@section urdf_best_practices Best Practices for Tesseract Compatibility
+
+Before loading your URDF into Tesseract, review these guidelines to ensure smooth integration.
+
+@subsection special_characters_in_joint_names Joint and Link Naming
+
+**Avoid these special characters in joint and link names:**
+
+- Hyphens: `-`
+- Brackets: `[` `]`
+- Parentheses: `(` `)`
+
+These characters cause parsing issues in Tesseract. Use underscores or CamelCase instead.
+
+**Good names:** `joint_1`, `link_2_base`, `toolFlange`
+**Bad names:** `joint-1`, `link[2]`, `tool_flange(tcp)`
+
+@subsection safety_limits Joint Limits and Safety Controllers
+
+Many URDFs specify both hard limits and soft limits (safety limits).
+
+**Hard Limits** – Primary joint boundaries, set in the `<limit>` tag:
+```xml
+<limit lower="-1.57" upper="1.57" effort="150" velocity="2.0"/>
+```
+
+**Soft Limits** – Conservative boundaries for safe operation, set in `<safety_controller>`:
+```xml
+<safety_controller k_position="100" k_velocity="1.5" 
+                   soft_lower_limit="-2.857" soft_upper_limit="2.857"/>
+```
+
+**How Tesseract Handles This:**
+- Tesseract compares hard and soft limits
+- Uses the more conservative (tighter) limits for planning and checking
+- Protects your robot by restricting motion to safer ranges
+
+**Important:** If soft limits are set to `0.0`, that joint becomes immobilized. Verify your URDF is correct; Tesseract will not validate or warn you about this.
+
+@subsection collision_checking Collision Geometry Best Practices
+
+Tesseract uses the collision meshes from your URDF for all collision detection and distance calculations.
+
+**Why Collision Meshes Matter:**
+- Determines what the planner "sees" as obstacles
+- Too detailed = slow collision checks, slow planning
+- Too coarse = poor safety, missed collisions, bad trajectories
+
+**Optimization Guidelines:**
+- Use simple primitives (boxes, cylinders, spheres) when possible
+  - Much faster than mesh collision checking
+  - Easier to tune and debug
+- If using meshes:
+  - **Target total triangle count:** A few thousand for the whole robot (not per link)
+  - Decimate/simplify meshes aggressively
+  - Keep visual meshes separate (can be detailed, slow isn't a problem for display)
+- Use convex decomposition or hulls for complex shapes
+  - See \ref tesseract_make_convex below
+
+**Example Structure:**
+```xml
+<link name="arm_segment">
+  <visual>
+    <!-- Detailed mesh for display, doesn't affect planning -->
+    <geometry>
+      <mesh filename="package://robot/meshes/arm_segment_detailed.dae"/>
+    </geometry>
+  </visual>
+  <collision>
+    <!-- Simplified mesh for planning, minimal triangles -->
+    <geometry>
+      <mesh filename="package://robot/meshes/arm_segment_simple.stl"/>
+    </geometry>
+  </collision>
+</link>
+```
+
+@subsection test_your_urdf Validating Your URDF
+
+**Always test your URDF before deploying it to production.**
+
+ROS provides the <a href="http://wiki.ros.org/urdf#Verification">`check_urdf` tool</a> to validate syntax:
+
+```bash
+check_urdf my_robot.urdf
+```
+
+This catches XML errors and basic structural issues.
+
+**But also** — load it into Tesseract and visualize the collision geometry (see \ref load_urdf_example).
+Visual inspection catches issues that automated checks miss:
+- Collision meshes too coarse or too fine
+- Misaligned frames or reference links
+- Joint limits that are too restrictive
+- Self-collision pairs that shouldn't collide
+
+@section urdf_tesseract_extensions Tesseract URDF Extensions
+
+Tesseract extends the standard URDF with additional geometry types and options optimized for planning and collision checking.
+
+All extensions are optional — use them only when you need specialized geometry types beyond standard primitives and meshes.
 
 @subsection tesseract_capsule tesseract:capsule
 
-Capsule geometry
+A **capsule** is a cylinder with hemispherical endcaps. Efficient for collision checking and commonly used for robot arms.
 
-URDF path: `/robot/link/<visual|collision>/geometry/tesseract:capsule`
+**When to use:**
+- Cylindrical links (arm segments, fingers)
+- Need collision accuracy without mesh complexity
+- Want faster collision checks than detailed meshes
 
-    <tesseract:capsule length="<float>" radius="<float>">
+**URDF Usage:**
+
+```xml
+<link name="segment">
+  <collision>
+    <geometry>
+      <tesseract:capsule length="0.5" radius="0.05"/>
+    </geometry>
+  </collision>
+</link>
+```
+
+**Attributes:**
+- `length` – Distance between hemisphere centers (in meters)
+- `radius` – Radius of the cylinder and hemispheres (in meters)
 
 @subsection tesseract_cone tesseract:cone
 
-Cone geometry
+A **cone** for conical collision geometry.
 
-URDF path: `/robot/link/<visual|collision>/geometry/tesseract:cone`
+**When to use:**
+- Conical tools, nozzles, or end-effectors
+- Geometry approximation of tapered components
 
-    <tesseract:cone length="<float>" radius="<float>">
+**URDF Usage:**
+
+```xml
+<geometry>
+  <tesseract:cone length="0.2" radius="0.1"/>
+</geometry>
+```
 
 @subsection tesseract_octomap tesseract:octomap
 
-<a href="https://octomap.github.io/">Octomap</a> geometry, populated by an octree or point cloud
+An **octree map** for volumetric environment representation, populated from point cloud data or octree files.
 
-URDF path: `/robot/link/<visual|collision>/geometry/tesseract:octomap`
+**When to use:**
+- Sensor data (LIDAR, RGB-D cameras) for dynamic obstacle representation
+- Environment mapping from point clouds
+- Object recognition and shape approximation
 
-    <tesseract:octomap shape_type="box | sphere_inside | sphere_outside">
+**Supported Sources:**
+- Octree files (`*.octree`)
+- Point cloud files (`*.pcd`)
 
-Nested elements:
-<ul>
-  <li> @ref tesseract_octree </li>
-  <li> @ref tesseract_point_cloud </li>
-</ul>
+**Attributes:**
+- `shape_type="box"` – Axis-aligned boxes for voxels
+- `shape_type="sphere_inside"` – Spheres inside voxels
+- `shape_type="sphere_outside"` – Spheres outside voxels
 
-@subsection tesseract_octree tesseract:octree
+**Example with Point Cloud:**
 
-Octree file source for octomap geometry
-
-URDF path: `/robot/link/<visual|collision>/geometry/tesseract:octomap/tesseract:octree`
-
-    <tesseract:octree filename="*.octree">
-
-@subsection tesseract_point_cloud tesseract:point_cloud
-
-Point cloud file source for octomap geometry
-
-URDF path: `/robot/link/<visual|collision>/geometry/tesseract:octomap/tesseract:point_cloud`
-
-    <tesseract:point_cloud filename="*.pcd" resolution="<float>">
+```xml
+<geometry>
+  <tesseract:octomap shape_type="box">
+    <tesseract:point_cloud filename="scan.pcd" resolution="0.05"/>
+  </tesseract:octomap>
+</geometry>
+```
 
 @subsection tesseract_sdf_mesh tesseract:sdf_mesh
 
-Signed distance field (SDF) mesh geometry
+A **signed distance field (SDF) mesh** for precise collision geometry with precomputed distance information.
 
-URDF path: /robot/link/<visual|collision>/geometry/tesseract:sdf_mesh`
+**When to use:**
+- Complex, smooth geometry where collision precision matters
+- Precomputed SDFs for faster collision checks
+- Applications requiring exact distance queries
 
-    <tesseract:sdf_mesh filename="*.sdf">
+**URDF Usage:**
+
+```xml
+<geometry>
+  <tesseract:sdf_mesh filename="complex_part.sdf"/>
+</geometry>
+```
 
 @subsection tesseract_make_convex tesseract:make_convex
 
-For convenience, Tesseract can automatically convert collision mesh geometries into <a href="https://en.wikipedia.org/wiki/Convex_hull">convex hulls</a> for more efficient collision checking and motion planning.
-Set the `tesseract:make_convex` attribute(s) to enable this behavior.
+Automatically convert collision meshes into <a href="https://en.wikipedia.org/wiki/Convex_hull">convex hulls</a>
+for more efficient collision checking and motion planning.
 
-@note
-It can be convenient to use this attribute to convert collision meshes into convex hulls, but convex hulls often overapproximate the original geometry.
-It is highly recommended to visualize the collision geometry of the Tesseract environment @a before motion planning to ensure it is not overly conservative.
+**Why Use Convex Hulls:**
+- **Speed:** Simple polygon collision checks (GJK algorithm) vs. complex mesh checks
+- **Robustness:** Deterministic, no numerical issues
+- **Trade-off:** Convex hulls overapproximate the original shape
 
-@subsubsection tesseract_make_convex_global Global (Required)
-URDF path: `/robot/@tesseract:make_convex="true | false"`
+**When to use:**
+- Meshes are too slow for real-time planning
+- Non-convex shapes can be acceptably approximated as convex
+- Need predictable, fast collision response
 
-@subsubsection tesseract_make_convex_override Mesh-level override (Optional)
-URDF path: `/robot/link/<visual|collision>/geometry/mesh/@tesseract:make_convex="true | false"`
+**Important:** Always visualize the generated convex hull to ensure it's conservative enough for your application.
 
-@note
-Setting this attribute at the mesh level overrides the global setting
+**Global Setting (applies to all meshes):**
 
-@section additional_resources Additional Resources
+```xml
+<robot ... tesseract:make_convex="true">
+  ...
+</robot>
+```
 
-<ul>
-  <li><a href="http://www.ros.org/wiki/urdf/Examples">URDF Examples</a> - A list of URDFs from the ROS community </li>
-  <li><a href="http://www.ros.org/wiki/urdf/Tutorials">URDF Tutorials</a> - tutorials for working with the URDF </li>
-  <li><a href="http://www.ros.org/wiki/sw_urdf_exporter">SolidWorks URDF Plugin</a> - a plugin that lets you generate a URDF directly from a SolidWorks model </li>
-</ul>
+**Mesh-Level Override (can enable/disable per-mesh):**
+
+```xml
+<link name="gripper_finger">
+  <collision>
+    <geometry>
+      <mesh filename="finger.stl" tesseract:make_convex="true"/>
+    </geometry>
+  </collision>
+</link>
+```
+
+The mesh-level setting overrides the global setting.
+
+@section urdf_best_practices_summary Checklist Before Using in Tesseract
+
+- [ ] URDF passes `check_urdf` without errors
+- [ ] Joint names contain no special characters (`-`, `[`, `]`, `(`, `)`)
+- [ ] Soft limits are sensible (not `0.0`), or removed
+- [ ] Collision meshes are simplified (few thousand triangles total, not per mesh)
+- [ ] Load URDF into Tesseract and visualize collision geometry
+- [ ] Joint limits allow full expected range of motion
+- [ ] All file paths use `package://` URIs (not absolute paths)
+- [ ] Verified that coordinate frames make sense (visual inspection)
+
+@section urdf_next_steps Next Steps
+
+After you have a working URDF:
+
+1. **Load it into Tesseract** — See \ref load_urdf_example for code to parse and load your URDF
+2. **Add semantic information** — Create an SRDF to define planning groups and collision rules (see \ref srdf and \ref parse_srdf_example)
+3. **Visualize geometry** — Use Tesseract's visualization tools to inspect collision meshes and frame alignments
+4. **Plan and execute** — Use the loaded URDF in motion planning (see \ref tesseract_examples)
+
+@section urdf_additional_resources Additional Resources
+
+**URDF Reference and Tutorials**
+
+- <a href="http://www.ros.org/wiki/urdf/XML">URDF XML Reference</a> – Complete XML specification
+- <a href="http://www.ros.org/wiki/urdf/Tutorials">ROS URDF Tutorials</a> – Step-by-step guides
+- <a href="http://www.ros.org/wiki/urdf/Examples">URDF Examples</a> – Real robot URDF files from the ROS community
+
+**URDF Generation Tools**
+
+- <a href="http://www.ros.org/wiki/sw_urdf_exporter">SolidWorks URDF Plugin</a> – Export URDF directly from CAD
+- <a href="https://wiki.ros.org/urdf/Tutorials/Create%20your%20own%20urdf%20file">Manual URDF Creation</a> – Write URDF by hand in XML
+
+**Visualization and Validation**
+
+- `check_urdf` – ROS tool to validate URDF syntax and structure
+- RViz – Visualize URDF-based robots with all links, joints, and meshes
+- TF (Transform Framework) – Inspect frame relationships and broadcast transforms
+
+**Related Documentation**
+
+- \ref srdf – Add semantic information to your URDF (planning groups, collision rules, tool definitions)
+- \ref load_urdf_example – Code example: Load a URDF into Tesseract
+- \ref parse_srdf_example – Code example: Load and use SRDF alongside your URDF
 
 */

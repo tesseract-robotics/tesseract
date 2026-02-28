@@ -1,122 +1,378 @@
 /**
-@page getting_started Getting Started
+@page getting_started Getting Started with Tesseract
+
+@brief Set up Tesseract for motion planning and collision checking in your robotics application.
+
+@section gs_intro What is Tesseract?
+
+Tesseract is a **modern motion planning and collision detection framework** designed for industrial robotics.
+It provides tools for:
+
+- **Motion planning** – Find collision-free paths for robot arms, mobile bases, and complex mechanisms
+- **Collision detection** – Check for collisions and compute distances with high accuracy
+- **Environment representation** – Load and manage robot descriptions (URDF) and semantic information (SRDF)
+- **Optimization** – Integrate custom planners and optimize trajectories for quality, smoothness, and constraints
+
+The core Tesseract libraries are **ROS-agnostic** — they work standalone in C++ or Python applications.
+Optional ROS/ROS2 bindings are available if you need ROS integration.
+
+@section gs_choose_path Choose Your Path
+
+Depending on your needs, follow the appropriate path:
+
+**Path 1: Just Want to Use Tesseract in C++ or Python?**
+- Skip ROS installation (optional)
+- Install build tools (CMake, colcon or catkin)
+- Clone and build Tesseract and dependencies
+- Jump to \ref gs_build_workspace
+
+**Path 2: Want Full ROS/ROS2 Integration?**
+- Install ROS or ROS 2
+- Install workspace tools (catkin, catkin_tools, or colcon)
+- Clone Tesseract repositories and dependencies
+- Build with catkin or colcon
+- Full ROS integration available after building
+
+**Path 3: Have Limited Time? Just Want to Learn?**
+- Skip installation for now
+- Read the \ref tesseract_examples to understand core concepts
+- Dive into code examples (\ref load_urdf_example, \ref box_box_example, etc.)
+- Come back to installation when you're ready to build
+
+@section gs_before_you_start Before You Start
+
+**System Requirements:**
+
+- Ubuntu 20.04 LTS or later (or equivalent Linux distribution)
+- 2+ GB available disk space for dependencies
+- C++11 or later compiler (g++, clang)
+- CMake 3.5+
+- Python 3.6+ (for Python bindings)
+
+**Update Your System:**
+
+Before installing Tesseract and dependencies, ensure you have the latest packages:
+
+```bash
+sudo apt-get update
+sudo apt-get dist-upgrade
+```
+
+@section gs_ros_optional Installing ROS (Optional)
+
+Tesseract core is **ROS-agnostic** and works perfectly without ROS. Only install ROS if:
+- You need ROS node integration
+- You're using ROS tools like rviz or existing ROS packages
+- Your team standardizes on ROS
+
+**ROS 1 (Noetic, older systems):**
+
+Follow the official <a href="https://wiki.ros.org/noetic/Installation/Ubuntu">ROS Noetic installation guide</a>.
+
+**ROS 2 (Recommended for new projects):**
+
+Follow the official <a href="https://docs.ros.org/en/humble/Installation.html">ROS 2 Humble or Jazzy installation guide</a>.
 
 @note
-Instructions are intended for installation on the Ubuntu 20.04 Focal operating system.
+If you skip ROS, you can still use Tesseract fully. You just won't have ROS-specific packages like `tesseract_ros`.
 
-@par
-Before installing Tesseract and it's dependencies, make sure you have the most up to date packages: ::
+@section gs_build_tools Installing Build Tools
 
-    sudo apt-get update
-    sudo apt-get dist-upgrade
+You need tools to build Tesseract. Choose one set based on your preference:
 
-@section installing_ros Installing ROS Noetic (Optional)
+**Option A: CMake + Ninja (Minimal, Recommended)**
 
-@par
-The Robot Operating System (ROS) is an open source set of software libraries and tools that help you
-build robot applications. The `tesseract`, `tesseract_planning`, and `tesseract_python` repositories are
-all ROS-agnostic. The `tesseract_ros` and `tesseract_ros2` repositories contain tools that are specific
-to ROS and make integrating Tesseract and ROS extremely easy.
+If you just want to build the core libraries:
 
-@par
-To install the latest version of ROS (Noetic) follow the instructions from the ROS
-<a href="https://wiki.ros.org/noetic/Installation/Ubuntu">website</a>.
+```bash
+sudo apt-get install cmake ninja-build build-essential git
+```
+
+**Option B: Catkin + Catkin Tools (ROS Integration)**
+
+Use this if you have ROS 1 installed:
+
+```bash
+sudo apt-get install ros-noetic-catkin python3-catkin-tools
+```
+
+**Option C: Colcon (ROS 2 Standard)**
+
+Use this if you have ROS 2 installed:
+
+```bash
+sudo apt-get install python3-colcon-common-extensions
+```
+
+**Optional: System Dependency Manager (Recommended)**
+
+ROSDep auto-installs system dependencies from `package.xml` files:
+
+```bash
+sudo apt-get install python3-rosdep
+sudo rosdep init
+rosdep update
+```
+
+If you skip ROSDep, you'll need to manually install dependencies with `apt-get`.
+
+**Optional: Workspace Initialization Tool**
+
+WSTool helps clone dependency repositories:
+
+```bash
+sudo apt-get install python3-wstool
+```
+
+@section gs_create_workspace Creating a Workspace
+
+Create a workspace directory to hold Tesseract and dependencies:
+
+```bash
+mkdir -p ~/tesseract_ws/src
+cd ~/tesseract_ws/src
+```
+
+Choose a different path if you prefer; just remember it for later commands.
+
+@section gs_clone_repos Cloning Tesseract Repositories
+
+**Step 1: Clone Core Tesseract**
+
+```bash
+git clone https://github.com/tesseract-robotics/tesseract.git
+```
+
+**Step 2: Clone Planning and Additional Tools**
+
+```bash
+git clone https://github.com/tesseract-robotics/tesseract_planning.git
+git clone https://github.com/tesseract-robotics/tesseract_qt.git
+```
+
+**Step 3 (ROS Only): Clone ROS Integration**
+
+If you have ROS 1 installed:
+
+```bash
+git clone https://github.com/tesseract-robotics/tesseract_ros.git
+```
+
+If you have ROS 2 installed:
+
+```bash
+git clone https://github.com/tesseract-robotics/tesseract_ros2.git
+```
+
+@section gs_install_deps Installing Dependencies
+
+**Automatic Installation (Recommended if you have ROSDep):**
+
+```bash
+cd ~/tesseract_ws
+rosdep install -y --from-paths src --ignore-src --rosdistro noetic
+```
+
+Replace `noetic` with your ROS distribution (`humble`, `jazzy`, etc. for ROS 2).
+
+**Or: Use WSTool to Clone Source Dependencies**
+
+If you prefer to build dependencies from source:
+
+```bash
+wstool init ~/tesseract_ws/src ~/tesseract_ws/src/tesseract_planning/dependencies.rosinstall
+```
+
+**Manual Installation (if you don't have ROSDep):**
+
+Install key dependencies manually:
+
+```bash
+sudo apt-get install libeigen3-dev libboost-all-dev octomap-tools liboctomap-dev
+```
 
 @note
-It's easy to miss steps when going through the ROS installation tutorial.
-If you run into errors in the next few steps, a good place to start is to go back and make sure you have installed ROS correctly.
+Missing dependencies will show up as CMake errors during the build. If this happens, install the missing packages and try building again.
 
-@section installing_tools Installing Tools
+@section gs_build_workspace Building Your Workspace
 
-@subsection catkin Catkin
+**If using CMake + Ninja (minimal setup):**
 
-Catkin is the official build system for ROS. Catkin can also be used to build ROS-agnostic packages containing CMakeLists.txt
-and package.xml files.
+```bash
+cd ~/tesseract_ws
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel $(nproc)
+```
 
-@par
-You can install Catkin with the following command:
+**If using Catkin (ROS 1 users):**
 
-    sudo apt-get install ros-noetic-catkin python3-catkin-tools
+```bash
+cd ~/tesseract_ws
+source /opt/ros/noetic/setup.bash
+catkin build
+source devel/setup.bash
+```
 
-@subsection rosdep ROSDep (Optional)
+**If using Colcon (ROS 2 users):**
 
-ROSDep is the official ROS command line tool for installing system dependencies.
+```bash
+cd ~/tesseract_ws
+source /opt/ros/humble/setup.bash  # or jazzy, etc.
+colcon build
+source install/setup.bash
+```
 
-@par
-You can install ROSDep with the following commands:
+**Build Flags (Optional)**
 
-    sudo apt-get install python3-rosdep
-    sudo rosdep init
-    rosdep update
+To enable additional features during build:
 
-@subsection wstool WSTool
+```bash
+# Enable testing and clang-tidy (when using colcon)
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_CLANG_TIDY=ON
 
-WSTool is the official ROS workspace management tool.
+# Or with catkin
+catkin build -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+```
 
-@par
-You can install WSTool with the following command:
+**Build Time Expectation:**
+- First build: 10-20 minutes (depends on hardware and number of dependencies downloaded)
+- Subsequent builds: 1-5 minutes (incremental)
 
-    sudo apt-get install python3-wstool
+@section gs_validate_build Verify Your Installation
 
-@section creating_a_workspace Creating a Workspace
+After building, verify everything works:
 
-Create a workspace (in this case we'll name it `tesseract_ws`):
+**Test 1: Can Python find Tesseract?**
 
-    mkdir -p ~/tesseract_ws/src
+```bash
+python3 -c "import tesseract; print(tesseract.__version__)"
+```
 
-@section cloning_tesseract_repos Cloning Tesseract Repositories
+Expected output: A version number (e.g., `0.21.0`)
 
-Move to the source directory:
+**Test 2: Run a Simple Example**
 
-    cd ~/tesseract_ws/src
+See the \ref tesseract_examples page for complete code examples. Try loading a robot:
 
-Clone Tesseract repository into your workspace:
+- \ref load_urdf_example – Load and query robot structure
+- \ref box_box_example – Perform basic collision checking
+- \ref parse_srdf_example – Load semantic information (SRDF)
 
-    git clone https://github.com/tesseract-robotics/tesseract
+@section gs_troubleshooting Troubleshooting
 
-Clone Tesseract Planning repository into your workspace:
+**"CMake not found"**
 
-    git clone https://github.com/tesseract-robotics/tesseract_planning
+Install CMake:
+```bash
+sudo apt-get install cmake
+```
 
-Clone Tesseract Qt repository into your workspace:
+**"Missing package: tesseract/..."**
 
-    git clone https://github.com/tesseract-robotics/tesseract_qt
+You likely missed cloning a repository. Check that all three repos are in `~/tesseract_ws/src`:
+- tesseract (core)
+- tesseract_planning (motion planning)
+- tesseract_qt (optional, visualization)
 
-If you are using the Robot Operating System (ROS), you can also clone the Tesseract ROS repository:
+**"[package] not found" during build**
 
-    git clone https://github.com/tesseract-robotics/tesseract_ros
+Install missing dependencies:
+```bash
+rosdep install -y --from-paths ~/tesseract_ws/src --ignore-src
+```
 
-@section installing_deps Installing Dependencies
+Or manually:
+```bash
+sudo apt-get install lib[package]-dev
+```
 
-@subsection cloning_with_wstool Cloning Source Dependencies with WSTool
+**"Symbol not found" or linker errors**
 
-Clone the repositories in the dependencies.rosinstall file using wstool:
+Try a clean rebuild:
+```bash
+cd ~/tesseract_ws
+rm -rf build devel install  # for catkin/colcon
+cmake --build build --clean  # for CMake
+# Then rebuild
+```
 
-    wstool init ~/tesseract_ws/src/ ~/tesseract_ws/src/tesseract_planning/dependencies.rosinstall
+**Build hangs or runs out of memory**
 
-@subsection installing_debs_with_rosde Installing Debian Dependencies with ROSDep (Optional)
+Reduce parallel jobs:
+```bash
+colcon build --parallel-workers 2  # use 2 jobs instead of all cores
+```
 
-Run the following command to automatically install all debian dependencies listed in each package.xml file:
+Or:
+```bash
+catkin build -j 2
+```
 
-    rosdep install -y --from-paths ~/tesseract_ws/src --ignore-src --rosdistro noetic
+**Python import fails after build**
 
-@note
-If you don't use the ROSDep tool you will need to manually install (via `apt-get`) each debian dependency.
+Ensure you sourced the setup file:
 
-@section building Building Your Workspace
+```bash
+source ~/tesseract_ws/install/setup.bash  # colcon
+# or
+source ~/tesseract_ws/devel/setup.bash  # catkin
+```
 
-Build your workspace using catkin tools:
+Add this to your `~/.bashrc` to make it permanent:
+```bash
+echo "source ~/tesseract_ws/install/setup.bash" >> ~/.bashrc
+```
 
-    cd ~/tesseract_ws/
-    source /opt/ros/noetic/setup.bash
-    catkin build
+@section gs_next_steps Next Steps
 
-Source the catkin workspace:
+Now that Tesseract is built, you have several paths forward:
 
-    source ~/tesseract_ws/devel/setup.bash
+**1. Learn the Fundamentals**
 
-@note
-To build with Clang-Tidy enabled you must pass the `-DTESSERACT_ENABLE_CLANG_TIDY=ON` to cmake when building.
-This is automatically enabled if cmake argument `-DTESSERACT_ENABLE_TESTING_ALL=ON` is passed.
+Start with these documentation pages to understand core concepts:
+
+- \ref why_tesseract – Understand where Tesseract fits
+- \ref urdf – Robot description format
+- \ref srdf – Semantic extensions to URDF
+- \ref tesseract_vs_moveit – How Tesseract compares to MoveIt2
+
+**2. Work Through Examples**
+
+Study and run the provided examples in order:
+
+1. \ref load_urdf_example – Load your first robot
+2. \ref parse_srdf_example – Add semantic information
+3. \ref box_box_example – Perform collision checking
+4. \ref build_scene_graph_example – Understand robot representation
+5. \ref create_geometries_example – Work with geometry types
+
+See \ref tesseract_examples for the complete list.
+
+**3. Integrate into Your Application**
+
+- For C++ projects: Link against Tesseract CMake targets
+- For Python projects: Import the `tesseract` module
+- For ROS projects: Use \ref tesseract_ros (ROS 1) or \ref tesseract_ros2 (ROS 2) for node integration
+
+**4. Optimize and Deploy**
+
+- Profile collision checks and motion planning
+- Tune solver parameters for your application
+- Deploy with appropriate configuration files (URDF, SRDF, plugin configs)
+
+@section gs_getting_help Getting Help
+
+**Documentation:**
+- \ref tesseract_examples – Code walkthroughs
+- \ref why_tesseract – Architecture overview
+- API reference – Generated Doxygen documentation
+
+**GitHub:**
+- <a href="https://github.com/tesseract-robotics/tesseract/issues">Tesseract Issues</a> – Report bugs or ask questions
+- <a href="https://github.com/tesseract-robotics/tesseract/discussions">Tesseract Discussions</a> – General questions
+
+**ROS Community:**
+- <a href="https://discourse.ros.org">ROS Discourse</a> – ROS integration help
+- <a href="https://answers.ros.org">ROS Answers</a> – General ROS questions
 
 */
