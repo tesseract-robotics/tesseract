@@ -1,0 +1,544 @@
+/**
+@page kinematics Kinematics
+
+@brief Tesseract provides a plugin-based kinematics system with analytical and numerical FK/IK solvers.
+
+The tesseract_kinematics package provides a common interface for forward and inverse kinematics
+of kinematic chains, trees, and graphs. Solvers are loaded as **plugins** and configured via
+YAML files referenced in the SRDF.
+
+> For plugin configuration syntax and available solvers, see the
+> @ref kinematics_plugins_file "Kinematics Solver Configuration" section on the @ref srdf "SRDF page".
+
+@section kinematics_overview Overview
+
+Tesseract's kinematics system is designed around three principles:
+
+1. **Plugin Architecture** — Solvers are loaded at runtime from shared libraries. No recompilation
+   needed to switch solvers.
+2. **Per-Group Configuration** — Each planning group can use different FK and IK solvers with
+   independent parameters.
+3. **Multiple Solver Support** — You can configure multiple solvers per group with a designated
+   default and fall back to alternatives.
+
+@section kinematics_plugin_config Plugin Configuration
+
+Kinematics plugins are configured in a YAML file with four sections:
+
+| Section | Description |
+|---------|-------------|
+| `search_paths` | Directories to search for plugin libraries |
+| `search_libraries` | Specific libraries to search for plugin classes |
+| `fwd_kin_plugins` | Map of group names to forward kinematics plugins |
+| `inv_kin_plugins` | Map of group names to inverse kinematics plugins |
+
+**Example Configuration:**
+
+@code{.yaml}
+kinematic_plugins:
+  search_paths:
+    - /usr/local/lib
+  search_libraries:
+    - tesseract_kinematics_kdl_factories
+  fwd_kin_plugins:
+    iiwa_manipulator:
+      default: KDLFwdKinChain
+      plugins:
+        KDLFwdKinChain:
+          class: KDLFwdKinChainFactory
+          config:
+            base_link: base_link
+            tip_link: tool0
+  inv_kin_plugins:
+    iiwa_manipulator:
+      default: KDLInvKinChainLMA
+      plugins:
+        KDLInvKinChainLMA:
+          class: KDLInvKinChainLMAFactory
+          config:
+            base_link: base_link
+            tip_link: tool0
+@endcode
+
+@section kinematics_available_solvers Available Solvers
+
+@subsection kin_kdl_fk KDL Forward Kinematics
+
+A general-purpose numerical FK solver based on the Kinematics and Dynamics Library (KDL).
+Works with any kinematic structure.
+
+@code{.yaml}
+fwd_kin_plugins:
+  manipulator:
+    default: KDLFwdKinChain
+    plugins:
+      KDLFwdKinChain:
+        class: KDLFwdKinChainFactory
+        config:
+          base_link: base_link
+          tip_link: tool0
+@endcode
+
+@subsection kin_kdl_lma KDL Inverse Kinematics (Levenberg-Marquardt)
+
+A numerical IK solver using the Levenberg-Marquardt optimization algorithm. Use when
+your robot doesn't match analytical solver geometry requirements.
+
+@code{.yaml}
+inv_kin_plugins:
+  manipulator:
+    default: KDLInvKinChainLMA
+    plugins:
+      KDLInvKinChainLMA:
+        class: KDLInvKinChainLMAFactory
+        config:
+          base_link: base_link
+          tip_link: tool0
+@endcode
+
+@subsection kin_kdl_nr KDL Inverse Kinematics (Newton-Raphson)
+
+A numerical IK solver using the Newton-Raphson iterative method. Often converges faster
+than LMA but may be less stable for far-from-solution starting points.
+
+@code{.yaml}
+inv_kin_plugins:
+  manipulator:
+    default: KDLInvKinChainNR
+    plugins:
+      KDLInvKinChainNR:
+        class: KDLInvKinChainNRFactory
+        config:
+          base_link: base_link
+          tip_link: tool0
+@endcode
+
+@subsection kin_opw OPW Inverse Kinematics
+
+An **analytical** IK solver optimized for 6-DOF industrial robots with the OPW (Ortho-Parallel-Wrist)
+geometry pattern (ABB, KUKA, Fanuc, etc.). Extremely fast with closed-form solutions.
+
+@code{.yaml}
+inv_kin_plugins:
+  manipulator:
+    default: OPWInvKin
+    plugins:
+      OPWInvKin:
+        class: OPWInvKinFactory
+        config:
+          base_link: base_link
+          tip_link: tool0
+          params:
+            a1: 0.100
+            a2: -0.135
+            b: 0.00
+            c1: 0.615
+            c2: 0.705
+            c3: 0.755
+            c4: 0.086
+            offsets: [0, 0, -1.57079632679, 0, 0, 0]
+            sign_corrections: [1, 1, 1, 1, 1, 1]
+@endcode
+
+@subsection kin_ur UR Inverse Kinematics
+
+A dedicated analytical IK solver for Universal Robots arms. Can use preconfigured models
+or custom D-H parameters.
+
+**Using a preconfigured model:**
+
+@code{.yaml}
+inv_kin_plugins:
+  manipulator:
+    default: URInvKin
+    plugins:
+      URInvKin:
+        class: URInvKinFactory
+        config:
+          base_link: base_link
+          tip_link: tool0
+          model: UR10  # Options: UR3, UR5, UR10, UR3e, UR5e, UR10e
+@endcode
+
+**Using custom parameters:**
+
+@code{.yaml}
+inv_kin_plugins:
+  manipulator:
+    default: URInvKin
+    plugins:
+      URInvKin:
+        class: URInvKinFactory
+        config:
+          base_link: base_link
+          tip_link: tool0
+          params:
+            d1: 0.1273
+            a2: -0.612
+            a3: -0.5723
+            d4: 0.163941
+            d5: 0.1157
+            d6: 0.0922
+@endcode
+
+@subsection kin_rop Robot on Positioner (ROP)
+
+Combines a robot IK solver with a sampled external axis (positioner, track, turntable).
+The positioner axis is sampled at discrete intervals and the robot IK is solved at each position.
+
+@code{.yaml}
+inv_kin_plugins:
+  manipulator:
+    default: ROPInvKin
+    plugins:
+      ROPInvKin:
+        class: ROPInvKinFactory
+        config:
+          manipulator_reach: 2.0
+          positioner_sample_resolution:
+            - name: positioner_joint_1
+              value: 0.1
+          positioner:
+            class: KDLFwdKinChainFactory
+            config:
+              base_link: positioner_base_link
+              tip_link: positioner_tool0
+          manipulator:
+            class: OPWInvKinFactory
+            config:
+              base_link: base_link
+              tip_link: tool0
+              params:
+                a1: 0.100
+                a2: -0.135
+                b: 0.00
+                c1: 0.615
+                c2: 0.705
+                c3: 0.755
+                c4: 0.086
+                offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                sign_corrections: [1, 1, 1, 1, 1, 1]
+@endcode
+
+@subsection kin_rep Robot with External Positioner (REP)
+
+Similar to ROP, but for an external positioner that can be reoriented independently
+(e.g., a rotary table holding the workpiece). Supports multiple positioner axes.
+
+@code{.yaml}
+inv_kin_plugins:
+  manipulator:
+    default: REPInvKin
+    plugins:
+      REPInvKin:
+        class: REPInvKinFactory
+        config:
+          manipulator_reach: 2.0
+          positioner_sample_resolution:
+            - name: positioner_joint_1
+              value: 0.1
+            - name: positioner_joint_2
+              value: 0.1
+          positioner:
+            class: KDLFwdKinChainFactory
+            config:
+              base_link: positioner_base_link
+              tip_link: positioner_tool0
+          manipulator:
+            class: OPWInvKinFactory
+            config:
+              base_link: base_link
+              tip_link: tool0
+              params:
+                a1: 0.100
+                a2: -0.135
+                b: 0.00
+                c1: 0.615
+                c2: 0.705
+                c3: 0.755
+                c4: 0.086
+                offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                sign_corrections: [1, 1, 1, 1, 1, 1]
+@endcode
+
+@section kinematics_ikfast Creating an IKFast Plugin
+
+IKFast is an analytical IK solver generator from OpenRAVE. It produces a C++ source file containing
+a closed-form IK solver specific to your robot's kinematic chain. This section walks through the
+complete process.
+
+@subsection ikfast_prerequisites Prerequisites
+
+Install Docker and configure permissions:
+
+@code{.sh}
+# Install Docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update
+sudo apt install -y docker-ce
+
+# Add your user to the docker group
+sudo groupadd docker
+sudo usermod -aG docker $USER
+@endcode
+
+After adding the group, **reboot** if `docker run hello-world` produces a permission error.
+
+Pull the OpenRAVE docker container:
+
+@code{.sh}
+docker pull hamzamerzic/openrave
+@endcode
+
+@subsection ikfast_urdf_to_dae Converting URDF to .dae
+
+OpenRAVE uses the COLLADA (.dae) format. Convert your URDF:
+
+@code{.sh}
+# Install the converter (ROS required for this step)
+sudo apt install ros-<rosdistro>-collada-urdf
+source catkin_ws/devel/setup.bash
+
+# Convert URDF to COLLADA
+rosrun collada_urdf urdf_to_collada /path/to/my_robot.urdf /path/to/robot_full.dae
+
+# Round precision to 6 decimal places (avoids numerical issues)
+rosrun moveit_kinematics round_collada_numbers.py /path/to/robot_full.dae /path/to/robot.dae 6
+@endcode
+
+@subsection ikfast_find_links Finding Robot Link Indices
+
+The IKFast generator needs link indices from the .dae file. Use OpenRAVE's utility:
+
+@code{.sh}
+docker run --rm \
+  --env PYTHONPATH=/usr/local/lib/python2.7/dist-packages \
+  -v /path/to/dir:/out \
+  hamzamerzic/openrave \
+  /bin/bash -c "cd /out; openrave-robot.py robot.dae --info links"
+@endcode
+
+Example output:
+
+@code
+name                        index parents
+------------------------------------------
+world                       0
+base_link                   1     world
+base                        2     base_link
+shoulder_link               3     base_link
+upper_arm_link              4     shoulder_link
+forearm_link                5     upper_arm_link
+wrist_1_link                6     forearm_link
+wrist_2_link                7     wrist_1_link
+wrist_3_link                8     wrist_2_link
+tool0                       9     wrist_3_link
+ee_link                     10    tool0
+@endcode
+
+@subsection ikfast_generate Running the IKFast Generator
+
+Run the generator with the base link and end-effector link indices:
+
+@code{.sh}
+docker run --rm \
+  --env PYTHONPATH=/usr/local/lib/python2.7/dist-packages \
+  -v /path/to/dir:/out \
+  hamzamerzic/openrave \
+  /bin/bash -c "cd /out; python /usr/local/lib/python2.7/dist-packages/openravepy/_openravepy_/ikfast.py \
+    --robot=robot.dae \
+    --iktype=transform6d \
+    --baselink=1 \
+    --eelink=9 \
+    --savefile=robot_ikfast.cpp"
+@endcode
+
+Key arguments:
+- `--robot` — The .dae filename in the mounted directory
+- `--iktype` — IK solver type (`transform6d` for 6-DOF robots)
+- `--baselink` — Index of the robot's base link
+- `--eelink` — Index of the end-effector link (usually `tool0`)
+- `--savefile` — Output C++ filename
+- `--freeindex` — (Optional) For 7+ DOF robots, specify the free joint index (e.g., `--freeindex=8`)
+
+> This process can take up to 20 minutes depending on the kinematic chain.
+
+@subsection ikfast_create_solver Creating the Tesseract IKFast Solver
+
+**Header file:**
+
+@code{.cpp}
+#include <Eigen/Geometry>
+#include <vector>
+#include <tesseract_kinematics/ikfast/ikfast_inv_kin.h>
+
+namespace my_robot_ikfast
+{
+class MyRobotInvKinematics : public tesseract_kinematics::IKFastInvKin
+{
+public:
+  MyRobotInvKinematics(const std::string base_link_name,
+                       const std::string tip_link_name,
+                       const std::vector<std::string> joint_names,
+                       const std::string name);
+};
+}  // namespace my_robot_ikfast
+@endcode
+
+**Source file** (include order matters):
+
+@code{.cpp}
+#include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
+#include <my_robot_ikfast/impl/robot_ikfast.hpp>  // Generated IKFast code
+#include <my_robot_ikfast/my_robot_kinematics.h>
+
+namespace my_robot_ikfast
+{
+MyRobotInvKinematics::MyRobotInvKinematics(const std::string base_link_name,
+                                            const std::string tip_link_name,
+                                            const std::vector<std::string> joint_names,
+                                            const std::string name)
+  : IKFastInvKin(base_link_name, tip_link_name, joint_names, name)
+{}
+}  // namespace my_robot_ikfast
+@endcode
+
+@subsection ikfast_create_plugin Creating the Tesseract IKFast Plugin
+
+**Header file:**
+
+@code{.cpp}
+#include <tesseract_kinematics/core/kinematics_plugin_factory.h>
+
+namespace my_robot_ikfast
+{
+class MyRobotInvKinFactory : public tesseract_kinematics::InvKinFactory
+{
+  tesseract_kinematics::InverseKinematics::UPtr
+  create(const std::string& solver_name,
+         const tesseract_scene_graph::SceneGraph& scene_graph,
+         const tesseract_scene_graph::SceneState& scene_state,
+         const tesseract_kinematics::KinematicsPluginFactory& plugin_factory,
+         const YAML::Node& config) const override final;
+};
+}  // namespace my_robot_ikfast
+@endcode
+
+**Source file:**
+
+@code{.cpp}
+#include <my_robot_ikfast/my_robot_kinematics.h>
+#include <my_robot_ikfast/my_robot_factory.h>
+
+namespace my_robot_ikfast
+{
+tesseract_kinematics::InverseKinematics::UPtr
+MyRobotInvKinFactory::create(const std::string& solver_name,
+                              const tesseract_scene_graph::SceneGraph& scene_graph,
+                              const tesseract_scene_graph::SceneState& /*scene_state*/,
+                              const tesseract_kinematics::KinematicsPluginFactory& /*plugin_factory*/,
+                              const YAML::Node& config) const
+{
+  std::string base_link;
+  std::string tip_link;
+
+  try
+  {
+    if (YAML::Node n = config["base_link"])
+      base_link = n.as<std::string>();
+    else
+      throw std::runtime_error("MyRobotInvKinFactory, missing 'base_link' entry");
+
+    if (YAML::Node n = config["tip_link"])
+      tip_link = n.as<std::string>();
+    else
+      throw std::runtime_error("MyRobotInvKinFactory, missing 'tip_link' entry");
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("MyRobotInvKinFactory: Failed to parse yaml config: %s", e.what());
+    return nullptr;
+  }
+
+  auto shortest_path = scene_graph.getShortestPath(base_link, tip_link);
+  return std::make_unique<MyRobotInvKinematics>(base_link, tip_link,
+                                                 shortest_path.active_joint_names,
+                                                 solver_name);
+}
+}  // namespace my_robot_ikfast
+
+// Register the plugin
+TESSERACT_ADD_PLUGIN(my_robot_ikfast::MyRobotInvKinFactory, MyRobotInvKinFactory);
+@endcode
+
+@subsection ikfast_cmake CMakeLists.txt
+
+Add the following to your CMakeLists.txt:
+
+@code{.cmake}
+find_package(tesseract_kinematics REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(LAPACK REQUIRED)  # Required for IKFast
+
+# IKFast solver library
+add_library(${PROJECT_NAME} src/my_robot_kinematics.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  tesseract::tesseract_kinematics_ikfast
+  console_bridge
+  Eigen3::Eigen
+  ${LAPACK_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+  ${LAPACK_INCLUDE_DIRS})
+
+# Plugin factory library
+add_library(${PROJECT_NAME}_factory src/my_robot_factory.cpp)
+target_link_libraries(${PROJECT_NAME}_factory PUBLIC
+  ${PROJECT_NAME}
+  tesseract::tesseract_kinematics_core)
+target_include_directories(${PROJECT_NAME}_factory PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>")
+@endcode
+
+@subsection ikfast_plugin_config Plugin Configuration
+
+Configure your IKFast plugin in the kinematics YAML:
+
+@code{.yaml}
+kinematic_plugins:
+  search_paths:
+    - <path to your workspace lib directory>
+  search_libraries:
+    - <package_name>_factory
+  fwd_kin_plugins:
+    manipulator:
+      default: KDLFwdKinChain
+      plugins:
+        KDLFwdKinChain:
+          class: KDLFwdKinChainFactory
+          config:
+            base_link: base_link
+            tip_link: tool0
+  inv_kin_plugins:
+    manipulator:
+      default: MyRobotInvKinematics
+      plugins:
+        MyRobotInvKinematics:
+          class: MyRobotInvKinFactory
+          config:
+            base_link: base_link
+            tip_link: tool0
+@endcode
+
+@section kinematics_next_steps Next Steps
+
+- @ref srdf — Configure kinematics plugins in your SRDF
+- @ref environment — Use kinematics through the environment interface
+- @ref getting_started — Set up your development workspace
+
+*/

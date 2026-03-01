@@ -9,8 +9,31 @@ Welcome to the Tesseract documentation
   <li> @subpage why_tesseract </li>
   <li> @subpage tesseract_vs_moveit </li>
   <li> @subpage getting_started </li>
+</ul>
+
+@section main_concepts Concepts
+
+<ul>
   <li> @subpage urdf </li>
   <li> @subpage srdf </li>
+  <li> @subpage scene_graph </li>
+  <li> @subpage environment </li>
+  <li> @subpage collision </li>
+  <li> @subpage geometry </li>
+  <li> @subpage kinematics </li>
+</ul>
+
+@section main_tutorials Tutorials
+
+<ul>
+  <li> @subpage setup_wizard </li>
+  <li> @subpage ros_interface </li>
+</ul>
+
+@section main_examples Examples
+
+<ul>
+  <li> @subpage tesseract_examples </li>
 </ul>
 
 */
