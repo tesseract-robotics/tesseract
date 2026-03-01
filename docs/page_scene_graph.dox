@@ -1,0 +1,106 @@
+/**
+@page scene_graph Scene Graph
+
+@brief The scene graph manages robot connectivity and provides the foundation for environment modeling.
+
+The scene graph is the core data structure in Tesseract that manages the connectivity of links and joints
+in your robot and workcell. It inherits from Boost Graph, giving you access to the full suite of Boost
+graph algorithms for traversal, search, and analysis.
+
+@section scene_graph_overview Overview
+
+A scene graph represents relationships between links (rigid bodies) and joints (connections with
+degrees of freedom). While most robots are naturally tree-structured (each link has exactly one parent),
+Tesseract's scene graph supports **acyclic graphs** — multiple paths can connect the same nodes, which
+is essential for modeling closed kinematic chains, parallel mechanisms, and complex workcells.
+
+@image html tesseract_scene_graph_diagram.png "Scene Graph Architecture" width=600px
+
+@subsection scene_graph_tree Tree Structure
+
+In a typical serial manipulator, each link connects to the next through a single joint, forming a tree:
+
+@image html tesseract_scene_graph_tree.png "Scene Graph (Tree)" width=400px
+
+@subsection scene_graph_acyclic Acyclic Graph Structure
+
+When additional joints connect non-adjacent links (e.g., a parallel gripper mechanism or a closed-chain
+robot), the graph becomes acyclic but is no longer a tree:
+
+@image html tesseract_scene_graph_graph.png "Scene Graph (Acyclic)" width=400px
+
+@section scene_graph_features Features
+
+The scene graph provides the following capabilities:
+
+- **Links** — Get, Add, Remove, Modify, Show/Hide, and Enable/Disable Collision
+- **Joints** — Get, Add, Remove, Move, and Modify
+- **Allowed Collision Matrix** — Get, Add, Remove entries
+- **Graph Functions**
+  - Get inbound/outbound joints for a link
+  - Check if graph is acyclic
+  - Check if graph is a tree
+  - Get adjacent/inverse-adjacent links for a joint
+- **Utility Functions**
+  - Save graph to Graph Description Language (DOT) for visualization
+  - Get shortest path between two links
+- **Parsers**
+  - URDF Parser
+  - SRDF Parser
+  - KDL Parser
+  - Mesh Parser
+
+@section scene_graph_examples Examples
+
+Tesseract provides several example programs demonstrating scene graph operations:
+
+- @ref build_scene_graph_example "Building a Scene Graph" — Manually construct links and joints,
+  inspect the graph, detect unused links, create acyclic graphs, and compute shortest paths
+- @ref load_urdf_example "Loading from URDF" — Parse a URDF file into a scene graph using a
+  resource locator for package:// resolution
+- @ref parse_srdf_example "Parsing SRDF" — Load semantic information (allowed collision matrix,
+  groups, etc.) and apply it to an existing scene graph
+- @ref create_geometries_example "Parsing Meshes" — Load mesh files which can be assigned to
+  links in the scene graph
+
+@section scene_graph_key_concepts Key Concepts
+
+@subsection sg_resource_locator Resource Locator
+
+Because Tesseract is ROS-agnostic, you need to provide a **resource locator** for resolving
+`package://` URIs in URDF files. This is a simple interface you implement to map package names
+to filesystem paths. See the @ref load_urdf_example "URDF loading example" for a complete
+implementation.
+
+@subsection sg_dot_export Graph Visualization
+
+You can export any scene graph to DOT format for visualization with Graphviz:
+
+@code{.cpp}
+scene_graph->saveDOT("/tmp/my_robot.dot");
+@endcode
+
+Then visualize with:
+@code{.sh}
+dot -Tpng /tmp/my_robot.dot -o /tmp/my_robot.png
+@endcode
+
+@subsection sg_acyclic_detection Structural Analysis
+
+The scene graph can verify its own structure at runtime:
+
+@code{.cpp}
+bool is_tree = scene_graph->isTree();
+bool is_acyclic = scene_graph->isAcyclic();
+@endcode
+
+A graph that is **not** a tree but **is** acyclic contains parallel paths (closed chains).
+A graph that is **not** acyclic contains cycles and is invalid for kinematic computations.
+
+@section scene_graph_next_steps Next Steps
+
+- @ref urdf — Learn about the robot description format that populates the scene graph
+- @ref srdf — Add semantic information (groups, collision rules) to your scene graph
+- @ref environment — See how the environment wraps the scene graph with state solving and collision checking
+
+*/

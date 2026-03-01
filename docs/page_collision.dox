@@ -1,0 +1,130 @@
+/**
+@page collision Collision Detection
+
+@brief Tesseract's collision checking system supports discrete and continuous contact queries with a plugin-based architecture.
+
+Tesseract provides a high-performance collision checking system that understands nothing about robot
+connectivity — it purely manages collision objects, their transforms, and contact queries. This
+separation of concerns makes the collision system flexible and reusable across different contexts.
+
+@image html continuous_first.gif "Continuous Collision Detection" width=500px
+
+@section collision_overview Overview
+
+The collision system supports two modes of operation:
+
+- **Discrete Collision Checking** — Tests for contact at a single configuration. Used during
+  planning to evaluate candidate states.
+- **Continuous Collision Checking** — Tests for contact along a swept motion between two
+  configurations. Used for trajectory validation to catch collisions that discrete checks miss.
+
+@section collision_plugin_config Contact Manager Plugin Configuration
+
+Contact managers are loaded as **plugins** through a YAML configuration file referenced in the SRDF.
+This allows you to swap collision backends without changing any application code.
+
+The configuration has four sections:
+
+| Section | Description |
+|---------|-------------|
+| `search_paths` | Directories to search for plugin libraries (searched in order) |
+| `search_libraries` | Specific libraries to search for plugin classes |
+| `discrete_plugins` | Discrete contact manager plugin definitions |
+| `continuous_plugins` | Continuous contact manager plugin definitions |
+
+**Example Configuration:**
+
+@code{.yaml}
+contact_manager_plugins:
+  search_paths:
+    - /usr/local/lib
+  search_libraries:
+    - tesseract_collision_bullet_factories
+    - tesseract_collision_fcl_factories
+  discrete_plugins:
+    default: BulletDiscreteBVHManager
+    plugins:
+      BulletDiscreteBVHManager:
+        class: BulletDiscreteBVHManagerFactory
+      BulletDiscreteSimpleManager:
+        class: BulletDiscreteSimpleManagerFactory
+      FCLDiscreteBVHManager:
+        class: FCLDiscreteBVHManagerFactory
+  continuous_plugins:
+    default: BulletCastBVHManager
+    plugins:
+      BulletCastBVHManager:
+        class: BulletCastBVHManagerFactory
+      BulletCastSimpleManager:
+        class: BulletCastSimpleManagerFactory
+@endcode
+
+@section collision_features Features
+
+The collision system provides these core capabilities:
+
+-# Add collision objects (links) to the checker
+-# Set link transforms
+-# Enable/Disable individual links
+-# Set a default contact distance threshold
+-# Set per-link-pair contact distance thresholds
+-# Perform different contact test types (FIRST, CLOSEST, ALL)
+
+@section collision_contact_test_types Contact Test Types
+
+The contact test type controls how many contacts are reported per query:
+
+| Contact Test Type | Description | Best For |
+|-------------------|-------------|----------|
+| `ContactTestType::FIRST` | Exit on first contact found | Planners like Descartes and OMPL that only need a boolean collision check |
+| `ContactTestType::CLOSEST` | Store only the closest contact for each collision object pair | Planners like TrajOpt that need distance gradients |
+| `ContactTestType::ALL` | Store all contacts for each collision object pair | Detailed analysis, TrajOpt with full contact information |
+
+@section collision_available_checkers Available Contact Checkers
+
+| Contact Checker | Type | Description |
+|----------------|------|-------------|
+| BulletDiscreteBVHManager | Discrete | Leverages Bullet Physics BVH for discrete contact checking |
+| BulletCastBVHManager | Continuous | Uses Bullet Physics BVH with casted convex hulls between two link poses |
+| BulletDiscreteSimpleManager | Discrete | Naive Bullet implementation that loops over all pairs. Can be faster in small environments. |
+| BulletCastSimpleManager | Continuous | Naive continuous implementation with pair-wise loops. Can be faster in small environments. |
+| FCLDiscreteBVHManager | Discrete | Uses the Flexible Collision Library (FCL) for discrete contact checking |
+| GPUDiscreteBVHManager | Discrete | GPU/CPU accelerated contact checking |
+
+@section collision_benchmarks Performance Benchmarks
+
+Tesseract's Bullet-based collision checking is significantly faster than FCL across all contact test types:
+
+**FCL Comparison (Tesseract Bullet vs FCL)**
+
+| Test Mode | FIRST | CLOSEST | ALL |
+|-----------|-------|---------|-----|
+| Contact Only | 3x Faster | 19x Faster | 19x Faster |
+| Penetration | 2x Faster | 15x Faster | 15x Faster |
+| Distance | 6,000x Faster | 265x Faster | 265x Faster |
+
+@image html tesseract_collision_contact_type_first.png "Benchmark — Contact Test Type: FIRST" width=500px
+
+@image html tesseract_collision_contact_type_closest.png "Benchmark — Contact Test Type: CLOSEST" width=500px
+
+@image html tesseract_collision_contact_type_all.png "Benchmark — Contact Test Type: ALL" width=500px
+
+@section collision_example Example
+
+See the @ref box_box_example "Box-Box Collision Example" for a complete walkthrough that demonstrates:
+
+- Creating a contact checker
+- Adding collision objects (enabled and disabled)
+- Creating convex hulls from mesh files
+- Setting active collision objects
+- Configuring contact distance thresholds
+- Setting object transforms
+- Performing collision checks at different distances
+
+@section collision_next_steps Next Steps
+
+- @ref scene_graph — Understand how links relate to the scene graph
+- @ref environment — See how the environment manages collision checkers
+- @ref srdf — Configure collision plugins in your SRDF
+
+*/

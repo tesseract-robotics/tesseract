@@ -1,0 +1,97 @@
+/**
+@page ros_interface ROS Interface
+
+@brief Using Tesseract with ROS for visualization, environment monitoring, and motion planning.
+
+While Tesseract is ROS-agnostic at its core, the
+<a href="https://github.com/tesseract-robotics/tesseract_ros">tesseract_ros</a> and
+<a href="https://github.com/tesseract-robotics/tesseract_ros2">tesseract_ros2</a>
+packages provide ROS integration for common workflows.
+
+@section ros_interface_overview Overview
+
+The ROS interface packages provide:
+
+| Package | Purpose |
+|---------|---------|
+| **tesseract_monitoring** | Environment and contact monitoring via ROS topics/services |
+| **tesseract_rosutils** | Conversion utilities between Tesseract and ROS message types |
+| **tesseract_rviz** | RViz visualization plugins for Tesseract environments and trajectories |
+| **tesseract_msgs** | ROS message definitions for Tesseract data types |
+| **tesseract_ros_examples** | Example applications demonstrating ROS integration |
+
+@section ros_interface_example Basic Cartesian Example
+
+This example demonstrates a typical ROS workflow: loading a robot, creating an environment
+with obstacles, planning a Cartesian path, and visualizing the result in RViz.
+
+@image html basic_cartesian_example_startup.png "Basic Cartesian Example — Startup" width=700px
+
+@subsection ros_running Running the Example
+
+Open a terminal and launch the example (ROS 1):
+
+@code{.sh}
+roslaunch tesseract_ros_examples basic_cartesian_example.launch
+@endcode
+
+Wait for RViz to finish loading. In the launch terminal, you'll see:
+
+@code
+[ERROR] [1613730481.601846614]: Hit enter key to continue!
+@endcode
+
+Press Enter to begin robot motion.
+
+@subsection ros_expected_output Expected Output
+
+The robot traces a trajectory over a cube obstacle in the environment:
+
+@image html basic_cartesian_example_process.png "Basic Cartesian Example — Execution" width=700px
+
+@subsection ros_code_structure Code Structure
+
+The example is organized as:
+
+- **Executable node** — Initializes ROS, creates the example class, and calls `run()`
+- **BasicCartesianExample class** — Contains all planning and environment setup logic
+
+The workflow in the `run()` method is:
+
+1. Load parameters from the ROS Parameter Server into the Tesseract environment
+2. Create an environment monitor for collision tracking
+3. Build an octomap of a cube obstacle and add it to the environment
+4. Define Cartesian waypoints for freespace and linear moves
+5. Create a planning server and solve each motion program
+6. Plot the trajectory in RViz for visualization
+
+@section ros_packages ROS Package Details
+
+@subsection ros_monitoring tesseract_monitoring
+
+Provides two main components:
+
+- **Contact Monitor** — Continuously monitors the environment for contact/collisions and
+  publishes results. Useful for safety monitoring during execution.
+- **Environment Monitor** — Keeps the Tesseract environment synchronized with the ROS
+  parameter server and published environment updates.
+
+@subsection ros_rviz tesseract_rviz
+
+RViz plugins for visualizing:
+- Tesseract environments (robot model, collision objects, scene graph)
+- Planned trajectories with animation
+- Contact results and collision markers
+
+@subsection ros_rosutils tesseract_rosutils
+
+Conversion utilities between Tesseract internal types and ROS messages. Handles serialization
+and deserialization for publishing Tesseract data over ROS topics.
+
+@section ros_interface_next_steps Next Steps
+
+- @ref getting_started — Set up your workspace with ROS support
+- @ref environment — Understand the Tesseract environment that underlies the ROS interface
+- @ref srdf — Configure your robot's semantic description
+
+*/

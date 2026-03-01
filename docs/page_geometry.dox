@@ -1,0 +1,95 @@
+/**
+@page geometry Geometry Types
+
+@brief Tesseract supports primitive shapes, meshes, convex hulls, signed distance fields, and octrees for collision and visualization.
+
+The tesseract_geometry package provides the geometry types used throughout Tesseract for both
+visualization and collision checking. Each geometry type can be attached to links in the
+@ref scene_graph "scene graph" and is used by the @ref collision "collision system".
+
+@section geometry_overview Overview
+
+Tesseract provides a comprehensive set of geometry types:
+
+@subsection geometry_primitives Primitive Shapes
+
+Analytically-defined shapes with exact representations:
+
+| Shape | Description | Parameters |
+|-------|-------------|------------|
+| **Box** | Axis-aligned rectangular prism | width (x), height (y), depth (z) |
+| **Sphere** | Perfect sphere | radius |
+| **Cylinder** | Circular cylinder | radius, length |
+| **Cone** | Circular cone | radius, length |
+| **Capsule** | Cylinder with hemispherical end caps | radius, length |
+| **Plane** | Infinite half-space | normal (a, b, c), offset (d) |
+
+@subsection geometry_mesh Mesh Types
+
+- **Mesh** — General triangle mesh loaded from file or constructed manually. Important: Tesseract
+  keeps each mesh in a file as an independent shape (unlike MoveIt which merges all shapes into
+  a single triangle list). This preserves individual bounding boxes and enables better convex hull
+  approximation.
+- **Convex Mesh** — A mesh guaranteed to be convex. Used for efficient collision checking.
+  The data must already be convex; use Tesseract utilities to convert if needed.
+- **SDF Mesh** — Same structure as a mesh, but interpreted as a signed distance field for collision.
+
+@subsection geometry_octree Octree
+
+Volumetric representation using an octree data structure. Useful for representing point cloud data
+(e.g., from depth cameras) as collision geometry.
+
+Octree cells can be represented as different shapes:
+- `Octree::SubType::BOX` — Each cell is a box
+- `Octree::SubType::SPHERE_INSIDE` — Each cell is an inscribed sphere
+- `Octree::SubType::SPHERE_OUTSIDE` — Each cell is a circumscribed sphere
+
+> **Tip:** Prune the octree before creating the Tesseract octree shape to simplify the collision geometry.
+
+@section geometry_examples Examples
+
+See the @ref create_geometries_example "Creating Geometries Example" for complete code demonstrating
+how to create each geometry type programmatically.
+
+For loading meshes from files, see the mesh parsing utilities in the scene_graph package.
+
+@section geometry_usage Usage with Links
+
+Geometry objects are assigned to links through Visual and Collision elements:
+
+@code{.cpp}
+#include <tesseract_geometry/geometries.h>
+#include <tesseract_scene_graph/link.h>
+
+// Create a box geometry
+auto box = std::make_shared<tesseract_geometry::Box>(0.1, 0.2, 0.3);
+
+// Assign to a link's visual
+auto visual = std::make_shared<tesseract_scene_graph::Visual>();
+visual->geometry = box;
+link->visual.push_back(visual);
+
+// Assign to a link's collision (can use different geometry)
+auto collision = std::make_shared<tesseract_scene_graph::Collision>();
+collision->geometry = box;
+link->collision.push_back(collision);
+@endcode
+
+@section geometry_mesh_vs_moveit Mesh Handling: Tesseract vs MoveIt
+
+A key difference from MoveIt is how mesh files with multiple shapes are handled:
+
+- **MoveIt** merges all shapes in a mesh file into a single triangle list for collision checking
+- **Tesseract** keeps each mesh independent — each gets its own bounding box, and convex hull
+  conversion produces a closer approximation of the actual geometry
+
+This is particularly important for complex parts where a single convex hull would be a poor
+approximation, but multiple convex hulls (one per sub-mesh) provide much better coverage.
+
+@section geometry_next_steps Next Steps
+
+- @ref collision — See how geometry is used in collision checking
+- @ref urdf — Define geometry in your robot description
+- @ref scene_graph — Attach geometry to links in the scene graph
+
+*/

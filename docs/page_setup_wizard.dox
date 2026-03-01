@@ -1,0 +1,167 @@
+/**
+@page setup_wizard Tesseract Setup Wizard
+
+@brief A GUI tool for generating SRDF files — defining collision matrices, kinematics groups, joint states, TCPs, and OPW parameters.
+
+The Tesseract Setup Wizard is a graphical tool that helps you generate a Semantic Robot Description
+Format (SRDF) file for your robot. The SRDF defines:
+
+- Allowed collision matrix
+- Kinematics groups
+- Named joint states
+- Tool center points (TCPs)
+- OPW kinematics parameters
+
+@section setup_wizard_getting_started Getting Started
+
+The Tesseract Setup Wizard is part of the Tesseract Ignition snap package.
+
+Install it with:
+
+@code{.sh}
+sudo snap install tesseract-ignition
+@endcode
+
+@section setup_wizard_step1 Step 1: Launch the Wizard
+
+> If you are using ROS, make sure you source your workspace before launching.
+
+@code{.sh}
+tesseract-ignition.tesseract-setup-wizard
+@endcode
+
+> The wizard contains a toolbar with pages for each SRDF component. To navigate between pages,
+> click on the dark gray toolbar background, hold, and drag left or right.
+
+@section setup_wizard_step2 Step 2: Load URDF and SRDF
+
+@image html tesseract_setup_wizard_startup.png "Setup Wizard Startup" width=700px
+
+To use the wizard, first load your URDF file. Optionally load an existing SRDF to edit.
+
+**Loading files:**
+1. Click **BROWSE** next to the *URDF File* field and select your URDF file
+2. (Optional) Click **BROWSE** next to the *SRDF File* field to load an existing SRDF
+3. Click **LOAD** — your robot model should appear in the 3D viewport
+4. If the model doesn't appear, check the terminal for error messages
+
+Drag left on the toolbar to proceed to the next page.
+
+@section setup_wizard_step3 Step 3: Generate/Edit Allowed Collision Matrix
+
+@image html tesseract_setup_wizard_collision_matrix.png "Allowed Collision Matrix" width=700px
+
+The allowed collision matrix specifies which link pairs don't need collision checking.
+Adjacent links and links that never collide should be disabled.
+
+> If you loaded an existing SRDF, the table will already be populated with your collision matrix.
+
+**To generate a collision matrix:**
+1. Click **GENERATE** — the table populates with the default collision matrix
+2. Review the matrix and verify no link pairs are incorrectly disabled
+3. To re-enable collision checking for a pair, select the row and click **REMOVE**
+
+Drag left to proceed.
+
+@section setup_wizard_step4 Step 4: Create/Edit Kinematics Groups
+
+@image html tesseract_setup_wizard_kinematics_groups.png "Kinematics Groups" width=700px
+
+A kinematics group defines which links belong to a functional part of your robot
+(typically the arm used for motion planning).
+
+Enter a group name in the *Group Name* field, then define it using one of three methods:
+
+@subsection setup_wizard_chain Method 1: Chain (Most Common)
+
+1. Click the **CHAIN** tab
+2. Select the *Base Link* (usually `base_link`)
+3. Select the *Tip Link* (usually `tool0` or `tcp`)
+4. Click **ADD GROUP**
+
+@subsection setup_wizard_joints Method 2: Joint List
+
+1. Click the **JOINTS** tab
+2. Select joints one at a time from the dropdown and click **ADD**
+3. Once all joints are listed, click **ADD GROUP**
+
+@subsection setup_wizard_links Method 3: Link List
+
+1. Click the **LINKS** tab
+2. Select links one at a time from the dropdown and click **ADD**
+3. Once all links are listed, click **ADD GROUP**
+
+To remove a group, select it in the table and click **REMOVE**.
+
+Drag left to proceed.
+
+@section setup_wizard_step5 Step 5: Create/Edit Joint States
+
+@image html tesseract_setup_wizard_joint_states.png "Joint States" width=700px
+
+Define named robot poses (e.g., "home", "stowed", "ready") that planners can reference by name.
+
+**To define a joint state:**
+1. Enter a name in the *Joint State Name* field
+2. Select the kinematics group from the *Group Name* dropdown
+3. Set the value for each joint using the sliders/fields that appear
+4. Click **ADD STATE**
+
+To remove a state, select it in the table and click **REMOVE**.
+
+Drag left to proceed.
+
+@section setup_wizard_step6 Step 6: Create/Edit TCPs
+
+@image html tesseract_setup_wizard_user_defined_tcps.png "User Defined TCPs" width=700px
+
+Define Tool Center Points for your kinematics groups. A TCP represents the tool's working
+point relative to the last link in the kinematic chain.
+
+**To define a TCP:**
+1. Enter a name in the *TCP Name* field
+2. Select the kinematics group from the *Group Name* dropdown
+3. Enter the position (*X*, *Y*, *Z*) relative to the last link
+4. Enter the orientation as Roll (*R*), Pitch (*P*), Yaw (*Y*)
+5. Click **ADD TCP**
+
+To remove a TCP, select it and click **REMOVE**.
+
+Drag left to proceed.
+
+@section setup_wizard_step7 Step 7: Set OPW Parameters
+
+@image html tesseract_setup_wizard_opw_kinematics.png "OPW Kinematics Parameters" width=700px
+
+OPW is an efficient analytical inverse kinematics solver for robots with parallel bases and
+spherical wrists. It requires 7 measurements from your robot's specification sheet.
+
+Use the following diagram to determine each parameter:
+
+@image html tesseract_setup_wizard_opw_diagram.png "OPW Parameter Diagram" width=500px
+
+Enter each value in its respective field.
+
+> For more details on the OPW algorithm, visit the
+> <a href="https://github.com/Jmeyer1292/opw_kinematics">opw_kinematics repository</a>.
+
+Drag left to proceed.
+
+@section setup_wizard_step8 Step 8: Save the SRDF File
+
+@image html tesseract_setup_wizard_save_srdf.png "Save SRDF" width=700px
+
+All settings — collision matrix, kinematics groups, joint states, TCPs, and OPW parameters —
+are stored in the SRDF file.
+
+**To save:**
+1. Navigate back to the first page (where you loaded the URDF)
+2. Click **SAVE** and choose a filename and location
+
+@section setup_wizard_next_steps Next Steps
+
+- @ref srdf — Learn about the SRDF format and Tesseract extensions
+- @ref kinematics — Configure kinematics solver plugins
+- @ref getting_started — Set up your development workspace
+
+*/
