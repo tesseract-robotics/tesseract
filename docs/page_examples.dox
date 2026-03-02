@@ -1,0 +1,26 @@
+/**
+@page examples_pages Examples
+
+Working code examples demonstrating Tesseract functionality.
+
+## Robot Structure & Description
+
+Loading and building robot representations:
+
+- @subpage load_urdf_example
+- @subpage parse_srdf_example
+- @subpage build_scene_graph_example
+
+## Geometry & Shapes
+
+Working with geometric representations:
+
+- @subpage create_geometries_example
+
+## Collision Detection
+
+Setting up and performing collision queries:
+
+- @subpage box_box_example
+
+*/

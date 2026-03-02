@@ -6,34 +6,43 @@
 Welcome to the Tesseract documentation
 
 <ul>
-  <li> @subpage why_tesseract </li>
-  <li> @subpage tesseract_vs_moveit </li>
-  <li> @subpage getting_started </li>
+  <li> @subpage intro_pages "Introduction" </li>
+  <li> @subpage concept_pages "Core Concepts" </li>
+  <li> @subpage tutorial_pages "Tutorials" </li>
+  <li> @subpage examples_pages "Examples" </li>
 </ul>
 
-@section main_concepts Concepts
+*/
 
-<ul>
-  <li> @subpage urdf </li>
-  <li> @subpage srdf </li>
-  <li> @subpage scene_graph </li>
-  <li> @subpage environment </li>
-  <li> @subpage collision </li>
-  <li> @subpage geometry </li>
-  <li> @subpage kinematics </li>
-</ul>
+/** @page intro_pages Introduction
 
-@section main_tutorials Tutorials
+Start here to learn the fundamentals of Tesseract.
 
-<ul>
-  <li> @subpage setup_wizard </li>
-  <li> @subpage ros_interface </li>
-</ul>
+- @subpage why_tesseract
+- @subpage tesseract_vs_moveit
+- @subpage getting_started
 
-@section main_examples Examples
+*/
 
-<ul>
-  <li> @subpage tesseract_examples </li>
-</ul>
+/** @page concept_pages Core Concepts
+
+Foundation and core components of Tesseract.
+
+- @subpage urdf
+- @subpage srdf
+- @subpage scene_graph
+- @subpage environment
+- @subpage collision
+- @subpage geometry
+- @subpage kinematics
+
+*/
+
+/** @page tutorial_pages Tutorials
+
+Step-by-step guides and tools.
+
+- @subpage setup_wizard
+- @subpage ros_interface
 
 */
