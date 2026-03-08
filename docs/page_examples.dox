@@ -23,4 +23,12 @@ Setting up and performing collision queries:
 
 - @subpage box_box_example
 
+## Configuration & Schemas
+
+Managing structured configurations with validation:
+
+- @subpage basic_property_tree_example
+- @subpage advanced_property_tree_example
+- @subpage oneof_property_tree_example
+
 */

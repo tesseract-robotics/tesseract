@@ -27,6 +27,7 @@ int main(int argc, char** argv)
     for (const auto& num_link : num_links)
     {
       std::string name = "BM_CLONE_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      // NOLINTNEXTLINE
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_CLONE_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -76,6 +77,7 @@ int main(int argc, char** argv)
                              ContactTestTypeStrings[static_cast<std::size_t>(test_type)] + "_" +
                              GeometryTypeStrings[static_cast<std::size_t>(type1)] + "_" +
                              GeometryTypeStrings[static_cast<std::size_t>(type2)];
+          // NOLINTNEXTLINE
           benchmark::RegisterBenchmark(name.c_str(),
                                        BM_CONTACT_TEST_FUNC,
                                        DiscreteBenchmarkInfo(checker,
@@ -104,6 +106,7 @@ int main(int argc, char** argv)
                              ContactTestTypeStrings[static_cast<std::size_t>(test_type)] + "_" +
                              GeometryTypeStrings[static_cast<std::size_t>(type1)] + "_" +
                              GeometryTypeStrings[static_cast<std::size_t>(type2)];
+          // NOLINTNEXTLINE
           benchmark::RegisterBenchmark(name.c_str(),
                                        BM_CONTACT_TEST_FUNC,
                                        DiscreteBenchmarkInfo(checker,
@@ -133,6 +136,7 @@ int main(int argc, char** argv)
                              ContactTestTypeStrings[static_cast<std::size_t>(test_type)] + "_" +
                              GeometryTypeStrings[static_cast<std::size_t>(type1)] + "_" +
                              GeometryTypeStrings[static_cast<std::size_t>(type2)];
+          // NOLINTNEXTLINE
           benchmark::RegisterBenchmark(name.c_str(),
                                        BM_CONTACT_TEST_FUNC,
                                        DiscreteBenchmarkInfo(checker,
@@ -167,6 +171,7 @@ int main(int argc, char** argv)
       auto tf = Eigen::Isometry3d::Identity();
       std::string name =
           "BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      // NOLINTNEXTLINE
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -190,6 +195,7 @@ int main(int argc, char** argv)
       auto tf = Eigen::Isometry3d::Identity();
       std::string name =
           "BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      // NOLINTNEXTLINE
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -213,6 +219,7 @@ int main(int argc, char** argv)
       auto tf = Eigen::Isometry3d::Identity();
       std::string name =
           "BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_" + checker->getName() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      // NOLINTNEXTLINE
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_FUNC,
                                    DiscreteBenchmarkInfo(checker,
@@ -240,6 +247,7 @@ int main(int argc, char** argv)
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
           "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_CONVEX_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+      // NOLINTNEXTLINE
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_LARGE_DATASET_MULTILINK_FUNC,
                                    clone,
@@ -253,10 +261,16 @@ int main(int argc, char** argv)
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
           "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
-      benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::SPHERE)
+      // clang-format off
+      // NOLINTNEXTLINE
+      benchmark::RegisterBenchmark(name.c_str(), 
+                                   BM_LARGE_DATASET_MULTILINK_FUNC, 
+                                   clone, 
+                                   edge_size, 
+                                   tesseract::geometry::GeometryType::SPHERE)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kNanosecond);
+      // clang-format on
     }
     // These last two took 45s and 120s. Too long to run in CI, and impractical for our purposes anyway.
     if (RUN_QUICK)
@@ -269,10 +283,16 @@ int main(int argc, char** argv)
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
           "BM_LARGE_DATASET_MULTILINK_" + checker->getName() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
-      benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_MULTILINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::MESH)
+      // clang-format off
+      // NOLINTNEXTLINE
+      benchmark::RegisterBenchmark(name.c_str(), 
+                                   BM_LARGE_DATASET_MULTILINK_FUNC, 
+                                   clone, 
+                                   edge_size, 
+                                   tesseract::geometry::GeometryType::MESH)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kMillisecond);
+      // clang-format on
     }
     std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract::geometry::GeometryType)>
         BM_LARGE_DATASET_SINGLELINK_FUNC = BM_LARGE_DATASET_SINGLELINK;
@@ -282,6 +302,7 @@ int main(int argc, char** argv)
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
           "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_CONVEX_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+      // NOLINTNEXTLINE
       benchmark::RegisterBenchmark(name.c_str(),
                                    BM_LARGE_DATASET_SINGLELINK_FUNC,
                                    clone,
@@ -295,20 +316,32 @@ int main(int argc, char** argv)
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
           "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
-      benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::SPHERE)
+      // clang-format off
+      // NOLINTNEXTLINE
+      benchmark::RegisterBenchmark(name.c_str(),
+                                   BM_LARGE_DATASET_SINGLELINK_FUNC,
+                                   clone,
+                                   edge_size,
+                                   tesseract::geometry::GeometryType::SPHERE)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kNanosecond);
+      // clang-format on
     }
     for (const auto& edge_size : edge_sizes)
     {
       DiscreteContactManager::Ptr clone = checker->clone();
       std::string name =
           "BM_LARGE_DATASET_SINGLELINK_" + checker->getName() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
-      benchmark::RegisterBenchmark(
-          name.c_str(), BM_LARGE_DATASET_SINGLELINK_FUNC, clone, edge_size, tesseract::geometry::GeometryType::MESH)
+      // clang-format off
+      // NOLINTNEXTLINE
+      benchmark::RegisterBenchmark(name.c_str(), 
+                                   BM_LARGE_DATASET_SINGLELINK_FUNC, 
+                                   clone, 
+                                   edge_size, 
+                                   tesseract::geometry::GeometryType::MESH)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kMillisecond);
+      // clang-format on
     }
   }
 

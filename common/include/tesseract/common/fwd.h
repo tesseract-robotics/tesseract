@@ -79,6 +79,14 @@ class Timer;
 class Profile;
 class ProfileDictionary;
 class ProfilePluginFactory;
+
+// property_tree.h
+class PropertyTree;
+class PropertyTreeBuilder;
+
+// schema_registry.h
+class SchemaRegistry;
+
 }  // namespace tesseract::common
 
 #endif  // TESSERACT_COMMON_TESSERACT_COMMON_FWD_H

@@ -176,6 +176,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_GET_STATE_JN_JV_SS =
         BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_GET_STATE_JN_JV_SS, fn, traj)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -191,6 +192,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)>
         BM_SET_AND_GET_STATE_JN_JV_SS = BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_SET_AND_GET_STATE_JN_JV_SS, fn, traj)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -203,6 +205,7 @@ int main(int argc, char** argv)
                        std::string)>
         BM_GET_JACOBIAN_JN_JV_SS = BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_GET_JACOBIAN_JN_JV_SS, state_solver, joint_names, traj, tip_link)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -215,6 +218,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_CFK_MANIP =
         BM_CALC_FWD_KIN_MANIP;
     std::string name = "BM_CALC_FWD_KIN_MANIP";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_CFK_MANIP, fn, traj)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -226,6 +230,7 @@ int main(int argc, char** argv)
                        std::string)>
         BM_CJ_MANIP = BM_GET_JACOBIAN_MANIP;
     std::string name = "BM_GET_JACOBIAN_MANIP";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_CJ_MANIP, joint_group, traj, tip_link)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);

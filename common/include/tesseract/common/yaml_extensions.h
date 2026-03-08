@@ -34,6 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/calibration_info.h>
 #include <tesseract/common/collision_margin_data.h>
 
+namespace tesseract::common
+{
+class PropertyTree;
+}
+
 namespace YAML
 {
 template <>
@@ -197,6 +202,8 @@ struct convert<Eigen::Isometry3d>
     rhs = out;
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -222,6 +229,8 @@ struct convert<Eigen::VectorXd>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -246,6 +255,8 @@ struct convert<Eigen::Vector2d>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -270,6 +281,8 @@ struct convert<Eigen::Vector3d>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -480,6 +493,8 @@ struct convert<tesseract::common::KinematicsPluginInfo>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -583,6 +598,8 @@ struct convert<tesseract::common::ContactManagersPluginInfo>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -687,6 +704,8 @@ struct convert<tesseract::common::TaskComposerPluginInfo>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -711,6 +730,8 @@ struct convert<tesseract::common::TransformMap>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -732,6 +753,8 @@ struct convert<tesseract::common::CalibrationInfo>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 template <>
@@ -770,6 +793,8 @@ struct convert<tesseract::common::Toolpath>
 
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 //=========================== CollisionMarginPairOverrideType Enum ===========================
@@ -808,6 +833,8 @@ struct convert<tesseract::common::CollisionMarginPairOverrideType>
     rhs = it->second;
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 //============================ PairsCollisionMarginData ============================
@@ -852,6 +879,8 @@ struct convert<tesseract::common::PairsCollisionMarginData>
     }
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 //================================== CollisionMarginPairData =================================
@@ -870,6 +899,8 @@ struct convert<tesseract::common::CollisionMarginPairData>
     rhs = tesseract::common::CollisionMarginPairData(data);
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 //============================ AllowedCollisionEntries ============================
@@ -914,6 +945,8 @@ struct convert<tesseract::common::AllowedCollisionEntries>
     }
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 //================================== AllowedCollisionMatrix =================================
@@ -932,6 +965,8 @@ struct convert<tesseract::common::AllowedCollisionMatrix>
     rhs = tesseract::common::AllowedCollisionMatrix(data);
     return true;
   }
+
+  static tesseract::common::PropertyTree schema();
 };
 
 //============================== std::unordered_map =============================
