@@ -7,7 +7,15 @@ on:
       - 'dev**'
   pull_request:
     paths:
-      - 'tesseract**'
+      - 'collision/**'
+      - 'common/**'
+      - 'geometry/**'
+      - 'environment/**'
+      - 'kinematics/**'
+      - 'srdf/**'
+      - 'state_solver/**'
+      - 'urdf/**'
+      - 'visualization/**'
       - '.github/workflows/cmake_format.yml'
       - '**cmake-format'
   schedule:

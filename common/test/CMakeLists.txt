@@ -140,3 +140,19 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 add_gtest_discover_tests(tesseract_common_utils_unit)
 add_dependencies(tesseract_common_utils_unit tesseract::common)
+
+add_executable(tesseract_common_property_tree_unit property_tree_unit.cpp)
+target_link_libraries(tesseract_common_property_tree_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
+target_compile_options(tesseract_common_property_tree_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                   ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(tesseract_common_property_tree_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(tesseract_common_property_tree_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(tesseract_common_property_tree_unit PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  tesseract_common_property_tree_unit
+  PRIVATE
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+add_gtest_discover_tests(tesseract_common_property_tree_unit)
+add_dependencies(tesseract_common_property_tree_unit tesseract::common)

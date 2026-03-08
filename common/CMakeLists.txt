@@ -49,6 +49,10 @@ add_library(
   src/profile_plugin_factory.cpp
   src/profile.cpp
   src/resource_locator.cpp
+  src/property_tree.cpp
+  src/schema_registry.cpp
+  src/schema_registration.cpp
+  src/yaml_extensions.cpp
   src/types.cpp
   src/stopwatch.cpp
   src/timer.cpp
@@ -85,7 +89,12 @@ if(WIN32)
   target_link_libraries(common PUBLIC Bcrypt)
 endif()
 
-# configure_package(NAMESPACE tesseract TARGETS common)
+# ADD Examples
+if(TESSERACT_ENABLE_EXAMPLES OR TESSERACT_COMMON_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+# configure_package
 configure_component(COMPONENT common NAMESPACE tesseract TARGETS common)
 
 install(

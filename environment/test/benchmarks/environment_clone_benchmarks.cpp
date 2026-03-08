@@ -102,6 +102,7 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&, Environment::Ptr)> BM_CLONE_FUNC = BM_ENVIRONMENT_CLONE;
     std::string name = "BM_ENVIRONMENT_CLONE";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, env)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -110,6 +111,7 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&, StateSolver::Ptr)> BM_CLONE_FUNC = BM_STATE_SOLVER_CLONE;
     std::string name = "BM_STATE_SOLVER_CLONE";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, state_solver)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -118,6 +120,7 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&, SceneGraph::Ptr)> BM_CLONE_FUNC = BM_SCENE_GRAPH_CLONE;
     std::string name = "BM_SCENE_GRAPH_CLONE";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, scene_graph)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -126,6 +129,7 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&, JointGroup::ConstPtr)> BM_CLONE_FUNC = BM_JOINT_GROUP_COPY;
     std::string name = "BM_JOINT_GROUP_COPY";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, joint_group)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -134,6 +138,7 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&, Environment::Ptr)> BM_CLONE_FUNC = BM_KINEMATIC_GROUP_COPY;
     std::string name = "BM_KINEMATIC_GROUP_COPY";
+    // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(name.c_str(), BM_CLONE_FUNC, env)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);

@@ -306,7 +306,7 @@ int main(int argc, char** argv)
             "BM_CHECK_TRAJ_DISCRETE_JOINT_GROUP-TRAJ" + std::to_string(i + 1) + debug_str;
         std::string BM_CHECK_TRAJ_DM_LVS_name =
             "BM_CHECK_TRAJ_DISCRETE_JOINT_GROUP-TRAJ" + std::to_string(i + 1) + "-LVS" + debug_str;
-
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_CS_name.c_str(),
                                      BM_CHECK_TRAJ_CS,
                                      contacts,
@@ -318,6 +318,7 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_CS_LVS_name.c_str(),
                                      BM_CHECK_TRAJ_CS,
                                      contacts,
@@ -329,6 +330,7 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_CM_name.c_str(),
                                      BM_CHECK_TRAJ_CM,
                                      contacts,
@@ -339,6 +341,7 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_CM_LVS_name.c_str(),
                                      BM_CHECK_TRAJ_CM,
                                      contacts,
@@ -349,6 +352,7 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_DS_name.c_str(),
                                      BM_CHECK_TRAJ_DS,
                                      contacts,
@@ -360,6 +364,7 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_DS_LVS_name.c_str(),
                                      BM_CHECK_TRAJ_DS,
                                      contacts,
@@ -371,6 +376,7 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_DM_name.c_str(),
                                      BM_CHECK_TRAJ_DM,
                                      contacts,
@@ -381,6 +387,7 @@ int main(int argc, char** argv)
                                      log_level_debug)
             ->UseRealTime()
             ->Unit(benchmark::TimeUnit::kMicrosecond);
+        // NOLINTNEXTLINE
         benchmark::RegisterBenchmark(BM_CHECK_TRAJ_DM_LVS_name.c_str(),
                                      BM_CHECK_TRAJ_DM,
                                      contacts,
@@ -445,6 +452,7 @@ int main(int argc, char** argv)
               "BM_CHECK_TRAJ_DISCRETE_LVS_JOINT_GROUP_CURRENT-TRAJ" + std::to_string(i + 1) + config_suffix;
 
           // Register current implementation
+          // NOLINTNEXTLINE
           benchmark::RegisterBenchmark(BM_CHECK_TRAJ_DM_CURRENT_name.c_str(),
                                        BM_CHECK_TRAJ_DM,
                                        contacts,

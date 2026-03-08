@@ -347,8 +347,6 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform(toString(is_acyclic).c_str());
   //! [build_scene_graph_cycle_acyclic]
 
-  // documentation:start:18: Test again if the graph is Tree
-  is_tree = g.isTree();
   //! [build_scene_graph_cycle_tree]
   is_tree = g.isTree();
   CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
