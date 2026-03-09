@@ -405,6 +405,13 @@ public:
   PropertyTreeBuilder& validator(PropertyTree::ValidatorFn fn);
   PropertyTreeBuilder& attribute(std::string_view name, const YAML::Node& value);
   PropertyTreeBuilder& attribute(std::string_view name, std::string_view value);
+
+  /**
+   * @brief Mark that this field accepts the base type and any registered derived types.
+   * Only applicable when the type attribute is a registered custom type.
+   * @return Reference to this builder for method chaining.
+   */
+  PropertyTreeBuilder& acceptsDerivedTypes();
   ///@}
 
   /** @brief Pop current node, return to parent scope. */

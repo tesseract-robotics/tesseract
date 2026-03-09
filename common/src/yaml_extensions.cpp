@@ -219,29 +219,29 @@ PropertyTree YAML::convert<tesseract::common::AllowedCollisionMatrix>::schema()
   return PropertyTreeBuilder().attribute(TYPE, "tesseract::common::AllowedCollisionEntries").build();
 }
 
-TESSERACT_REGISTER_SCHEMA(Eigen::Isometry3d, YAML::convert<Eigen::Isometry3d>::schema)
-TESSERACT_REGISTER_SCHEMA(Eigen::VectorXd, YAML::convert<Eigen::VectorXd>::schema)
-TESSERACT_REGISTER_SCHEMA(Eigen::Vector2d, YAML::convert<Eigen::Vector2d>::schema)
-TESSERACT_REGISTER_SCHEMA(Eigen::Vector3d, YAML::convert<Eigen::Vector3d>::schema)
+TESSERACT_SCHEMA_REGISTER(Eigen::Isometry3d, YAML::convert<Eigen::Isometry3d>::schema)
+TESSERACT_SCHEMA_REGISTER(Eigen::VectorXd, YAML::convert<Eigen::VectorXd>::schema)
+TESSERACT_SCHEMA_REGISTER(Eigen::Vector2d, YAML::convert<Eigen::Vector2d>::schema)
+TESSERACT_SCHEMA_REGISTER(Eigen::Vector3d, YAML::convert<Eigen::Vector3d>::schema)
 // TESSERACT_REGISTER_SCHEMA(tesseract::common::PluginInfo, YAML::convert<tesseract::common::PluginInfo>::schema)
 // TESSERACT_REGISTER_SCHEMA(tesseract::common::PluginInfoContainer,
 // YAML::convert<tesseract::common::PluginInfoContainer>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::KinematicsPluginInfo,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::KinematicsPluginInfo,
                           YAML::convert<tesseract::common::KinematicsPluginInfo>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::ContactManagersPluginInfo,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::ContactManagersPluginInfo,
                           YAML::convert<tesseract::common::ContactManagersPluginInfo>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::TaskComposerPluginInfo,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::TaskComposerPluginInfo,
                           YAML::convert<tesseract::common::TaskComposerPluginInfo>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::CalibrationInfo, YAML::convert<tesseract::common::CalibrationInfo>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::TransformMap, YAML::convert<tesseract::common::TransformMap>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::Toolpath, YAML::convert<tesseract::common::Toolpath>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::CollisionMarginPairOverrideType,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::CalibrationInfo, YAML::convert<tesseract::common::CalibrationInfo>::schema)
+TESSERACT_SCHEMA_REGISTER(tesseract::common::TransformMap, YAML::convert<tesseract::common::TransformMap>::schema)
+TESSERACT_SCHEMA_REGISTER(tesseract::common::Toolpath, YAML::convert<tesseract::common::Toolpath>::schema)
+TESSERACT_SCHEMA_REGISTER(tesseract::common::CollisionMarginPairOverrideType,
                           YAML::convert<tesseract::common::CollisionMarginPairOverrideType>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::PairsCollisionMarginData,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::PairsCollisionMarginData,
                           YAML::convert<tesseract::common::PairsCollisionMarginData>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::CollisionMarginPairData,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::CollisionMarginPairData,
                           YAML::convert<tesseract::common::CollisionMarginPairData>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::AllowedCollisionEntries,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::AllowedCollisionEntries,
                           YAML::convert<tesseract::common::AllowedCollisionEntries>::schema)
-TESSERACT_REGISTER_SCHEMA(tesseract::common::AllowedCollisionMatrix,
+TESSERACT_SCHEMA_REGISTER(tesseract::common::AllowedCollisionMatrix,
                           YAML::convert<tesseract::common::AllowedCollisionMatrix>::schema)

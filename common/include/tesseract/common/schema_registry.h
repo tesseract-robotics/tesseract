@@ -28,6 +28,7 @@
 #include <map>
 #include <mutex>
 #include <memory>
+#include <vector>
 
 namespace tesseract::common
 {
@@ -87,12 +88,36 @@ public:
    */
   static PropertyTree loadFile(const std::string& path);
 
+  /**
+   * @brief Register that a derived type can be used where a base type is expected.
+   * @param base_type_name    The base type name (e.g., "MyBaseClass")
+   * @param derived_type_name The derived type name (e.g., "MyDerivedClass")
+   */
+  void registerDerivedType(const std::string& base_type_name, const std::string& derived_type_name);
+
+  /**
+   * @brief Check if a given type is derived from (or equal to) a base type.
+   * @param base_type_name    The base type to check against
+   * @param candidate_type    The type to check
+   * @return True if candidate is the base or derives from it
+   */
+  bool isDerivedFrom(const std::string& base_type_name, const std::string& candidate_type) const;
+
+  /**
+   * @brief Get all registered derived types for a base type.
+   * @param base_type_name The base type
+   * @return Vector of all type names that derive from (or equal) the base
+   */
+  std::vector<std::string> getDerivedTypes(const std::string& base_type_name) const;
+
 private:
   SchemaRegistry() = default;
 
   mutable std::mutex mutex_;
   mutable std::map<std::string, PropertyTree> schemas_;
   mutable std::map<std::string, std::string> paths_;
+  mutable std::map<std::string, std::vector<std::string>> derived_types_;  // base_type -> [derived_type1,
+                                                                           // derived_type2, ...]
 };
 
 }  // namespace tesseract::common

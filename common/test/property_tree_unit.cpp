@@ -1352,7 +1352,7 @@ TEST(SchemaRegistry, YamlExtensionSchemasRegistered)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
 
-  // All types registered via TESSERACT_REGISTER_SCHEMA should be found
+  // All types registered via TESSERACT_SCHEMA_REGISTER should be found
   EXPECT_TRUE(reg->contains("Eigen::Isometry3d"));
   EXPECT_TRUE(reg->contains("Eigen::VectorXd"));
   EXPECT_TRUE(reg->contains("Eigen::Vector2d"));
@@ -2228,11 +2228,11 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunction)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
 
-  // Register via SchemaRegistrar with function
+  // Register via registerSchema with function
   {
     auto schema_fn = []() { return PropertyTreeBuilder().string("test_field").required().done().build(); };
 
-    SchemaRegistrar registrar("SchemaRegistrar_Test_Function", schema_fn);
+    registerSchema("SchemaRegistrar_Test_Function", schema_fn);
   }
 
   // Verify registration succeeded
@@ -2267,7 +2267,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionComplex)  // NOLINT
           .build();
     };
 
-    SchemaRegistrar registrar("SchemaRegistrar_Test_Complex", schema_fn);
+    registerSchema("SchemaRegistrar_Test_Complex", schema_fn);
   }
 
   // Verify all structure is there
@@ -2289,11 +2289,9 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionMultiple)  // NOLINT
 
   // Register multiple schemas
   {
-    SchemaRegistrar a("SchemaRegistrar_Test_A",
-                      []() { return PropertyTreeBuilder().string("field_a").done().build(); });
+    registerSchema("SchemaRegistrar_Test_A", []() { return PropertyTreeBuilder().string("field_a").done().build(); });
 
-    SchemaRegistrar b("SchemaRegistrar_Test_B",
-                      []() { return PropertyTreeBuilder().integer("field_b").done().build(); });
+    registerSchema("SchemaRegistrar_Test_B", []() { return PropertyTreeBuilder().integer("field_b").done().build(); });
   }
 
   EXPECT_TRUE(reg->contains("SchemaRegistrar_Test_A"));
@@ -2327,7 +2325,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionPreservesValidators)  // NOLINT
       return schema;
     };
 
-    SchemaRegistrar registrar("SchemaRegistrar_Test_Validator", schema_fn);
+    registerSchema("SchemaRegistrar_Test_Validator", schema_fn);
   }
 
   EXPECT_TRUE(reg->contains("SchemaRegistrar_Test_Validator"));
@@ -2370,7 +2368,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionWithEnum)  // NOLINT
       return PropertyTreeBuilder().string("color").required().enumValues({ "red", "green", "blue" }).done().build();
     };
 
-    SchemaRegistrar registrar("SchemaRegistrar_Test_Enum", schema_fn);
+    registerSchema("SchemaRegistrar_Test_Enum", schema_fn);
   }
 
   EXPECT_TRUE(reg->contains("SchemaRegistrar_Test_Enum"));
@@ -2401,9 +2399,9 @@ TEST(SchemaRegistrar, RegisterSchemaFromFile)  // NOLINT
 
   try
   {
-    // Register via SchemaRegistrar with file path
+    // Register via registerSchema with file path
     {
-      SchemaRegistrar registrar("SchemaRegistrar_Test_File_Simple", file_path);
+      registerSchema("SchemaRegistrar_Test_File_Simple", file_path);
     }
 
     // Verify registration succeeded
@@ -2446,7 +2444,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileComplex)  // NOLINT
   try
   {
     {
-      SchemaRegistrar registrar("SchemaRegistrar_Test_File_Complex", file_path);
+      registerSchema("SchemaRegistrar_Test_File_Complex", file_path);
     }
 
     EXPECT_TRUE(reg->contains("SchemaRegistrar_Test_File_Complex"));
@@ -2492,8 +2490,8 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMultiple)  // NOLINT
   try
   {
     {
-      SchemaRegistrar a("SchemaRegistrar_Test_File_A", file_path_a);
-      SchemaRegistrar b("SchemaRegistrar_Test_File_B", file_path_b);
+      registerSchema("SchemaRegistrar_Test_File_A", file_path_a);
+      registerSchema("SchemaRegistrar_Test_File_B", file_path_b);
     }
 
     EXPECT_TRUE(reg->contains("SchemaRegistrar_Test_File_A"));
@@ -2522,7 +2520,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileInvalidPath)  // NOLINT
   std::string nonexistent_path = "/tmp/nonexistent_schema_path_12345_67890.yaml";
 
   // This should throw an exception when trying to load the non-existent file
-  EXPECT_THROW({ SchemaRegistrar registrar("SchemaRegistrar_Test_File_Invalid", nonexistent_path); }, std::exception);
+  EXPECT_THROW({ registerSchema("SchemaRegistrar_Test_File_Invalid", nonexistent_path); }, std::exception);
 }
 
 TEST(SchemaRegistrar, RegisterSchemaFromFileMergeAndValidate)  // NOLINT
@@ -2546,7 +2544,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMergeAndValidate)  // NOLINT
   try
   {
     {
-      SchemaRegistrar registrar("SchemaRegistrar_Test_File_Validate", file_path);
+      registerSchema("SchemaRegistrar_Test_File_Validate", file_path);
     }
 
     // Retrieve and use the schema
@@ -2786,6 +2784,253 @@ TEST(ValidateCustomType, SequenceMultipleElementErrors)  // NOLINT
   }
   EXPECT_TRUE(found_index_0);
   EXPECT_TRUE(found_index_2);
+}
+
+// ===========================================================================
+//  SchemaRegistry – Derived Type Registration
+// ===========================================================================
+
+TEST(DerivedTypeRegistration, RegisterSingleDerivedType)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerDerivedType("test::BaseClass", "test::DerivedClassA");
+
+  EXPECT_TRUE(reg->isDerivedFrom("test::BaseClass", "test::BaseClass"));
+  EXPECT_TRUE(reg->isDerivedFrom("test::BaseClass", "test::DerivedClassA"));
+}
+
+TEST(DerivedTypeRegistration, RegisterMultipleDerivedTypes)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerDerivedType("test::BaseMulti", "test::DerivedMultiA");
+  reg->registerDerivedType("test::BaseMulti", "test::DerivedMultiB");
+  reg->registerDerivedType("test::BaseMulti", "test::DerivedMultiC");
+
+  EXPECT_TRUE(reg->isDerivedFrom("test::BaseMulti", "test::BaseMulti"));
+  EXPECT_TRUE(reg->isDerivedFrom("test::BaseMulti", "test::DerivedMultiA"));
+  EXPECT_TRUE(reg->isDerivedFrom("test::BaseMulti", "test::DerivedMultiB"));
+  EXPECT_TRUE(reg->isDerivedFrom("test::BaseMulti", "test::DerivedMultiC"));
+}
+
+TEST(DerivedTypeRegistration, IsDerivedFromExactMatch)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  // A type is always compatible with itself
+  EXPECT_TRUE(reg->isDerivedFrom("test::ExactMatch", "test::ExactMatch"));
+}
+
+TEST(DerivedTypeRegistration, IsDerivedFromUnrelated)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerDerivedType("test::BaseUnrelated", "test::DerivedUnrelated");
+
+  EXPECT_FALSE(reg->isDerivedFrom("test::BaseUnrelated", "test::CompletelyDifferent"));
+  EXPECT_FALSE(reg->isDerivedFrom("test::CompletelyDifferent", "test::BaseUnrelated"));
+}
+
+TEST(DerivedTypeRegistration, GetDerivedTypesBasePlusDerived)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerDerivedType("test::BaseGetDerived", "test::DerivedGetDerivA");
+  reg->registerDerivedType("test::BaseGetDerived", "test::DerivedGetDerivB");
+
+  auto types = reg->getDerivedTypes("test::BaseGetDerived");
+
+  EXPECT_EQ(types.size(), 3U);  // base + 2 derived
+  EXPECT_TRUE(std::find(types.begin(), types.end(), "test::BaseGetDerived") != types.end());
+  EXPECT_TRUE(std::find(types.begin(), types.end(), "test::DerivedGetDerivA") != types.end());
+  EXPECT_TRUE(std::find(types.begin(), types.end(), "test::DerivedGetDerivB") != types.end());
+}
+
+TEST(DerivedTypeRegistration, GetDerivedTypesNoneRegistered)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  auto types = reg->getDerivedTypes("test::NoDerivatives");
+
+  // Should still include the base type itself
+  EXPECT_EQ(types.size(), 1U);
+  EXPECT_EQ(types[0], "test::NoDerivatives");
+}
+
+// ===========================================================================
+//  PropertyTreeBuilder – acceptsDerivedTypes()
+// ===========================================================================
+
+TEST(AcceptsDerivedTypes, BuilderSetsAttribute)  // NOLINT
+{
+  PropertyTree schema =
+      PropertyTreeBuilder().customType("constraint", "test::BaseConstraint").acceptsDerivedTypes().done().build();
+
+  EXPECT_TRUE(schema.find("constraint") != nullptr);
+  auto constraint = schema.at("constraint");
+  EXPECT_TRUE(constraint.hasAttribute(std::string("accepts_derived_types")));
+}
+
+TEST(AcceptsDerivedTypes, ValidateAcceptsBaseType)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  // Register base schema
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseBuild").build();
+  reg->registerSchema("test::BaseBuild", base_schema);
+
+  // Create field that accepts derived types
+  PropertyTree field_schema = PropertyTreeBuilder()
+                                  .attribute(TYPE, "test::BaseBuild")
+                                  .acceptsDerivedTypes()
+                                  .validator(validateCustomType)
+                                  .build();
+
+  // Merge with data that has the base type
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("type")] = "test::BaseBuild";
+  field_schema.mergeConfig(config);
+
+  auto errors = field_schema.validate();
+  // Should not error because base type is valid
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(AcceptsDerivedTypes, ValidateAcceptsDerivedType)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  // Register base schema
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseDerived").build();
+  reg->registerSchema("test::BaseDerived", base_schema);
+
+  // Register derived type
+  reg->registerDerivedType("test::BaseDerived", "test::ActualDerived");
+
+  // Register schema for derived type
+  PropertyTree derived_schema = PropertyTreeBuilder().attribute(TYPE, "test::ActualDerived").build();
+  reg->registerSchema("test::ActualDerived", derived_schema);
+
+  // Create field that accepts derived types
+  PropertyTree field_schema = PropertyTreeBuilder()
+                                  .attribute(TYPE, "test::BaseDerived")
+                                  .acceptsDerivedTypes()
+                                  .validator(validateCustomType)
+                                  .build();
+
+  // Merge with data that has the derived type
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("type")] = "test::ActualDerived";
+  field_schema.mergeConfig(config);
+
+  auto errors = field_schema.validate();
+  // Should not error because derived type is valid
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(AcceptsDerivedTypes, ValidateRejectsUnregisteredDerivedType)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  // Register base schema
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseReject").build();
+  reg->registerSchema("test::BaseReject", base_schema);
+
+  // Create field that accepts derived types
+  PropertyTree field_schema = PropertyTreeBuilder()
+                                  .attribute(TYPE, "test::BaseReject")
+                                  .acceptsDerivedTypes()
+                                  .validator(validateCustomType)
+                                  .build();
+
+  // Merge with data that has a type not registered as derived
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("type")] = "test::UnregisteredDerived";
+  field_schema.mergeConfig(config);
+
+  auto errors = field_schema.validate();
+  // Should have error because type is not registered as derived
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(std::any_of(
+      errors.begin(), errors.end(), [](const auto& e) { return e.find("does not derive from") != std::string::npos; }));
+}
+
+TEST(AcceptsDerivedTypes, SequenceWithMixedDerivedTypes)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  // Register base schema
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseSeq").build();
+  reg->registerSchema("test::BaseSeq", base_schema);
+
+  // Register two derived types
+  reg->registerDerivedType("test::BaseSeq", "test::DerivedSeqA");
+  reg->registerDerivedType("test::BaseSeq", "test::DerivedSeqB");
+
+  PropertyTree derived_a_schema = PropertyTreeBuilder().attribute(TYPE, "test::DerivedSeqA").build();
+  reg->registerSchema("test::DerivedSeqA", derived_a_schema);
+
+  PropertyTree derived_b_schema = PropertyTreeBuilder().attribute(TYPE, "test::DerivedSeqB").build();
+  reg->registerSchema("test::DerivedSeqB", derived_b_schema);
+
+  // Create sequence field that accepts derived types
+  PropertyTree sequence_schema = PropertyTreeBuilder()
+                                     .attribute(TYPE, createList("test::BaseSeq"))
+                                     .acceptsDerivedTypes()
+                                     .validator(validateCustomType)
+                                     .build();
+
+  // Merge with sequence containing mixed derived types
+  YAML::Node sequence(YAML::NodeType::Sequence);
+  YAML::Node elem1(YAML::NodeType::Map);
+  elem1[std::string("type")] = "test::DerivedSeqA";
+  sequence.push_back(elem1);
+
+  YAML::Node elem2(YAML::NodeType::Map);
+  elem2[std::string("type")] = "test::DerivedSeqB";
+  sequence.push_back(elem2);
+
+  sequence_schema.mergeConfig(sequence);
+
+  auto errors = sequence_schema.validate();
+  // Should not error because both elements have valid derived types
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(AcceptsDerivedTypes, SequenceRejectsMixedInvalidType)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  // Register base schema
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseMixed").build();
+  reg->registerSchema("test::BaseMixed", base_schema);
+
+  // Register one valid derived type
+  reg->registerDerivedType("test::BaseMixed", "test::ValidDerivedMixed");
+  PropertyTree valid_schema = PropertyTreeBuilder().attribute(TYPE, "test::ValidDerivedMixed").build();
+  reg->registerSchema("test::ValidDerivedMixed", valid_schema);
+
+  // Create sequence field that accepts derived types
+  PropertyTree sequence_schema = PropertyTreeBuilder()
+                                     .attribute(TYPE, createList("test::BaseMixed"))
+                                     .acceptsDerivedTypes()
+                                     .validator(validateCustomType)
+                                     .build();
+
+  // Merge with sequence containing one valid and one invalid element
+  YAML::Node sequence(YAML::NodeType::Sequence);
+  YAML::Node elem1(YAML::NodeType::Map);
+  elem1[std::string("type")] = "test::ValidDerivedMixed";
+  sequence.push_back(elem1);
+
+  YAML::Node elem2(YAML::NodeType::Map);
+  elem2[std::string("type")] = "test::InvalidDerivedMixed";  // Not registered as derived
+  sequence.push_back(elem2);
+
+  sequence_schema.mergeConfig(sequence);
+
+  auto errors = sequence_schema.validate();
+  // Should have error for element [1]
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(
+      std::any_of(errors.begin(), errors.end(), [](const auto& e) { return e.find("[1]") != std::string::npos; }));
 }
 
 // NOLINTEND(bugprone-unchecked-optional-access)

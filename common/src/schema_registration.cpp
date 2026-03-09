@@ -28,16 +28,22 @@
 
 namespace tesseract::common
 {
-SchemaRegistrar::SchemaRegistrar(const std::string& key, const std::string& path)
+void registerSchema(const std::string& key, const std::string& path)
 {
   auto reg = SchemaRegistry::instance();
   reg->registerSchemaFromFile(key, path);
 }
 
-SchemaRegistrar::SchemaRegistrar(const std::string& key, const std::function<PropertyTree()>& fn)
+void registerSchema(const std::string& key, const std::function<PropertyTree()>& fn)
 {
   auto reg = SchemaRegistry::instance();
   PropertyTree tree = fn();
   reg->registerSchema(key, tree);
+}
+
+void registerSchemaDerivedType(const std::string& base_type, const std::string& derived_type)
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerDerivedType(base_type, derived_type);
 }
 }  // namespace tesseract::common

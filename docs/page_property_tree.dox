@@ -244,6 +244,106 @@ plugin_schema.mergeConfig(usb_config);  // Selects "usb_plugin" branch
 
 See @ref oneof_property_tree_example for a detailed working example.
 
+@section pt_polymorphic Polymorphic Type Hierarchies
+
+While oneOf handles mutually exclusive branches, derived types handle inheritance hierarchies
+where a field can accept any type that extends a base type. This is useful for:
+
+- **Type Inheritance**: Allow base type or any properly registered derived type
+- **Plugin Architectures**: A field accepts Constraint or any Constraint subclass
+- **Extensibility**: User code can register new derived types without modifying schema
+- **Dynamic Dispatch**: The "type" field selects the schema for validation
+
+**How Derived Types Work:**
+
+1. **Register Inheritance**: Tell the registry what types derive from a base
+2. **Mark Field**: Use `acceptsDerivedTypes()` to allow derived types in that field
+3. **Type Field**: Configuration data includes a "type" field naming the concrete type
+4. **Validation**: System checks if the type is registered as derived from the base (or equals base)
+
+**Example - Constraint Hierarchy:**
+@code
+// Define schemas for base and derived constraint types
+auto base_schema = PropertyTreeBuilder()
+    .doubleNum("weight").defaultVal(1.0).done()
+    .build();
+
+auto position_schema = PropertyTreeBuilder()
+    .doubleNum("weight").defaultVal(1.0).done()
+    .vectorXd("target_position").required().done()
+    .doubleNum("target_tolerance").defaultVal(0.01).done()
+    .build();
+
+auto orientation_schema = PropertyTreeBuilder()
+    .doubleNum("weight").defaultVal(1.0).done()
+    .isometry("target_orientation").required().done()
+    .doubleNum("target_tolerance").defaultVal(0.1).done()
+    .build();
+
+// Register schemas
+registerSchema("Constraint", base_schema);
+registerSchema("PositionConstraint", position_schema);
+registerSchema("OrientationConstraint", orientation_schema);
+
+// Register the inheritance relationship
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(Constraint, PositionConstraint);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(Constraint, OrientationConstraint);
+
+// Create a field that accepts any constraint type
+auto config_schema = PropertyTreeBuilder()
+    .sequence("constraints", createList("Constraint"))
+    .customType("constraints", 
+        []() { return registerSchema("Constraint", base_schema); })
+    .acceptsDerivedTypes()  // Accept Constraint or derived types
+    .validator(validateCustomType)
+    .done()
+    .build();
+@endcode
+
+**Configuration Using Derived Types:**
+@code
+YAML:
+constraints:
+  - type: PositionConstraint          # Validates against PositionConstraint schema
+    weight: 2.0
+    target_position: [1, 2, 3]
+    target_tolerance: 0.005
+  - type: OrientationConstraint       # Validates against OrientationConstraint schema
+    weight: 1.5
+    target_orientation: [1, 0, 0, 0]  # Quaternion as [x, y, z, w]
+    target_tolerance: 0.1
+  - type: Constraint                  # Using base type is also valid
+    weight: 0.5
+@endcode
+
+**Validation with Derived Types:**
+
+When validating a sequence element with `acceptsDerivedTypes()`:
+
+1. Extract the "type" field from the element
+2. Check if the type is registered (exact match or derived from base)
+3. If registered, validate the element against its type's schema
+4. If not registered, report an error listing valid types
+
+Error messages include the element's array index for clarity:
+@code
+"constraints[1].type: value 'UnknownConstraint' is not derived from 'Constraint'. 
+Valid types: Constraint, PositionConstraint, OrientationConstraint"
+@endcode
+
+**Derived Types vs OneOf:**
+
+| Feature | Derived Types | OneOf |
+|---------|---|---|
+| **Use Case** | Type inheritance hierarchies | Mutually exclusive variants |
+| **Type Discovery** | Via "type" field (explicit) | Via required field match (implicit) |
+| **Registration** | Compile-time macros | Schema structure |
+| **Extensibility** | Easy - register new derived types | Requires schema change |
+| **Performance** | Direct type lookup | Branch matching algorithm |
+| **Example** | Constraint, PositionConstraint | Shape (circle vs rectangle) |
+
+See @ref polymorphic_property_tree_example for a detailed working example.
+
 @section pt_schema_registry Schema Registry
 
 Register and retrieve schemas globally:
@@ -274,6 +374,7 @@ See the following examples for detailed working code:
 - @ref basic_property_tree_example
 - @ref advanced_property_tree_example
 - @ref oneof_property_tree_example
+- @ref polymorphic_property_tree_example
 
 @section pt_usage Common Patterns
 
