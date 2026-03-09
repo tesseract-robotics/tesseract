@@ -1,5 +1,3 @@
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-
 find_package(octomap REQUIRED)
 find_package(assimp REQUIRED)
 
@@ -69,7 +67,17 @@ target_include_directories(geometry PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SO
                                            "$<INSTALL_INTERFACE:include>")
 
 # Configure Package
-configure_component(COMPONENT geometry NAMESPACE tesseract TARGETS geometry)
+configure_component(
+  COMPONENT geometry
+  NAMESPACE tesseract
+  TARGETS geometry
+  DEPENDENCIES
+    Eigen3
+    console_bridge
+    "tesseract COMPONENTS common"
+    octomap
+    assimp
+    cereal)
 
 # Mark cpp header files for installation
 install(
@@ -79,9 +87,6 @@ install(
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
-
-install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/Findassimp.cmake" DESTINATION lib/cmake/${PROJECT_NAME}
-        COMPONENT geometry)
 
 # ADD Examples
 if(TESSERACT_ENABLE_EXAMPLES OR TESSERACT_GEOMETRY_ENABLE_EXAMPLES)

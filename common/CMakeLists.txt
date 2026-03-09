@@ -108,6 +108,7 @@ install(
 
 install(
   FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/Findassimp.cmake"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
         "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc_minimal.cmake"
