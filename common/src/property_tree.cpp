@@ -798,6 +798,12 @@ PropertyTreeBuilder& PropertyTreeBuilder::attribute(std::string_view name, std::
   return *this;
 }
 
+PropertyTreeBuilder& PropertyTreeBuilder::acceptsDerivedTypes()
+{
+  current().setAttribute(std::string("accepts_derived_types"), true);
+  return *this;
+}
+
 PropertyTreeBuilder& PropertyTreeBuilder::done()
 {
   if (stack_.size() <= 1)
@@ -925,35 +931,99 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
   std::optional<std::pair<std::string, std::size_t>> is_sequence = isSequenceType(type_str);
 
   auto registry = SchemaRegistry::instance();
+  bool accepts_derived = node.hasAttribute(std::string("accepts_derived_types"));
+
   if (!is_sequence.has_value())
   {
-    if (!registry->contains(type_str))
+    // Non-sequence type (scalar, map, etc.)
+    std::string actual_type = type_str;
+
+    // If accepts_derived_types, check if config has a type field that specifies the actual type
+    if (accepts_derived && node.getValue().IsMap() && node.getValue()[std::string("type")])
     {
-      errors.push_back(path + ": no schema registry entry found for key: " + type_str);
+      try
+      {
+        actual_type = node.getValue()[std::string("type")].as<std::string>();
+        if (!registry->isDerivedFrom(type_str, actual_type))
+        {
+          std::stringstream ss;
+          ss << path << ": type '" << actual_type << "' does not derive from '" << type_str << "'";
+          errors.push_back(ss.str());
+          return;
+        }
+      }
+      catch (const std::exception& e)
+      {
+        std::stringstream ss;
+        ss << path << ": type field exists but cannot be extracted as string: " << e.what();
+        errors.push_back(ss.str());
+      }
+    }
+
+    if (!registry->contains(actual_type))
+    {
+      std::stringstream ss;
+      ss << path << ": no schema registry entry found for key: " << actual_type;
+      errors.push_back(ss.str());
       return;
     }
 
-    PropertyTree schema = registry->get(type_str);
+    PropertyTree schema = registry->get(actual_type);
     schema.mergeConfig(node.getValue());
     auto sub_errors = schema.validate();
     errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
   }
   else
   {
-    if (!registry->contains(is_sequence.value().first))
+    // Sequence type
+    std::string base_element_type = is_sequence.value().first;
+
+    if (!registry->contains(base_element_type))
     {
-      errors.push_back(path + ": no schema registry entry found for key: " + is_sequence.value().first);
+      std::stringstream ss;
+      ss << path << ": no schema registry entry found for key: " << base_element_type;
+      errors.push_back(ss.str());
       return;
     }
 
     const YAML::Node& sequence = node.getValue();
-    PropertyTree schema = registry->get(is_sequence.value().first);
+    PropertyTree base_schema = registry->get(base_element_type);
     std::size_t idx = 0;
     for (auto it = sequence.begin(); it != sequence.end(); ++it, ++idx)
     {
+      std::string actual_element_type = base_element_type;
+
+      // If accepts_derived_types, check if element has a type field
+      if (accepts_derived && it->IsMap() && (*it)[std::string("type")])
+      {
+        try
+        {
+          actual_element_type = (*it)[std::string("type")].as<std::string>();
+          if (!registry->isDerivedFrom(base_element_type, actual_element_type))
+          {
+            std::stringstream ss;
+            ss << path << "[" << idx << "]: type '" << actual_element_type << "' does not derive from '"
+               << base_element_type << "'";
+            errors.push_back(ss.str());
+            continue;
+          }
+        }
+        catch (const std::exception& e)
+        {
+          std::stringstream ss;
+          ss << path << "[" << idx << "]: type field exists but cannot be extracted as string: " << e.what();
+          errors.push_back(ss.str());
+        }
+      }
+
+      // Get the appropriate schema (actual or base)
+      PropertyTree schema = registry->contains(actual_element_type) ? registry->get(actual_element_type) : base_schema;
+
       PropertyTree copy_schema(schema);
       copy_schema.mergeConfig(*it);
-      std::string elem_path = path + "[" + std::to_string(idx) + "]";
+      std::stringstream ss;
+      ss << path << "[" << idx << "]";
+      std::string elem_path = ss.str();
       // Collect errors with element path context
       std::vector<std::string> sub_errors;
       copy_schema.collectErrors(sub_errors, elem_path, false);

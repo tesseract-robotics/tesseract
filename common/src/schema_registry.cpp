@@ -93,4 +93,49 @@ PropertyTree SchemaRegistry::loadFile(const std::string& path)
   return PropertyTree::fromYAML(node);
 }
 
+void SchemaRegistry::registerDerivedType(const std::string& base_type_name, const std::string& derived_type_name)
+{
+  std::lock_guard lock(mutex_);
+  derived_types_[base_type_name].push_back(derived_type_name);
+}
+
+bool SchemaRegistry::isDerivedFrom(const std::string& base_type_name, const std::string& candidate_type) const
+{
+  std::lock_guard lock(mutex_);
+
+  // A type is always compatible with itself
+  if (base_type_name == candidate_type)
+    return true;
+
+  // Check if candidate is in the list of derived types for base
+  auto it = derived_types_.find(base_type_name);
+  if (it != derived_types_.end())
+  {
+    for (const auto& derived : it->second)
+    {
+      if (derived == candidate_type)
+        return true;
+    }
+  }
+
+  return false;
+}
+
+std::vector<std::string> SchemaRegistry::getDerivedTypes(const std::string& base_type_name) const
+{
+  std::lock_guard lock(mutex_);
+
+  std::vector<std::string> result;
+  result.push_back(base_type_name);  // Include the base type itself
+
+  auto it = derived_types_.find(base_type_name);
+  if (it != derived_types_.end())
+  {
+    for (const auto& derived : it->second)
+      result.push_back(derived);
+  }
+
+  return result;
+}
+
 }  // namespace tesseract::common
