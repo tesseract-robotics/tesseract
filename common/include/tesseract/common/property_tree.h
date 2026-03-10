@@ -379,6 +379,10 @@ public:
   PropertyTreeBuilder& longUnsignedInt(std::string_view name);
   PropertyTreeBuilder& floatNum(std::string_view name);
   PropertyTreeBuilder& doubleNum(std::string_view name);
+  PropertyTreeBuilder& eigenIsometry3d(std::string_view name);
+  PropertyTreeBuilder& eigenVectorXd(std::string_view name);
+  PropertyTreeBuilder& eigenVector2d(std::string_view name);
+  PropertyTreeBuilder& eigenVector3d(std::string_view name);
   PropertyTreeBuilder& customType(std::string_view name, std::string_view type_str);
   ///@}
 

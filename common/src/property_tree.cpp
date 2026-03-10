@@ -670,6 +670,38 @@ PropertyTreeBuilder& PropertyTreeBuilder::doubleNum(std::string_view name)
   return *this;
 }
 
+PropertyTreeBuilder& PropertyTreeBuilder::eigenIsometry3d(std::string_view name)
+{
+  auto& child = current()[name];
+  child.setAttribute(property_attribute::TYPE, property_type::EIGEN_ISOMETRY_3D);
+  stack_.push_back(&child);
+  return *this;
+}
+
+PropertyTreeBuilder& PropertyTreeBuilder::eigenVectorXd(std::string_view name)
+{
+  auto& child = current()[name];
+  child.setAttribute(property_attribute::TYPE, property_type::EIGEN_VECTOR_XD);
+  stack_.push_back(&child);
+  return *this;
+}
+
+PropertyTreeBuilder& PropertyTreeBuilder::eigenVector2d(std::string_view name)
+{
+  auto& child = current()[name];
+  child.setAttribute(property_attribute::TYPE, property_type::EIGEN_VECTOR_2D);
+  stack_.push_back(&child);
+  return *this;
+}
+
+PropertyTreeBuilder& PropertyTreeBuilder::eigenVector3d(std::string_view name)
+{
+  auto& child = current()[name];
+  child.setAttribute(property_attribute::TYPE, property_type::EIGEN_VECTOR_3D);
+  stack_.push_back(&child);
+  return *this;
+}
+
 PropertyTreeBuilder& PropertyTreeBuilder::customType(std::string_view name, std::string_view type_str)
 {
   auto& child = current()[name];

@@ -116,69 +116,33 @@ int main(int /*argc*/, char** /*argv*/)
   std::cout << "------------------------------------\n";
 
   //! [type_registration_start]
+  // clang-format off
   // Define base constraint schema with common fields
   auto base_constraint_schema = PropertyTreeBuilder()
-                                    .attribute(TYPE, CONTAINER)
-                                    .doubleNum("weight")
-                                    .defaultVal(1.0)
-                                    .minimum(0.0)
-                                    .doc("Constraint weight in optimization")
-                                    .done()
-                                    .build();
+      .attribute(TYPE, CONTAINER)
+      .doubleNum("weight").defaultVal(1.0).minimum(0.0).doc("Constraint weight in optimization").done()
+      .build();
 
   // Define position constraint schema (extends base)
   auto position_constraint_schema = PropertyTreeBuilder()
-                                        .attribute(TYPE, CONTAINER)
-                                        .doubleNum("weight")
-                                        .defaultVal(1.0)
-                                        .minimum(0.0)
-                                        .doc("Constraint weight in optimization")
-                                        .done()
-                                        .doubleNum("target_x")
-                                        .required()
-                                        .doc("Target position X coordinate")
-                                        .done()
-                                        .doubleNum("target_y")
-                                        .required()
-                                        .doc("Target position Y coordinate")
-                                        .done()
-                                        .doubleNum("target_z")
-                                        .required()
-                                        .doc("Target position Z coordinate")
-                                        .done()
-                                        .doubleNum("target_tolerance")
-                                        .defaultVal(0.01)
-                                        .minimum(0.0)
-                                        .doc("Position tolerance in meters")
-                                        .done()
-                                        .build();
+      .attribute(TYPE, CONTAINER)
+      .doubleNum("weight").defaultVal(1.0).minimum(0.0).doc("Constraint weight in optimization").done()
+      .doubleNum("target_x").required().doc("Target position X coordinate").done()
+      .doubleNum("target_y").required().doc("Target position Y coordinate").done()
+      .doubleNum("target_z").required().doc("Target position Z coordinate").done()
+      .doubleNum("target_tolerance").defaultVal(0.01).minimum(0.0).doc("Position tolerance in meters").done()
+      .build();
 
   // Define orientation constraint schema (extends base)
   auto orientation_constraint_schema = PropertyTreeBuilder()
-                                           .attribute(TYPE, CONTAINER)
-                                           .doubleNum("weight")
-                                           .defaultVal(1.0)
-                                           .minimum(0.0)
-                                           .doc("Constraint weight in optimization")
-                                           .done()
-                                           .doubleNum("target_roll")
-                                           .required()
-                                           .doc("Target roll angle in radians")
-                                           .done()
-                                           .doubleNum("target_pitch")
-                                           .required()
-                                           .doc("Target pitch angle in radians")
-                                           .done()
-                                           .doubleNum("target_yaw")
-                                           .required()
-                                           .doc("Target yaw angle in radians")
-                                           .done()
-                                           .doubleNum("target_tolerance")
-                                           .defaultVal(0.1)
-                                           .minimum(0.0)
-                                           .doc("Orientation tolerance in radians")
-                                           .done()
-                                           .build();
+      .attribute(TYPE, CONTAINER)
+      .doubleNum("weight").defaultVal(1.0).minimum(0.0).doc("Constraint weight in optimization").done()
+      .doubleNum("target_roll").required().doc("Target roll angle in radians").done()
+      .doubleNum("target_pitch").required().doc("Target pitch angle in radians").done()
+      .doubleNum("target_yaw").required().doc("Target yaw angle in radians").done()
+      .doubleNum("target_tolerance").defaultVal(0.1).minimum(0.0).doc("Orientation tolerance in radians").done()
+      .build();
+  //clang-format on
 
   // Register all schemas
   registry->registerSchema("Constraint", base_constraint_schema);
@@ -205,22 +169,20 @@ int main(int /*argc*/, char** /*argv*/)
   std::cout << "Step 2: Define Field Accepting Polymorphic Types\n";
   std::cout << "-----------------------------------------------\n";
 
+  // clang-format off
   //! [field_definition_start]
   // Create a trajectory schema with a container of polymorphic constraints
   auto trajectory_schema = PropertyTreeBuilder()
-                               .attribute(TYPE, CONTAINER)
-                               .string("name")
-                               .required()
-                               .doc("Name of this trajectory")
-                               .done()
-                               .container("constraint")
-                               .doc("Task constraint (any constraint type can be used)")
-                               .customType("constraint", "Constraint")
-                               .acceptsDerivedTypes()
-                               .validator(validateCustomType)
-                               .done()
-                               .build();
+      .attribute(TYPE, CONTAINER)
+      .string("name").required().doc("Name of this trajectory").done()
+      .container("constraint").doc("Task constraint (any constraint type can be used)")
+        .customType("constraint", "Constraint")
+        .acceptsDerivedTypes()
+        .validator(validateCustomType)
+      .done()
+      .build();
   //! [field_definition_start]
+  // clang-format on
 
   std::cout << "Created trajectory schema with polymorphic constraint field\n\n";
 

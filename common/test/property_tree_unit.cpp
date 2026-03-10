@@ -825,6 +825,75 @@ TEST(PropertyTreeBuilder, AllScalarTypes)  // NOLINT
   check("d", DOUBLE);
 }
 
+TEST(PropertyTreeBuilder, EigenTypes)  // NOLINT
+{
+  // clang-format off
+  auto tree = PropertyTreeBuilder()
+      .eigenIsometry3d("iso3d").done()
+      .eigenVectorXd("vecXd").done()
+      .eigenVector2d("vec2d").done()
+      .eigenVector3d("vec3d").done()
+      .build();
+  // clang-format on
+
+  auto check = [&](const std::string& name, std::string_view expected_type) {
+    auto* n = tree.find(name);
+    ASSERT_NE(n, nullptr) << "Missing child: " << name;
+    auto t = n->getAttribute(TYPE);
+    ASSERT_TRUE(t.has_value()) << "No TYPE attribute on: " << name;
+    EXPECT_EQ(t->as<std::string>(), std::string(expected_type)) << "Wrong type for: " << name;
+  };
+
+  check("iso3d", EIGEN_ISOMETRY_3D);
+  check("vecXd", EIGEN_VECTOR_XD);
+  check("vec2d", EIGEN_VECTOR_2D);
+  check("vec3d", EIGEN_VECTOR_3D);
+}
+
+TEST(PropertyTreeBuilder, EigenTypesWithAttributes)  // NOLINT
+{
+  // clang-format off
+  auto tree = PropertyTreeBuilder()
+      .container("transforms")
+          .doc("Transform collection").required()
+          .eigenIsometry3d("base_transform")
+              .doc("Base transformation").label("Base Transform").required()
+          .done()
+          .eigenVector3d("offset")
+              .doc("Position offset").group("geometry").hidden()
+          .done()
+      .done()
+      .build();
+  // clang-format on
+
+  const auto& transforms = tree.at("transforms");
+  auto type_attr = transforms.getAttribute(TYPE);
+  ASSERT_TRUE(type_attr.has_value());
+  EXPECT_EQ(type_attr->as<std::string>(), std::string(CONTAINER));
+
+  const auto& base = transforms.at("base_transform");
+  auto base_type = base.getAttribute(TYPE);
+  ASSERT_TRUE(base_type.has_value());
+  EXPECT_EQ(base_type->as<std::string>(), std::string(EIGEN_ISOMETRY_3D));
+  auto base_doc = base.getAttribute(DOC);
+  ASSERT_TRUE(base_doc.has_value());
+  EXPECT_EQ(base_doc->as<std::string>(), "Base transformation");
+  auto base_label = base.getAttribute(LABEL);
+  ASSERT_TRUE(base_label.has_value());
+  EXPECT_EQ(base_label->as<std::string>(), "Base Transform");
+  auto base_required = base.getAttribute(REQUIRED);
+  ASSERT_TRUE(base_required.has_value());
+  EXPECT_EQ(base_required->as<bool>(), true);
+
+  const auto& offset = transforms.at("offset");
+  auto offset_type = offset.getAttribute(TYPE);
+  ASSERT_TRUE(offset_type.has_value());
+  EXPECT_EQ(offset_type->as<std::string>(), std::string(EIGEN_VECTOR_3D));
+  auto offset_hidden = offset.getAttribute(HIDDEN);
+  ASSERT_TRUE(offset_hidden.has_value());
+  EXPECT_EQ(offset_hidden->as<bool>(), true);
+}
+
 TEST(PropertyTreeBuilder, CustomTypeChild)  // NOLINT
 {
   auto tree = PropertyTreeBuilder().customType("data", "my::CustomType").done().build();
