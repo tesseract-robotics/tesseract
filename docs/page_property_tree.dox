@@ -252,97 +252,199 @@ where a field can accept any type that extends a base type. This is useful for:
 - **Type Inheritance**: Allow base type or any properly registered derived type
 - **Plugin Architectures**: A field accepts Constraint or any Constraint subclass
 - **Extensibility**: User code can register new derived types without modifying schema
-- **Dynamic Dispatch**: The "type" field selects the schema for validation
+- **Standard Plugin Info Structure**: Uses the Tesseract standard "class" + "config" pattern
 
 **How Derived Types Work:**
 
 1. **Register Inheritance**: Tell the registry what types derive from a base
-2. **Mark Field**: Use `acceptsDerivedTypes()` to allow derived types in that field
-3. **Type Field**: Configuration data includes a "type" field naming the concrete type
-4. **Validation**: System checks if the type is registered as derived from the base (or equals base)
+2. **Mark Field**: Use `acceptsDerivedTypes()` to enable plugin info structure validation
+3. **Plugin Info Structure**: Configuration data includes "class" (type identifier) and "config" (type-specific parameters)
+4. **Validation**: System checks if the type is registered as derived from the base, then validates config
+
+**The Plugin Info Structure:**
+
+The standard Tesseract plugin info structure uses two fields:
+- **`class`**: String identifier for the concrete derived type (required)
+- **`config`**: YAML map containing type-specific configuration (optional but recommended)
+
+This pattern aligns with the PluginInfo struct used throughout Tesseract for extensible components.
 
 **Example - Constraint Hierarchy:**
 @code
 // Define schemas for base and derived constraint types
 auto base_schema = PropertyTreeBuilder()
+    .container("base_constraint")
+    .doc("Base constraint with common attributes")
     .doubleNum("weight").defaultVal(1.0).done()
+    .done()
     .build();
 
 auto position_schema = PropertyTreeBuilder()
+    .container("position_constraint")
+    .doc("Constrains a joint to a specific position")
     .doubleNum("weight").defaultVal(1.0).done()
-    .vectorXd("target_position").required().done()
-    .doubleNum("target_tolerance").defaultVal(0.01).done()
+    .string("joint").required().doc("Joint name").done()
+    .doubleNum("position").required().doc("Target position").done()
+    .doubleNum("tolerance").defaultVal(0.01).doc("Position tolerance").done()
+    .done()
     .build();
 
 auto orientation_schema = PropertyTreeBuilder()
+    .container("orientation_constraint")
+    .doc("Constrains end-effector orientation")
     .doubleNum("weight").defaultVal(1.0).done()
-    .isometry("target_orientation").required().done()
-    .doubleNum("target_tolerance").defaultVal(0.1).done()
+    .eigenIsometry3d("target").required().doc("Target orientation").done()
+    .doubleNum("tolerance").defaultVal(0.1).doc("Orientation tolerance").done()
+    .done()
     .build();
 
 // Register schemas
-registerSchema("Constraint", base_schema);
-registerSchema("PositionConstraint", position_schema);
+registerSchema("BaseConstraint", base_schema);
+registerSchema("JointPositionConstraint", position_schema);
 registerSchema("OrientationConstraint", orientation_schema);
 
-// Register the inheritance relationship
-TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(Constraint, PositionConstraint);
-TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(Constraint, OrientationConstraint);
+// Register the inheritance relationships
+registerSchemaDerivedType("BaseConstraint", "JointPositionConstraint");
+registerSchemaDerivedType("BaseConstraint", "OrientationConstraint");
 
 // Create a field that accepts any constraint type
 auto config_schema = PropertyTreeBuilder()
-    .sequence("constraints", createList("Constraint"))
-    .customType("constraints", 
-        []() { return registerSchema("Constraint", base_schema); })
-    .acceptsDerivedTypes()  // Accept Constraint or derived types
-    .validator(validateCustomType)
+    .container("planning_problem")
+    .customType("constraints", "List[BaseConstraint]")
+    .doc("Array of constraints (each can be any derived BaseConstraint type)")
+    .acceptsDerivedTypes()  // Enable plugin info structure validation
+    .done()
     .done()
     .build();
 @endcode
 
 **Configuration Using Derived Types:**
+
+Use the plugin info structure with "class" and "config" fields:
+
 @code
 YAML:
-constraints:
-  - type: PositionConstraint          # Validates against PositionConstraint schema
-    weight: 2.0
-    target_position: [1, 2, 3]
-    target_tolerance: 0.005
-  - type: OrientationConstraint       # Validates against OrientationConstraint schema
-    weight: 1.5
-    target_orientation: [1, 0, 0, 0]  # Quaternion as [x, y, z, w]
-    target_tolerance: 0.1
-  - type: Constraint                  # Using base type is also valid
-    weight: 0.5
+planning_problem:
+  constraints:
+    - class: JointPositionConstraint        # Type identifier
+      config:                                 # Type-specific config
+        weight: 2.0
+        joint: "shoulder_1"
+        position: 0.785
+        tolerance: 0.005
+    - class: OrientationConstraint
+      config:
+        weight: 1.5
+        target: 
+          - [1, 0, 0, 0]
+          - [0, 0, 0, 1]
+        tolerance: 0.1
+    - class: BaseConstraint                 # Using base type is also valid
+      config:
+        weight: 0.5
+@endcode
+
+**Single Entry Example:**
+@code
+YAML:
+constraint:
+  class: JointPositionConstraint
+  config:
+    joint: "wrist_3"
+    position: 1.57
+@endcode
+
+**Map of Named Derived Types:**
+@code
+YAML:
+scenario:
+  constraints:
+    home_position:
+      class: JointPositionConstraint
+      config:
+        joint: "wrist_3"
+        position: 1.57
+    safety_limits:
+      class: OrientationConstraint
+      config:
+        weight: 1.5
+        target: [[1, 0, 0, 0], [0, 0, 0, 1]]
 @endcode
 
 **Validation with Derived Types:**
 
-When validating a sequence element with `acceptsDerivedTypes()`:
+When validating a property with `acceptsDerivedTypes()`:
 
-1. Extract the "type" field from the element
-2. Check if the type is registered (exact match or derived from base)
-3. If registered, validate the element against its type's schema
-4. If not registered, report an error listing valid types
+1. Extract the "class" field (required)
+2. Check if the class is registered as a derived type of the base
+3. If registered, validate the "config" field against that type's schema
+4. If not registered, report an error with the type name and valid options
 
-Error messages include the element's array index for clarity:
+Error messages are hierarchical and contextual:
 @code
-"constraints[1].type: value 'UnknownConstraint' is not derived from 'Constraint'. 
-Valid types: Constraint, PositionConstraint, OrientationConstraint"
+// Missing class field
+"constraints[0]: plugin info structure missing required 'class' field"
+
+// Invalid derived type
+"constraints[1].class: type 'UnknownConstraint' does not derive from 'BaseConstraint'"
+
+// Configuration error
+"scenario.constraints[home_position].config.joint: value cannot be empty"
 @endcode
+
+**Container Type Support:**
+
+Derived types work with all container types:
+
+1. **Single Entry**: `{ class: Type, config: {...} }`
+2. **Sequences/Arrays**: `List[BaseType]` - each element is a plugin info structure
+3. **Maps**: `Map[String,BaseType]` - each value is a plugin info structure
+
+@code
+// Single entry
+.customType("constraint", "BaseConstraint")
+.acceptsDerivedTypes()
+
+// Sequence
+.customType("constraints", "List[BaseConstraint]")
+.acceptsDerivedTypes()
+
+// Map
+.customType("named_constraints", "Map[String,BaseConstraint]")
+.acceptsDerivedTypes()
+@endcode
+
+**Backward Compatibility:**
+
+The legacy "type" field approach is still supported when `acceptsDerivedTypes()` is NOT set:
+
+@code
+YAML (legacy - still works):
+constraint:
+  type: JointPositionConstraint
+  joint: "joint_1"
+  position: 0.785
+@endcode
+
+However, the plugin info structure (class + config) is the recommended approach as it:
+- Clearly separates type identification from configuration
+- Aligns with Tesseract's standard PluginInfo pattern
+- Supports nesting and composition better
+- Provides clearer YAML structure
 
 **Derived Types vs OneOf:**
 
 | Feature | Derived Types | OneOf |
 |---------|---|---|
 | **Use Case** | Type inheritance hierarchies | Mutually exclusive variants |
-| **Type Discovery** | Via "type" field (explicit) | Via required field match (implicit) |
-| **Registration** | Compile-time macros | Schema structure |
+| **Type Specification** | Via "class" field (explicit) | Via required field match (implicit) |
+| **Registration** | Compile-time macros/API | Schema structure |
 | **Extensibility** | Easy - register new derived types | Requires schema change |
 | **Performance** | Direct type lookup | Branch matching algorithm |
-| **Example** | Constraint, PositionConstraint | Shape (circle vs rectangle) |
+| **Structure** | Plugin info (class + config) | Branch containers |
+| **Example** | Constraint hierarchy | Shape (circle vs rectangle) |
 
-See @ref polymorphic_property_tree_example for a detailed working example.
+**For Comprehensive Coverage:** See @ref property_tree_derived_types for a complete guide including quick start, architecture, all container types, error messages, best practices, and migration information.
 
 @section pt_schema_registry Schema Registry
 

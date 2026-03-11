@@ -1,0 +1,604 @@
+/**
+@page property_tree_derived_types Derived Type Support in PropertyTree
+
+@brief Comprehensive guide to using derived types with the plugin info structure
+
+@tableofcontents
+
+@section ptdt_overview Overview
+
+PropertyTree provides comprehensive support for derived types in configuration validation. This feature enables extensible, inheritance-based configuration hierarchies where fields can accept any properly registered derived type of a base type.
+
+### Problem Solved
+
+Previously, derived type handling had limitations:
+
+- Used a "type" field directly in config, not aligned with Tesseract conventions
+- Only worked with single types, not sequences or maps of derived types
+- Unclear separation between type identification and configuration
+
+### Solution: Plugin Info Structure
+
+The implementation uses the standard Tesseract <b>plugin info structure</b> (class + config) to cleanly separate type identification from configuration:
+
+@code{.yaml}
+field:
+  class: DerivedTypeIdentifier      # Type identifier (required)
+  config:                            # Type-specific config (optional)
+    param1: value1
+    param2: value2
+@endcode
+
+This aligns with the `PluginInfo` struct used throughout Tesseract for extensible components.
+
+@section ptdt_quickstart Quick Start
+
+Here's the three-step process to use derived types:
+
+@subsection ptdt_qs_step1 Step 1: Register Types
+
+@code{.cpp}
+// Register schemas
+TESSERACT_SCHEMA_REGISTER(BaseConstraint,
+  PropertyTreeBuilder().container("base_constraint").done().build()
+);
+TESSERACT_SCHEMA_REGISTER(JointPositionConstraint,
+  PropertyTreeBuilder()
+    .container("jp_constraint")
+    .string("joint").required().done()
+    .doubleNum("position").required().done()
+    .done()
+    .build()
+);
+
+// Register inheritance relationships
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(BaseConstraint, JointPositionConstraint);
+@endcode
+
+@subsection ptdt_qs_step2 Step 2: Define Schema with acceptsDerivedTypes()
+
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+  .container("constraints")
+  .customType("list", "List[BaseConstraint]")
+  .acceptsDerivedTypes()  // Enable plugin info structure validation
+  .done()
+  .done()
+  .build();
+@endcode
+
+@subsection ptdt_qs_step3 Step 3: Use Plugin Info Structure in YAML
+
+@code{.yaml}
+constraints:
+  - class: JointPositionConstraint
+    config:
+      joint: "joint_1"
+      position: 0.785
+  - class: BaseConstraint
+    config:
+      weight: 1.0
+@endcode
+
+@par
+That's it! The schema will validate that each element has a valid class name and config values.
+
+@subsection ptdt_quick_patterns Common Patterns
+
+@subsubsection ptdt_qp_single Single Entry
+@code{.cpp}
+.customType("constraint", "BaseConstraint")
+.acceptsDerivedTypes()
+@endcode
+
+@code{.yaml}
+constraint:
+  class: JointPositionConstraint
+  config:
+    joint: "joint_1"
+    position: 0.785
+@endcode
+
+@subsubsection ptdt_qp_array Array/List
+@code{.cpp}
+.customType("constraints", "List[BaseConstraint]")
+.acceptsDerivedTypes()
+@endcode
+
+@code{.yaml}
+constraints:
+  - class: JointPositionConstraint
+    config: { joint: "joint_1", position: 0.0 }
+  - class: CollisionConstraint
+    config: { constraint_type: "USE_LIMITS" }
+@endcode
+
+@subsubsection ptdt_qp_map Map
+@code{.cpp}
+.customType("named_constraints", "Map[String,BaseConstraint]")
+.acceptsDerivedTypes()
+@endcode
+
+@code{.yaml}
+named_constraints:
+  home_position:
+    class: JointPositionConstraint
+    config: { joint: "wrist_3", position: 1.57 }
+  safety_limit:
+    class: CollisionConstraint
+    config: { constraint_type: "USE_LIMITS" }
+@endcode
+
+@subsubsection ptdt_qp_nested Nested (Map of Lists)
+@code{.cpp}
+.customType("solver_groups", "Map[String,List[BaseSolver]]")
+.acceptsDerivedTypes()
+@endcode
+
+@code{.yaml}
+solver_groups:
+  planning:
+    - class: TrajOptSolver
+      config: { max_iterations: 100 }
+    - class: OMPLSolver
+      config: { planner_id: "RRTstar" }
+@endcode
+
+@section ptdt_architecture Architecture
+
+@subsection ptdt_components Key Components
+
+1. <b>validatePluginInfo()</b> - New validator function
+   - Validates individual plugin info structures (class + config)
+   - Checks "class" field identifies a valid derived type
+   - Validates "config" against the derived type's schema
+   - Provides clear, hierarchical error messages
+
+2. <b>validateCustomType()</b> - Enhanced existing function
+   - Detects `acceptsDerivedTypes()` attribute
+   - Uses plugin info structure validation when enabled
+   - Supports single entries, sequences, and maps
+   - Maintains backward compatibility
+
+@section ptdt_usage Usage Guide
+
+@subsection ptdt_declaring Declaring Fields for Derived Types
+
+To enable plugin info structure validation on a field, use `acceptsDerivedTypes()`:
+
+@code{.cpp}
+PropertyTreeBuilder()
+  .customType("constraint", "BaseConstraint")
+  .acceptsDerivedTypes()  // Enable plugin info validation
+  .done()
+@endcode
+
+@subsection ptdt_single Single Entry Example
+
+For a single derived type instance:
+
+@par Schema
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+  .container("planning_config")
+  .customType("constraint", "BaseConstraint")
+  .acceptsDerivedTypes()
+  .doc("A single constraint instance")
+  .done()
+  .done()
+  .build();
+@endcode
+
+@par YAML
+@code{.yaml}
+planning_config:
+  constraint:
+    class: JointPositionConstraint
+    config:
+      joint: "shoulder_1"
+      position: 0.785
+      tolerance: 0.01
+@endcode
+
+@subsection ptdt_array Array/Vector Example
+
+For multiple instances of derived types:
+
+@par Schema
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+  .container("planning_problem")
+  .customType("constraints", "List[BaseConstraint]")
+  .acceptsDerivedTypes()
+  .doc("Array of constraints (each can be any derived type)")
+  .done()
+  .done()
+  .build();
+@endcode
+
+@par YAML
+@code{.yaml}
+planning_problem:
+  constraints:
+    - class: JointPositionConstraint
+      config:
+        joint: "joint_1"
+        position: 0.0
+        tolerance: 0.005
+    - class: CartesianVelocityConstraint
+      config:
+        frame: "tool0"
+        max_velocity: 1.5
+    - class: CollisionConstraint
+      config:
+        constraint_type: "USE_LIMITS"
+        safety_margin: 0.05
+@endcode
+
+@subsection ptdt_map Map Example
+
+For named instances of derived types:
+
+@par Schema
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+  .container("scenario")
+  .customType("constraints", "Map[String,BaseConstraint]")
+  .acceptsDerivedTypes()
+  .doc("Map of named constraints")
+  .done()
+  .done()
+  .build();
+@endcode
+
+@par YAML
+@code{.yaml}
+scenario:
+  constraints:
+    home_position:
+      class: JointPositionConstraint
+      config:
+        joint: "wrist_3"
+        position: 1.57
+    safety_limits:
+      class: CollisionConstraint
+      config:
+        constraint_type: "USE_LIMITS"
+        safety_margin: 0.05
+    smooth_motion:
+      class: CartesianVelocityConstraint
+      config:
+        frame: "workspace_center"
+        max_velocity: 2.0
+@endcode
+
+@section ptdt_registration Registration
+
+Before using derived types, register the type relationships:
+
+@code{.cpp}
+// 1. Register the base type schema
+TESSERACT_SCHEMA_REGISTER(BaseConstraint,
+  PropertyTreeBuilder()
+    .container("base_constraint")
+    .doubleNum("weight").defaultVal(1.0).done()
+    .done()
+    .build()
+);
+
+// 2. Register derived type schemas
+TESSERACT_SCHEMA_REGISTER(JointPositionConstraint,
+  PropertyTreeBuilder()
+    .container("joint_position_constraint")
+    .doubleNum("weight").defaultVal(1.0).done()
+    .string("joint").required().doc("Joint name").done()
+    .doubleNum("position").required().doc("Target position").done()
+    .doubleNum("tolerance").defaultVal(0.01).doc("Position tolerance").done()
+    .done()
+    .build()
+);
+
+TESSERACT_SCHEMA_REGISTER(CollisionConstraint,
+  PropertyTreeBuilder()
+    .container("collision_constraint")
+    .doubleNum("weight").defaultVal(1.0).done()
+    .string("constraint_type").required().enumValues({"USE_LIMITS", "PENALTY"}).done()
+    .doubleNum("safety_margin").defaultVal(0.05).done()
+    .done()
+    .build()
+);
+
+// 3. Register the inheritance relationships
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(BaseConstraint, JointPositionConstraint);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(BaseConstraint, CollisionConstraint);
+@endcode
+
+@section ptdt_validation Validation Process
+
+When validating a property with `acceptsDerivedTypes()` enabled:
+
+1. <b>Extract class field</b>: Required "class" field must be present
+2. <b>Verify inheritance</b>: Check if the class name is registered as a valid derived type
+3. <b>Validate config</b>: Validate the "config" field against that type's schema
+4. <b>Collect errors</b>: All validation errors are collected with proper path context
+
+@subsection ptdt_errors Error Messages
+
+Error messages are hierarchical and contextual:
+
+@code
+// Missing required 'class' field
+"planning_config.constraint: plugin info structure missing required 'class' field"
+
+// Invalid derived type
+"planning_config.constraint.class: type 'UnknownConstraint' does not derive from 'BaseConstraint'"
+
+// Configuration validation error
+"planning_problem.constraints[1].config.max_velocity: value 1.2 is less than minimum 1.5"
+
+// Map value error
+"scenario.constraints[safety_limits].config.constraint_type: not in enum values"
+@endcode
+
+@section ptdt_containers Supported Container Types
+
+Derived types work seamlessly with all PropertyTree container types:
+
+| Container Type | Type Notation | YAML Pattern |
+|---|---|---|
+| <b>Single Entry</b> | `BaseType` | `{ class: ..., config: ... }` |
+| <b>Dynamic Array</b> | `List[BaseType]` | `[ { class: ..., config: ... }, ... ]` |
+| <b>Fixed Array</b> | `List[BaseType,N]` | Fixed-size array of plugin infos |
+| <b>Map</b> | `Map[String,BaseType]` | `{ key1: { class: ..., config: ... }, ... }` |
+
+All container combinations support derived types when `acceptsDerivedTypes()` is set.
+
+@section ptdt_nesting Advanced: Nested Containers
+
+Containers can be nested to create complex structures:
+
+@par Schema
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+  .container("solver_config")
+  .customType("solver_groups", "Map[String,List[BaseSolver]]")
+  .acceptsDerivedTypes()
+  .doc("Map of solver group names to solver lists")
+  .done()
+  .done()
+  .build();
+@endcode
+
+@par YAML
+@code{.yaml}
+solver_config:
+  solver_groups:
+    planning_solvers:
+      - class: TrajOptSolver
+        config:
+          max_iterations: 100
+      - class: OMPLSolver
+        config:
+          planner_id: "RRTstar"
+    control_solvers:
+      - class: MoveItControlSolver
+        config:
+          group: "manipulator"
+@endcode
+
+@section ptdt_backwards Backward Compatibility
+
+The implementation maintains full backward compatibility with the legacy "type" field approach:
+
+@par Legacy Approach (still works)
+@code{.yaml}
+constraint:
+  type: JointPositionConstraint
+  joint: "joint_1"
+  position: 0.785
+@endcode
+
+This works when `acceptsDerivedTypes()` is <b>not</b> set. However, the plugin info structure is now the <b>recommended approach</b> because it:
+- Clearly separates type identification from configuration
+- Aligns with Tesseract's standard PluginInfo pattern
+- Supports better composition and nesting
+- Provides clearer YAML organization
+
+@section ptdt_vsooneof Derived Types vs. OneOf
+
+Both features enable polymorphic configuration but in different ways:
+
+| Feature | Derived Types | OneOf |
+|---------|---|---|
+| <b>Use Case</b> | Type inheritance hierarchies | Mutually exclusive variants |
+| <b>Type Specification</b> | Explicit "class" field | Implicit - inferred from required fields |
+| <b>Registration</b> | Compile-time macros | Schema structure defines branches |
+| <b>Extensibility</b> | Easy - register new derived types | Requires schema modification |
+| <b>Performance</b> | O(1) type lookup | O(n) branch matching |
+| <b>Structure</b> | Plugin info (class + config) | Multiple sibling containers |
+| <b>Configuration</b> | Fields explicitly select type | Configuration structure selects variant |
+| <b>Example</b> | Constraint, PositionConstraint | Circle vs. Rectangle shape |
+
+@subsubsection ptdt_vsoo_derived When to use Derived Types
+
+- Type hierarchies with inheritance
+- Plugin architectures with extensible types
+- Standard type selection pattern (class field)
+
+@subsubsection ptdt_vsoo_oneof When to use OneOf
+- Mutually exclusive configuration options
+- Variant types without inheritance notion
+- Configuration structure determines type
+
+@subsection ptdt_example Complete Working Example
+
+See the comprehensive example at:
+- <b>Doxygen Source File</b>: `common/examples/derived_types_example.cpp`
+- <b>Quick Reference Guide</b>: `docs/DERIVED_TYPES_USAGE.md`
+
+The example demonstrates:
+- Single constraint entry
+- Array of mixed constraint types
+- Named constraints in a map
+- Error handling and validation
+- Registration patterns
+
+@section ptdt_implementation Implementation Details
+
+The implementation is located in:
+
+@subsection ptdt_impl_files Modified Files
+
+- `common/include/tesseract/common/property_tree.h` - Added `validatePluginInfo()` declaration
+- `common/src/property_tree.cpp` - Implemented new validator and enhanced `validateCustomType()`
+
+@subsection ptdt_impl_validateplugininfo New Function: validatePluginInfo()
+- Located: `property_tree.cpp` (lines 1066-1154)
+- Validates: Plugin info structure with class + config
+- Handles: Single entries, sequences, and maps
+
+@subsection ptdt_impl_validatecustom Enhanced Function: validateCustomType()
+- Located: `property_tree.cpp` (lines 955-1065)
+- Detects: `acceptsDerivedTypes` attribute
+- Routes: To plugin info validation when enabled
+- Supports: All container types (single, sequence, map)
+
+@section ptdt_best_practices Best Practices
+
+1. <b>Use Plugin Info Structure</b>: Always use class + config pattern with `acceptsDerivedTypes()`
+2. <b>Register Early</b>: Register derived types at module initialization
+3. <b>Clear Class Names</b>: Use fully qualified type names (e.g., "tesseract::planning::JointPositionConstraint")
+4. <b>Validate Config</b>: Always include required fields in derived type schemas
+5. <b>Error Handling</b>: Check validation results before accessing configuration
+6. <b>Documentation</b>: Add description metadata to explain which types are valid
+7. <b>Consistency</b>: Use nested config for all type-specific parameters
+8. <b>Testing</b>: Test with all registered derived types
+9. <b>Versioning</b>: Consider schema version in derived type registration for compatibility
+
+@section ptdt_quickref Quick Reference Guide
+
+@subsection ptdt_qr_plugin_info Plugin Info Structure
+
+Every derived type instance has two fields:
+
+@code{.yaml}
+field:
+  class: TypeIdentifier            # Type name (required)
+  config:                           # Type-specific parameters (optional)
+    param1: value1
+    param2: value2
+@endcode
+
+@subsection ptdt_qr_errors Common Error Messages
+
+| Error | Meaning | Solution |
+|-------|---------|----------|
+| `plugin info structure missing required 'class' field` | No class identifier | Add `class: TypeName` |
+| `type 'X' does not derive from 'BaseType'` | Invalid type name | Register the type or use a valid derived type |
+| `value cannot be empty` (in config) | Config validation failed | Check schema requirements for the type |
+| `expected a plugin info structure` | Wrong YAML structure | Use `{ class: ..., config: ... }` format |
+
+@subsection ptdt_qr_validation_flow Validation Flow
+
+1. Check "class" field exists (required)
+2. Verify class is registered as derived from base type
+3. Validate "config" against that type's schema
+4. Collect all errors with path context
+
+@subsection ptdt_qr_attributes Schema Attributes
+
+Key attributes for derived type fields:
+
+@code{.cpp}
+.customType("field_name", "BaseType")     // Mark as custom type
+.acceptsDerivedTypes()                    // Enable plugin info validation [REQUIRED]
+.doc("Description")                       // Document the field
+.required()                               // Make the field mandatory
+.done()
+@endcode
+
+The `.acceptsDerivedTypes()` attribute is what enables plugin info structure validation.
+
+@subsection ptdt_qr_containers Container Types
+
+| Container | Type Notation | YAML Example |
+|-----------|---|---|
+| <b>Single</b> | `BaseType` | `{ class: Type, config: {...} }` |
+| <b>Array</b> | `List[BaseType]` | `[ { class: Type, config: {...} }, ... ]` |
+| <b>Fixed Array</b> | `List[BaseType,N]` | Fixed-size array of plugin infos |
+| <b>Map</b> | `Map[String,BaseType]` | `{ key1: { class: Type, config: {...} }, ... }` |
+
+@subsection ptdt_qr_patterns Implementation Patterns
+
+@subsubsection ptdt_qr_pat1 Pattern 1: Extensible Plugin System
+@code{.cpp}
+.customType("solver", "BaseSolver")
+.acceptsDerivedTypes()
+.doc("Any registered solver implementation can be used here")
+@endcode
+
+@subsubsection ptdt_qr_pat2 Pattern 2: Multiple Configurations
+@code{.cpp}
+.customType("constraints", "List[BaseConstraint]")
+.acceptsDerivedTypes()
+.doc("List of constraints - can mix different types")
+@endcode
+
+@subsubsection ptdt_qr_pat3 Pattern 3: Named Component Map
+@code{.cpp}
+.customType("plugins", "Map[String,BasePlugin]")
+.acceptsDerivedTypes()
+.doc("Named plugin instances")
+@endcode
+
+@subsection ptdt_qr_backward Legacy "Type" Field
+
+When `acceptsDerivedTypes()` is <b>not</b> set, the old "type" field approach still works:
+
+@code{.yaml}
+constraint:
+  type: JointPositionConstraint
+  joint: "joint_1"
+  position: 0.785
+@endcode
+
+However, <b>use plugin info structure (class + config) for new code</b>.
+
+@section ptdt_migration Migration Guide
+
+To migrate from the legacy "type" field approach:
+
+@par Before (legacy, still works)
+@code{.yaml}
+constraints:
+  - type: JointPositionConstraint
+    joint: "joint_1"
+    position: 0.0
+@endcode
+
+@code{.cpp}
+.customType("constraints", "List[BaseConstraint]")
+// No acceptsDerivedTypes() call
+@endcode
+
+@par After (recommended)
+@code{.yaml}
+constraints:
+  - class: JointPositionConstraint
+    config:
+      joint: "joint_1"
+      position: 0.0
+@endcode
+
+@code{.cpp}
+.customType("constraints", "List[BaseConstraint]")
+.acceptsDerivedTypes()  // Add this line
+@endcode
+
+@par Changes Required
+1. Add `.acceptsDerivedTypes()` to the schema definition
+2. Restructure YAML: wrap config in "config" field
+3. Change "type" field to "class" field in YAML files
+4. No C++ code changes to validation logic - automatic detection of new structure
+
+*/

@@ -1057,35 +1057,35 @@ TEST(PropertyTreeBuilder, BuildAndMergeValidate)  // NOLINT
 TEST(PropertyTreeHelpers, CreateListDynamic)  // NOLINT
 {
   auto list = createList(STRING);
-  EXPECT_EQ(list, "std::string[]");
+  EXPECT_EQ(list, "List[std::string]");
 }
 
 TEST(PropertyTreeHelpers, CreateListFixedSize)  // NOLINT
 {
   auto list = createList(DOUBLE, 3);
-  EXPECT_EQ(list, "double[3]");
+  EXPECT_EQ(list, "List[double,3]");
 }
 
 TEST(PropertyTreeHelpers, CreateMapDefault)  // NOLINT
 {
   auto map = createMap(INT);
-  EXPECT_EQ(map, "{std::string,int}");
+  EXPECT_EQ(map, "Map[std::string,int]");
 }
 
 TEST(PropertyTreeHelpers, CreateMapCustomKey)  // NOLINT
 {
   auto map = createMap("std::string[2]", DOUBLE);
-  EXPECT_EQ(map, "{std::string[2],double}");
+  EXPECT_EQ(map, "Map[std::string[2],double]");
 }
 
 TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
 {
-  auto result = isSequenceType("double[]");
+  auto result = isSequenceType("List[double]");
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->first, "double");  // NOLINT
   EXPECT_EQ(result->second, 0U);       // NOLINT
 
-  result = isSequenceType("int[5]");
+  result = isSequenceType("List[int,5]");
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->first, "int");  // NOLINT
   EXPECT_EQ(result->second, 5U);    // NOLINT
@@ -1096,7 +1096,7 @@ TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
 
 TEST(PropertyTreeHelpers, IsMapType)  // NOLINT
 {
-  auto result = isMapType("{std::string,int}");
+  auto result = isMapType("Map[std::string,int]");
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->first, "std::string");  // NOLINT
   EXPECT_EQ(result->second, "int");         // NOLINT
