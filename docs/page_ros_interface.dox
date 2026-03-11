@@ -14,11 +14,11 @@ The ROS interface packages provide:
 
 | Package | Purpose |
 |---------|---------|
-| **tesseract_monitoring** | Environment and contact monitoring via ROS topics/services |
-| **tesseract_rosutils** | Conversion utilities between Tesseract and ROS message types |
-| **tesseract_rviz** | RViz visualization plugins for Tesseract environments and trajectories |
-| **tesseract_msgs** | ROS message definitions for Tesseract data types |
-| **tesseract_ros_examples** | Example applications demonstrating ROS integration |
+| <b>tesseract_monitoring</b> | Environment and contact monitoring via ROS topics/services |
+| <b>tesseract_rosutils</b> | Conversion utilities between Tesseract and ROS message types |
+| <b>tesseract_rviz</b> | RViz visualization plugins for Tesseract environments and trajectories |
+| <b>tesseract_msgs</b> | ROS message definitions for Tesseract data types |
+| <b>tesseract_ros_examples</b> | Example applications demonstrating ROS integration |
 
 @section ros_interface_example Basic Cartesian Example
 
@@ -53,8 +53,8 @@ The robot traces a trajectory over a cube obstacle in the environment:
 
 The example is organized as:
 
-- **Executable node** — Initializes ROS, creates the example class, and calls `run()`
-- **BasicCartesianExample class** — Contains all planning and environment setup logic
+- <b>Executable node</b> — Initializes ROS, creates the example class, and calls `run()`
+- <b>BasicCartesianExample class</b> — Contains all planning and environment setup logic
 
 The workflow in the `run()` method is:
 
@@ -71,9 +71,9 @@ The workflow in the `run()` method is:
 
 Provides two main components:
 
-- **Contact Monitor** — Continuously monitors the environment for contact/collisions and
+- <b>Contact Monitor</b> — Continuously monitors the environment for contact/collisions and
   publishes results. Useful for safety monitoring during execution.
-- **Environment Monitor** — Keeps the Tesseract environment synchronized with the ROS
+- <b>Environment Monitor</b> — Keeps the Tesseract environment synchronized with the ROS
   parameter server and published environment updates.
 
 @subsection ros_rviz tesseract_rviz
