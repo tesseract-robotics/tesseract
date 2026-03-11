@@ -1057,49 +1057,49 @@ TEST(PropertyTreeBuilder, BuildAndMergeValidate)  // NOLINT
 TEST(PropertyTreeHelpers, CreateListDynamic)  // NOLINT
 {
   auto list = createList(STRING);
-  EXPECT_EQ(list, "std::string[]");
+  EXPECT_EQ(list, "List[string]");
 }
 
 TEST(PropertyTreeHelpers, CreateListFixedSize)  // NOLINT
 {
   auto list = createList(DOUBLE, 3);
-  EXPECT_EQ(list, "double[3]");
+  EXPECT_EQ(list, "List[double,3]");
 }
 
 TEST(PropertyTreeHelpers, CreateMapDefault)  // NOLINT
 {
   auto map = createMap(INT);
-  EXPECT_EQ(map, "{std::string,int}");
+  EXPECT_EQ(map, "Map[string,int]");
 }
 
 TEST(PropertyTreeHelpers, CreateMapCustomKey)  // NOLINT
 {
-  auto map = createMap("std::string[2]", DOUBLE);
-  EXPECT_EQ(map, "{std::string[2],double}");
+  auto map = createMap("string[2]", DOUBLE);
+  EXPECT_EQ(map, "Map[string[2],double]");
 }
 
 TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
 {
-  auto result = isSequenceType("double[]");
+  auto result = isSequenceType("List[double]");
   ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(result->first, "double");  // NOLINT
-  EXPECT_EQ(result->second, 0U);       // NOLINT
+  EXPECT_EQ(result->first, DOUBLE);  // NOLINT
+  EXPECT_EQ(result->second, 0U);     // NOLINT
 
-  result = isSequenceType("int[5]");
+  result = isSequenceType("List[int,5]");
   ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(result->first, "int");  // NOLINT
-  EXPECT_EQ(result->second, 5U);    // NOLINT
+  EXPECT_EQ(result->first, INT);  // NOLINT
+  EXPECT_EQ(result->second, 5U);  // NOLINT
 
-  result = isSequenceType("std::string");
+  result = isSequenceType(STRING);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST(PropertyTreeHelpers, IsMapType)  // NOLINT
 {
-  auto result = isMapType("{std::string,int}");
+  auto result = isMapType("Map[string,int]");
   ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(result->first, "std::string");  // NOLINT
-  EXPECT_EQ(result->second, "int");         // NOLINT
+  EXPECT_EQ(result->first, STRING);  // NOLINT
+  EXPECT_EQ(result->second, INT);    // NOLINT
 
   result = isMapType("not_a_map");
   EXPECT_FALSE(result.has_value());
@@ -2053,7 +2053,7 @@ TEST(PropertyTreeFromYAML, PreservesAttributes)  // NOLINT
   auto doc_attr = pt.getAttribute("doc");
   EXPECT_TRUE(type_attr.has_value());
   EXPECT_TRUE(doc_attr.has_value());
-  EXPECT_EQ(type_attr->as<std::string>(), "string");             // NOLINT
+  EXPECT_EQ(type_attr->as<std::string>(), STRING);               // NOLINT
   EXPECT_EQ(doc_attr->as<std::string>(), "Test documentation");  // NOLINT
 }
 
@@ -2946,11 +2946,7 @@ TEST(AcceptsDerivedTypes, ValidateAcceptsBaseType)  // NOLINT
   reg->registerSchema("test::BaseBuild", base_schema);
 
   // Create field that accepts derived types
-  PropertyTree field_schema = PropertyTreeBuilder()
-                                  .attribute(TYPE, "test::BaseBuild")
-                                  .acceptsDerivedTypes()
-                                  .validator(validateCustomType)
-                                  .build();
+  PropertyTree field_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseBuild").acceptsDerivedTypes().build();
 
   // Merge with data that has the base type
   YAML::Node config(YAML::NodeType::Map);
@@ -2978,11 +2974,7 @@ TEST(AcceptsDerivedTypes, ValidateAcceptsDerivedType)  // NOLINT
   reg->registerSchema("test::ActualDerived", derived_schema);
 
   // Create field that accepts derived types
-  PropertyTree field_schema = PropertyTreeBuilder()
-                                  .attribute(TYPE, "test::BaseDerived")
-                                  .acceptsDerivedTypes()
-                                  .validator(validateCustomType)
-                                  .build();
+  PropertyTree field_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseDerived").acceptsDerivedTypes().build();
 
   // Merge with data that has the derived type
   YAML::Node config(YAML::NodeType::Map);
@@ -3003,11 +2995,8 @@ TEST(AcceptsDerivedTypes, ValidateRejectsUnregisteredDerivedType)  // NOLINT
   reg->registerSchema("test::BaseReject", base_schema);
 
   // Create field that accepts derived types
-  PropertyTree field_schema = PropertyTreeBuilder()
-                                  .attribute(TYPE, "test::BaseReject")
-                                  .acceptsDerivedTypes()
-                                  .validator(validateCustomType)
-                                  .build();
+  // validateCustomType is automatically added as a validator because TYPE is a custom type
+  PropertyTree field_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseReject").acceptsDerivedTypes().build();
 
   // Merge with data that has a type not registered as derived
   YAML::Node config(YAML::NodeType::Map);
@@ -3040,11 +3029,8 @@ TEST(AcceptsDerivedTypes, SequenceWithMixedDerivedTypes)  // NOLINT
   reg->registerSchema("test::DerivedSeqB", derived_b_schema);
 
   // Create sequence field that accepts derived types
-  PropertyTree sequence_schema = PropertyTreeBuilder()
-                                     .attribute(TYPE, createList("test::BaseSeq"))
-                                     .acceptsDerivedTypes()
-                                     .validator(validateCustomType)
-                                     .build();
+  PropertyTree sequence_schema =
+      PropertyTreeBuilder().attribute(TYPE, createList("test::BaseSeq")).acceptsDerivedTypes().build();
 
   // Merge with sequence containing mixed derived types
   YAML::Node sequence(YAML::NodeType::Sequence);
@@ -3077,11 +3063,8 @@ TEST(AcceptsDerivedTypes, SequenceRejectsMixedInvalidType)  // NOLINT
   reg->registerSchema("test::ValidDerivedMixed", valid_schema);
 
   // Create sequence field that accepts derived types
-  PropertyTree sequence_schema = PropertyTreeBuilder()
-                                     .attribute(TYPE, createList("test::BaseMixed"))
-                                     .acceptsDerivedTypes()
-                                     .validator(validateCustomType)
-                                     .build();
+  PropertyTree sequence_schema =
+      PropertyTreeBuilder().attribute(TYPE, createList("test::BaseMixed")).acceptsDerivedTypes().build();
 
   // Merge with sequence containing one valid and one invalid element
   YAML::Node sequence(YAML::NodeType::Sequence);
@@ -3100,6 +3083,849 @@ TEST(AcceptsDerivedTypes, SequenceRejectsMixedInvalidType)  // NOLINT
   EXPECT_FALSE(errors.empty());
   EXPECT_TRUE(
       std::any_of(errors.begin(), errors.end(), [](const auto& e) { return e.find("[1]") != std::string::npos; }));
+}
+
+// ===========================================================================
+//  Additional Coverage – Validators and Edge Cases
+// ===========================================================================
+
+TEST(PropertyTreeValidators, ValidateContainerNotContainer)  // NOLINT
+{
+  PropertyTree node;
+  node.setValue(YAML::Node(42));  // Not a container
+
+  std::vector<std::string> errors;
+  validateContainer(node, "field", errors);
+
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(std::any_of(
+      errors.begin(), errors.end(), [](const auto& e) { return e.find("not a container") != std::string::npos; }));
+}
+
+TEST(PropertyTreeValidators, ValidateContainerHasValue)  // NOLINT
+{
+  PropertyTree node;
+  node["child"].setValue(YAML::Node(42));  // Is a container
+  node.setValue(YAML::Node(100));          // But also has a value
+
+  std::vector<std::string> errors;
+  validateContainer(node, "field", errors);
+
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(std::any_of(
+      errors.begin(), errors.end(), [](const auto& e) { return e.find("value is not null") != std::string::npos; }));
+}
+
+TEST(PropertyTreeValidators, ValidateMapNotAMap)  // NOLINT
+{
+  PropertyTree node;
+  node.setValue(YAML::Node(YAML::NodeType::Sequence));
+
+  std::vector<std::string> errors;
+  validateMap(node, "field", errors);
+
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
+    return e.find("not of type YAML::NodeType::Map") != std::string::npos;
+  }));
+}
+
+TEST(PropertyTreeValidators, ValidateSequenceWrongLength)  // NOLINT
+{
+  PropertyTree node;
+  YAML::Node seq(YAML::NodeType::Sequence);
+  seq.push_back(YAML::Node(1));
+  seq.push_back(YAML::Node(2));
+  node.setValue(seq);
+
+  std::vector<std::string> errors;
+  validateSequence(node, 5, "field", errors);  // Expect 5 elements, have 2
+
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
+    return e.find("does not match expected") != std::string::npos;
+  }));
+}
+
+TEST(PropertyTreeValidators, ValidateSequenceNotSequence)  // NOLINT
+{
+  PropertyTree node;
+  node.setValue(YAML::Node(42));  // Not a sequence
+
+  std::vector<std::string> errors;
+  validateSequence(node, 0, "field", errors);
+
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
+    return e.find("not of type YAML::NodeType::Sequence") != std::string::npos;
+  }));
+}
+
+TEST(PropertyTreeOperatorBool, BoolConversionWithValue)  // NOLINT
+{
+  PropertyTree node;
+  node.setValue(YAML::Node(42));
+  EXPECT_TRUE(static_cast<bool>(node));
+}
+
+TEST(PropertyTreeOperatorBool, BoolConversionWithChildren)  // NOLINT
+{
+  PropertyTree node;
+  node["child"];  // Creates a child
+  EXPECT_TRUE(static_cast<bool>(node));
+}
+
+TEST(PropertyTreeOperatorBool, BoolConversionEmpty)  // NOLINT
+{
+  PropertyTree node;
+  EXPECT_FALSE(static_cast<bool>(node));  // No value, no children
+}
+
+TEST(PropertyTreeBuilder, AllBuilderTypes)  // NOLINT
+{
+  auto schema = PropertyTreeBuilder()
+                    .container("root")
+                    .string("name")
+                    .doc("A string")
+                    .done()
+                    .character("ch")
+                    .done()
+                    .boolean("flag")
+                    .defaultVal(true)
+                    .done()
+                    .integer("count")
+                    .minimum(-10)
+                    .maximum(100)
+                    .done()
+                    .unsignedInt("size")
+                    .done()
+                    .longInt("big")
+                    .done()
+                    .longUnsignedInt("huge")
+                    .done()
+                    .floatNum("fval")
+                    .done()
+                    .doubleNum("dval")
+                    .done()
+                    .done()
+                    .build();
+
+  EXPECT_FALSE(schema.empty());
+  EXPECT_EQ(schema.size(), 1U);
+  auto& root = schema.at("root");
+  EXPECT_EQ(root.size(), 9U);
+}
+
+TEST(PropertyTreeBuilder, BuilderDoneAtRootThrows)  // NOLINT
+{
+  PropertyTreeBuilder builder;
+  EXPECT_THROW(builder.done(), std::runtime_error);
+}
+
+TEST(PropertyTreeBuilder, BuilderUnclosedScopesThrow)  // NOLINT
+{
+  PropertyTreeBuilder builder;
+  builder.container("root");
+  EXPECT_THROW(builder.build(), std::runtime_error);
+}
+
+TEST(PropertyTreeBuilder, CustomTypeWithValidator)  // NOLINT
+{
+  auto schema = PropertyTreeBuilder().customType("field", "custom::Type").validator(validateCustomType).done().build();
+
+  EXPECT_EQ(schema.size(), 1U);
+  auto& field = schema.at("field");
+  EXPECT_TRUE(field.hasAttribute(TYPE));
+  EXPECT_EQ(field.getAttribute(TYPE)->as<std::string>(), "custom::Type");
+}
+
+TEST(PropertyTreeSerialization, FromYAMLFollowWithMultipleFields)  // NOLINT
+{
+  YAML::Node yaml(YAML::NodeType::Map);
+  yaml[std::string("follow")] = "some_schema";
+  yaml[std::string("extra_field")] = "value";
+
+  // Should throw because follow cannot be mixed with other fields
+  EXPECT_THROW(PropertyTree::fromYAML(yaml), std::runtime_error);
+}
+
+TEST(PropertyTreeSerialization, FromYAMLWithSequenceValues)  // NOLINT
+{
+  YAML::Node yaml(YAML::NodeType::Sequence);
+  yaml.push_back("first");
+  yaml.push_back("second");
+
+  auto tree = PropertyTree::fromYAML(yaml);
+  EXPECT_FALSE(tree.getValue().IsNull());
+  EXPECT_TRUE(tree.getValue().IsSequence());
+  EXPECT_EQ(tree.size(), 2U);  // Should have numeric children for indices
+}
+
+TEST(PropertyTreeSerialization, ToYAMLWithLeafAndAttributes)  // NOLINT
+{
+  PropertyTree node;
+  node.setAttribute(TYPE, STRING);
+  node.setValue(YAML::Node("value"));
+
+  auto yaml = node.toYAML(false);
+  EXPECT_TRUE(yaml.IsMap());
+  EXPECT_TRUE(yaml[std::string("_value")].IsDefined());
+}
+
+TEST(ValidateCustomType, MapTypeValidWithDerivedValues)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  // Register base type for map values
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseMapValue").build();
+  reg->registerSchema("test::BaseMapValue", base_schema);
+
+  // Register derived types
+  reg->registerDerivedType("test::BaseMapValue", "test::DerivedMapValueA");
+  PropertyTree derived_a = PropertyTreeBuilder().attribute(TYPE, "test::DerivedMapValueA").build();
+  reg->registerSchema("test::DerivedMapValueA", derived_a);
+
+  // Create map schema
+  PropertyTree map_schema =
+      PropertyTreeBuilder().attribute(TYPE, createMap("test::BaseMapValue")).acceptsDerivedTypes().build();
+
+  // Merge with map containing values with type field
+  YAML::Node map(YAML::NodeType::Map);
+  YAML::Node value1(YAML::NodeType::Map);
+  value1[std::string("type")] = "test::DerivedMapValueA";
+  map[std::string("key1")] = value1;
+
+  map_schema.mergeConfig(map);
+  auto errors = map_schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(ValidateCustomType, MapTypeRejectsInvalidDerivedType)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseMapInvalid").build();
+  reg->registerSchema("test::BaseMapInvalid", base_schema);
+
+  PropertyTree map_schema =
+      PropertyTreeBuilder().attribute(TYPE, createMap("test::BaseMapInvalid")).acceptsDerivedTypes().build();
+
+  YAML::Node map(YAML::NodeType::Map);
+  YAML::Node value(YAML::NodeType::Map);
+  value[std::string("type")] = "test::NonExistentType";
+  map[std::string("key")] = value;
+
+  map_schema.mergeConfig(map);
+  auto errors = map_schema.validate();
+  EXPECT_FALSE(errors.empty());
+}
+
+TEST(ValidateCustomType, MapTypePluginInfoStructure)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BasePlugin").build();
+  reg->registerSchema("test::BasePlugin", base_schema);
+
+  reg->registerDerivedType("test::BasePlugin", "test::ConcretePlugin");
+  PropertyTree concrete_schema =
+      PropertyTreeBuilder().attribute(TYPE, "test::ConcretePlugin").container("params").done().build();
+  reg->registerSchema("test::ConcretePlugin", concrete_schema);
+
+  PropertyTree map_schema =
+      PropertyTreeBuilder().attribute(TYPE, createMap("test::BasePlugin")).acceptsDerivedTypes().build();
+
+  YAML::Node map(YAML::NodeType::Map);
+  YAML::Node plugin_info(YAML::NodeType::Map);
+  plugin_info[std::string("class")] = "test::ConcretePlugin";
+  map[std::string("plugin1")] = plugin_info;
+
+  map_schema.mergeConfig(map);
+  auto errors = map_schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(ValidateCustomType, MapTypeNotAMap)  // NOLINT
+{
+  PropertyTree map_schema = PropertyTreeBuilder().attribute(TYPE, createMap(STRING)).build();
+
+  map_schema.setValue(YAML::Node(42));  // Not a map
+
+  auto errors = map_schema.validate();
+  EXPECT_FALSE(errors.empty());
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
+    return e.find("not of type YAML::NodeType::Map") != std::string::npos;
+  }));
+}
+
+// ===========================================================================
+//  Type Coverage – Standalone, Lists, and Maps
+// ===========================================================================
+
+TEST(TypeCoverage, StandaloneTypes)  // NOLINT
+{
+  PropertyTree bool_node;
+  bool_node.setAttribute(TYPE, BOOL);
+  bool_node.setValue(YAML::Node(true));
+  EXPECT_EQ(bool_node.as<bool>(), true);
+
+  PropertyTree string_node;
+  string_node.setAttribute(TYPE, STRING);
+  string_node.setValue(YAML::Node("test"));
+  EXPECT_EQ(string_node.as<std::string>(), "test");
+
+  PropertyTree int_node;
+  int_node.setAttribute(TYPE, INT);
+  int_node.setValue(YAML::Node(42));
+  EXPECT_EQ(int_node.as<int>(), 42);
+
+  PropertyTree double_node;
+  double_node.setAttribute(TYPE, DOUBLE);
+  double_node.setValue(YAML::Node(3.14));
+  EXPECT_DOUBLE_EQ(double_node.as<double>(), 3.14);
+
+  PropertyTree uint_node;
+  uint_node.setAttribute(TYPE, UNSIGNED_INT);
+  uint_node.setValue(YAML::Node(100U));
+  EXPECT_EQ(uint_node.as<unsigned int>(), 100U);
+
+  PropertyTree char_node;
+  char_node.setAttribute(TYPE, CHAR);
+  char_node.setValue(YAML::Node("a"));
+  EXPECT_EQ(char_node.as<char>(), 'a');
+
+  PropertyTree long_uint_node;
+  long_uint_node.setAttribute(TYPE, LONG_UNSIGNED_INT);
+  long_uint_node.setValue(YAML::Node(9999999999UL));
+  EXPECT_EQ(long_uint_node.as<long unsigned int>(), 9999999999UL);
+}
+
+TEST(TypeCoverage, ListOfBool)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(BOOL)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(true));
+  config.push_back(YAML::Node(false));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfString)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(STRING)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node("first"));
+  config.push_back(YAML::Node("second"));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfInt)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(1));
+  config.push_back(YAML::Node(2));
+  config.push_back(YAML::Node(3));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfDouble)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(DOUBLE)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(1.1));
+  config.push_back(YAML::Node(2.2));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfUnsignedInt)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(UNSIGNED_INT)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(100U));
+  config.push_back(YAML::Node(200U));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfLongInt)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(LONG_INT)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(1000000000L));
+  config.push_back(YAML::Node(2000000000L));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfFloat)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(FLOAT)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(1.5F));
+  config.push_back(YAML::Node(2.5F));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfChar)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(CHAR)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node("a"));
+  config.push_back(YAML::Node("b"));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfLongUnsignedInt)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(LONG_UNSIGNED_INT)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(5000000000UL));
+  config.push_back(YAML::Node(9999999999UL));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, ListOfFixedSize)  // NOLINT
+{
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT, 3)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(YAML::Node(1));
+  config.push_back(YAML::Node(2));
+  config.push_back(YAML::Node(3));
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+
+  // Test with wrong size
+  PropertyTree schema2 = PropertyTreeBuilder().attribute(TYPE, createList(INT, 3)).build();
+
+  YAML::Node config2(YAML::NodeType::Sequence);
+  config2.push_back(YAML::Node(1));
+  config2.push_back(YAML::Node(2));
+
+  schema2.mergeConfig(config2);
+  auto errors2 = schema2.validate();
+  EXPECT_FALSE(errors2.empty());
+}
+
+TEST(TypeCoverage, MapOfBool)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree bool_schema = PropertyTreeBuilder().attribute(TYPE, BOOL).build();
+  reg->registerSchema("bool_type_for_map", bool_schema);
+
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("bool_type_for_map")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("key1")] = YAML::Node(true);
+  config[std::string("key2")] = YAML::Node(false);
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, MapOfString)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree string_schema = PropertyTreeBuilder().attribute(TYPE, STRING).build();
+  reg->registerSchema("string_type_for_map_test", string_schema);
+
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("string_type_for_map_test")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("key1")] = YAML::Node("value1");
+  config[std::string("key2")] = YAML::Node("value2");
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, MapOfInt)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree int_schema = PropertyTreeBuilder().attribute(TYPE, INT).build();
+  reg->registerSchema("int_type_for_map", int_schema);
+
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("int_type_for_map")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("a")] = YAML::Node(10);
+  config[std::string("b")] = YAML::Node(20);
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, MapOfDouble)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree double_schema = PropertyTreeBuilder().attribute(TYPE, DOUBLE).build();
+  reg->registerSchema("double_type_for_map", double_schema);
+
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("double_type_for_map")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("x")] = YAML::Node(1.1);
+  config[std::string("y")] = YAML::Node(2.2);
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, MapOfUnsignedInt)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree uint_schema = PropertyTreeBuilder().attribute(TYPE, UNSIGNED_INT).build();
+  reg->registerSchema("uint_type_for_map", uint_schema);
+
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("uint_type_for_map")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("val1")] = YAML::Node(100U);
+  config[std::string("val2")] = YAML::Node(200U);
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, MapOfChar)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree char_schema = PropertyTreeBuilder().attribute(TYPE, CHAR).build();
+  reg->registerSchema("char_type_for_map", char_schema);
+
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("char_type_for_map")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("first")] = YAML::Node("a");
+  config[std::string("second")] = YAML::Node("z");
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+TEST(TypeCoverage, MapOfLongUnsignedInt)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree long_uint_schema = PropertyTreeBuilder().attribute(TYPE, LONG_UNSIGNED_INT).build();
+  reg->registerSchema("long_uint_type_for_map", long_uint_schema);
+
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("long_uint_type_for_map")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("big1")] = YAML::Node(5000000000UL);
+  config[std::string("big2")] = YAML::Node(9999999999UL);
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_TRUE(errors.empty());
+}
+
+// ===========================================================================
+//  Auto-Validator Verification – Confirm validators are auto-added
+// ===========================================================================
+
+TEST(AutoValidatorVerification, SequenceValidatorAutomaticallyAdded)  // NOLINT
+{
+  // Type="List[int]" should automatically add validateSequence
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT)).build();
+
+  YAML::Node config(YAML::NodeType::Map);  // Wrong type: should be Sequence
+  config["value"] = 42;
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_FALSE(errors.empty()) << "Expected validateSequence to fail for non-sequence data";
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
+    return e.find("not of type YAML::NodeType::Sequence") != std::string::npos;
+  }));
+}
+
+TEST(AutoValidatorVerification, SequenceFixedSizeValidatorAutomaticallyAdded)  // NOLINT
+{
+  // Type="List[int,2]" should automatically add validateSequence with size checking
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT, 2)).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(1);
+  config.push_back(2);
+  config.push_back(3);  // Wrong size: expected 2, got 3
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_FALSE(errors.empty()) << "Expected validateSequence to fail for size mismatch";
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
+    return e.find("does not match expected") != std::string::npos;
+  }));
+}
+
+TEST(AutoValidatorVerification, MapValidatorAutomaticallyAdded)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree value_schema = PropertyTreeBuilder().attribute(TYPE, INT).build();
+  reg->registerSchema("map_value_type_test", value_schema);
+
+  // Type="Map[string,map_value_type_test]" should automatically add validateMap
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("map_value_type_test")).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);  // Wrong type: should be Map
+  config.push_back(1);
+  config.push_back(2);
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_FALSE(errors.empty()) << "Expected validateMap to fail for non-map data";
+  EXPECT_TRUE(std::any_of(
+      errors.begin(), errors.end(), [](const auto& e) { return e.find("expected a map") != std::string::npos; }));
+}
+
+TEST(AutoValidatorVerification, CustomTypeValidatorAutomaticallyAdded)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree custom_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(0).maximum(100).build();
+  reg->registerSchema("custom_int_verify", custom_schema);
+
+  // Setting TYPE to custom type should automatically add validateCustomType
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, "custom_int_verify").build();
+
+  schema.setValue(YAML::Node(150));  // Exceeds max: should fail validation
+  auto errors = schema.validate();
+  EXPECT_FALSE(errors.empty()) << "Expected validateCustomType to fail for out-of-range value";
+  EXPECT_TRUE(
+      std::any_of(errors.begin(), errors.end(), [](const auto& e) { return e.find("maximum") != std::string::npos; }));
+}
+
+TEST(AutoValidatorVerification, SequenceOfCustomTypesValidatorAutomaticallyAdded)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree element_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(10).maximum(20).build();
+  reg->registerSchema("custom_element_verify", element_schema);
+
+  // Type="List[custom_element_verify]" should automatically add validateSequence with custom type validation
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList("custom_element_verify")).build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  config.push_back(15);  // Valid
+  config.push_back(25);  // Invalid: exceeds max
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_FALSE(errors.empty()) << "Expected sequence to validate each element";
+  EXPECT_TRUE(
+      std::any_of(errors.begin(), errors.end(), [](const auto& e) { return e.find("maximum") != std::string::npos; }));
+}
+
+TEST(AutoValidatorVerification, MapOfCustomTypesValidatorAutomaticallyAdded)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree value_schema =
+      PropertyTreeBuilder().attribute(TYPE, STRING).enumValues({ "red", "green", "blue" }).build();
+  reg->registerSchema("color_enum_verify", value_schema);
+
+  // Type="Map[string,color_enum_verify]" should validate map values with enum constraint
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("color_enum_verify")).build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config[std::string("color1")] = "red";     // Valid
+  config[std::string("color2")] = "yellow";  // Invalid: not in enum
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+  EXPECT_FALSE(errors.empty()) << "Expected map values to be validated against enum constraint";
+}
+
+// ===========================================================================
+//  validatePluginInfo Direct Tests
+// ===========================================================================
+
+TEST(ValidatePluginInfo, ValidPluginInfoStructure)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BasePluginInfo").build();
+  reg->registerSchema("test::BasePluginInfo", base_schema);
+
+  reg->registerDerivedType("test::BasePluginInfo", "test::ConcretePluginInfo");
+  PropertyTree concrete_schema = PropertyTreeBuilder().attribute(TYPE, "test::ConcretePluginInfo").build();
+  reg->registerSchema("test::ConcretePluginInfo", concrete_schema);
+
+  // Create a node with valid plugin info structure
+  PropertyTree plugin_node;
+  YAML::Node plugin_value(YAML::NodeType::Map);
+  plugin_value["class"] = "test::ConcretePluginInfo";
+  plugin_value["config"] = YAML::Node(YAML::NodeType::Map);
+  plugin_node.setValue(plugin_value);
+
+  std::vector<std::string> errors;
+  validatePluginInfo(plugin_node, "test::BasePluginInfo", "plugin", errors);
+
+  EXPECT_TRUE(errors.empty()) << "Expected valid plugin info to pass";
+}
+
+TEST(ValidatePluginInfo, MissingClassField)  // NOLINT
+{
+  PropertyTree plugin_node;
+  plugin_node["config"].setValue(YAML::Node(YAML::NodeType::Map));
+  // Missing "class" field
+
+  std::vector<std::string> errors;
+  validatePluginInfo(plugin_node, "test::BaseType", "plugin", errors);
+
+  EXPECT_FALSE(errors.empty()) << "Expected validation to fail for missing 'class' field";
+  EXPECT_TRUE(
+      std::any_of(errors.begin(), errors.end(), [](const auto& e) { return e.find("class") != std::string::npos; }));
+}
+
+TEST(ValidatePluginInfo, MissingConfigField)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseForMissingConfig").build();
+  reg->registerSchema("test::BaseForMissingConfig", base_schema);
+  reg->registerDerivedType("test::BaseForMissingConfig", "test::TypeForMissingConfig");
+  PropertyTree concrete_schema = PropertyTreeBuilder().attribute(TYPE, "test::TypeForMissingConfig").build();
+  reg->registerSchema("test::TypeForMissingConfig", concrete_schema);
+
+  PropertyTree plugin_node;
+  YAML::Node plugin_value(YAML::NodeType::Map);
+  plugin_value["class"] = "test::TypeForMissingConfig";
+  // Missing "config" field
+  plugin_node.setValue(plugin_value);
+
+  std::vector<std::string> errors;
+  validatePluginInfo(plugin_node, "test::BaseForMissingConfig", "plugin", errors);
+
+  // Missing config is actually optional and handled by the empty config validation
+  // So this test should pass with empty config validation
+  EXPECT_TRUE(errors.empty()) << "Expected validation to pass with empty config";
+}
+
+TEST(ValidatePluginInfo, InvalidDerivedType)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseForInvalid").build();
+  reg->registerSchema("test::BaseForInvalid", base_schema);
+
+  PropertyTree plugin_node;
+  YAML::Node plugin_value(YAML::NodeType::Map);
+  plugin_value["class"] = "test::NotRegisteredAsDerived";  // Not registered as derived
+  plugin_value["config"] = YAML::Node(YAML::NodeType::Map);
+  plugin_node.setValue(plugin_value);
+
+  std::vector<std::string> errors;
+  validatePluginInfo(plugin_node, "test::BaseForInvalid", "plugin", errors);
+
+  EXPECT_FALSE(errors.empty()) << "Expected validation to fail for unregistered derived type";
+  EXPECT_TRUE(std::any_of(
+      errors.begin(), errors.end(), [](const auto& e) { return e.find("does not derive from") != std::string::npos; }));
+}
+
+TEST(ValidatePluginInfo, ValidDerivedTypeWithConfigValidation)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseWithConfig").build();
+  reg->registerSchema("test::BaseWithConfig", base_schema);
+
+  reg->registerDerivedType("test::BaseWithConfig", "test::ConcreteWithConfig");
+  PropertyTree concrete_schema = PropertyTreeBuilder()
+                                     .attribute(TYPE, "test::ConcreteWithConfig")
+                                     .container("params")
+                                     .integer("value")
+                                     .minimum(0)
+                                     .maximum(100)
+                                     .done()
+                                     .done()
+                                     .build();
+  reg->registerSchema("test::ConcreteWithConfig", concrete_schema);
+
+  // Create plugin info with valid config
+  PropertyTree plugin_node;
+  YAML::Node plugin_value(YAML::NodeType::Map);
+  plugin_value["class"] = "test::ConcreteWithConfig";
+  YAML::Node config(YAML::NodeType::Map);
+  config["params"]["value"] = 50;
+  plugin_value["config"] = config;
+  plugin_node.setValue(plugin_value);
+
+  std::vector<std::string> errors;
+  validatePluginInfo(plugin_node, "test::BaseWithConfig", "plugin", errors);
+
+  EXPECT_TRUE(errors.empty()) << "Expected valid plugin with valid config to pass";
+}
+
+TEST(ValidatePluginInfo, ValidDerivedTypeWithInvalidConfig)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  PropertyTree base_schema = PropertyTreeBuilder().attribute(TYPE, "test::BaseWithInvalidConfig").build();
+  reg->registerSchema("test::BaseWithInvalidConfig", base_schema);
+
+  reg->registerDerivedType("test::BaseWithInvalidConfig", "test::ConcreteWithInvalidConfig");
+  PropertyTree concrete_schema = PropertyTreeBuilder()
+                                     .attribute(TYPE, "test::ConcreteWithInvalidConfig")
+                                     .container("params")
+                                     .integer("value")
+                                     .minimum(0)
+                                     .maximum(100)
+                                     .done()
+                                     .done()
+                                     .build();
+  reg->registerSchema("test::ConcreteWithInvalidConfig", concrete_schema);
+
+  // Create plugin info with invalid config
+  PropertyTree plugin_node;
+  YAML::Node plugin_value(YAML::NodeType::Map);
+  plugin_value["class"] = "test::ConcreteWithInvalidConfig";
+  YAML::Node config(YAML::NodeType::Map);
+  config["params"]["value"] = 150;  // Exceeds maximum
+  plugin_value["config"] = config;
+  plugin_node.setValue(plugin_value);
+
+  std::vector<std::string> errors;
+  validatePluginInfo(plugin_node, "test::BaseWithInvalidConfig", "plugin", errors);
+
+  EXPECT_FALSE(errors.empty()) << "Expected invalid config to be detected";
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
+    return e.find("maximum") != std::string::npos || e.find("params") != std::string::npos;
+  }));
 }
 
 // NOLINTEND(bugprone-unchecked-optional-access)

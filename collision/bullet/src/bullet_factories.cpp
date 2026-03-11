@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::collision
 {
+
 TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
 {
   if (config.IsNull())
