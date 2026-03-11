@@ -62,7 +62,7 @@ std::string createMap(std::string_view key, std::string_view type);
 // Integral Types
 constexpr std::string_view BOOL{ "bool" };
 constexpr std::string_view CHAR{ "char" };
-constexpr std::string_view STRING{ "std::string" };
+constexpr std::string_view STRING{ "string" };
 constexpr std::string_view INT{ "int" };
 constexpr std::string_view UNSIGNED_INT{ "unsigned int" };
 constexpr std::string_view LONG_INT{ "long int" };
@@ -93,6 +93,8 @@ constexpr std::string_view DEFAULT{ "default" };
 constexpr std::string_view ENUM{ "enum" };
 constexpr std::string_view MINIMUM{ "minimum" };
 constexpr std::string_view MAXIMUM{ "maximum" };
+constexpr std::string_view ACCEPTS_DERIVED_TYPES{ "accepts_derived_types" }; /**< Allow derived types for custom type
+                                                                                  validation */
 
 // GUI metadata attributes
 constexpr std::string_view LABEL{ "label" };             /**< Display name for the property (e.g. "Format Result") */
@@ -496,6 +498,18 @@ void validateContainer(const PropertyTree& node, const std::string& path, std::v
  * @param errors Output vector to append errors to.
  */
 void validateCustomType(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors);
+
+/**
+ * @brief Validator: Validate a plugin info structure (class + config) for derived types.
+ * @param node              Node to validate (should contain 'class' and 'config' fields).
+ * @param base_type         The base type name to check against.
+ * @param path              Dot-separated path for error messages.
+ * @param errors            Output vector to append errors to.
+ */
+void validatePluginInfo(const PropertyTree& node,
+                        const std::string& base_type,
+                        const std::string& path,
+                        std::vector<std::string>& errors);
 
 /**
  * @brief Validate that the node's value can be interpreted as the provided type.
