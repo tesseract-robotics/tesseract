@@ -9,15 +9,13 @@
 
 PropertyTree provides comprehensive support for derived types in configuration validation. This feature enables extensible, inheritance-based configuration hierarchies where fields can accept any properly registered derived type of a base type.
 
-### Problem Solved
+### Key Features
 
-Previously, derived type handling had limitations:
-
-- Used a "type" field directly in config, not aligned with Tesseract conventions
-- Only worked with single types, not sequences or maps of derived types
-- Unclear separation between type identification and configuration
-
-### Solution: Plugin Info Structure
+- <b>Heterogeneous Collections</b>: Arrays and maps can contain different derived types
+- <b>Dynamic Registration</b>: New types can be registered at runtime without schema changes
+- <b>Plugin Pattern</b>: Uses the standard Tesseract "class" + "config" plugin info structure
+- <b>Type Safety</b>: Validation ensures types are properly registered and configs are valid
+- <b>Clear Error Messages</b>: Reports invalid types with available options
 
 The implementation uses the standard Tesseract <b>plugin info structure</b> (class + config) to cleanly separate type identification from configuration:
 
@@ -406,24 +404,24 @@ This works when `acceptsDerivedTypes()` is <b>not</b> set. However, the plugin i
 
 @section ptdt_vsooneof Derived Types vs. OneOf
 
-Both features enable polymorphic configuration but in different ways:
+Both features enable polymorphic-like configuration but serve different purposes:
 
 | Feature | Derived Types | OneOf |
 |---------|---|---|
-| <b>Use Case</b> | Type inheritance hierarchies | Mutually exclusive variants |
-| <b>Type Specification</b> | Explicit "class" field | Implicit - inferred from required fields |
-| <b>Registration</b> | Compile-time macros | Schema structure defines branches |
-| <b>Extensibility</b> | Easy - register new derived types | Requires schema modification |
-| <b>Performance</b> | O(1) type lookup | O(n) branch matching |
+| <b>Use Case</b> | Type inheritance hierarchies (heterogeneous) | Mutually exclusive variants |
+| <b>Type Specification</b> | Explicit "class" field | Implicit - determined by required fields present |
+| <b>Flexibility</b> | Each element can be different derived type | All choices defined at schema time |
+| <b>Extensibility</b> | Very easy - register new types at runtime | Requires schema modification |
 | <b>Structure</b> | Plugin info (class + config) | Multiple sibling containers |
-| <b>Configuration</b> | Fields explicitly select type | Configuration structure selects variant |
-| <b>Example</b> | Constraint, PositionConstraint | Circle vs. Rectangle shape |
+| <b>Array/Map Elements</b> | Can mix different types | Must be single type variant |
+| <b>Example Use Case</b> | Constraints (different at each position) | Shape types (Circle vs. Rectangle) |
 
 @subsubsection ptdt_vsoo_derived When to use Derived Types
 
-- Type hierarchies with inheritance
-- Plugin architectures with extensible types
-- Standard type selection pattern (class field)
+- Type hierarchies with inheritance relationships
+- Plugin architectures where new types are registered dynamically
+- Collections that mix different derived types in same array/map
+- Standard type selection via "class" field (plugin info pattern)
 
 @subsubsection ptdt_vsoo_oneof When to use OneOf
 - Mutually exclusive configuration options
@@ -433,8 +431,7 @@ Both features enable polymorphic configuration but in different ways:
 @subsection ptdt_example Complete Working Example
 
 See the comprehensive example at:
-- <b>Doxygen Source File</b>: `common/examples/derived_types_example.cpp`
-- <b>Quick Reference Guide</b>: `docs/DERIVED_TYPES_USAGE.md`
+- <b>Doxygen Source File</b>: `common/examples/property_tree_derived_types_example.cpp`
 
 The example demonstrates:
 - Single constraint entry

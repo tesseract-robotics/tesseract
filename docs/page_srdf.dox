@@ -4,21 +4,21 @@
 @brief SRDF extends URDF with semantic information for planning, collision handling, and operation.
 
 The <a href="https://wiki.ros.org/srdf">Semantic Robot Description Format (SRDF)</a> is a companion
-to the URDF that adds **semantic meaning** to your robot:
+to the URDF that adds <b>semantic meaning</b> to your robot:
 
-- **Planning groups** – Define manipulator arms, mobile bases, and other functional units
-- **Collision rules** – Specify which link pairs are always allowed to collide (self-contact, adjacent joints)
-- **Default poses** – Store named configurations like "home", "stowed", or "ready"
-- **Tool definitions** – Define and store tool center points (TCPs) for end-effectors
-- **Plugins** – Configure kinematics solvers, collision checkers, and other algorithms
+- <b>Planning groups</b> – Define manipulator arms, mobile bases, and other functional units
+- <b>Collision rules</b> – Specify which link pairs are always allowed to collide (self-contact, adjacent joints)
+- <b>Default poses</b> – Store named configurations like "home", "stowed", or "ready"
+- <b>Tool definitions</b> – Define and store tool center points (TCPs) for end-effectors
+- <b>Plugins</b> – Configure kinematics solvers, collision checkers, and other algorithms
 
-While your URDF describes **what the robot is**, your SRDF describes **how to use it for planning and control.**
+While your URDF describes <b>what the robot is</b>, your SRDF describes <b>how to use it for planning and control.</b>
 
-> **Getting Started?** See \ref parse_srdf_example for a complete walkthrough of loading and using SRDF files in code.
+> <b>Getting Started?</b> See \ref parse_srdf_example for a complete walkthrough of loading and using SRDF files in code.
 
 @section srdf_key_concepts Key Concepts
 
-**Why SRDF Matters**
+<b>Why SRDF Matters</b>
 
 Consider a 7-DOF manipulator with a gripper. Your URDF defines every link, joint, mass, and geometry.
 But planners also need to know:
@@ -30,14 +30,14 @@ But planners also need to know:
 Without this semantic information, collision checkers flag false positives, and planners can be overconstrained.
 SRDF makes this knowledge explicit and reusable.
 
-**URDF vs SRDF**
+<b>URDF vs SRDF</b>
 
 | Aspect | URDF | SRDF |
 |--------|------|------|
-| **Purpose** | Kinematic and dynamic structure | Semantic meaning for planning |
-| **Content** | Links, joints, masses, geometry, frames | Groups, collision rules, poses, TCPs |
-| **Use Case** | Load robot structure into tools | Configure planners and collision handlers |
-| **Required** | Yes, always | Often yes (strongly recommended) |
+| <b>Purpose</b> | Kinematic and dynamic structure | Semantic meaning for planning |
+| <b>Content</b> | Links, joints, masses, geometry, frames | Groups, collision rules, poses, TCPs |
+| <b>Use Case</b> | Load robot structure into tools | Configure planners and collision handlers |
+| <b>Required</b> | Yes, always | Often yes (strongly recommended) |
 
 @section srdf_standard_features Standard SRDF Features
 
@@ -49,12 +49,12 @@ Pinpoint which joints and links move together as a functional unit. This is esse
 
 Groups can be defined in two ways:
 
-**By Joint List**
+<b>By Joint List</b>
 - Explicitly list joints that belong together
 - All child links of each joint are automatically included
 - Best for custom combinations or multi-robot systems
 
-**By Serial Chain**
+<b>By Serial Chain</b>
 - Define a chain by its base link and tip link
 - The chain includes all joints connecting them
 - Most natural for serial manipulators and arms
@@ -91,13 +91,13 @@ Common use cases:
 
 @subsection allowed_collision_matrix Allowed Collision Matrix (ACM)
 
-Specify which link pairs are **allowed** to be in collision.
+Specify which link pairs are <b>allowed</b> to be in collision.
 This is critical for realistic collision checking:
 
-- **Self-contact** – Adjacent links in a serial chain often come into contact (expected, not an error)
-- **Gripper fingers** – Gripper fingers must collide with each other to grasp
-- **Mounted devices** – Sensors, cables, or mounting brackets that always touch their base
-- **Tool and work** – Your tool intentionally contacts the workpiece
+- <b>Self-contact</b> – Adjacent links in a serial chain often come into contact (expected, not an error)
+- <b>Gripper fingers</b> – Gripper fingers must collide with each other to grasp
+- <b>Mounted devices</b> – Sensors, cables, or mounting brackets that always touch their base
+- <b>Tool and work</b> – Your tool intentionally contacts the workpiece
 
 Without an ACM, collision checkers report self-contact as failures, blocking valid plans.
 The ACM tells planners: "This collision is expected and allowed; don't treat it as a constraint violation."
@@ -120,7 +120,7 @@ You can run multiple collision algorithms simultaneously and configure them with
 (e.g., discrete collision for planning, continuous collision for trajectory validation). The configuration
 specifies which plugin to use as the default and where to search for plugin libraries.
 
-**Configuration Structure**
+<b>Configuration Structure</b>
 
 ```
 contact_manager_plugins:
@@ -138,7 +138,7 @@ contact_manager_plugins:
         class: <C++ class implementing the checker>
 ```
 
-**Example Configuration**
+<b>Example Configuration</b>
 
 @include ../support/urdf/contact_manager_plugins.yaml
 
@@ -150,7 +150,7 @@ for speed, plus a numerical solver for redundancy resolution).
 
 You specify solvers per planning group so different arms, positioners, or mobile bases can use different algorithms.
 
-**Configuration Structure**
+<b>Configuration Structure</b>
 
 ```
 kinematics_plugins:
@@ -172,13 +172,13 @@ kinematics_plugins:
           config: {<solver-specific parameters>}
 ```
 
-**Example Configuration**
+<b>Example Configuration</b>
 
 @include ../support/urdf/pick_and_place_plan_plugins.yaml
 
 @section fk_solvers Available Forward Kinematics Solvers
 
-**KDL (Kinematics Dynamics Library)**
+<b>KDL (Kinematics Dynamics Library)</b>
 
 A robust, general-purpose numerical FK solver that works with any kinematic structure.
 No configuration needed for basic use.
@@ -194,16 +194,16 @@ You can configure one solver as default and provide fallback solvers for redunda
 
 @subsection opw_ik OPW (Open-Loop Payload Workspace)
 
-An **analytical** IK solver optimized for 6-DOF industrial robots (ABB, KUKA, Fanuc, etc.)
+An <b>analytical</b> IK solver optimized for 6-DOF industrial robots (ABB, KUKA, Fanuc, etc.)
 with the geometry pattern: revolute-revolute-revolute-revolute-revolute-revolute.
 
-**Advantages:**
+<b>Advantages:</b>
 - Extremely fast (milliseconds to compute all solutions)
 - Closed-form solution (no iterative convergence required)
 - Multiple solutions automatically (arm above/below configurations)
 - Numerically stable
 
-**Requirements:**
+<b>Requirements:</b>
 - Robot must match the Pieper arm geometry
 - Configuration parameters needed (arm dimensions, axis offsets)
 
@@ -213,14 +213,14 @@ See @ref opw_ik for detailed geometry requirements and configuration.
 
 @subsection kdl_lma_ik KDL Levenberg-Marquardt (LMA)
 
-A **numerical** IK solver using the Levenberg-Marquardt optimization algorithm.
+A <b>numerical</b> IK solver using the Levenberg-Marquardt optimization algorithm.
 
-**Use when:**
+<b>Use when:</b>
 - Your robot doesn't match the OPW geometry (non-standard D-H parameters)
 - You need IK for robots with non-6-DOF structure
 - Analytical solvers don't exist for your robot type
 
-**Trade-off:** Slower than analytical solvers, but more general.
+<b>Trade-off:</b> Slower than analytical solvers, but more general.
 
 @snippet ../support/urdf/lbr_iiwa_14_r820_plugins.yaml KDL LMA config
 
@@ -228,9 +228,9 @@ See @ref kdl_lma_ik for additional configuration options.
 
 @subsection kdl_nr_ik KDL Newton-Raphson (NR)
 
-Another **numerical** IK solver using the Newton-Raphson iterative method.
+Another <b>numerical</b> IK solver using the Newton-Raphson iterative method.
 
-**Similar to KDL-LMA but:**
+<b>Similar to KDL-LMA but:</b>
 - Often converges faster (fewer iterations)
 - May be less stable for far-from-solution starting points
 - Good choice for real-time execution where speed matters
@@ -244,10 +244,10 @@ See @ref kdl_nr_ik for detailed configuration.
 Combine a custom robot IK solver with a sampled external axis (positioner, track, turntable) to find
 a larger solution space.
 
-**Example:** A 6-DOF arm mounted on a linear track. Your arm has IK, but the track position adds a
+<b>Example:</b> A 6-DOF arm mounted on a linear track. Your arm has IK, but the track position adds a
 7th DOF. ROP samples the track at discrete intervals and solves arm IK at each track position.
 
-**Requirements:**
+<b>Requirements:</b>
 - A custom IK solver must already exist for the robot
 - Positioner axis is sampled at specified resolution
 
@@ -257,10 +257,10 @@ See @ref rop_ik for additional details.
 
 @subsection rep_ik Robot with External Positioner (REP)
 
-Similar to ROP, but for an **external** positioner that can be reoriented independently
+Similar to ROP, but for an <b>external</b> positioner that can be reoriented independently
 (e.g., a rotary table holding the workpiece).
 
-**Example:** A 6-DOF welding robot with a workpiece on a turntable. The turntable orientation
+<b>Example:</b> A 6-DOF welding robot with a workpiece on a turntable. The turntable orientation
 is a 7th DOF. REP samples turntable angles and solves robot IK for each orientation.
 
 See @ref rep_ik for configuration and use cases.
