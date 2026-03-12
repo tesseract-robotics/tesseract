@@ -11,7 +11,7 @@ graph algorithms for traversal, search, and analysis.
 
 A scene graph represents relationships between links (rigid bodies) and joints (connections with
 degrees of freedom). While most robots are naturally tree-structured (each link has exactly one parent),
-Tesseract's scene graph supports **acyclic graphs** — multiple paths can connect the same nodes, which
+Tesseract's scene graph supports <b>acyclic graphs</b> — multiple paths can connect the same nodes, which
 is essential for modeling closed kinematic chains, parallel mechanisms, and complex workcells.
 
 @image html tesseract_scene_graph_diagram.png "Scene Graph Architecture" width=600px
@@ -33,18 +33,18 @@ robot), the graph becomes acyclic but is no longer a tree:
 
 The scene graph provides the following capabilities:
 
-- **Links** — Get, Add, Remove, Modify, Show/Hide, and Enable/Disable Collision
-- **Joints** — Get, Add, Remove, Move, and Modify
-- **Allowed Collision Matrix** — Get, Add, Remove entries
-- **Graph Functions**
+- <b>Links</b> — Get, Add, Remove, Modify, Show/Hide, and Enable/Disable Collision
+- <b>Joints</b> — Get, Add, Remove, Move, and Modify
+- <b>Allowed Collision Matrix</b> — Get, Add, Remove entries
+- <b>Graph Functions</b>
   - Get inbound/outbound joints for a link
   - Check if graph is acyclic
   - Check if graph is a tree
   - Get adjacent/inverse-adjacent links for a joint
-- **Utility Functions**
+- <b>Utility Functions</b>
   - Save graph to Graph Description Language (DOT) for visualization
   - Get shortest path between two links
-- **Parsers**
+- <b>Parsers</b>
   - URDF Parser
   - SRDF Parser
   - KDL Parser
@@ -67,7 +67,7 @@ Tesseract provides several example programs demonstrating scene graph operations
 
 @subsection sg_resource_locator Resource Locator
 
-Because Tesseract is ROS-agnostic, you need to provide a **resource locator** for resolving
+Because Tesseract is ROS-agnostic, you need to provide a <b>resource locator</b> for resolving
 `package://` URIs in URDF files. This is a simple interface you implement to map package names
 to filesystem paths. See the @ref load_urdf_example "URDF loading example" for a complete
 implementation.
@@ -94,8 +94,8 @@ bool is_tree = scene_graph->isTree();
 bool is_acyclic = scene_graph->isAcyclic();
 @endcode
 
-A graph that is **not** a tree but **is** acyclic contains parallel paths (closed chains).
-A graph that is **not** acyclic contains cycles and is invalid for kinematic computations.
+A graph that is <b>not</b> a tree but <b>is</b> acyclic contains parallel paths (closed chains).
+A graph that is <b>not</b> acyclic contains cycles and is invalid for kinematic computations.
 
 @section scene_graph_next_steps Next Steps
 

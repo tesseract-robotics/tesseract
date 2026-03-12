@@ -39,10 +39,10 @@ tesseract-ignition.tesseract-setup-wizard
 
 To use the wizard, first load your URDF file. Optionally load an existing SRDF to edit.
 
-**Loading files:**
-1. Click **BROWSE** next to the *URDF File* field and select your URDF file
-2. (Optional) Click **BROWSE** next to the *SRDF File* field to load an existing SRDF
-3. Click **LOAD** — your robot model should appear in the 3D viewport
+<b>Loading files:</b>
+1. Click <b>BROWSE</b> next to the *URDF File* field and select your URDF file
+2. (Optional) Click <b>BROWSE</b> next to the *SRDF File* field to load an existing SRDF
+3. Click <b>LOAD</b> — your robot model should appear in the 3D viewport
 4. If the model doesn't appear, check the terminal for error messages
 
 Drag left on the toolbar to proceed to the next page.
@@ -56,10 +56,10 @@ Adjacent links and links that never collide should be disabled.
 
 > If you loaded an existing SRDF, the table will already be populated with your collision matrix.
 
-**To generate a collision matrix:**
-1. Click **GENERATE** — the table populates with the default collision matrix
+<b>To generate a collision matrix:</b>
+1. Click <b>GENERATE</b> — the table populates with the default collision matrix
 2. Review the matrix and verify no link pairs are incorrectly disabled
-3. To re-enable collision checking for a pair, select the row and click **REMOVE**
+3. To re-enable collision checking for a pair, select the row and click <b>REMOVE</b>
 
 Drag left to proceed.
 
@@ -74,24 +74,24 @@ Enter a group name in the *Group Name* field, then define it using one of three 
 
 @subsection setup_wizard_chain Method 1: Chain (Most Common)
 
-1. Click the **CHAIN** tab
+1. Click the <b>CHAIN</b> tab
 2. Select the *Base Link* (usually `base_link`)
 3. Select the *Tip Link* (usually `tool0` or `tcp`)
-4. Click **ADD GROUP**
+4. Click <b>ADD GROUP</b>
 
 @subsection setup_wizard_joints Method 2: Joint List
 
-1. Click the **JOINTS** tab
-2. Select joints one at a time from the dropdown and click **ADD**
-3. Once all joints are listed, click **ADD GROUP**
+1. Click the <b>JOINTS</b> tab
+2. Select joints one at a time from the dropdown and click <b>ADD</b>
+3. Once all joints are listed, click <b>ADD GROUP</b>
 
 @subsection setup_wizard_links Method 3: Link List
 
-1. Click the **LINKS** tab
-2. Select links one at a time from the dropdown and click **ADD**
-3. Once all links are listed, click **ADD GROUP**
+1. Click the <b>LINKS</b> tab
+2. Select links one at a time from the dropdown and click <b>ADD</b>
+3. Once all links are listed, click <b>ADD GROUP</b>
 
-To remove a group, select it in the table and click **REMOVE**.
+To remove a group, select it in the table and click <b>REMOVE</b>.
 
 Drag left to proceed.
 
@@ -101,13 +101,13 @@ Drag left to proceed.
 
 Define named robot poses (e.g., "home", "stowed", "ready") that planners can reference by name.
 
-**To define a joint state:**
+<b>To define a joint state:</b>
 1. Enter a name in the *Joint State Name* field
 2. Select the kinematics group from the *Group Name* dropdown
 3. Set the value for each joint using the sliders/fields that appear
-4. Click **ADD STATE**
+4. Click <b>ADD STATE</b>
 
-To remove a state, select it in the table and click **REMOVE**.
+To remove a state, select it in the table and click <b>REMOVE</b>.
 
 Drag left to proceed.
 
@@ -118,14 +118,14 @@ Drag left to proceed.
 Define Tool Center Points for your kinematics groups. A TCP represents the tool's working
 point relative to the last link in the kinematic chain.
 
-**To define a TCP:**
+<b>To define a TCP:</b>
 1. Enter a name in the *TCP Name* field
 2. Select the kinematics group from the *Group Name* dropdown
 3. Enter the position (*X*, *Y*, *Z*) relative to the last link
 4. Enter the orientation as Roll (*R*), Pitch (*P*), Yaw (*Y*)
-5. Click **ADD TCP**
+5. Click <b>ADD TCP</b>
 
-To remove a TCP, select it and click **REMOVE**.
+To remove a TCP, select it and click <b>REMOVE</b>.
 
 Drag left to proceed.
 
@@ -154,9 +154,9 @@ Drag left to proceed.
 All settings — collision matrix, kinematics groups, joint states, TCPs, and OPW parameters —
 are stored in the SRDF file.
 
-**To save:**
+<b>To save:</b>
 1. Navigate back to the first page (where you loaded the URDF)
-2. Click **SAVE** and choose a filename and location
+2. Click <b>SAVE</b> and choose a filename and location
 
 @section setup_wizard_next_steps Next Steps
 

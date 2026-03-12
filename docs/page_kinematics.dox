@@ -4,7 +4,7 @@
 @brief Tesseract provides a plugin-based kinematics system with analytical and numerical FK/IK solvers.
 
 The tesseract_kinematics package provides a common interface for forward and inverse kinematics
-of kinematic chains, trees, and graphs. Solvers are loaded as **plugins** and configured via
+of kinematic chains, trees, and graphs. Solvers are loaded as <b>plugins</b> and configured via
 YAML files referenced in the SRDF.
 
 > For plugin configuration syntax and available solvers, see the
@@ -14,11 +14,11 @@ YAML files referenced in the SRDF.
 
 Tesseract's kinematics system is designed around three principles:
 
-1. **Plugin Architecture** — Solvers are loaded at runtime from shared libraries. No recompilation
+1. <b>Plugin Architecture</b> — Solvers are loaded at runtime from shared libraries. No recompilation
    needed to switch solvers.
-2. **Per-Group Configuration** — Each planning group can use different FK and IK solvers with
+2. <b>Per-Group Configuration</b> — Each planning group can use different FK and IK solvers with
    independent parameters.
-3. **Multiple Solver Support** — You can configure multiple solvers per group with a designated
+3. <b>Multiple Solver Support</b> — You can configure multiple solvers per group with a designated
    default and fall back to alternatives.
 
 @section kinematics_plugin_config Plugin Configuration
@@ -32,7 +32,7 @@ Kinematics plugins are configured in a YAML file with four sections:
 | `fwd_kin_plugins` | Map of group names to forward kinematics plugins |
 | `inv_kin_plugins` | Map of group names to inverse kinematics plugins |
 
-**Example Configuration:**
+<b>Example Configuration:</b>
 
 @code{.yaml}
 kinematic_plugins:
@@ -115,7 +115,7 @@ inv_kin_plugins:
 
 @subsection kin_opw OPW Inverse Kinematics
 
-An **analytical** IK solver optimized for 6-DOF industrial robots with the OPW (Ortho-Parallel-Wrist)
+An <b>analytical</b> IK solver optimized for 6-DOF industrial robots with the OPW (Ortho-Parallel-Wrist)
 geometry pattern (ABB, KUKA, Fanuc, etc.). Extremely fast with closed-form solutions.
 
 @code{.yaml}
@@ -145,7 +145,7 @@ inv_kin_plugins:
 A dedicated analytical IK solver for Universal Robots arms. Can use preconfigured models
 or custom D-H parameters.
 
-**Using a preconfigured model:**
+<b>Using a preconfigured model:</b>
 
 @code{.yaml}
 inv_kin_plugins:
@@ -160,7 +160,7 @@ inv_kin_plugins:
           model: UR10  # Options: UR3, UR5, UR10, UR3e, UR5e, UR10e
 @endcode
 
-**Using custom parameters:**
+<b>Using custom parameters:</b>
 
 @code{.yaml}
 inv_kin_plugins:
@@ -284,7 +284,7 @@ sudo groupadd docker
 sudo usermod -aG docker $USER
 @endcode
 
-After adding the group, **reboot** if `docker run hello-world` produces a permission error.
+After adding the group, <b>reboot</b> if `docker run hello-world` produces a permission error.
 
 Pull the OpenRAVE docker container:
 
@@ -367,7 +367,7 @@ Key arguments:
 
 @subsection ikfast_create_solver Creating the Tesseract IKFast Solver
 
-**Header file:**
+<b>Header file:</b>
 
 @code{.cpp}
 #include <Eigen/Geometry>
@@ -387,7 +387,7 @@ public:
 }  // namespace my_robot_ikfast
 @endcode
 
-**Source file** (include order matters):
+<b>Source file</b> (include order matters):
 
 @code{.cpp}
 #include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
@@ -407,7 +407,7 @@ MyRobotInvKinematics::MyRobotInvKinematics(const std::string base_link_name,
 
 @subsection ikfast_create_plugin Creating the Tesseract IKFast Plugin
 
-**Header file:**
+<b>Header file:</b>
 
 @code{.cpp}
 #include <tesseract_kinematics/core/kinematics_plugin_factory.h>
@@ -426,7 +426,7 @@ class MyRobotInvKinFactory : public tesseract_kinematics::InvKinFactory
 }  // namespace my_robot_ikfast
 @endcode
 
-**Source file:**
+<b>Source file:</b>
 
 @code{.cpp}
 #include <my_robot_ikfast/my_robot_kinematics.h>

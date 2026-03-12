@@ -44,14 +44,14 @@ namespace property_type
 std::string createList(std::string_view type, std::size_t length)
 {
   if (length == 0)
-    return std::string(type) + "[]";
+    return "List[" + std::string(type) + "]";
 
-  return std::string(type) + "[" + std::to_string(length) + "]";
+  return "List[" + std::string(type) + "," + std::to_string(length) + "]";
 }
 
 std::string createMap(std::string_view key, std::string_view type)
 {
-  return "{" + std::string(key) + "," + std::string(type) + "}";
+  return "Map[" + std::string(key) + "," + std::string(type) + "]";
 }
 std::string createMap(std::string_view type) { return createMap(STRING, type); }
 }  // namespace property_type
@@ -224,7 +224,12 @@ void PropertyTree::collectErrors(std::vector<std::string>& errors,
 {
   // check if it is an extra property not found in schema
   if (!allow_extra_properties && hasAttribute(EXTRA_KEY))
-    errors.push_back((path.empty() ? "(root)" : path) + ": property does not exist in schema");
+  {
+    std::string final_path = path.empty() ? "(root)" : path;
+    std::string msg(final_path);
+    msg += ": property does not exist in schema";
+    errors.push_back(msg);
+  }
 
   // recurse ALL children
   for (const auto& [key, child] : children_)
@@ -855,7 +860,7 @@ std::optional<std::pair<std::string, std::size_t>> isSequenceType(std::string_vi
 {
   static std::once_flag seq_flag;
   static std::unique_ptr<std::regex> re;
-  std::call_once(seq_flag, []() { re = std::make_unique<std::regex>(R"(^([^\[\]]+)\[(\d*)\]$)"); });
+  std::call_once(seq_flag, []() { re = std::make_unique<std::regex>(R"(^List\[([^,\[\]]+)(?:,(\d+))?\]$)"); });
 
   std::string s{ type };
 
@@ -881,7 +886,7 @@ std::optional<std::pair<std::string, std::string>> isMapType(std::string_view ty
 {
   static std::once_flag map_flag;
   static std::unique_ptr<std::regex> re;
-  std::call_once(map_flag, []() { re = std::make_unique<std::regex>(R"(^\{([^,]+),([^}]+)\}$)"); });
+  std::call_once(map_flag, []() { re = std::make_unique<std::regex>(R"(^Map\[([^\[\]]+),([^\[\]]+)\]$)"); });
 
   std::string s{ type };
   std::smatch m;
@@ -900,7 +905,11 @@ void validateRequired(const PropertyTree& node, const std::string& path, std::ve
   {
     // if leaf node with no value or null
     if (!node.isContainer() && node.isNull())
-      errors.push_back(path + ": required property missing or null");
+    {
+      std::string msg(path);
+      msg += ": required property missing or null";
+      errors.push_back(msg);
+    }
   }
 }
 
@@ -915,14 +924,24 @@ void validateEnum(const PropertyTree& node, const std::string& path, std::vector
       if (v.as<std::string>() == val)
         return;
     }
-    errors.push_back(path + ": value '" + val + "' not in enum list");
+    {
+      std::string msg(path);
+      msg += ": value '";
+      msg += val;
+      msg += "' not in enum list";
+      errors.push_back(msg);
+    }
   }
 }
 
 void validateMap(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors)
 {
   if (!node.getValue().IsMap())
-    errors.push_back(path + ": value is not of type YAML::NodeType::Map");
+  {
+    std::string msg(path);
+    msg += ": value is not of type YAML::NodeType::Map";
+    errors.push_back(msg);
+  }
 }
 
 void validateSequence(const PropertyTree& node,
@@ -932,22 +951,38 @@ void validateSequence(const PropertyTree& node,
 {
   if (!node.getValue().IsSequence())
   {
-    errors.push_back(path + ": value is not of type YAML::NodeType::Sequence");
+    std::string msg(path);
+    msg += ": value is not of type YAML::NodeType::Sequence";
+    errors.push_back(msg);
     return;
   }
 
   if (length != 0 && node.getValue().size() != length)
-    errors.push_back(path + ": sequence length " + std::to_string(node.getValue().size()) +
-                     " does not match expected " + std::to_string(length));
+  {
+    std::string msg(path);
+    msg += ": sequence length ";
+    msg += std::to_string(node.getValue().size());
+    msg += " does not match expected ";
+    msg += std::to_string(length);
+    errors.push_back(msg);
+  }
 }
 
 void validateContainer(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors)
 {
   if (!node.isContainer())
-    errors.push_back(path + ": property is not a container");
+  {
+    std::string msg(path);
+    msg += ": property is not a container";
+    errors.push_back(msg);
+  }
 
   if (!node.isNull())
-    errors.push_back(path + ": property is a container but value is not null");
+  {
+    std::string msg(path);
+    msg += ": property is a container but value is not null";
+    errors.push_back(msg);
+  }
 }
 
 void validateCustomType(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors)
@@ -955,24 +990,29 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
   const auto type_attr = node.getAttribute(property_attribute::TYPE);
   if (!type_attr.has_value())
   {
-    errors.push_back(path + ": custom type validator was added but type attribute does not exist");
+    std::string msg(path);
+    msg += ": custom type validator was added but type attribute does not exist";
+    errors.push_back(msg);
     return;
   }
 
   const auto type_str = type_attr.value().as<std::string>();
   std::optional<std::pair<std::string, std::size_t>> is_sequence = isSequenceType(type_str);
+  std::optional<std::pair<std::string, std::string>> is_map = isMapType(type_str);
 
   auto registry = SchemaRegistry::instance();
   bool accepts_derived = node.hasAttribute(std::string("accepts_derived_types"));
 
-  if (!is_sequence.has_value())
+  if (!is_sequence.has_value() && !is_map.has_value())
   {
-    // Non-sequence type (scalar, map, etc.)
+    // Non-sequence, non-map type (scalar or simple map)
     std::string actual_type = type_str;
+    bool has_type_field = false;
 
-    // If accepts_derived_types, check if config has a type field that specifies the actual type
-    if (accepts_derived && node.getValue().IsMap() && node.getValue()[std::string("type")])
+    // Check for "type" field in the node to determine actual type
+    if (node.getValue().IsMap() && node.getValue()[std::string("type")])
     {
+      has_type_field = true;
       try
       {
         actual_type = node.getValue()[std::string("type")].as<std::string>();
@@ -989,9 +1029,18 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
         std::stringstream ss;
         ss << path << ": type field exists but cannot be extracted as string: " << e.what();
         errors.push_back(ss.str());
+        return;
       }
     }
 
+    // If no "type" field and acceptsDerivedTypes is set, check for plugin info structure
+    if (!has_type_field && accepts_derived)
+    {
+      validatePluginInfo(node, type_str, path, errors);
+      return;
+    }
+
+    // For the "type" field approach (or when acceptsDerivedTypes is not set)
     if (!registry->contains(actual_type))
     {
       std::stringstream ss;
@@ -1005,7 +1054,7 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
     auto sub_errors = schema.validate();
     errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
   }
-  else
+  else if (is_sequence.has_value())
   {
     // Sequence type
     std::string base_element_type = is_sequence.value().first;
@@ -1024,10 +1073,12 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
     for (auto it = sequence.begin(); it != sequence.end(); ++it, ++idx)
     {
       std::string actual_element_type = base_element_type;
+      bool has_type_field = false;
 
-      // If accepts_derived_types, check if element has a type field
-      if (accepts_derived && it->IsMap() && (*it)[std::string("type")])
+      // Check for "type" field in each element
+      if (it->IsMap() && (*it)[std::string("type")])
       {
+        has_type_field = true;
         try
         {
           actual_element_type = (*it)[std::string("type")].as<std::string>();
@@ -1045,7 +1096,20 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
           std::stringstream ss;
           ss << path << "[" << idx << "]: type field exists but cannot be extracted as string: " << e.what();
           errors.push_back(ss.str());
+          continue;
         }
+      }
+
+      // If no "type" field and acceptsDerivedTypes is set, check for plugin info structure
+      if (!has_type_field && accepts_derived)
+      {
+        PropertyTree elem_node;
+        elem_node.setValue(*it);
+        std::stringstream ss;
+        ss << path << "[" << idx << "]";
+        std::string elem_path = ss.str();
+        validatePluginInfo(elem_node, base_element_type, elem_path, errors);
+        continue;
       }
 
       // Get the appropriate schema (actual or base)
@@ -1057,10 +1121,227 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
       ss << path << "[" << idx << "]";
       std::string elem_path = ss.str();
       // Collect errors with element path context
-      std::vector<std::string> sub_errors;
-      copy_schema.collectErrors(sub_errors, elem_path, false);
+      auto sub_errors = copy_schema.validate(false);
+      // Prepend elem_path to each error message
+      for (auto& err : sub_errors)
+      {
+        err.insert(0, ": ");
+        err.insert(0, elem_path);
+      }
       errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
     }
+  }
+  else if (is_map.has_value())
+  {
+    // Map type
+    std::string map_value_type = is_map.value().second;
+
+    if (!registry->contains(map_value_type))
+    {
+      std::stringstream ss;
+      ss << path << ": no schema registry entry found for map value type: " << map_value_type;
+      errors.push_back(ss.str());
+      return;
+    }
+
+    const YAML::Node& map_node = node.getValue();
+    if (!map_node.IsMap())
+    {
+      std::stringstream ss;
+      std::string node_type = "unknown";
+      if (map_node.IsNull())
+        node_type = "null";
+      else if (map_node.IsScalar())
+        node_type = "scalar";
+      else if (map_node.IsSequence())
+        node_type = "sequence";
+
+      ss << path << ": expected a map but got " << node_type;
+      errors.push_back(ss.str());
+      return;
+    }
+
+    PropertyTree value_schema = registry->get(map_value_type);
+    for (auto it = map_node.begin(); it != map_node.end(); ++it)
+    {
+      auto key = it->first.as<std::string>();
+      const YAML::Node& value_node = it->second;
+
+      std::string actual_value_type = map_value_type;
+      bool has_type_field = false;
+
+      // Check for "type" field in each value
+      if (value_node.IsMap() && value_node[std::string("type")])
+      {
+        has_type_field = true;
+        try
+        {
+          actual_value_type = value_node[std::string("type")].as<std::string>();
+          if (!registry->isDerivedFrom(map_value_type, actual_value_type))
+          {
+            std::stringstream ss;
+            ss << path << "[" << key << "]: type '" << actual_value_type << "' does not derive from '" << map_value_type
+               << "'";
+            errors.push_back(ss.str());
+            continue;
+          }
+        }
+        catch (const std::exception& e)
+        {
+          std::stringstream ss;
+          ss << path << "[" << key << "]: type field exists but cannot be extracted as string: " << e.what();
+          errors.push_back(ss.str());
+          continue;
+        }
+      }
+
+      // If no "type" field and acceptsDerivedTypes is set, check for plugin info structure
+      if (!has_type_field && accepts_derived)
+      {
+        PropertyTree elem_node;
+        elem_node.setValue(value_node);
+        std::stringstream ss;
+        ss << path << "[" << key << "]";
+        std::string elem_path = ss.str();
+        validatePluginInfo(elem_node, map_value_type, elem_path, errors);
+        continue;
+      }
+
+      // Get the appropriate schema (actual or base)
+      PropertyTree schema = registry->contains(actual_value_type) ? registry->get(actual_value_type) : value_schema;
+
+      PropertyTree copy_schema(schema);
+      copy_schema.mergeConfig(value_node);
+      std::stringstream ss;
+      ss << path << "[" << key << "]";
+      std::string elem_path = ss.str();
+      // Collect errors with element path context
+      auto sub_errors = copy_schema.validate(false);
+      // Prepend elem_path to each error message
+      for (auto& err : sub_errors)
+      {
+        err.insert(0, ": ");
+        err.insert(0, elem_path);
+      }
+      errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
+    }
+  }
+}
+
+void validatePluginInfo(const PropertyTree& node,
+                        const std::string& base_type,
+                        const std::string& path,
+                        std::vector<std::string>& errors)
+{
+  // Validate that the node contains "class" and "config" fields (plugin info structure)
+  const YAML::Node& value = node.getValue();
+
+  if (!value.IsMap())
+  {
+    std::string node_type = "unknown";
+    if (value.IsNull())
+      node_type = "null";
+    else if (value.IsScalar())
+      node_type = "scalar";
+    else if (value.IsSequence())
+      node_type = "sequence";
+
+    std::string msg(path);
+    msg += ": expected a plugin info structure with 'class' and 'config' fields, but got ";
+    msg += node_type;
+    errors.push_back(msg);
+    return;
+  }
+
+  // Check for required "class" field
+  if (!value["class"])
+  {
+    std::string msg(path);
+    msg += ": plugin info structure missing required 'class' field";
+    errors.push_back(msg);
+    return;
+  }
+
+  // Extract the derived type name
+  std::string derived_type_name;
+  try
+  {
+    derived_type_name = value["class"].as<std::string>();
+  }
+  catch (const std::exception& e)
+  {
+    std::string msg(path);
+    msg += ".class: cannot extract class name: ";
+    msg += e.what();
+    errors.push_back(msg);
+    return;
+  }
+
+  auto registry = SchemaRegistry::instance();
+
+  // Check if the derived type is compatible with the base type
+  if (!registry->isDerivedFrom(base_type, derived_type_name))
+  {
+    std::stringstream ss;
+    ss << path << ".class: type '" << derived_type_name << "' does not derive from '" << base_type << "'";
+    errors.push_back(ss.str());
+    return;
+  }
+
+  // Check if schema exists for the derived type
+  if (!registry->contains(derived_type_name))
+  {
+    std::stringstream ss;
+    ss << path << ".class: no schema registry entry found for derived type: " << derived_type_name;
+    errors.push_back(ss.str());
+    return;
+  }
+
+  // Get the schema for the derived type
+  PropertyTree schema = registry->get(derived_type_name);
+
+  // Validate the config field against the schema
+  if (value["config"])
+  {
+    try
+    {
+      PropertyTree config_copy = schema;
+      config_copy.mergeConfig(value["config"]);
+      std::string config_path = path;
+      config_path += ".config";
+      auto sub_errors = config_copy.validate(false);
+      // Prepend config_path to each error message
+      for (auto& err : sub_errors)
+      {
+        err.insert(0, ": ");
+        err.insert(0, config_path);
+      }
+      errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
+    }
+    catch (const std::exception& e)
+    {
+      std::string msg(path);
+      msg += ".config: ";
+      msg += e.what();
+      errors.push_back(msg);
+    }
+  }
+  else
+  {
+    // config field is optional but recommended - only warn if empty config is unusual
+    PropertyTree config_copy = schema;
+    YAML::Node empty_config;
+    config_copy.mergeConfig(empty_config);
+    std::string config_path = path;
+    config_path += ".config";
+    auto sub_errors = config_copy.validate(false);
+    // Prepend config_path to each error message
+    for (auto& err : sub_errors)
+    {
+      err.insert(0, ": ");
+      err.insert(0, config_path);
+    }
+    errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
   }
 }
 

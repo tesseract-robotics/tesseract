@@ -498,6 +498,18 @@ void validateContainer(const PropertyTree& node, const std::string& path, std::v
 void validateCustomType(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors);
 
 /**
+ * @brief Validator: Validate a plugin info structure (class + config) for derived types.
+ * @param node              Node to validate (should contain 'class' and 'config' fields).
+ * @param base_type         The base type name to check against.
+ * @param path              Dot-separated path for error messages.
+ * @param errors            Output vector to append errors to.
+ */
+void validatePluginInfo(const PropertyTree& node,
+                        const std::string& base_type,
+                        const std::string& path,
+                        std::vector<std::string>& errors);
+
+/**
  * @brief Validate that the node's value can be interpreted as the provided type.
  * @param node   PropertyTree node whose value to validate.
  * @param path   Dot-separated path for error messages.
