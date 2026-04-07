@@ -13,6 +13,7 @@
  * - Plugin selection (use either plugin A or plugin B)
  * - Shape definitions (circle OR rectangle)
  * - Protocol selection (USB OR Ethernet with type-specific fields)
+ * - Inline within a container to keep shared fields alongside mutually exclusive ones
  *
  * @section oneof_property_tree_concepts Key Concepts
  *
@@ -21,6 +22,7 @@
  * - **Flattening**: After selection, the schema becomes the selected branch
  * - **One Mandatory Match**: Exactly one branch must match, no more, no less
  * - **Validation**: Constraints validate only in the selected branch
+ * - **Inline OneOf**: Use beginOneOf()/endOneOf() inside a container to mix shared and exclusive fields
  *
  * @section oneof_property_tree_workflow OneOf Workflow
  *
@@ -31,6 +33,7 @@
  * 3. **Merge Config into Schema** - branch selection occurs here
  * 4. **Validate** - checks constraints for selected branch only
  * 5. **Extract Results** from the flattened schema
+ * 6. **Inline OneOf** - shared fields alongside mutually exclusive fields using beginOneOf()/endOneOf()
  *
  * @section oneof_property_tree_code Example Code
  *
@@ -371,7 +374,136 @@ int main(int /*argc*/, char** /*argv*/)
       std::cout << "    ✗ Failed: " << ex.what() << "\n";
     }
   }
+  // ====================================================================
+  // Example 6: Inline OneOf - Shared fields with mutually exclusive parts
+  // ====================================================================
+  std::cout << "\nExample 6: Inline OneOf (Shared + Exclusive Fields)\n";
+  std::cout << "---------------------------------------------------\n";
 
+  //! [inline_oneof_start]
+  // Define a robot kinematics schema where base_link and tip_link are always
+  // required, but you provide EITHER a model name OR explicit parameters.
+  // clang-format off
+  auto robot_schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("base_link").required().doc("Base link of the kinematic chain").done()
+      .string("tip_link").required().doc("Tip link of the kinematic chain").done()
+      .beginOneOf()
+        .container("by_model")
+          .string("model").required()
+            .enumValues({ "UR3", "UR5", "UR10", "UR3e", "UR5e", "UR10e" })
+            .doc("Robot model name").done()
+        .done()
+        .container("by_params")
+          .container("params").required()
+            .doubleNum("d1").required().doc("DH parameter d1").done()
+            .doubleNum("a2").required().doc("DH parameter a2").done()
+            .doubleNum("a3").required().doc("DH parameter a3").done()
+            .doubleNum("d4").required().doc("DH parameter d4").done()
+            .doubleNum("d5").required().doc("DH parameter d5").done()
+            .doubleNum("d6").required().doc("DH parameter d6").done()
+          .done()
+        .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+  //! [inline_oneof_end]
+
+  // Example 6a: Using model name
+  {
+    std::cout << "\n  Config with model name:\n";
+
+    YAML::Node model_config;
+    model_config["base_link"] = "base_link";
+    model_config["tip_link"] = "tool0";
+    model_config["model"] = "UR5";
+
+    auto schema_copy = robot_schema;
+    try
+    {
+      schema_copy.mergeConfig(model_config);
+      auto errors = schema_copy.validate();
+
+      if (errors.empty())
+      {
+        std::cout << "    OK: merged successfully\n";
+        std::cout << "    Base: " << schema_copy.at("base_link").as<std::string>() << "\n";
+        std::cout << "    Tip: " << schema_copy.at("tip_link").as<std::string>() << "\n";
+        std::cout << "    Model: " << schema_copy.at("model").as<std::string>() << "\n";
+      }
+      else
+      {
+        std::cout << "    ERROR: validation errors\n";
+        for (const auto& e : errors)
+          std::cout << "      - " << e << "\n";
+      }
+    }
+    catch (const std::exception& ex)
+    {
+      std::cout << "    ERROR: merge failed: " << ex.what() << "\n";
+    }
+  }
+
+  // Example 6b: Using explicit parameters
+  {
+    std::cout << "\n  Config with explicit parameters:\n";
+
+    YAML::Node params_config;
+    params_config["base_link"] = "base_link";
+    params_config["tip_link"] = "tool0";
+    params_config["params"]["d1"] = 0.089159;
+    params_config["params"]["a2"] = -0.42500;
+    params_config["params"]["a3"] = -0.39225;
+    params_config["params"]["d4"] = 0.10915;
+    params_config["params"]["d5"] = 0.09465;
+    params_config["params"]["d6"] = 0.0823;
+
+    auto schema_copy = robot_schema;
+    try
+    {
+      schema_copy.mergeConfig(params_config);
+      auto errors = schema_copy.validate();
+
+      if (errors.empty())
+      {
+        std::cout << "    OK: merged successfully\n";
+        std::cout << "    Base: " << schema_copy.at("base_link").as<std::string>() << "\n";
+        std::cout << "    Tip: " << schema_copy.at("tip_link").as<std::string>() << "\n";
+        std::cout << "    d1: " << schema_copy.at("params").at("d1").as<double>() << "\n";
+      }
+      else
+      {
+        std::cout << "    ERROR: validation errors\n";
+        for (const auto& e : errors)
+          std::cout << "      - " << e << "\n";
+      }
+    }
+    catch (const std::exception& ex)
+    {
+      std::cout << "    ERROR: merge failed: " << ex.what() << "\n";
+    }
+  }
+
+  // Example 6c: Missing both model and params
+  {
+    std::cout << "\n  Config with neither model nor params:\n";
+
+    YAML::Node bad_config;
+    bad_config["base_link"] = "base_link";
+    bad_config["tip_link"] = "tool0";
+
+    auto schema_copy = robot_schema;
+    try
+    {
+      schema_copy.mergeConfig(bad_config);
+      std::cout << "    This should not print\n";
+    }
+    catch (const std::exception& ex)
+    {
+      std::cout << "    OK: correctly caught error\n";
+      std::cout << "      " << ex.what() << "\n";
+    }
+  }
   std::cout << "\n========================================\n";
   std::cout << "         Example Complete\n";
   std::cout << "========================================\n";

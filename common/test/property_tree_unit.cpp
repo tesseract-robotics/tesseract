@@ -2290,6 +2290,280 @@ TEST(PropertyTreeOneOf, ValidationCollectsErrorsAfterBranchSelection)  // NOLINT
 }
 
 // ===========================================================================
+//  PropertyTree – Inline OneOf (beginOneOf / endOneOf)
+// ===========================================================================
+
+TEST(PropertyTreeInlineOneOf, SelectFirstBranch)  // NOLINT
+{
+  // Schema with shared fields + inline oneOf
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("base_link").required().done()
+      .string("tip_link").required().done()
+      .beginOneOf()
+          .container("by_model")
+              .string("model").required()
+                  .enumValues({"UR3", "UR5", "UR10"}).done()
+          .done()
+          .container("by_params")
+              .container("params").required()
+                  .doubleNum("d1").required().done()
+              .done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  YAML::Node config;
+  config["base_link"] = "base";
+  config["tip_link"] = "tool0";
+  config["model"] = "UR5";
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+
+  EXPECT_TRUE(errors.empty()) << errors.front();
+  EXPECT_EQ(schema.at("base_link").as<std::string>(), "base");
+  EXPECT_EQ(schema.at("tip_link").as<std::string>(), "tool0");
+  EXPECT_EQ(schema.at("model").as<std::string>(), "UR5");
+}
+
+TEST(PropertyTreeInlineOneOf, SelectSecondBranch)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("base_link").required().done()
+      .string("tip_link").required().done()
+      .beginOneOf()
+          .container("by_model")
+              .string("model").required().done()
+          .done()
+          .container("by_params")
+              .container("params").required()
+                  .doubleNum("d1").required().done()
+                  .doubleNum("a2").required().done()
+              .done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  YAML::Node config;
+  config["base_link"] = "base";
+  config["tip_link"] = "tool0";
+  config["params"]["d1"] = 0.089;
+  config["params"]["a2"] = -0.425;
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+
+  EXPECT_TRUE(errors.empty()) << errors.front();
+  EXPECT_EQ(schema.at("base_link").as<std::string>(), "base");
+  EXPECT_EQ(schema.at("params").at("d1").as<double>(), 0.089);
+  EXPECT_EQ(schema.at("params").at("a2").as<double>(), -0.425);
+}
+
+TEST(PropertyTreeInlineOneOf, NoBranchMatchesThrows)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("name").required().done()
+      .beginOneOf()
+          .container("option_a")
+              .string("field_a").required().done()
+          .done()
+          .container("option_b")
+              .integer("field_b").required().done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  // Config has shared field but neither branch's required fields
+  YAML::Node config;
+  config["name"] = "test";
+
+  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+}
+
+TEST(PropertyTreeInlineOneOf, MultipleBranchesMatchThrows)  // NOLINT
+{
+  // Both branches have no required fields — both match
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("name").required().done()
+      .beginOneOf()
+          .container("a")
+              .string("x").done()
+          .done()
+          .container("b")
+              .string("y").done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  YAML::Node config;
+  config["name"] = "test";
+
+  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+}
+
+TEST(PropertyTreeInlineOneOf, ValidationAppliesToSelectedBranch)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("name").required().done()
+      .beginOneOf()
+          .container("int_branch")
+              .integer("value").required().minimum(0).maximum(100).done()
+          .done()
+          .container("str_branch")
+              .string("text").required().done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  YAML::Node config;
+  config["name"] = "test";
+  config["value"] = 150;  // exceeds maximum(100)
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+
+  EXPECT_FALSE(errors.empty());
+  bool found_max_error = false;
+  for (const auto& err : errors)
+  {
+    if (err.find("maximum") != std::string::npos)
+      found_max_error = true;
+  }
+  EXPECT_TRUE(found_max_error);
+}
+
+TEST(PropertyTreeInlineOneOf, SharedFieldsValidationStillApplies)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("name").required().done()
+      .integer("priority").required().minimum(1).done()
+      .beginOneOf()
+          .container("simple")
+              .string("mode").required().done()
+          .done()
+          .container("advanced")
+              .container("settings").required()
+                  .boolean("enabled").required().done()
+              .done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  // Missing required shared field 'name', but oneOf branch matches
+  YAML::Node config;
+  config["priority"] = 5;
+  config["mode"] = "fast";
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+
+  EXPECT_FALSE(errors.empty());
+  bool found_required_error = false;
+  for (const auto& err : errors)
+  {
+    if (err.find("name") != std::string::npos && err.find("required") != std::string::npos)
+      found_required_error = true;
+  }
+  EXPECT_TRUE(found_required_error);
+}
+
+TEST(PropertyTreeInlineOneOf, EnumValidationInSelectedBranch)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("base_link").required().done()
+      .beginOneOf()
+          .container("by_model")
+              .string("model").required()
+                  .enumValues({"UR3", "UR5", "UR10"}).done()
+          .done()
+          .container("by_params")
+              .container("params").required()
+                  .doubleNum("d1").required().done()
+              .done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  // Invalid enum value
+  YAML::Node config;
+  config["base_link"] = "base";
+  config["model"] = "INVALID_MODEL";
+
+  schema.mergeConfig(config);
+  auto errors = schema.validate();
+
+  EXPECT_FALSE(errors.empty());
+  bool found_enum_error = false;
+  for (const auto& err : errors)
+  {
+    if (err.find("enum") != std::string::npos || err.find("INVALID_MODEL") != std::string::npos)
+      found_enum_error = true;
+  }
+  EXPECT_TRUE(found_enum_error);
+}
+
+TEST(PropertyTreeInlineOneOf, CopyPreservesInlineOneOf)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("name").required().done()
+      .beginOneOf()
+          .container("a")
+              .string("x").required().done()
+          .done()
+          .container("b")
+              .integer("y").required().done()
+          .done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  // Copy before merge — both should work independently
+  auto schema_copy = schema;
+
+  YAML::Node config_a;
+  config_a["name"] = "alpha";
+  config_a["x"] = "hello";
+  schema.mergeConfig(config_a);
+
+  YAML::Node config_b;
+  config_b["name"] = "beta";
+  config_b["y"] = 42;
+  schema_copy.mergeConfig(config_b);
+
+  auto errors_a = schema.validate();
+  auto errors_b = schema_copy.validate();
+
+  EXPECT_TRUE(errors_a.empty()) << errors_a.front();
+  EXPECT_TRUE(errors_b.empty()) << errors_b.front();
+
+  EXPECT_EQ(schema.at("x").as<std::string>(), "hello");
+  EXPECT_EQ(schema_copy.at("y").as<int>(), 42);
+}
+
+// ===========================================================================
 //  SchemaRegistrar
 // ===========================================================================
 

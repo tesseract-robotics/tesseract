@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/continuous_contact_manager.h>
+#include <tesseract/common/property_tree.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
@@ -46,7 +47,17 @@ namespace tesseract::collision
 {
 std::string DiscreteContactManagerFactory::getSection() { return "DiscColl"; }
 
+tesseract::common::PropertyTree DiscreteContactManagerFactory::schema() const
+{
+  return tesseract::common::PropertyTreeBuilder().build();
+}
+
 std::string ContinuousContactManagerFactory::getSection() { return "ContColl"; }
+
+tesseract::common::PropertyTree ContinuousContactManagerFactory::schema() const
+{
+  return tesseract::common::PropertyTreeBuilder().build();
+}
 
 ContactManagersPluginFactory::ContactManagersPluginFactory()
 {
