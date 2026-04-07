@@ -53,6 +53,7 @@ class BulletDiscreteBVHManagerFactory : public DiscreteContactManagerFactory
 public:
   std::unique_ptr<DiscreteContactManager> create(const std::string& name,
                                                  const YAML::Node& config) const override final;
+  tesseract::common::PropertyTree schema() const override;
 };
 
 class BulletDiscreteSimpleManagerFactory : public DiscreteContactManagerFactory
@@ -60,6 +61,7 @@ class BulletDiscreteSimpleManagerFactory : public DiscreteContactManagerFactory
 public:
   std::unique_ptr<DiscreteContactManager> create(const std::string& name,
                                                  const YAML::Node& config) const override final;
+  tesseract::common::PropertyTree schema() const override;
 };
 
 class BulletCastBVHManagerFactory : public ContinuousContactManagerFactory
@@ -67,6 +69,7 @@ class BulletCastBVHManagerFactory : public ContinuousContactManagerFactory
 public:
   std::unique_ptr<ContinuousContactManager> create(const std::string& name,
                                                    const YAML::Node& config) const override final;
+  tesseract::common::PropertyTree schema() const override;
 };
 
 class BulletCastSimpleManagerFactory : public ContinuousContactManagerFactory
@@ -74,6 +77,7 @@ class BulletCastSimpleManagerFactory : public ContinuousContactManagerFactory
 public:
   std::unique_ptr<ContinuousContactManager> create(const std::string& name,
                                                    const YAML::Node& config) const override final;
+  tesseract::common::PropertyTree schema() const override;
 };
 
 PLUGIN_ANCHOR_DECL(BulletFactoriesAnchor)

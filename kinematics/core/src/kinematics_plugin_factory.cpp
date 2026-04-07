@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/inverse_kinematics.h>
 #include <tesseract/kinematics/forward_kinematics.h>
+#include <tesseract/common/property_tree.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/common/resource_locator.h>
@@ -47,7 +48,17 @@ namespace tesseract::kinematics
 {
 std::string InvKinFactory::getSection() { return "InvKin"; }
 
+tesseract::common::PropertyTree InvKinFactory::schema() const
+{
+  return tesseract::common::PropertyTreeBuilder().build();
+}
+
 std::string FwdKinFactory::getSection() { return "FwdKin"; }
+
+tesseract::common::PropertyTree FwdKinFactory::schema() const
+{
+  return tesseract::common::PropertyTreeBuilder().build();
+}
 
 KinematicsPluginFactory::KinematicsPluginFactory()
 {
