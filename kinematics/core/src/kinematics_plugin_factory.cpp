@@ -76,12 +76,44 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[KinematicsPluginInfo::CONFIG_KEY])
   {
-    auto kin_plugin_info = plugin_info.as<tesseract::common::KinematicsPluginInfo>();
+    // Phase 1: Extract search paths/libraries directly from YAML (minimal parsing)
+    std::vector<std::string> search_paths_local;
+    std::vector<std::string> search_libraries_local;
+
+    if (plugin_info["search_paths"])
+      search_paths_local = plugin_info["search_paths"].as<std::vector<std::string>>();
+    if (plugin_info["search_libraries"])
+      search_libraries_local = plugin_info["search_libraries"].as<std::vector<std::string>>();
+
+    // Phase 2: Set search paths and load libraries
     plugin_loader_.search_paths.insert(
-        plugin_loader_.search_paths.end(), kin_plugin_info.search_paths.begin(), kin_plugin_info.search_paths.end());
-    plugin_loader_.search_libraries.insert(plugin_loader_.search_libraries.end(),
-                                           kin_plugin_info.search_libraries.begin(),
-                                           kin_plugin_info.search_libraries.end());
+        plugin_loader_.search_paths.end(), search_paths_local.begin(), search_paths_local.end());
+    plugin_loader_.search_libraries.insert(
+        plugin_loader_.search_libraries.end(), search_libraries_local.begin(), search_libraries_local.end());
+
+    // Trigger library loading by discovering available plugins
+    plugin_loader_.getAvailablePlugins(FwdKinFactory::getSection());
+    plugin_loader_.getAvailablePlugins(InvKinFactory::getSection());
+
+    // Phase 3: Now validate full schema (plugins are loaded, so their schemas are available)
+    auto schema = YAML::convert<tesseract::common::KinematicsPluginInfo>::schema();
+    auto config_tree = schema;
+    config_tree.mergeConfig(plugin_info, false);  // false = don't allow extra properties
+
+    auto errors = config_tree.validate(false);
+
+    if (!errors.empty())
+    {
+      std::string error_msg = "KinematicsPluginFactory: Configuration validation failed:\n";
+      for (const auto& error : errors)
+      {
+        error_msg += "  - " + error + "\n";
+      }
+      throw std::runtime_error(error_msg);
+    }
+
+    // Phase 4: Safe to parse full struct
+    auto kin_plugin_info = plugin_info.as<tesseract::common::KinematicsPluginInfo>();
     fwd_plugin_info_ = kin_plugin_info.fwd_plugin_infos;
     inv_plugin_info_ = kin_plugin_info.inv_plugin_infos;
 
