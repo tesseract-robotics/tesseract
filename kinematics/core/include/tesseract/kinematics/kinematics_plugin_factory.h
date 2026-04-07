@@ -78,6 +78,9 @@ public:
                                                     const KinematicsPluginFactory& plugin_factory,
                                                     const YAML::Node& config) const = 0;
 
+  /** @brief Return the PropertyTree schema describing the config this factory accepts */
+  virtual tesseract::common::PropertyTree schema() const;
+
 protected:
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
@@ -105,6 +108,9 @@ public:
                                                     const tesseract::scene_graph::SceneState& scene_state,
                                                     const KinematicsPluginFactory& plugin_factory,
                                                     const YAML::Node& config) const = 0;
+
+  /** @brief Return the PropertyTree schema describing the config this factory accepts */
+  virtual tesseract::common::PropertyTree schema() const;
 
 protected:
   static std::string getSection();
