@@ -167,6 +167,9 @@ OFKTStateSolver::OFKTStateSolver(const OFKTStateSolver& other) { *this = other; 
 
 OFKTStateSolver& OFKTStateSolver::operator=(const OFKTStateSolver& other)
 {
+  if (this == &other)
+    return *this;
+
   current_state_ = other.current_state_;
   joint_names_ = other.joint_names_;
   active_joint_names_ = other.active_joint_names_;
@@ -380,7 +383,8 @@ void OFKTStateSolver::getLinkTransforms(tesseract::common::TransformMap& link_tr
   for (const auto& floating_joint_value : floating_joint_values)
     floating_joints.at(floating_joint_value.first) = floating_joint_value.second;
 
-  link_transforms.insert(current_state_.link_transforms.begin(), current_state_.link_transforms.end());
+  for (const auto& [k, v] : current_state_.link_transforms)
+    link_transforms.insert_or_assign(k, v);
   update(link_transforms, joints, floating_joints, root_.get(), parent_frame, false);
 }
 
@@ -396,7 +400,8 @@ void OFKTStateSolver::getLinkTransforms(tesseract::common::TransformMap& link_tr
   for (std::size_t i = 0; i < joint_names.size(); ++i)
     joints[joint_names[i]] = joint_values[static_cast<long>(i)];
 
-  link_transforms.insert(current_state_.link_transforms.begin(), current_state_.link_transforms.end());
+  for (const auto& [k, v] : current_state_.link_transforms)
+    link_transforms.insert_or_assign(k, v);
   update(link_transforms, joints, current_state_.floating_joints, root_.get(), parent_frame, false);
 }
 
