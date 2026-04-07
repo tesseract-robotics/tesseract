@@ -22,5 +22,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include "iiwa7_ikfast_solver.hpp"
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/schema_registration.h>
+#include <tesseract/common/property_tree.h>
+
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_INV_KIN_PLUGIN(tesseract::kinematics::IKFastInvKinFactory, iiwa7Kinematics)
+
+static tesseract::common::PropertyTree ikFastInvKinSchema()
+{
+  return tesseract::common::PropertyTreeBuilder()
+      .string("base_link")
+      .required()
+      .done()
+      .string("tip_link")
+      .required()
+      .done()
+      .integer("n_joints")
+      .required()
+      .minimum(1)
+      .done()
+      .build();
+}
+
+TESSERACT_SCHEMA_REGISTER(iiwa7Kinematics, ikFastInvKinSchema);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::kinematics::InvKinFactory, iiwa7Kinematics);

@@ -8,7 +8,8 @@ add_library(
   src/kinematic_group.cpp
   src/kinematics_plugin_factory.cpp
   src/utils.cpp
-  src/validate.cpp)
+  src/validate.cpp
+  src/yaml_extensions.cpp)
 add_library(tesseract::kinematics ALIAS kinematics)
 set_target_properties(kinematics PROPERTIES OUTPUT_NAME tesseract_kinematics)
 target_link_libraries(
