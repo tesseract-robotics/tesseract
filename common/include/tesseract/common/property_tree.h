@@ -360,9 +360,41 @@ private:
  *   .build();
  * @endcode
  *
+ * Schema composition example (reuse base schemas):
+ * @code
+ * auto base = PropertyTreeBuilder()
+ *   .attribute(TYPE, CONTAINER)
+ *   .string("name").required().done()
+ *   .build();
+ *
+ * auto extended = PropertyTreeBuilder()
+ *   .attribute(TYPE, CONTAINER)
+ *   .compose(base)              // copies name field
+ *   .integer("priority").done()
+ *   .build();
+ * @endcode
+ *
+ * Inline oneOf example (shared fields with mutually exclusive parts):
+ * @code
+ * auto schema = PropertyTreeBuilder()
+ *   .string(\"name\").required().done()
+ *   .beginOneOf()
+ *     .container(\"option_a\")
+ *       .string(\"field_a\").required().done()
+ *     .done()
+ *     .container(\"option_b\")
+ *       .integer(\"field_b\").required().done()
+ *     .done()
+ *   .endOneOf()
+ *   .build();
+ * @endcode
+ *
  * Type-creating methods (container, string, boolean, etc.) create a child node,
  * set its type, and push it as the current scope. Attribute setters (doc, required,
  * defaultVal, etc.) apply to the current scope. done() pops back to the parent.
+ * Use compose() to copy all children from an existing PropertyTree into the current scope.
+ * Use beginOneOf()/endOneOf() to define mutually exclusive branches inline within
+ * a container — shared fields are defined outside the oneOf block.
  */
 class PropertyTreeBuilder
 {
@@ -386,6 +418,18 @@ public:
   PropertyTreeBuilder& eigenVector2d(std::string_view name);
   PropertyTreeBuilder& eigenVector3d(std::string_view name);
   PropertyTreeBuilder& customType(std::string_view name, std::string_view type_str);
+
+  /**
+   * @brief Begin an inline oneOf group inside a container.
+   *
+   * Define mutually exclusive branches as container children within this group.
+   * During mergeConfig the parent's full config is used for branch selection, and
+   * the chosen branch's children are hoisted into the parent.  Close with endOneOf().
+   */
+  PropertyTreeBuilder& beginOneOf();
+
+  /** @brief Close an inline oneOf group opened by beginOneOf(). */
+  PropertyTreeBuilder& endOneOf();
   ///@}
 
   /** @name Attribute setters -- apply to the current node. */
@@ -420,6 +464,42 @@ public:
   PropertyTreeBuilder& acceptsDerivedTypes();
   ///@}
 
+  /** @name Plugin helpers -- self-closing convenience methods for PluginInfoContainer schemas. */
+  ///@{
+  /**
+   * @brief Create a PluginInfoContainer child: { default (string), plugins (Map of derived types) }.
+   * Self-closing — does not push a scope; no done() call needed.
+   * @param name                Child property name (e.g. "discrete_plugins").
+   * @param factory_base_type   Fully-qualified factory base class (e.g.
+   *                            "tesseract::collision::DiscreteContactManagerFactory").
+   */
+  PropertyTreeBuilder& pluginContainer(std::string_view name, std::string_view factory_base_type);
+
+  /**
+   * @brief Create a Map[string, PluginInfoContainer] child.
+   *
+   * Registers an intermediate PluginInfoContainer schema under the key
+   * "<factory_base_type>::PluginInfoContainer" (idempotent) and creates a map
+   * type that references it.  Self-closing — no done() call needed.
+   * @param name                Child property name (e.g. "fwd_kin_plugins").
+   * @param factory_base_type   Fully-qualified factory base class.
+   */
+  PropertyTreeBuilder& pluginContainerMap(std::string_view name, std::string_view factory_base_type);
+  ///@}
+
+  /**
+   * @brief Copy all children from another PropertyTree into the current scope.
+   *
+   * This allows composing schemas together. The source tree's immediate children
+   * (with their full subtrees, attributes, and validators) are appended to the
+   * current builder scope.  The source tree's own root-level attributes are ignored;
+   * only its children are composed.
+   *
+   * @param source The PropertyTree whose children should be copied into this scope.
+   * @return Reference to this builder for method chaining.
+   */
+  PropertyTreeBuilder& compose(const PropertyTree& source);
+
   /** @brief Pop current node, return to parent scope. */
   PropertyTreeBuilder& done();
 
@@ -431,6 +511,13 @@ private:
   PropertyTree root_;
   std::vector<PropertyTree*> stack_;
 };
+
+/**
+ * @brief Build a PluginInfoContainer schema for the given factory base type.
+ * @param factory_base_type Fully-qualified factory base class name.
+ * @return A PropertyTree with { default (string), plugins (Map of derived types) }.
+ */
+PropertyTree makePluginInfoContainerSchema(std::string_view factory_base_type);
 
 /**
  * @brief Check if type is a sequence
