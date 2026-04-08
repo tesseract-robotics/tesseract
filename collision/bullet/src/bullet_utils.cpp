@@ -51,6 +51,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <stdexcept>
 #include <octomap/octomap.h>
+#include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/geometries.h>

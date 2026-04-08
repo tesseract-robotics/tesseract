@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <iomanip>
 #include <tinyxml2.h>
+#include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>

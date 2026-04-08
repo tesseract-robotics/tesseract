@@ -40,6 +40,8 @@
 #include <tesseract/collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
+#include <cassert>
+
 extern btScalar gDbvtMargin;  // NOLINT
 
 using namespace tesseract::collision::bullet_internal;
