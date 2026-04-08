@@ -40,6 +40,8 @@
 #include <tesseract/collision/bullet/bullet_cast_simple_manager.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
+#include <cassert>
+
 using namespace tesseract::collision::bullet_internal;
 
 namespace tesseract::collision

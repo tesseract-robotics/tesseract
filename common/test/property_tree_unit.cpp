@@ -1192,7 +1192,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileLazyLoads)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, RegisterSchemaFromFileGetMultipleTimes)  // NOLINT
@@ -1240,7 +1240,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileGetMultipleTimes)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, RegisterSchemaFromFileComplexMergeAndValidate)  // NOLINT
@@ -1284,7 +1284,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileComplexMergeAndValidate)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, LoadFileAbsolutePath)  // NOLINT
@@ -1314,7 +1314,7 @@ TEST(SchemaRegistry, LoadFileAbsolutePath)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, LoadFileRelativePath)  // NOLINT
@@ -1352,7 +1352,7 @@ TEST(SchemaRegistry, LoadFileRelativePath)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, LoadFileNonExistentThrows)  // NOLINT
@@ -1414,7 +1414,7 @@ TEST(SchemaRegistry, LoadFileReturnsValidPropertyTree)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, YamlExtensionSchemasRegistered)  // NOLINT
@@ -2486,7 +2486,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFile)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistrar, RegisterSchemaFromFileComplex)  // NOLINT
@@ -2535,7 +2535,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileComplex)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistrar, RegisterSchemaFromFileMultiple)  // NOLINT
@@ -2578,8 +2578,8 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMultiple)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path_a.c_str());
-  std::remove(file_path_b.c_str());
+  std::filesystem::remove(file_path_a.c_str());
+  std::filesystem::remove(file_path_b.c_str());
 }
 
 TEST(SchemaRegistrar, RegisterSchemaFromFileInvalidPath)  // NOLINT
@@ -2636,7 +2636,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMergeAndValidate)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 // ===========================================================================

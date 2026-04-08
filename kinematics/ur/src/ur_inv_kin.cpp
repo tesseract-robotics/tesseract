@@ -38,6 +38,8 @@
 #include <tesseract/kinematics/ur/ur_inv_kin.h>
 #include <tesseract/kinematics/utils.h>
 
+#include <cassert>
+
 static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
 
 namespace tesseract::kinematics
