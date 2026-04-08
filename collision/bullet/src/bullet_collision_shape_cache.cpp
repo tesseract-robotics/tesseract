@@ -26,6 +26,7 @@
 #include <tesseract/collision/bullet/bullet_collision_shape_cache.h>
 #include <tesseract/geometry/geometry.h>
 #include <mutex>
+#include <cassert>
 
 namespace tesseract::collision
 {

@@ -25,6 +25,7 @@
 #include <tesseract/environment/commands/change_joint_acceleration_limits_command.h>
 
 #include <string>
+#include <cassert>
 
 namespace tesseract::environment
 {

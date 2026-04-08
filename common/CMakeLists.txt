@@ -73,6 +73,7 @@ target_link_libraries(
          cereal::cereal
          yaml-cpp)
 target_compile_options(common PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_options(common PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_definitions(common PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_BACKTRACE_DEFINITION})
 target_clang_tidy(common ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(common PUBLIC VERSION ${TESSERACT_CXX_VERSION})

@@ -41,6 +41,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h>
 #include <LinearMath/btPoolAllocator.h>
+#include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/bullet/tesseract_collision_configuration.h>
