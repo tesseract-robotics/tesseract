@@ -75,9 +75,10 @@ EnvironmentContactAllowedValidator::EnvironmentContactAllowedValidator(
 {
 }
 
-bool EnvironmentContactAllowedValidator::operator()(const std::string& link_name1, const std::string& link_name2) const
+bool EnvironmentContactAllowedValidator::operator()(tesseract::common::LinkId link_id1,
+                                                    tesseract::common::LinkId link_id2) const
 {
-  return scene_graph_->isCollisionAllowed(link_name1, link_name2);
+  return scene_graph_->isCollisionAllowed(link_id1, link_id2);
 }
 
 void getCollisionObject(std::vector<std::shared_ptr<const tesseract::geometry::Geometry>>& shapes,
@@ -1821,22 +1822,22 @@ bool Environment::Implementation::applyModifyAllowedCollisionsCommand(
   {
     case ModifyAllowedCollisionsType::REMOVE:
     {
-      for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph->removeAllowedCollision(entry.first.first, entry.first.second);
+      for (const auto& [key, entry] : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
+        scene_graph->removeAllowedCollision(entry.name1, entry.name2);
 
       break;
     }
     case ModifyAllowedCollisionsType::REPLACE:
     {
       scene_graph->clearAllowedCollisions();
-      for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
+      for (const auto& [key, entry] : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
+        scene_graph->addAllowedCollision(entry.name1, entry.name2, entry.reason);
       break;
     }
     case ModifyAllowedCollisionsType::ADD:
     {
-      for (const auto& entry : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph->addAllowedCollision(entry.first.first, entry.first.second, entry.second);
+      for (const auto& [key, entry] : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
+        scene_graph->addAllowedCollision(entry.name1, entry.name2, entry.reason);
 
       break;
     }

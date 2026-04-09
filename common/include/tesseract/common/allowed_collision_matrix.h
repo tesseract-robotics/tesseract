@@ -12,14 +12,30 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::common
 {
-using AllowedCollisionEntries = std::unordered_map<tesseract::common::LinkNamesPair, std::string>;
+/** @brief Value stored in each ACM entry — names for serialization/display, reason for the allowance. */
+struct ACMEntry
+{
+  std::string name1;
+  std::string name2;
+  std::string reason;
+
+  bool operator==(const ACMEntry& other) const
+  {
+    return name1 == other.name1 && name2 == other.name2 && reason == other.reason;
+  }
+  bool operator!=(const ACMEntry& other) const { return !(*this == other); }
+};
+
+using AllowedCollisionEntries = std::unordered_map<LinkIdPair, ACMEntry, LinkIdPair::Hash>;
 
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
 
 class AllowedCollisionMatrix;
 
 template <class Archive>
-void serialize(Archive& ar, AllowedCollisionMatrix& obj);
+void save(Archive& ar, const AllowedCollisionMatrix& obj);
+template <class Archive>
+void load(Archive& ar, AllowedCollisionMatrix& obj);
 
 class AllowedCollisionMatrix
 {
@@ -40,10 +56,10 @@ public:
   AllowedCollisionMatrix& operator=(AllowedCollisionMatrix&&) = default;
 
   /**
-   * @brief Disable collision between two collision objects
-   * @param obj1 Collision object name
-   * @param obj2 Collision object name
-   * @param reason The reason for disabling collison
+   * @brief Disable collision between two collision objects (Tier 3 — string overload)
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
+   * @param reason The reason for disabling collision
    */
   virtual void addAllowedCollision(const std::string& link_name1,
                                    const std::string& link_name2,
@@ -51,16 +67,14 @@ public:
 
   /**
    * @brief Get all of the entries in the allowed collision matrix
-   * @return AllowedCollisionEntries an unordered map containing all allowed
-   *         collision entries. The keys of the unordered map are a std::pair
-   *         of the link names in the allowed collision pair.
+   * @return AllowedCollisionEntries keyed by LinkIdPair with ACMEntry values containing names and reason
    */
   const AllowedCollisionEntries& getAllAllowedCollisions() const;
 
   /**
-   * @brief Remove disabled collision pair from allowed collision matrix
-   * @param obj1 Collision object name
-   * @param obj2 Collision object name
+   * @brief Remove disabled collision pair from allowed collision matrix (Tier 3 — string)
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
    */
   virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
 
@@ -71,9 +85,17 @@ public:
   virtual void removeAllowedCollision(const std::string& link_name);
 
   /**
-   * @brief This checks if two links are allowed to be in collision
+   * @brief This checks if two links are allowed to be in collision (Tier 1 — LinkId, hot-path)
+   * @param link_id1 First link id
+   * @param link_id2 Second link id
+   * @return True if allowed to be in collision, otherwise false
+   */
+  virtual bool isCollisionAllowed(LinkId link_id1, LinkId link_id2) const;
+
+  /**
+   * @brief This checks if two links are allowed to be in collision (Tier 3 — string)
    * @param link_name1 First link name
-   * @param link_name2 Second link anme
+   * @param link_name2 Second link name
    * @return True if allowed to be in collision, otherwise false
    */
   virtual bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
@@ -102,10 +124,12 @@ public:
 private:
   AllowedCollisionEntries lookup_table_;
   template <class Archive>
-  friend void ::tesseract::common::serialize(Archive& ar, AllowedCollisionMatrix& obj);
+  friend void ::tesseract::common::save(Archive& ar, const AllowedCollisionMatrix& obj);
+  template <class Archive>
+  friend void ::tesseract::common::load(Archive& ar, AllowedCollisionMatrix& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm);
 }  // namespace tesseract::common
 
-#endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H
+#endif  // TESSERACT_COMMON_ALLOWED_COLLISION_MATRIX_H

@@ -25,11 +25,11 @@
 #ifndef TESSERACT_COMMON_CONTACT_ALLOWED_VALIDATOR_H
 #define TESSERACT_COMMON_CONTACT_ALLOWED_VALIDATOR_H
 
-#include <string>
 #include <memory>
 #include <vector>
 
 #include <tesseract/common/allowed_collision_matrix.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::common
 {
@@ -53,7 +53,7 @@ public:
 
   virtual ~ContactAllowedValidator() = default;
 
-  virtual bool operator()(const std::string&, const std::string&) const = 0;
+  virtual bool operator()(LinkId, LinkId) const = 0;
 };
 
 class ACMContactAllowedValidator : public ContactAllowedValidator
@@ -67,7 +67,7 @@ public:
   ACMContactAllowedValidator() = default;  // Required for serialization
   ACMContactAllowedValidator(tesseract::common::AllowedCollisionMatrix acm);
 
-  bool operator()(const std::string& link_name1, const std::string& link_name2) const override;
+  bool operator()(LinkId link_id1, LinkId link_id2) const override;
 
 protected:
   tesseract::common::AllowedCollisionMatrix acm_;
@@ -98,7 +98,7 @@ public:
   CombinedContactAllowedValidator(std::vector<std::shared_ptr<const ContactAllowedValidator>> validators,
                                   CombinedContactAllowedValidatorType type);
 
-  bool operator()(const std::string& link_name1, const std::string& link_name2) const override;
+  bool operator()(LinkId link_id1, LinkId link_id2) const override;
 
 protected:
   std::vector<std::shared_ptr<const ContactAllowedValidator>> validators_;

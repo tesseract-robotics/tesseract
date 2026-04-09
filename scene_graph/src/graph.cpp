@@ -294,6 +294,13 @@ bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool repla
   if (link_exists && !replace_allowed)
     return false;
 
+  // Hash collision check: different name producing the same LinkId
+  for (const auto& [name, link_vertex] : link_map_)
+  {
+    if (link_vertex.first->getId() == link_ptr->getId() && name != link_ptr->getName())
+      throw std::runtime_error("LinkId hash collision: '" + link_ptr->getName() + "' and '" + name + "'");
+  }
+
   if (link_exists && replace_allowed)
   {  // replacing an existing link
     found->second.first = link_ptr;
@@ -459,6 +466,13 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
   {
     CONSOLE_BRIDGE_logWarn("Joint with name (%s) already exists in scene graph.", joint_ptr->getName().c_str());
     return false;
+  }
+
+  // Hash collision check: different name producing the same JointId
+  for (const auto& [name, joint_info] : joint_map_)
+  {
+    if (joint_info.first->getId() == joint_ptr->getId() && name != joint_ptr->getName())
+      throw std::runtime_error("JointId hash collision: '" + joint_ptr->getName() + "' and '" + name + "'");
   }
 
   if ((joint_ptr->type != JointType::FIXED) && (joint_ptr->type != JointType::FLOATING) &&
@@ -767,6 +781,11 @@ void SceneGraph::clearAllowedCollisions() { acm_->clearAllowedCollisions(); }
 bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
 {
   return acm_->isCollisionAllowed(link_name1, link_name2);
+}
+
+bool SceneGraph::isCollisionAllowed(tesseract::common::LinkId link_id1, tesseract::common::LinkId link_id2) const
+{
+  return acm_->isCollisionAllowed(link_id1, link_id2);
 }
 
 std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() const
@@ -1122,8 +1141,8 @@ clone_prefix(const tesseract::common::AllowedCollisionMatrix::ConstPtr& acm, con
     return std::make_shared<tesseract::common::AllowedCollisionMatrix>(*acm);
 
   auto new_acm = std::make_shared<tesseract::common::AllowedCollisionMatrix>();
-  for (const auto& entry : acm->getAllAllowedCollisions())
-    new_acm->addAllowedCollision(prefix + entry.first.first, prefix + entry.first.second, entry.second);
+  for (const auto& [key, entry] : acm->getAllAllowedCollisions())
+    new_acm->addAllowedCollision(prefix + entry.name1, prefix + entry.name2, entry.reason);
 
   return new_acm;
 }

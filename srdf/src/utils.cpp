@@ -30,37 +30,25 @@ namespace tesseract::srdf
 {
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
-  for (const auto& pair : srdf_model.acm.getAllAllowedCollisions())
-    scene_graph.addAllowedCollision(pair.first.first, pair.first.second, pair.second);
+  for (const auto& [key, entry] : srdf_model.acm.getAllAllowedCollisions())
+    scene_graph.addAllowedCollision(entry.name1, entry.name2, entry.reason);
 }
 
-bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkNamesPair> pair1,
-                                   std::reference_wrapper<const tesseract::common::LinkNamesPair> pair2)
+std::vector<std::reference_wrapper<const tesseract::common::ACMEntry>>
+getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries)
 {
-  // Sort first by the first string
-  if (pair1.get().first != pair2.get().first)
-  {
-    return pair1.get().first < pair2.get().first;
-  }
+  std::vector<std::reference_wrapper<const tesseract::common::ACMEntry>> entries;
+  entries.reserve(allowed_collision_entries.size());
+  for (const auto& [key, entry] : allowed_collision_entries)
+    entries.push_back(std::cref(entry));
 
-  // Then sort by the second
-  return pair1.get().second < pair2.get().second;
-}
+  std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
+    if (a.get().name1 != b.get().name1)
+      return a.get().name1 < b.get().name1;
+    return a.get().name2 < b.get().name2;
+  });
 
-std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>>
-getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries)
-{
-  std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>> acm_keys;
-  acm_keys.reserve(allowed_collision_entries.size());
-  for (const auto& acm_pair : allowed_collision_entries)
-  {
-    acm_keys.push_back(std::ref(acm_pair.first));
-  }
-
-  // Sort the keys alphabetically
-  sort(acm_keys.begin(), acm_keys.end(), compareLinkPairAlphabetically);
-
-  return acm_keys;
+  return entries;
 }
 
 }  // namespace tesseract::srdf
