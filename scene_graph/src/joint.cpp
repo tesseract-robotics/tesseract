@@ -200,9 +200,11 @@ std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
 /*********************************************************/
 /******                     Joint                    *****/
 /*********************************************************/
-Joint::Joint(std::string name) : name_(std::move(name)) { this->clear(); }
+Joint::Joint(std::string name) : name_(std::move(name)), id_(common::JointId::fromName(name_)) { this->clear(); }
 
 const std::string& Joint::getName() const { return name_; }
+
+common::JointId Joint::getId() const { return id_; }
 
 void Joint::clear()
 {

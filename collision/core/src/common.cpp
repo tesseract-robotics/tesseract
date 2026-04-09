@@ -53,7 +53,8 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
     {
       const std::string& l2 = active_links[j];
-      if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
+      if (validator == nullptr ||
+          !(*validator)(tesseract::common::LinkId::fromName(l1), tesseract::common::LinkId::fromName(l2)))
         clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
     }
   }
@@ -63,7 +64,8 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
   {
     for (const auto& l2 : static_links)
     {
-      if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
+      if (validator == nullptr ||
+          !(*validator)(tesseract::common::LinkId::fromName(l1), tesseract::common::LinkId::fromName(l2)))
         clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
     }
   }
@@ -76,36 +78,45 @@ bool isLinkActive(const std::vector<std::string>& active, const std::string& nam
   return active.empty() || (std::find(active.begin(), active.end(), name) != active.end());
 }
 
-bool isContactAllowed(const std::string& name1,
-                      const std::string& name2,
+bool isContactAllowed(tesseract::common::LinkId id1,
+                      tesseract::common::LinkId id2,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose)
 {
   // do not distance check geoms part of the same object / link / attached body
-  if (name1 == name2)
+  if (id1 == id2)
     return true;
 
-  if (validator != nullptr && (*validator)(name1, name2))
+  if (validator != nullptr && (*validator)(id1, id2))
   {
     if (verbose)
     {
-      CONSOLE_BRIDGE_logError(
-          "Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
+      CONSOLE_BRIDGE_logError("Collision between LinkId(%lu) and LinkId(%lu) is allowed. No contacts are computed.",
+                              id1.value, id2.value);
     }
     return true;
   }
 
   if (verbose)
   {
-    CONSOLE_BRIDGE_logError("Actually checking collisions between %s and %s", name1.c_str(), name2.c_str());
+    CONSOLE_BRIDGE_logError("Actually checking collisions between LinkId(%lu) and LinkId(%lu)", id1.value, id2.value);
   }
 
   return false;
 }
 
+bool isContactAllowed(const std::string& name1,
+                      const std::string& name2,
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                      bool verbose)
+{
+  return isContactAllowed(
+      tesseract::common::LinkId::fromName(name1), tesseract::common::LinkId::fromName(name2), validator, verbose);
+}
+
 ContactResult* processResult(ContactTestData& cdata,
                              ContactResult& contact,
-                             const std::pair<std::string, std::string>& key,
+                             const tesseract::common::LinkIdPair& key,
                              bool found)
 {
   if (cdata.req.is_valid && !(*cdata.req.is_valid)(contact))

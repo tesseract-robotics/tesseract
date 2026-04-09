@@ -59,12 +59,18 @@ bool isLinkActive(const std::vector<std::string>& active, const std::string& nam
 
 /**
  * @brief Determine if contact is allowed between two objects.
- * @param name1 The name of the first object
- * @param name2 The name of the second object
+ * @param id1 The LinkId of the first object
+ * @param id2 The LinkId of the second object
  * @param validator The contact allowed validator
  * @param verbose If true print debug information
  * @return True if contact is allowed between the two object, otherwise false.
  */
+bool isContactAllowed(tesseract::common::LinkId id1,
+                      tesseract::common::LinkId id2,
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                      bool verbose = false);
+
+/** @brief String convenience overload — hashes names to LinkIds */
 bool isContactAllowed(const std::string& name1,
                       const std::string& name2,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
@@ -80,7 +86,7 @@ bool isContactAllowed(const std::string& name1,
  */
 ContactResult* processResult(ContactTestData& cdata,
                              ContactResult& contact,
-                             const std::pair<std::string, std::string>& key,
+                             const tesseract::common::LinkIdPair& key,
                              bool found);
 
 /**

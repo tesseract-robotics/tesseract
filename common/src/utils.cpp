@@ -502,10 +502,10 @@ std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& li
   std::vector<std::string> results;
   results.reserve(acm_entries.size());
 
-  for (const auto& entry : acm_entries)
+  for (const auto& [key, entry] : acm_entries)
   {
-    const std::string link_1 = entry.first.first;
-    const std::string link_2 = entry.first.second;
+    const std::string& link_1 = entry.name1;
+    const std::string& link_2 = entry.name2;
 
     // If the first entry is one of the links we were looking for
     if (std::find(link_names.begin(), link_names.end(), link_1) != link_names.end())

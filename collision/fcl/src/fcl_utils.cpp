@@ -248,8 +248,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!col_result.isCollision())
     return false;
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+  auto link_pair = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd1->getName()),
+                                                       tesseract::common::LinkId::fromName(cd2->getName()));
 
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
   const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
@@ -334,8 +334,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   // TODO: There is an issue with FCL need to track down
   assert(!std::isnan(contact.nearest_points[0](0)));
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
+  auto link_pair = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd1->getName()),
+                                                       tesseract::common::LinkId::fromName(cd2->getName()));
   const auto it = cdata->res->find(link_pair);
   bool found = (it != cdata->res->end() && !it->second.empty());
 
