@@ -33,65 +33,72 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
 
   for (const auto& entry : entries_1)
   {
-    // Check if the key exists
     auto cp = entries_2.find(entry.first);
     if (cp == entries_2.end())
       return false;
-    // Check if the value is the same
     if (cp->second != entry.second)
       return false;
   }
   return true;
 }
 
-AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& entries)
-{
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  for (const auto& entry : entries)
-  {
-    tesseract::common::makeOrderedLinkPair(link_pair, entry.first.first, entry.first.second);
-    lookup_table_[link_pair] = entry.second;
-  }
-}
+AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& entries) : lookup_table_(entries) {}
 
 void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
                                                  const std::string& link_name2,
                                                  const std::string& reason)
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
-  lookup_table_[link_pair] = reason;
+  auto key = LinkIdPair::make(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
+
+  // Hash collision check
+  auto it = lookup_table_.find(key);
+  if (it != lookup_table_.end())
+  {
+    // Key exists — verify names match (canonically ordered)
+    bool names_match = (it->second.name1 == link_name1 && it->second.name2 == link_name2) ||
+                       (it->second.name1 == link_name2 && it->second.name2 == link_name1);
+    if (!names_match)
+      throw std::runtime_error("ACM LinkIdPair hash collision: ('" + link_name1 + "', '" + link_name2 +
+                               "') collides with ('" + it->second.name1 + "', '" + it->second.name2 + "')");
+  }
+
+  // Canonical name ordering: match LinkIdPair's canonical order
+  auto id1 = LinkId::fromName(link_name1);
+  auto id2 = LinkId::fromName(link_name2);
+  if (id1.value <= id2.value)
+    lookup_table_[key] = ACMEntry{ link_name1, link_name2, reason };
+  else
+    lookup_table_[key] = ACMEntry{ link_name2, link_name1, reason };
 }
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
 
 void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
-  lookup_table_.erase(link_pair);
+  auto key = LinkIdPair::make(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
+  lookup_table_.erase(key);
 }
 
 void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name)
 {
-  for (auto it = lookup_table_.begin(); it != lookup_table_.end() /* not hoisted */; /* no increment */)
+  auto link_id = LinkId::fromName(link_name);
+  for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
-    if (it->first.first == link_name || it->first.second == link_name)
-    {
+    if (it->first.first == link_id || it->first.second == link_id)
       it = lookup_table_.erase(it);
-    }
     else
-    {
       ++it;
-    }
   }
+}
+
+bool AllowedCollisionMatrix::isCollisionAllowed(LinkId link_id1, LinkId link_id2) const
+{
+  return lookup_table_.find(LinkIdPair::make(link_id1, link_id2)) != lookup_table_.end();
 }
 
 bool AllowedCollisionMatrix::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
-  return (lookup_table_.find(link_pair) != lookup_table_.end());
+  return isCollisionAllowed(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
 }
 
 void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }
@@ -114,8 +121,8 @@ bool AllowedCollisionMatrix::operator!=(const AllowedCollisionMatrix& rhs) const
 
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
 {
-  for (const auto& pair : acm.getAllAllowedCollisions())
-    os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << "\n";
+  for (const auto& [key, entry] : acm.getAllAllowedCollisions())
+    os << "link=" << entry.name1 << " link=" << entry.name2 << " reason=" << entry.reason << "\n";
   return os;
 }
 }  // namespace tesseract::common

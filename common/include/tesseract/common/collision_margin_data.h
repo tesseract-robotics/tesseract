@@ -43,10 +43,14 @@ class CollisionMarginPairData;
 class CollisionMarginData;
 
 template <class Archive>
-void serialize(Archive& ar, CollisionMarginPairData& obj);
+void save(Archive& ar, const CollisionMarginPairData& obj);
+template <class Archive>
+void load(Archive& ar, CollisionMarginPairData& obj);
 
 template <class Archive>
-void serialize(Archive& ar, CollisionMarginData& obj);
+void save(Archive& ar, const CollisionMarginData& obj);
+template <class Archive>
+void load(Archive& ar, CollisionMarginData& obj);
 
 /** @brief Identifies how the provided contact margin data should be applied */
 enum class CollisionMarginPairOverrideType : std::uint8_t
@@ -63,7 +67,18 @@ enum class CollisionMarginPairOverrideType : std::uint8_t
   MODIFY
 };
 
-using PairsCollisionMarginData = std::unordered_map<tesseract::common::LinkNamesPair, double>;
+/** @brief Value stored in each margin pair entry — names for serialization/display, margin for computation. */
+struct MarginEntry
+{
+  std::string name1;
+  std::string name2;
+  double margin{ 0 };
+
+  bool operator==(const MarginEntry& other) const;
+  bool operator!=(const MarginEntry& other) const;
+};
+
+using PairsCollisionMarginData = std::unordered_map<LinkIdPair, MarginEntry, LinkIdPair::Hash>;
 
 class CollisionMarginPairData
 {
@@ -92,6 +107,10 @@ public:
    * @param obj2 The second object name
    * @return A link pair contact margin if exists
    */
+  /** @brief Tier 1 — LinkId overload (hot-path) */
+  std::optional<double> getCollisionMargin(LinkId id1, LinkId id2) const;
+
+  /** @brief Tier 3 — string overload */
   std::optional<double> getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
 
   /**
@@ -104,6 +123,7 @@ public:
    * @brief Get the largest collision margin for the given object
    * @return Max contact distance threshold if object exists
    */
+  std::optional<double> getMaxCollisionMargin(LinkId obj_id) const;
   std::optional<double> getMaxCollisionMargin(const std::string& obj) const;
 
   /**
@@ -153,7 +173,7 @@ private:
   std::optional<double> max_collision_margin_;
 
   /** @brief Stores the maximum collision margin for each object */
-  std::unordered_map<std::string, double> object_max_margins_;
+  std::unordered_map<LinkId, double, LinkId::Hash> object_max_margins_;
 
   /** @brief Set the margin for a given contact pair without updating the max margins */
   void setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin);
@@ -162,7 +182,9 @@ private:
   void updateMaxMargins();
 
   template <class Archive>
-  friend void ::tesseract::common::serialize(Archive& ar, CollisionMarginPairData& obj);
+  friend void ::tesseract::common::save(Archive& ar, const CollisionMarginPairData& obj);
+  template <class Archive>
+  friend void ::tesseract::common::load(Archive& ar, CollisionMarginPairData& obj);
 };
 
 /** @brief Stores information about how the margins allowed between collision objects */
@@ -211,6 +233,10 @@ public:
    * @param obj2 The second object name
    * @return A Vector2d[Contact Distance Threshold, Coefficient]
    */
+  /** @brief Tier 1 — LinkId overload (hot-path) */
+  double getCollisionMargin(LinkId id1, LinkId id2) const;
+
+  /** @brief Tier 3 — string overload */
   double getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
 
   /**
@@ -235,6 +261,7 @@ public:
    *
    * @return Max contact distance threshold
    */
+  double getMaxCollisionMargin(LinkId obj_id) const;
   double getMaxCollisionMargin(const std::string& obj) const;
 
   /**
@@ -267,7 +294,9 @@ private:
   CollisionMarginPairData pair_margins_;
 
   template <class Archive>
-  friend void ::tesseract::common::serialize(Archive& ar, CollisionMarginData& obj);
+  friend void ::tesseract::common::save(Archive& ar, const CollisionMarginData& obj);
+  template <class Archive>
+  friend void ::tesseract::common::load(Archive& ar, CollisionMarginData& obj);
 };
 }  // namespace tesseract::common
 

@@ -136,11 +136,13 @@ bool Collision::operator!=(const Collision& rhs) const { return !operator==(rhs)
 /*********************************************************/
 /******                     Link                     *****/
 /*********************************************************/
-Link::Link(const std::string& name) : name_(name), hash_(std::hash<std::string>{}(name)) { this->clear(); }
+Link::Link(const std::string& name) : name_(name), id_(common::LinkId::fromName(name)) { this->clear(); }
 
 const std::string& Link::getName() const { return name_; }
 
-std::size_t Link::getHash() const { return hash_; }
+common::LinkId Link::getId() const { return id_; }
+
+std::size_t Link::getHash() const { return static_cast<std::size_t>(id_.value); }
 
 void Link::clear()
 {
@@ -188,7 +190,7 @@ bool Link::operator==(const Link& rhs) const
       tesseract::common::pointersEqual<Collision>,
       [](const Collision::Ptr& v1, const Collision::Ptr& v2) { return v1->name < v2->name; });
   equal &= name_ == rhs.name_;
-  equal &= hash_ == rhs.hash_;
+  equal &= id_ == rhs.id_;
   equal &= visible == rhs.visible;
   equal &= collision_enabled == rhs.collision_enabled;
   return equal;
