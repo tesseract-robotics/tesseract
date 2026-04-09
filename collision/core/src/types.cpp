@@ -42,6 +42,8 @@ void ContactResult::clear()
   transform[1] = Eigen::Isometry3d::Identity();
   link_names[0] = "";
   link_names[1] = "";
+  link_ids[0] = {};
+  link_ids[1] = {};
   shape_id[0] = -1;
   shape_id[1] = -1;
   subshape_id[0] = -1;
@@ -100,7 +102,7 @@ bool ContactRequest::operator!=(const ContactRequest& rhs) const { return !opera
 
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
 {
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first.value <= key.second.value);
   ++count_;
   auto& cv = data_[key];
   return cv.emplace_back(std::move(result));
@@ -109,7 +111,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactRes
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, const MappedType& results)
 {
   assert(!results.empty());
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first.value <= key.second.value);
   count_ += static_cast<long>(results.size());
   auto& cv = data_[key];
   cv.insert(cv.end(), results.begin(), results.end());
@@ -118,7 +120,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, const Mapp
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactResult result)
 {
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first.value <= key.second.value);
   auto& cv = data_[key];
   count_ += (1 - static_cast<long>(cv.size()));
   assert(count_ >= 0);
@@ -129,7 +131,7 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactRes
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, const MappedType& results)
 {
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first.value <= key.second.value);
   assert(!results.empty());
   auto& cv = data_[key];
   count_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
@@ -150,7 +152,7 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
 {
   for (auto& pair : sub_segment_results.data_)
   {
-    assert(tesseract::common::makeOrderedLinkPair(pair.first.first, pair.first.second) == pair.first);
+    assert(pair.first.first.value <= pair.first.second.value);
     // Update cc_time and cc_type
     for (auto& r : pair.second)
     {
@@ -325,6 +327,7 @@ std::string ContactResultMap::getSummary() const
   std::stringstream ss;
   std::map<KeyType, std::size_t> collision_counts;
   std::map<KeyType, double> closest_distances;
+  std::map<KeyType, std::array<std::string, 2>> pair_names;
 
   // Initialize distances map with max values
   for (const auto& pair : data_)
@@ -333,6 +336,7 @@ std::string ContactResultMap::getSummary() const
     {
       collision_counts[pair.first] = pair.second.size();
       closest_distances[pair.first] = std::numeric_limits<double>::max();
+      pair_names[pair.first] = pair.second.front().link_names;
 
       // Find closest distance for this pair
       for (const auto& result : pair.second)
@@ -351,7 +355,8 @@ std::string ContactResultMap::getSummary() const
                                       collision_counts.end(),
                                       [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
 
-  ss << max_element->first.first << " - " << max_element->first.second << ": " << max_element->second
+  const auto& names = pair_names[max_element->first];
+  ss << names[0] << " - " << names[1] << ": " << max_element->second
      << " collisions, min dist: " << closest_distances[max_element->first];
 
   return ss.str();
@@ -927,15 +932,13 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
     {
       for (const auto& contact_pair : substep.contacts.getContainer())
       {
-        const auto& link_pair = contact_pair.first;
-        if (link_index_map.find(link_pair.first) == link_index_map.end())
-        {
-          link_index_map[link_pair.first] = index++;
-        }
-        if (link_index_map.find(link_pair.second) == link_index_map.end())
-        {
-          link_index_map[link_pair.second] = index++;
-        }
+        if (contact_pair.second.empty())
+          continue;
+        const auto& names = contact_pair.second.front().link_names;
+        if (link_index_map.find(names[0]) == link_index_map.end())
+          link_index_map[names[0]] = index++;
+        if (link_index_map.find(names[1]) == link_index_map.end())
+          link_index_map[names[1]] = index++;
       }
     }
   }
@@ -951,9 +954,11 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
     {
       for (const auto& contact_pair : substep.contacts.getContainer())
       {
-        const auto& link_pair = contact_pair.first;
-        std::size_t row = link_index_map[link_pair.first];
-        std::size_t col = link_index_map[link_pair.second];
+        if (contact_pair.second.empty())
+          continue;
+        const auto& names = contact_pair.second.front().link_names;
+        std::size_t row = link_index_map[names[0]];
+        std::size_t col = link_index_map[names[1]];
         collision_matrix[row][col]++;
         collision_matrix[col][row]++;
       }

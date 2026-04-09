@@ -30,6 +30,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cereal/types/atomic.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/unordered_map.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/utility.hpp>
 #include <cereal/types/optional.hpp>
 #include <cereal/types/common.hpp>
 #include <cereal/types/polymorphic.hpp>
@@ -46,7 +48,7 @@ namespace tesseract::collision
 /************************************************/
 
 template <class Archive>
-void serialize(Archive& ar, tesseract::collision::ContactResult& g)
+void save(Archive& ar, const tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
@@ -63,23 +65,54 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
   ar(cereal::make_nvp("single_contact_point", g.single_contact_point));
 }
 
+template <class Archive>
+void load(Archive& ar, tesseract::collision::ContactResult& g)
+{
+  ar(cereal::make_nvp("distance", g.distance));
+  ar(cereal::make_nvp("type_id", g.type_id));
+  ar(cereal::make_nvp("link_names", g.link_names));
+  ar(cereal::make_nvp("shape_id", g.shape_id));
+  ar(cereal::make_nvp("subshape_id", g.subshape_id));
+  ar(cereal::make_nvp("nearest_points", g.nearest_points));
+  ar(cereal::make_nvp("nearest_points_local", g.nearest_points_local));
+  ar(cereal::make_nvp("transform", g.transform));
+  ar(cereal::make_nvp("normal", g.normal));
+  ar(cereal::make_nvp("cc_time", g.cc_time));
+  ar(cereal::make_nvp("cc_type", g.cc_type));
+  ar(cereal::make_nvp("cc_transform", g.cc_transform));
+  ar(cereal::make_nvp("single_contact_point", g.single_contact_point));
+  // Recompute link_ids from link_names
+  g.link_ids[0] = tesseract::common::LinkId::fromName(g.link_names[0]);
+  g.link_ids[1] = tesseract::common::LinkId::fromName(g.link_names[1]);
+}
+
 /***(**********************************************/
 /****** tesseract::collision::ContactResultMap ******/
 /***************************************************/
 template <class Archive>
 void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
 {
-  ar(cereal::make_nvp("container", g.getContainer()));
+  // Serialize as vector of (LinkIdPair, results) to avoid unordered_map serialization
+  std::vector<std::pair<tesseract::common::LinkIdPair, tesseract::collision::ContactResultVector>> entries;
+  for (const auto& [key, results] : g.getContainer())
+  {
+    if (!results.empty())
+      entries.emplace_back(key, results);
+  }
+  // Sort by LinkIdPair for deterministic output
+  std::sort(entries.begin(), entries.end(),
+            [](const auto& a, const auto& b) { return a.first < b.first; });
+  ar(cereal::make_nvp("entries", entries));
 }
 
 template <class Archive>
 void load(Archive& ar, tesseract::collision::ContactResultMap& g)
 {
-  tesseract::collision::ContactResultMap::ContainerType container;
-  ar(cereal::make_nvp("container", container));
+  std::vector<std::pair<tesseract::common::LinkIdPair, tesseract::collision::ContactResultVector>> entries;
+  ar(cereal::make_nvp("entries", entries));
 
-  for (const auto& c : container)
-    g.addContactResult(c.first, c.second);
+  for (const auto& [key, results] : entries)
+    g.addContactResult(key, results);
 }
 
 template <class Archive>

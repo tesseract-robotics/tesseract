@@ -1351,7 +1351,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
   }
 
   // Save Graph
@@ -1391,7 +1391,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
   }
 }
 
@@ -1435,9 +1435,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
     EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first, prefix + entry.first.second));
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.second.name1, prefix + entry.second.name2));
   }
 
   // Save Graph
@@ -1494,9 +1494,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
     EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first, prefix + entry.first.second));
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.second.name1, prefix + entry.second.name2));
   }
 
   // Save Graph

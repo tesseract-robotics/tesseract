@@ -46,6 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::scene_graph
 {
@@ -257,6 +258,8 @@ public:
 
   const std::string& getName() const;
 
+  common::JointId getId() const;
+
   /// The type of joint
   JointType type{ JointType::UNKNOWN };
 
@@ -313,6 +316,9 @@ public:
 
 private:
   std::string name_;
+
+  /** @brief The integer identity of this joint, computed from name_ */
+  common::JointId id_{};
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, Joint& obj);
