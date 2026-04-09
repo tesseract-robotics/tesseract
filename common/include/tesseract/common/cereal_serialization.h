@@ -7,6 +7,7 @@
 #include <tesseract/common/collision_margin_data.h>
 #include <tesseract/common/contact_allowed_validator.h>
 #include <tesseract/common/joint_state.h>
+#include <tesseract/common/types.h>
 #include <tesseract/common/manipulator_info.h>
 #include <tesseract/common/kinematic_limits.h>
 #include <tesseract/common/resource_locator.h>
@@ -28,6 +29,19 @@
 
 namespace tesseract::common
 {
+template <class Archive, typename Tag>
+void serialize(Archive& ar, NameId<Tag>& id)
+{
+  ar(cereal::make_nvp("value", id.value));
+}
+
+template <class Archive>
+void serialize(Archive& ar, LinkIdPair& pair)
+{
+  ar(cereal::make_nvp("first", pair.first));
+  ar(cereal::make_nvp("second", pair.second));
+}
+
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
 {
@@ -41,9 +55,22 @@ void serialize(Archive& ar, AnyPoly& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, AllowedCollisionMatrix& obj)
+void save(Archive& ar, const AllowedCollisionMatrix& obj)
 {
-  ar(cereal::make_nvp("lookup_table", obj.lookup_table_));
+  // Serialize as string-based format for backwards compatibility
+  std::unordered_map<LinkNamesPair, std::string> compat;
+  for (const auto& [key, entry] : obj.lookup_table_)
+    compat[LinkNamesPair{ entry.name1, entry.name2 }] = entry.reason;
+  ar(cereal::make_nvp("lookup_table", compat));
+}
+
+template <class Archive>
+void load(Archive& ar, AllowedCollisionMatrix& obj)
+{
+  std::unordered_map<LinkNamesPair, std::string> compat;
+  ar(cereal::make_nvp("lookup_table", compat));
+  for (const auto& [names, reason] : compat)
+    obj.addAllowedCollision(names.first, names.second, reason);
 }
 
 template <class Archive>
@@ -53,19 +80,33 @@ void serialize(Archive& ar, CalibrationInfo& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, CollisionMarginPairData& obj)
+void save(Archive& ar, const CollisionMarginPairData& obj)
 {
-  ar(cereal::make_nvp("lookup_table", obj.lookup_table_));
-
-  // Recreate max_collision_margin_ and object_max_margins_ after deserialization
-  if (Archive::is_loading::value)
-  {
-    obj.updateMaxMargins();
-  }
+  // Serialize as string-based format for backwards compatibility
+  std::unordered_map<LinkNamesPair, double> compat;
+  for (const auto& [key, entry] : obj.lookup_table_)
+    compat[LinkNamesPair{ entry.name1, entry.name2 }] = entry.margin;
+  ar(cereal::make_nvp("lookup_table", compat));
 }
 
 template <class Archive>
-void serialize(Archive& ar, CollisionMarginData& obj)
+void load(Archive& ar, CollisionMarginPairData& obj)
+{
+  std::unordered_map<LinkNamesPair, double> compat;
+  ar(cereal::make_nvp("lookup_table", compat));
+  for (const auto& [names, margin] : compat)
+    obj.setCollisionMargin(names.first, names.second, margin);
+}
+
+template <class Archive>
+void save(Archive& ar, const CollisionMarginData& obj)
+{
+  ar(cereal::make_nvp("default_collision_margin", obj.default_collision_margin_));
+  ar(cereal::make_nvp("pair_margins", obj.pair_margins_));
+}
+
+template <class Archive>
+void load(Archive& ar, CollisionMarginData& obj)
 {
   ar(cereal::make_nvp("default_collision_margin", obj.default_collision_margin_));
   ar(cereal::make_nvp("pair_margins", obj.pair_margins_));

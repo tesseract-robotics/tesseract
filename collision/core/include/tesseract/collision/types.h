@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/fwd.h>
 #include <tesseract/common/any_poly.h>
 #include <tesseract/common/eigen_types.h>
+#include <tesseract/common/types.h>
 #include <tesseract/common/collision_margin_data.h>
 #include <tesseract/geometry/fwd.h>
 
@@ -88,6 +89,8 @@ struct ContactResult
   std::array<int, 2> type_id{ 0, 0 };
   /** @brief The two links that are in contact */
   std::array<std::string, 2> link_names;
+  /** @brief Integer IDs of the two links in contact (always set alongside link_names) */
+  std::array<tesseract::common::LinkId, 2> link_ids;
   /** @brief The two shapes that are in contact. Each link can be made up of multiple shapes */
   std::array<int, 2> shape_id{ -1, -1 };
   /** @brief Some shapes like octomap and mesh have subshape (boxes and triangles) */
@@ -154,11 +157,13 @@ class ContactResultMap
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  using KeyType = std::pair<std::string, std::string>;
+  using KeyType = tesseract::common::LinkIdPair;
   using MappedType = ContactResultVector;
-  using ContainerType = tesseract::common::AlignedMap<KeyType, MappedType>;
-  using ConstReferenceType = typename tesseract::common::AlignedMap<KeyType, MappedType>::const_reference;
-  using ConstIteratorType = typename tesseract::common::AlignedMap<KeyType, MappedType>::const_iterator;
+  using ContainerType =
+      std::unordered_map<KeyType, MappedType, tesseract::common::LinkIdPair::Hash, std::equal_to<KeyType>,
+                         Eigen::aligned_allocator<std::pair<const KeyType, MappedType>>>;
+  using ConstReferenceType = typename ContainerType::const_reference;
+  using ConstIteratorType = typename ContainerType::const_iterator;
   using PairType = typename std::pair<const KeyType, MappedType>;
   using FilterFn = std::function<void(PairType&)>;
 

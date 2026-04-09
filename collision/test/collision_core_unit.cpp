@@ -70,10 +70,11 @@ void expectContactInvariant(const tesseract::collision::ImplicitSDFContact& cont
 class TestContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(const std::string& s1, const std::string& s2) const override
+  bool operator()(tesseract::common::LinkId id1, tesseract::common::LinkId id2) const override
   {
-    return (tesseract::common::makeOrderedLinkPair("base_link", "link_1") ==
-            tesseract::common::makeOrderedLinkPair(s1, s2));
+    return tesseract::common::LinkIdPair::make(id1, id2) ==
+           tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("base_link"),
+                                               tesseract::common::LinkId::fromName("link_1"));
   }
 };
 
@@ -841,8 +842,8 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     tesseract::common::testSerialization<tesseract::collision::ContactResultMap>(result_map, "ContactResultMap");
   }
 
-  auto key1 = tesseract::common::makeOrderedLinkPair("link1", "link2");
-  auto key2 = tesseract::common::makeOrderedLinkPair("link2", "link3");
+  auto key1 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link1"), tesseract::common::LinkId::fromName("link2"));
+  auto key2 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link2"), tesseract::common::LinkId::fromName("link3"));
 
   {  // Test addContactResult single method
     tesseract::collision::ContactResultMap result_map;
@@ -1582,8 +1583,8 @@ TEST(TesseractCoreUnit, ContactTrajectorySubstepResultsUnit)  // NOLINT
     tesseract::collision::ContactTrajectorySubstepResults results(substep_number, state);
 
     // Create contact results
-    auto key1 = tesseract::common::makeOrderedLinkPair("link1", "link2");
-    auto key2 = tesseract::common::makeOrderedLinkPair("link3", "link4");
+    auto key1 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link1"), tesseract::common::LinkId::fromName("link2"));
+    auto key2 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link3"), tesseract::common::LinkId::fromName("link4"));
 
     tesseract::collision::ContactResult cr1;
     cr1.distance = -0.1;
@@ -1700,8 +1701,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryStepResultsUnit)  // NOLINT
     }
 
     // Create contact results for first substep
-    auto key1 = tesseract::common::makeOrderedLinkPair("link1", "link2");
-    auto key2 = tesseract::common::makeOrderedLinkPair("link3", "link4");
+    auto key1 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link1"), tesseract::common::LinkId::fromName("link2"));
+    auto key2 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link3"), tesseract::common::LinkId::fromName("link4"));
 
     tesseract::collision::ContactResult cr1;
     cr1.distance = -0.1;
@@ -1844,7 +1845,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
     results.steps[0].resize(2);  // 2 substeps for first step
 
     // Create contact results for step 1, substep 0
-    auto key1 = tesseract::common::makeOrderedLinkPair("link1", "link2");
+    auto key1 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link1"), tesseract::common::LinkId::fromName("link2"));
 
     tesseract::collision::ContactResult cr1;
     cr1.distance = -0.1;
@@ -1868,7 +1869,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
     results.steps[1].resize(3);  // 3 substeps for second step
 
     // Create contact results for step 2, substep 1
-    auto key2 = tesseract::common::makeOrderedLinkPair("link3", "link4");
+    auto key2 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link3"), tesseract::common::LinkId::fromName("link4"));
 
     tesseract::collision::ContactResult cr2;
     cr2.distance = -0.3;
@@ -2009,8 +2010,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       // Create contact results to add
       tesseract::collision::ContactResultMap contacts;
-      auto key1 = tesseract::common::makeOrderedLinkPair("link1", "link2");
-      auto key2 = tesseract::common::makeOrderedLinkPair("link3", "link4");
+      auto key1 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link1"), tesseract::common::LinkId::fromName("link2"));
+      auto key2 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link3"), tesseract::common::LinkId::fromName("link4"));
 
       tesseract::collision::ContactResult cr1;
       cr1.distance = -0.15;
@@ -2108,7 +2109,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
       // Add first set of contacts - this should automatically initialize the step
       tesseract::collision::ContactResultMap contacts1;
-      auto key1 = tesseract::common::makeOrderedLinkPair("linkA", "linkB");
+      auto key1 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("linkA"), tesseract::common::LinkId::fromName("linkB"));
 
       tesseract::collision::ContactResult cr1;
       cr1.distance = -0.1;
@@ -2140,7 +2141,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       new_end_state << 3.0, 4.0;
 
       tesseract::collision::ContactResultMap contacts2;
-      auto key2 = tesseract::common::makeOrderedLinkPair("linkC", "linkD");
+      auto key2 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("linkC"), tesseract::common::LinkId::fromName("linkD"));
 
       tesseract::collision::ContactResult cr2;
       cr2.distance = -0.3;
@@ -2244,7 +2245,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       substep_end << 2.0, 2.5;
 
       tesseract::collision::ContactResultMap contacts;
-      auto key = tesseract::common::makeOrderedLinkPair("testLink1", "testLink2");
+      auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("testLink1"), tesseract::common::LinkId::fromName("testLink2"));
 
       tesseract::collision::ContactResult cr;
       cr.distance = -0.05;
@@ -2280,7 +2281,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       substep_end << 2.5, 3.0;
 
       tesseract::collision::ContactResultMap contacts;
-      auto key = tesseract::common::makeOrderedLinkPair("anotherLink1", "anotherLink2");
+      auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("anotherLink1"), tesseract::common::LinkId::fromName("anotherLink2"));
 
       tesseract::collision::ContactResult cr;
       cr.distance = -0.03;
@@ -2320,7 +2321,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       substep_end << 3.5, 4.0;
 
       tesseract::collision::ContactResultMap contacts;
-      auto key = tesseract::common::makeOrderedLinkPair("thirdLink1", "thirdLink2");
+      auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("thirdLink1"), tesseract::common::LinkId::fromName("thirdLink2"));
 
       tesseract::collision::ContactResult cr;
       cr.distance = -0.01;
@@ -2407,7 +2408,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       state << 1.0, 2.0;
 
       tesseract::collision::ContactResultMap contacts;
-      auto key = tesseract::common::makeOrderedLinkPair("validLink1", "validLink2");
+      auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("validLink1"), tesseract::common::LinkId::fromName("validLink2"));
       tesseract::collision::ContactResult cr;
       cr.distance = -0.05;
       cr.link_names[0] = "validLink1";
@@ -2434,7 +2435,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
       state << 1.0, 2.0;
 
       tesseract::collision::ContactResultMap contacts;
-      auto key = tesseract::common::makeOrderedLinkPair("twoStepLink1", "twoStepLink2");
+      auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("twoStepLink1"), tesseract::common::LinkId::fromName("twoStepLink2"));
       tesseract::collision::ContactResult cr;
       cr.distance = -0.03;
       cr.link_names[0] = "twoStepLink1";
@@ -2477,8 +2478,8 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
     // Create contacts to add
     tesseract::collision::ContactResultMap contacts;
-    auto key1 = tesseract::common::makeOrderedLinkPair("substepLink1", "substepLink2");
-    auto key2 = tesseract::common::makeOrderedLinkPair("substepLink3", "substepLink4");
+    auto key1 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("substepLink1"), tesseract::common::LinkId::fromName("substepLink2"));
+    auto key2 = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("substepLink3"), tesseract::common::LinkId::fromName("substepLink4"));
 
     tesseract::collision::ContactResult cr1;
     cr1.distance = -0.12;
@@ -2534,7 +2535,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
     new_end_state << 30.0, 40.0;
 
     tesseract::collision::ContactResultMap new_contacts;
-    auto new_key = tesseract::common::makeOrderedLinkPair("newLink1", "newLink2");
+    auto new_key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("newLink1"), tesseract::common::LinkId::fromName("newLink2"));
 
     tesseract::collision::ContactResult new_cr;
     new_cr.distance = -0.99;

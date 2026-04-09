@@ -46,6 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 #include <tesseract/geometry/fwd.h>
 
 namespace tesseract::scene_graph
@@ -195,7 +196,10 @@ public:
 
   const std::string& getName() const;
 
-  std::size_t getHash() const;
+  common::LinkId getId() const;
+
+  /** @deprecated Use getId() instead */
+  [[deprecated("Use getId() instead")]] std::size_t getHash() const;
 
   /// inertial element
   Inertial::Ptr inertial;
@@ -229,8 +233,8 @@ public:
 private:
   std::string name_;
 
-  /** @brief The hash of the link name */
-  std::size_t hash_{};
+  /** @brief The integer identity of this link, computed from name_ */
+  common::LinkId id_{};
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, Link& obj);

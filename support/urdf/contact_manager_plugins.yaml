@@ -4,8 +4,9 @@ contact_manager_plugins:
   search_libraries:
     - tesseract_collision_bullet_factories
     - tesseract_collision_fcl_factories
+    - tesseract_collision_coal_coal_factories
   discrete_plugins:
-    default: BulletDiscreteBVHManager
+    default: CoalDiscreteBVHManager
     plugins:
       BulletDiscreteBVHManager:
         class: BulletDiscreteBVHManagerFactory
@@ -13,10 +14,14 @@ contact_manager_plugins:
         class: BulletDiscreteSimpleManagerFactory
       FCLDiscreteBVHManager:
         class: FCLDiscreteBVHManagerFactory
+      CoalDiscreteBVHManager:
+        class: CoalDiscreteBVHManagerFactory
   continuous_plugins:
-    default: BulletCastBVHManager
+    default: CoalCastBVHManager
     plugins:
       BulletCastBVHManager:
         class: BulletCastBVHManagerFactory
       BulletCastSimpleManager:
         class: BulletCastSimpleManagerFactory
+      CoalCastBVHManager:
+        class: CoalCastBVHManagerFactory
