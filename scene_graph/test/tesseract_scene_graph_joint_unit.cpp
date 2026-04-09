@@ -234,6 +234,16 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
   EXPECT_TRUE(joint_1.type == JointType::UNKNOWN);
 }
 
+TEST(TesseractSceneGraphUnit, JointGetIdUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  Joint joint("my_joint");
+
+  // getId() should match JointId::fromName
+  EXPECT_EQ(joint.getId(), tesseract::common::JointId::fromName("my_joint"));
+  EXPECT_TRUE(joint.getId().isValid());
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
