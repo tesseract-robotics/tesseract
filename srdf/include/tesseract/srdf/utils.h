@@ -47,15 +47,12 @@ void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_grap
  * @param pair2 Second pair of strings
  * @return True if pair1 should go before pair2 (is closer to A)
  */
-bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkNamesPair> pair1,
-                                   std::reference_wrapper<const tesseract::common::LinkNamesPair> pair2);
-
 /**
- * @brief Returns an alphabetically sorted vector of ACM keys (the link pairs)
+ * @brief Returns an alphabetically sorted vector of ACM entries
  * @param allowed_collision_entries Entries to be sorted
- * @return An alphabetically sorted vector of ACM keys (the link pairs)
+ * @return An alphabetically sorted vector of ACM entries (by name1, then name2)
  */
-std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>>
-getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
+std::vector<std::reference_wrapper<const tesseract::common::ACMEntry>>
+getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
 }  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_UTILS_H

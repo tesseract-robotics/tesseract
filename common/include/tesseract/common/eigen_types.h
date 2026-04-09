@@ -10,6 +10,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
+
 namespace tesseract::common
 {
 template <typename T>
@@ -30,6 +32,8 @@ using VectorVector4d = AlignedVector<Eigen::Vector4d>;
 using VectorVector3d = std::vector<Eigen::Vector3d>;
 using VectorVector2d = AlignedVector<Eigen::Vector2d>;
 using TransformMap = AlignedUnorderedMap<std::string, Eigen::Isometry3d>;
+using LinkIdTransformMap = AlignedUnorderedMap<LinkId, Eigen::Isometry3d>;
+using JointIdTransformMap = AlignedUnorderedMap<JointId, Eigen::Isometry3d>;
 using Toolpath = AlignedVector<VectorIsometry3d>;
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 }  // namespace tesseract::common

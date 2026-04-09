@@ -718,8 +718,8 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
-  tesseract::common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
+  auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd0->getName()),
+                                                  tesseract::common::LinkId::fromName(cd1->getName()));
 
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
@@ -859,8 +859,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
-  tesseract::common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
+  auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd0->getName()),
+                                                  tesseract::common::LinkId::fromName(cd1->getName()));
 
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());

@@ -49,7 +49,8 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.acm_override_type = ACMOverrideType::ASSIGN;
     manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
-    EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
+    EXPECT_TRUE((*fn)(tesseract::common::LinkId::fromName("allowed_link_1a"),
+                      tesseract::common::LinkId::fromName("allowed_link_2a")));
   }
 
   // NONE
@@ -67,8 +68,10 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.acm_override_type = ACMOverrideType::OR;
     manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
-    EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
-    EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
+    EXPECT_TRUE((*fn)(tesseract::common::LinkId::fromName("allowed_link_1a"),
+                      tesseract::common::LinkId::fromName("allowed_link_2a")));
+    EXPECT_TRUE((*fn)(tesseract::common::LinkId::fromName("allowed_link_1c"),
+                      tesseract::common::LinkId::fromName("allowed_link_2c")));
   }
 
   // AND
@@ -78,8 +81,10 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.acm_override_type = ACMOverrideType::AND;
     manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
-    EXPECT_FALSE((*fn)("allowed_link_1a", "allowed_link_2a"));
-    EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
+    EXPECT_FALSE((*fn)(tesseract::common::LinkId::fromName("allowed_link_1a"),
+                       tesseract::common::LinkId::fromName("allowed_link_2a")));
+    EXPECT_TRUE((*fn)(tesseract::common::LinkId::fromName("allowed_link_1c"),
+                      tesseract::common::LinkId::fromName("allowed_link_2c")));
   }
 }
 

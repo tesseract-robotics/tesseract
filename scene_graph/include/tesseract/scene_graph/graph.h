@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 
 #ifndef SWIG
 
@@ -382,6 +383,7 @@ public:
    * @return True if the two links are allowed to be in collision, otherwise false
    */
   bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
+  bool isCollisionAllowed(tesseract::common::LinkId link_id1, tesseract::common::LinkId link_id2) const;
 
   /**
    * @brief Get the allowed collision matrix

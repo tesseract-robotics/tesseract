@@ -302,6 +302,8 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
 
   // Get active contact managers
   {
+    env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
+    env->setActiveContinuousContactManager("BulletCastBVHManager");
     tesseract::common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
     EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteBVHManager");
     EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastBVHManager");
@@ -2991,6 +2993,9 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   traj5.row(0) = joint_start_pos;
   traj5.row(1) = joint_pos_collision;
 
+  // Use Bullet explicitly — expected contact counts are calibrated for Bullet.
+  env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
+  env->setActiveContinuousContactManager("BulletCastBVHManager");
   auto discrete_manager = env->getDiscreteContactManager();
   auto continuous_manager = env->getContinuousContactManager();
   auto state_solver = env->getStateSolver();
