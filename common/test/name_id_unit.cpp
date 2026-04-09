@@ -1,0 +1,161 @@
+/**
+ * @file name_id_unit.cpp
+ * @brief Unit tests for NameId<Tag>, LinkId, JointId, and LinkIdPair types
+ *
+ * @author Roelof Oomen
+ * @date April 9, 2026
+ */
+
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+#include <unordered_set>
+#include <unordered_map>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract/common/types.h>
+
+using namespace tesseract::common;
+
+// ======================== NameId basics ========================
+
+TEST(NameIdTest, FromNameDeterministic)  // NOLINT
+{
+  const LinkId a1 = LinkId::fromName("link_a");
+  const LinkId a2 = LinkId::fromName("link_a");
+  EXPECT_EQ(a1, a2);
+  EXPECT_EQ(a1.value, a2.value);
+}
+
+TEST(NameIdTest, DifferentNamesDifferentIds)  // NOLINT
+{
+  const LinkId a = LinkId::fromName("link_a");
+  const LinkId b = LinkId::fromName("link_b");
+  EXPECT_NE(a, b);
+}
+
+TEST(NameIdTest, IsValid)  // NOLINT
+{
+  const LinkId valid = LinkId::fromName("something");
+  EXPECT_TRUE(valid.isValid());
+
+  const LinkId invalid{};
+  EXPECT_FALSE(invalid.isValid());
+  EXPECT_EQ(invalid.value, 0U);
+}
+
+TEST(NameIdTest, SentinelIsInvalid)  // NOLINT
+{
+  EXPECT_FALSE(INVALID_LINK_ID.isValid());
+  EXPECT_EQ(INVALID_LINK_ID.value, 0U);
+  EXPECT_FALSE(INVALID_JOINT_ID.isValid());
+  EXPECT_EQ(INVALID_JOINT_ID.value, 0U);
+}
+
+TEST(NameIdTest, ZeroGuard)  // NOLINT
+{
+  // If std::hash<std::string> ever returns 0, fromName maps it to 1
+  // We can't easily force this, but verify any id from a real name is valid
+  const LinkId id = LinkId::fromName("");
+  EXPECT_TRUE(id.isValid());
+  EXPECT_NE(id.value, 0U);
+}
+
+// ======================== Type safety ========================
+
+TEST(NameIdTest, LinkIdAndJointIdAreDistinctTypes)  // NOLINT
+{
+  // Static asserts verify compile-time type safety
+  static_assert(!std::is_same_v<LinkId, JointId>, "LinkId and JointId must be distinct types");
+  static_assert(!std::is_same_v<LinkTag, JointTag>, "LinkTag and JointTag must be distinct types");
+
+  // Same name produces same numeric value but different types
+  const LinkId link = LinkId::fromName("foo");
+  const JointId joint = JointId::fromName("foo");
+  EXPECT_EQ(link.value, joint.value);
+}
+
+// ======================== Hash ========================
+
+TEST(NameIdTest, IdentityHash)  // NOLINT
+{
+  const LinkId id = LinkId::fromName("test_link");
+  LinkId::Hash hasher;
+  EXPECT_EQ(hasher(id), id.value);
+}
+
+TEST(NameIdTest, StdHashSpecialization)  // NOLINT
+{
+  const LinkId id = LinkId::fromName("test_link");
+  std::hash<LinkId> hasher;
+  EXPECT_EQ(hasher(id), id.value);
+}
+
+TEST(NameIdTest, WorksInUnorderedSet)  // NOLINT
+{
+  std::unordered_set<LinkId> ids;
+  ids.insert(LinkId::fromName("a"));
+  ids.insert(LinkId::fromName("b"));
+  ids.insert(LinkId::fromName("a"));  // duplicate
+  EXPECT_EQ(ids.size(), 2U);
+  EXPECT_TRUE(ids.count(LinkId::fromName("a")) == 1);
+  EXPECT_TRUE(ids.count(LinkId::fromName("b")) == 1);
+  EXPECT_TRUE(ids.count(LinkId::fromName("c")) == 0);
+}
+
+// ======================== Ordering ========================
+
+TEST(NameIdTest, LessThan)  // NOLINT
+{
+  const LinkId a = LinkId::fromName("aaa");
+  const LinkId b = LinkId::fromName("bbb");
+  // One must be less than the other (they shouldn't be equal)
+  EXPECT_TRUE((a < b) || (b < a));
+  EXPECT_FALSE(a < a);
+}
+
+// ======================== LinkIdPair ========================
+
+TEST(LinkIdPairTest, MakeCanonical)  // NOLINT
+{
+  const LinkId a = LinkId::fromName("link_a");
+  const LinkId b = LinkId::fromName("link_b");
+  const LinkIdPair ab = LinkIdPair::make(a, b);
+  const LinkIdPair ba = LinkIdPair::make(b, a);
+  EXPECT_EQ(ab, ba);
+  // Canonical ordering: first.value <= second.value
+  EXPECT_LE(ab.first.value, ab.second.value);
+}
+
+TEST(LinkIdPairTest, Equality)  // NOLINT
+{
+  const LinkIdPair p1 = LinkIdPair::make(LinkId::fromName("x"), LinkId::fromName("y"));
+  const LinkIdPair p2 = LinkIdPair::make(LinkId::fromName("y"), LinkId::fromName("x"));
+  const LinkIdPair p3 = LinkIdPair::make(LinkId::fromName("x"), LinkId::fromName("z"));
+  EXPECT_EQ(p1, p2);
+  EXPECT_NE(p1, p3);
+}
+
+TEST(LinkIdPairTest, HashWorksInUnorderedMap)  // NOLINT
+{
+  std::unordered_map<LinkIdPair, int, LinkIdPair::Hash> map;
+  const LinkIdPair key = LinkIdPair::make(LinkId::fromName("a"), LinkId::fromName("b"));
+  map[key] = 42;
+
+  // Lookup with reversed order should find same entry
+  const LinkIdPair reversed = LinkIdPair::make(LinkId::fromName("b"), LinkId::fromName("a"));
+  EXPECT_EQ(map.at(reversed), 42);
+}
+
+TEST(LinkIdPairTest, SameLinkPair)  // NOLINT
+{
+  const LinkId a = LinkId::fromName("self");
+  const LinkIdPair pair = LinkIdPair::make(a, a);
+  EXPECT_EQ(pair.first, pair.second);
+}
+
+int main(int argc, char** argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
