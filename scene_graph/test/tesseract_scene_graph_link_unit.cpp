@@ -185,6 +185,20 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkUnit)  // NOLINT
   EXPECT_TRUE(l.inertial == nullptr);
 }
 
+TEST(TesseractSceneGraphUnit, LinkGetIdUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  Link link("my_link");
+
+  // getId() should match LinkId::fromName
+  EXPECT_EQ(link.getId(), tesseract::common::LinkId::fromName("my_link"));
+  EXPECT_TRUE(link.getId().isValid());
+
+  // Clone preserves getId
+  Link cloned = link.clone();
+  EXPECT_EQ(cloned.getId(), link.getId());
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
