@@ -221,7 +221,7 @@ bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
 {
   return cd1->m_enabled && cd2->m_enabled && (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&                                      // NOLINT
-         !isContactAllowed(cd1->getName(), cd2->getName(), validator, verbose);
+         !isContactAllowed(cd1->getLinkId(), cd2->getLinkId(), validator, verbose);
 }
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
@@ -248,8 +248,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!col_result.isCollision())
     return false;
 
-  auto link_pair = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd1->getName()),
-                                                       tesseract::common::LinkId::fromName(cd2->getName()));
+  auto link_pair = tesseract::common::LinkIdPair::make(cd1->getLinkId(), cd2->getLinkId());
 
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
   const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
@@ -260,8 +259,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   {
     const fcl::Contactd& fcl_contact = col_result.getContact(i);
     ContactResult contact;
-    contact.link_names[0] = cd1->getName();
-    contact.link_names[1] = cd2->getName();
+    contact.link_ids[0] = cd1->getLinkId();
+    contact.link_ids[1] = cd2->getLinkId();
     contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
     contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
     contact.subshape_id[0] = static_cast<int>(fcl_contact.b1);
@@ -303,7 +302,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  if (d > cdata->collision_margin_data.getCollisionMargin(cd1->getName(), cd2->getName()))
+  if (d > cdata->collision_margin_data.getCollisionMargin(cd1->getLinkId(), cd2->getLinkId()))
     return false;
 
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
@@ -312,8 +311,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   Eigen::Isometry3d tf2_inv = tf2.inverse();
 
   ContactResult contact;
-  contact.link_names[0] = cd1->getName();
-  contact.link_names[1] = cd2->getName();
+  contact.link_ids[0] = cd1->getLinkId();
+  contact.link_ids[1] = cd2->getLinkId();
   contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
   contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
   contact.subshape_id[0] = static_cast<int>(fcl_result.b1);
@@ -334,8 +333,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   // TODO: There is an issue with FCL need to track down
   assert(!std::isnan(contact.nearest_points[0](0)));
 
-  auto link_pair = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd1->getName()),
-                                                       tesseract::common::LinkId::fromName(cd2->getName()));
+  auto link_pair = tesseract::common::LinkIdPair::make(cd1->getLinkId(), cd2->getLinkId());
   const auto it = cdata->res->find(link_pair);
   bool found = (it != cdata->res->end() && !it->second.empty());
 
@@ -348,7 +346,11 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : name_(std::move(name)), type_id_(type_id), shapes_(std::move(shapes)), shape_poses_(std::move(shape_poses))
+  : name_(std::move(name))
+  , link_id_(tesseract::common::LinkId::fromName(name_))
+  , type_id_(type_id)
+  , shapes_(std::move(shapes))
+  , shape_poses_(std::move(shape_poses))
 {
   assert(!shapes_.empty());                       // NOLINT
   assert(!shape_poses_.empty());                  // NOLINT
