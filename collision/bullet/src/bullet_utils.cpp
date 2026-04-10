@@ -461,7 +461,11 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : m_name(std::move(name)), m_type_id(type_id), m_shapes(std::move(shapes)), m_shape_poses(std::move(shape_poses))
+  : m_name(std::move(name))
+  , m_link_id(tesseract::common::LinkId::fromName(m_name))
+  , m_type_id(type_id)
+  , m_shapes(std::move(shapes))
+  , m_shape_poses(std::move(shape_poses))
 {
   assert(!m_shapes.empty());
   assert(!m_shape_poses.empty());
@@ -539,6 +543,7 @@ std::shared_ptr<CollisionObjectWrapper> CollisionObjectWrapper::clone()
 {
   auto clone_cow = std::make_shared<CollisionObjectWrapper>();
   clone_cow->m_name = m_name;
+  clone_cow->m_link_id = m_link_id;
   clone_cow->m_type_id = m_type_id;
   clone_cow->m_shapes = m_shapes;
   clone_cow->m_shape_poses = m_shape_poses;
@@ -703,7 +708,7 @@ bool needsCollisionCheck(const COW& cow1,
 {
   return cow1.m_enabled && cow2.m_enabled && (cow2.m_collisionFilterGroup & cow1.m_collisionFilterMask) &&  // NOLINT
          (cow1.m_collisionFilterGroup & cow2.m_collisionFilterMask) &&                                      // NOLINT
-         !isContactAllowed(cow1.getName(), cow2.getName(), validator, verbose);
+         !isContactAllowed(cow1.getLinkId(), cow2.getLinkId(), validator, verbose);
 }
 
 btScalar addDiscreteSingleResult(btManifoldPoint& cp,
@@ -718,9 +723,7 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd0->getName()),
-                                                  tesseract::common::LinkId::fromName(cd1->getName()));
-
+  auto key = tesseract::common::LinkIdPair::make(cd0->getLinkId(), cd1->getLinkId());
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
 
@@ -739,8 +742,8 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   btTransform tf1_inv = tf1.inverse();
 
   ContactResult contact;
-  contact.link_names[0] = cd0->getName();
-  contact.link_names[1] = cd1->getName();
+  contact.link_ids[0] = cd0->getLinkId();
+  contact.link_ids[1] = cd1->getLinkId();
 
   if (cd0->getCollisionGeometries().size() == 1)
     contact.shape_id[0] = 0;
@@ -859,8 +862,7 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  auto key = tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(cd0->getName()),
-                                                  tesseract::common::LinkId::fromName(cd1->getName()));
+  auto key = tesseract::common::LinkIdPair::make(cd0->getLinkId(), cd1->getLinkId());
 
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
@@ -879,8 +881,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   btTransform tf1_inv = tf1.inverse();
 
   ContactResult contact;
-  contact.link_names[0] = cd0->getName();
-  contact.link_names[1] = cd1->getName();
+  contact.link_ids[0] = cd0->getLinkId();
+  contact.link_ids[1] = cd1->getLinkId();
 
   if (cd0->getCollisionGeometries().size() == 1)
     contact.shape_id[0] = 0;
@@ -928,7 +930,7 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
       std::swap(col->nearest_points[0], col->nearest_points[1]);
       std::swap(col->nearest_points_local[0], col->nearest_points_local[1]);
       std::swap(col->transform[0], col->transform[1]);
-      std::swap(col->link_names[0], col->link_names[1]);
+      std::swap(col->link_ids[0], col->link_ids[1]);
       std::swap(col->type_id[0], col->type_id[1]);
       std::swap(col->shape_id[0], col->shape_id[1]);
       std::swap(col->subshape_id[0], col->subshape_id[1]);

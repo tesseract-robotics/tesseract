@@ -52,7 +52,8 @@ void save(Archive& ar, const tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
-  ar(cereal::make_nvp("link_names", g.link_names));
+  std::array<std::string, 2> link_names_compat{ g.link_ids[0].name(), g.link_ids[1].name() };
+  ar(cereal::make_nvp("link_names", link_names_compat));
   ar(cereal::make_nvp("shape_id", g.shape_id));
   ar(cereal::make_nvp("subshape_id", g.subshape_id));
   ar(cereal::make_nvp("nearest_points", g.nearest_points));
@@ -70,7 +71,10 @@ void load(Archive& ar, tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
-  ar(cereal::make_nvp("link_names", g.link_names));
+  std::array<std::string, 2> link_names_compat;
+  ar(cereal::make_nvp("link_names", link_names_compat));
+  g.link_ids[0] = tesseract::common::LinkId::fromName(link_names_compat[0]);
+  g.link_ids[1] = tesseract::common::LinkId::fromName(link_names_compat[1]);
   ar(cereal::make_nvp("shape_id", g.shape_id));
   ar(cereal::make_nvp("subshape_id", g.subshape_id));
   ar(cereal::make_nvp("nearest_points", g.nearest_points));
@@ -81,9 +85,6 @@ void load(Archive& ar, tesseract::collision::ContactResult& g)
   ar(cereal::make_nvp("cc_type", g.cc_type));
   ar(cereal::make_nvp("cc_transform", g.cc_transform));
   ar(cereal::make_nvp("single_contact_point", g.single_contact_point));
-  // Recompute link_ids from link_names
-  g.link_ids[0] = tesseract::common::LinkId::fromName(g.link_names[0]);
-  g.link_ids[1] = tesseract::common::LinkId::fromName(g.link_names[1]);
 }
 
 /***(**********************************************/
