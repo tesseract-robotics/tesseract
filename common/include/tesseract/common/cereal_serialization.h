@@ -19,6 +19,7 @@
 
 #include <cereal/cereal.hpp>
 #include <cereal/types/variant.hpp>
+#include <cereal/types/map.hpp>
 #include <cereal/types/unordered_map.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
@@ -33,6 +34,7 @@ template <class Archive, typename Tag>
 void serialize(Archive& ar, NameId<Tag>& id)
 {
   ar(cereal::make_nvp("value", id.value));
+  ar(cereal::make_nvp("name", id.name_));
 }
 
 template <class Archive>
@@ -58,16 +60,16 @@ template <class Archive>
 void save(Archive& ar, const AllowedCollisionMatrix& obj)
 {
   // Serialize as string-based format for backwards compatibility
-  std::unordered_map<LinkNamesPair, std::string> compat;
+  std::map<std::pair<std::string, std::string>, std::string> compat;
   for (const auto& [key, entry] : obj.lookup_table_)
-    compat[LinkNamesPair{ entry.name1, entry.name2 }] = entry.reason;
+    compat[{ entry.name1, entry.name2 }] = entry.reason;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 
 template <class Archive>
 void load(Archive& ar, AllowedCollisionMatrix& obj)
 {
-  std::unordered_map<LinkNamesPair, std::string> compat;
+  std::map<std::pair<std::string, std::string>, std::string> compat;
   ar(cereal::make_nvp("lookup_table", compat));
   for (const auto& [names, reason] : compat)
     obj.addAllowedCollision(names.first, names.second, reason);
@@ -83,16 +85,16 @@ template <class Archive>
 void save(Archive& ar, const CollisionMarginPairData& obj)
 {
   // Serialize as string-based format for backwards compatibility
-  std::unordered_map<LinkNamesPair, double> compat;
+  std::map<std::pair<std::string, std::string>, double> compat;
   for (const auto& [key, entry] : obj.lookup_table_)
-    compat[LinkNamesPair{ entry.name1, entry.name2 }] = entry.margin;
+    compat[{ entry.name1, entry.name2 }] = entry.margin;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 
 template <class Archive>
 void load(Archive& ar, CollisionMarginPairData& obj)
 {
-  std::unordered_map<LinkNamesPair, double> compat;
+  std::map<std::pair<std::string, std::string>, double> compat;
   ar(cereal::make_nvp("lookup_table", compat));
   for (const auto& [names, margin] : compat)
     obj.setCollisionMargin(names.first, names.second, margin);
