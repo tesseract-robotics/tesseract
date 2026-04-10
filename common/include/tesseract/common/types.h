@@ -29,7 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cstdint>
 #include <functional>
 #include <string>
-#include <utility>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::common
@@ -57,13 +56,20 @@ template <typename Tag>
 struct NameId
 {
   uint64_t value{ 0 };
+  std::string name_;
 
   /** @brief Compute an ID from a name string. Guaranteed non-zero for any input. */
   static NameId fromName(const std::string& name)
   {
     auto h = static_cast<uint64_t>(std::hash<std::string>{}(name));
-    return NameId{ h == 0 ? uint64_t{ 1 } : h };
+    NameId id;
+    id.value = (h == 0) ? uint64_t{ 1 } : h;
+    id.name_ = name;
+    return id;
   }
+
+  /** @brief Access the original name string. Empty for default-constructed (invalid) IDs. */
+  const std::string& name() const { return name_; }
 
   bool isValid() const { return value != 0; }
 
@@ -81,8 +87,8 @@ struct NameId
 using LinkId = NameId<LinkTag>;
 using JointId = NameId<JointTag>;
 
-inline constexpr LinkId INVALID_LINK_ID{ 0 };
-inline constexpr JointId INVALID_JOINT_ID{ 0 };
+inline const LinkId INVALID_LINK_ID{};
+inline const JointId INVALID_JOINT_ID{};
 
 /**
  * @brief Canonically ordered pair of LinkIds.
@@ -95,7 +101,7 @@ struct LinkIdPair
   LinkId first;
   LinkId second;
 
-  static LinkIdPair make(LinkId a, LinkId b)
+  static LinkIdPair make(const LinkId& a, const LinkId& b)
   {
     return (a.value <= b.value) ? LinkIdPair{ a, b } : LinkIdPair{ b, a };
   }
@@ -121,35 +127,6 @@ struct LinkIdPair
   };
 };
 
-// ---------------------------------------------------------------------------
-// Legacy string-pair types (deprecated — will be removed in Phase 3)
-// ---------------------------------------------------------------------------
-
-using LinkNamesPair = std::pair<std::string, std::string>;
-
-/**
- * @brief Create a pair of strings, where the pair.first is always <= pair.second.
- *
- * This is commonly used as the key to an unordered_map<LinkNamesPair, Type>
- *
- * @param link_name1 First link name
- * @param link_name2 Second link name
- * @return LinkNamesPair a lexicographically sorted pair of strings
- */
-LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2);
-
-/**
- * @brief Populate a pair of strings, where the pair.first is always <= pair.second.
- *
- * This is used to avoid multiple memory application throughout the code base
- *
- * This is commonly used as the key to an unordered_map<LinkNamesPair, Type>
- *
- * @param pair The link name pair to load a lexicographically sorted pair of strings
- * @param link_name1 First link name
- * @param link_name2 Second link nam
- */
-void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2);
 
 }  // namespace tesseract::common
 
@@ -175,11 +152,6 @@ struct hash<tesseract::common::LinkIdPair>
   }
 };
 
-template <>
-struct hash<tesseract::common::LinkNamesPair>
-{
-  std::size_t operator()(const tesseract::common::LinkNamesPair& pair) const noexcept;
-};
 
 }  // namespace std
 
