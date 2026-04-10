@@ -25,19 +25,19 @@ void save(Archive& ar, const SceneState& obj)
   // Save as string-keyed maps for backwards compatibility
   std::unordered_map<std::string, double> joints_str;
   for (const auto& [id, val] : obj.joints)
-    joints_str[std::to_string(id.value)] = val;
+    joints_str[id.name()] = val;
 
   tesseract::common::TransformMap floating_joints_str;
   for (const auto& [id, tf] : obj.floating_joints)
-    floating_joints_str[std::to_string(id.value)] = tf;
+    floating_joints_str[id.name()] = tf;
 
   tesseract::common::TransformMap link_transforms_str;
   for (const auto& [id, tf] : obj.link_transforms)
-    link_transforms_str[std::to_string(id.value)] = tf;
+    link_transforms_str[id.name()] = tf;
 
   tesseract::common::TransformMap joint_transforms_str;
   for (const auto& [id, tf] : obj.joint_transforms)
-    joint_transforms_str[std::to_string(id.value)] = tf;
+    joint_transforms_str[id.name()] = tf;
 
   ar(cereal::make_nvp("joints", joints_str));
   ar(cereal::make_nvp("floating_joints", floating_joints_str));
@@ -54,22 +54,22 @@ void load(Archive& ar, SceneState& obj)
   std::unordered_map<std::string, double> joints_str;
   ar(cereal::make_nvp("joints", joints_str));
   for (const auto& [key, val] : joints_str)
-    obj.joints[JointId{ std::stoull(key), {} }] = val;
+    obj.joints[JointId::fromName(key)] = val;
 
   tesseract::common::TransformMap floating_joints_str;
   ar(cereal::make_nvp("floating_joints", floating_joints_str));
   for (const auto& [key, tf] : floating_joints_str)
-    obj.floating_joints[JointId{ std::stoull(key), {} }] = tf;
+    obj.floating_joints[JointId::fromName(key)] = tf;
 
   tesseract::common::TransformMap link_transforms_str;
   ar(cereal::make_nvp("link_transforms", link_transforms_str));
   for (const auto& [key, tf] : link_transforms_str)
-    obj.link_transforms[LinkId{ std::stoull(key), {} }] = tf;
+    obj.link_transforms[LinkId::fromName(key)] = tf;
 
   tesseract::common::TransformMap joint_transforms_str;
   ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
   for (const auto& [key, tf] : joint_transforms_str)
-    obj.joint_transforms[JointId{ std::stoull(key), {} }] = tf;
+    obj.joint_transforms[JointId::fromName(key)] = tf;
 }
 
 template <class Archive>
