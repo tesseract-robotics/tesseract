@@ -88,8 +88,6 @@ struct ContactResult
   /** @brief A user defined type id that is added to the contact shapes */
   std::array<int, 2> type_id{ 0, 0 };
   /** @brief The two links that are in contact */
-  std::array<std::string, 2> link_names;
-  /** @brief Integer IDs of the two links in contact (always set alongside link_names) */
   std::array<tesseract::common::LinkId, 2> link_ids;
   /** @brief The two shapes that are in contact. Each link can be made up of multiple shapes */
   std::array<int, 2> shape_id{ -1, -1 };
