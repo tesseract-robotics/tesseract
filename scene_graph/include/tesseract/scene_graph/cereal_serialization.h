@@ -20,12 +20,56 @@
 namespace tesseract::scene_graph
 {
 template <class Archive>
-void serialize(Archive& ar, SceneState& obj)
+void save(Archive& ar, const SceneState& obj)
 {
-  ar(cereal::make_nvp("joints", obj.joints));
-  ar(cereal::make_nvp("floating_joints", obj.floating_joints));
-  ar(cereal::make_nvp("link_transforms", obj.link_transforms));
-  ar(cereal::make_nvp("joint_transforms", obj.joint_transforms));
+  // Save as string-keyed maps for backwards compatibility
+  std::unordered_map<std::string, double> joints_str;
+  for (const auto& [id, val] : obj.joints)
+    joints_str[std::to_string(id.value)] = val;
+
+  tesseract::common::TransformMap floating_joints_str;
+  for (const auto& [id, tf] : obj.floating_joints)
+    floating_joints_str[std::to_string(id.value)] = tf;
+
+  tesseract::common::TransformMap link_transforms_str;
+  for (const auto& [id, tf] : obj.link_transforms)
+    link_transforms_str[std::to_string(id.value)] = tf;
+
+  tesseract::common::TransformMap joint_transforms_str;
+  for (const auto& [id, tf] : obj.joint_transforms)
+    joint_transforms_str[std::to_string(id.value)] = tf;
+
+  ar(cereal::make_nvp("joints", joints_str));
+  ar(cereal::make_nvp("floating_joints", floating_joints_str));
+  ar(cereal::make_nvp("link_transforms", link_transforms_str));
+  ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
+}
+
+template <class Archive>
+void load(Archive& ar, SceneState& obj)
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  std::unordered_map<std::string, double> joints_str;
+  ar(cereal::make_nvp("joints", joints_str));
+  for (const auto& [key, val] : joints_str)
+    obj.joints[JointId{ std::stoull(key), {} }] = val;
+
+  tesseract::common::TransformMap floating_joints_str;
+  ar(cereal::make_nvp("floating_joints", floating_joints_str));
+  for (const auto& [key, tf] : floating_joints_str)
+    obj.floating_joints[JointId{ std::stoull(key), {} }] = tf;
+
+  tesseract::common::TransformMap link_transforms_str;
+  ar(cereal::make_nvp("link_transforms", link_transforms_str));
+  for (const auto& [key, tf] : link_transforms_str)
+    obj.link_transforms[LinkId{ std::stoull(key), {} }] = tf;
+
+  tesseract::common::TransformMap joint_transforms_str;
+  ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
+  for (const auto& [key, tf] : joint_transforms_str)
+    obj.joint_transforms[JointId{ std::stoull(key), {} }] = tf;
 }
 
 template <class Archive>
