@@ -40,8 +40,6 @@ void ContactResult::clear()
   nearest_points_local[1].setZero();
   transform[0] = Eigen::Isometry3d::Identity();
   transform[1] = Eigen::Isometry3d::Identity();
-  link_names[0] = "";
-  link_names[1] = "";
   link_ids[0] = {};
   link_ids[1] = {};
   shape_id[0] = -1;
@@ -70,7 +68,7 @@ bool ContactResult::operator==(const ContactResult& rhs) const
   ret_val &= tesseract::common::almostEqualRelativeAndAbs(nearest_points_local[1], rhs.nearest_points_local[1]);
   ret_val &= transform[0].isApprox(rhs.transform[0]);
   ret_val &= transform[1].isApprox(rhs.transform[1]);
-  ret_val &= (link_names == rhs.link_names);
+  ret_val &= (link_ids == rhs.link_ids);
   ret_val &= (shape_id == rhs.shape_id);
   ret_val &= (subshape_id == rhs.subshape_id);
   ret_val &= (type_id == rhs.type_id);
@@ -159,7 +157,8 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
       // Iterate over the two time values in r.cc_time
       for (size_t j = 0; j < 2; ++j)
       {
-        if (std::find(active_link_names.begin(), active_link_names.end(), r.link_names[j]) != active_link_names.end())
+        if (std::find(active_link_names.begin(), active_link_names.end(), r.link_ids[j].name()) !=
+            active_link_names.end())
         {
           r.cc_time[j] = (r.cc_time[j] < 0) ?
                              (static_cast<double>(sub_segment_index) * segment_dt) :
@@ -336,7 +335,7 @@ std::string ContactResultMap::getSummary() const
     {
       collision_counts[pair.first] = pair.second.size();
       closest_distances[pair.first] = std::numeric_limits<double>::max();
-      pair_names[pair.first] = pair.second.front().link_names;
+      pair_names[pair.first] = { pair.second.front().link_ids[0].name(), pair.second.front().link_ids[1].name() };
 
       // Find closest distance for this pair
       for (const auto& result : pair.second)
@@ -794,10 +793,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         {
           if (collision.second.empty())
             continue;
-          std::string link1_name = collision.second.front().link_names[0];
+          std::string link1_name = collision.second.front().link_ids[0].name();
           longest_link1_width = std::max(static_cast<int>(link1_name.size()) + 2, longest_link1_width);
 
-          std::string link2_name = collision.second.front().link_names[1];
+          std::string link2_name = collision.second.front().link_ids[1].name();
           longest_link2_width = std::max(static_cast<int>(link2_name.size()) + 2, longest_link2_width);
         }
       }
@@ -880,8 +879,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 
         // Add specific contact information
         ss << std::setw(longest_substep_width) << substep_string;
-        ss << std::setw(longest_link1_width) << collision.second.front().link_names[0];
-        ss << std::setw(longest_link2_width) << collision.second.front().link_names[1];
+        ss << std::setw(longest_link1_width) << collision.second.front().link_ids[0].name();
+        ss << std::setw(longest_link2_width) << collision.second.front().link_ids[1].name();
         ss << std::setw(longest_distance_width) << collision.second.front().distance;
         ss << "\n";
         line_number++;
@@ -934,11 +933,12 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const auto& names = contact_pair.second.front().link_names;
-        if (link_index_map.find(names[0]) == link_index_map.end())
-          link_index_map[names[0]] = index++;
-        if (link_index_map.find(names[1]) == link_index_map.end())
-          link_index_map[names[1]] = index++;
+        const std::string name0 = contact_pair.second.front().link_ids[0].name();
+        const std::string name1 = contact_pair.second.front().link_ids[1].name();
+        if (link_index_map.find(name0) == link_index_map.end())
+          link_index_map[name0] = index++;
+        if (link_index_map.find(name1) == link_index_map.end())
+          link_index_map[name1] = index++;
       }
     }
   }
@@ -956,9 +956,10 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const auto& names = contact_pair.second.front().link_names;
-        std::size_t row = link_index_map[names[0]];
-        std::size_t col = link_index_map[names[1]];
+        const std::string cname0 = contact_pair.second.front().link_ids[0].name();
+        const std::string cname1 = contact_pair.second.front().link_ids[1].name();
+        std::size_t row = link_index_map[cname0];
+        std::size_t col = link_index_map[cname1];
         collision_matrix[row][col]++;
         collision_matrix[col][row]++;
       }
@@ -1064,8 +1065,9 @@ std::stringstream ContactTrajectoryResults::condensedSummary() const
         const auto& first_contact = collision_pair.second.front();
 
         // Format: "14.4: [link_a, link_b]->0.001"
-        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": [" << first_contact.link_names[0]
-           << ", " << first_contact.link_names[1] << "] @ " << std::setprecision(4) << first_contact.distance << "\n";
+        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": ["
+           << first_contact.link_ids[0].name() << ", " << first_contact.link_ids[1].name() << "] @ "
+           << std::setprecision(4) << first_contact.distance << "\n";
 
         found_first_collision = true;
         break;
