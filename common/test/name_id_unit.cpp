@@ -61,6 +61,27 @@ TEST(NameIdTest, ZeroGuard)  // NOLINT
   EXPECT_NE(id.value, 0U);
 }
 
+// ======================== Name accessor ========================
+
+TEST(NameIdTest, NameAccessor)  // NOLINT
+{
+  const LinkId id = LinkId::fromName("test_link");
+  EXPECT_EQ(id.name(), "test_link");
+}
+
+TEST(NameIdTest, DefaultConstructedHasEmptyName)  // NOLINT
+{
+  const LinkId id{};
+  EXPECT_TRUE(id.name().empty());
+  EXPECT_FALSE(id.isValid());
+}
+
+TEST(NameIdTest, InvalidIdHasEmptyName)  // NOLINT
+{
+  EXPECT_TRUE(INVALID_LINK_ID.name().empty());
+  EXPECT_TRUE(INVALID_JOINT_ID.name().empty());
+}
+
 // ======================== Type safety ========================
 
 TEST(NameIdTest, LinkIdAndJointIdAreDistinctTypes)  // NOLINT
@@ -152,6 +173,16 @@ TEST(LinkIdPairTest, SameLinkPair)  // NOLINT
   const LinkId a = LinkId::fromName("self");
   const LinkIdPair pair = LinkIdPair::make(a, a);
   EXPECT_EQ(pair.first, pair.second);
+}
+
+TEST(NameIdTest, LinkIdPairPreservesNames)  // NOLINT
+{
+  const LinkId a = LinkId::fromName("link_a");
+  const LinkId b = LinkId::fromName("link_b");
+  const LinkIdPair pair = LinkIdPair::make(b, a);
+  // After canonical ordering, names should be preserved
+  EXPECT_FALSE(pair.first.name().empty());
+  EXPECT_FALSE(pair.second.name().empty());
 }
 
 int main(int argc, char** argv)
