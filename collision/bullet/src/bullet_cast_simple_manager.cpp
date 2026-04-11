@@ -86,7 +86,7 @@ ContinuousContactManager::UPtr BulletCastSimpleManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(getActiveCollisionObjects());
+  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -388,6 +388,40 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::s
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
+
+  cows_.clear();
+  cows_.reserve(link2cow_.size());
+
+  // Now need to update the broadphase with correct aabb
+  for (auto& co : link2cow_)
+  {
+    COW::Ptr& cow = co.second;
+
+    // Update with request
+    updateCollisionObjectFilters(active_ids_, cow);
+
+    // Get the cast collision object
+    COW::Ptr cast_cow = link2castcow_[cow->getLinkId()];
+
+    // Update with request
+    updateCollisionObjectFilters(active_ids_, cast_cow);
+
+    // Add to collision object vector
+    if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+    {
+      cows_.insert(cows_.begin(), cast_cow);
+    }
+    else
+    {
+      cows_.push_back(cow);
+    }
+  }
+}
+
+void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  active_ids_.clear();
+  active_ids_.insert(ids.begin(), ids.end());
 
   cows_.clear();
   cows_.reserve(link2cow_.size());

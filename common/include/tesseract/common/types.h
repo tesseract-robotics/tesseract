@@ -55,6 +55,8 @@ struct JointTag
 template <typename Tag>
 struct NameId
 {
+  NameId() = default;
+
   uint64_t value{ 0 };
   std::string name_;
 

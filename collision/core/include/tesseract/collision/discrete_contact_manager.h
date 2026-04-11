@@ -167,6 +167,14 @@ public:
   virtual void setActiveCollisionObjects(const std::vector<std::string>& names) = 0;
 
   /**
+   * @brief Set which collision objects can move using integer link IDs
+   * @param ids A vector of LinkIds identifying the active collision objects
+   * @details Default implementation converts IDs to strings and delegates to the string overload.
+   *          Concrete backends override for direct ID-keyed insertion (skipping string->ID conversion).
+   */
+  virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids);
+
+  /**
    * @brief Get which collision objects can move
    * @return A list of collision object names
    */
