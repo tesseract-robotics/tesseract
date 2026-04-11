@@ -2379,46 +2379,6 @@ TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
   EXPECT_TRUE(cal_info.empty());
 }
 
-TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
-{
-  {
-    tesseract::common::LinkNamesPair p1 = tesseract::common::makeOrderedLinkPair("link_1", "link_2");
-    tesseract::common::LinkNamesPair p2 = tesseract::common::makeOrderedLinkPair("link_2", "link_1");
-
-    EXPECT_EQ(p1.first, p2.first);
-    EXPECT_EQ(p1.second, p2.second);
-
-    EXPECT_EQ(std::hash<tesseract::common::LinkNamesPair>()(p1), std::hash<tesseract::common::LinkNamesPair>()(p2));
-  }
-
-  {
-    tesseract::common::LinkNamesPair p1;
-    tesseract::common::makeOrderedLinkPair(p1, "link_1", "link_2");
-    tesseract::common::LinkNamesPair p2;
-    tesseract::common::makeOrderedLinkPair(p2, "link_2", "link_1");
-
-    EXPECT_EQ(p1.first, p2.first);
-    EXPECT_EQ(p1.second, p2.second);
-
-    EXPECT_EQ(std::hash<tesseract::common::LinkNamesPair>()(p1), std::hash<tesseract::common::LinkNamesPair>()(p2));
-  }
-
-  {
-    tesseract::common::LinkNamesPair p1 = tesseract::common::makeOrderedLinkPair("link_1", "link_2");
-    tesseract::common::LinkNamesPair p2 = tesseract::common::makeOrderedLinkPair("link_2", "link_1");
-
-    tesseract::common::LinkNamesPair mp1;
-    tesseract::common::makeOrderedLinkPair(mp1, "link_1", "link_2");
-    tesseract::common::LinkNamesPair mp2;
-    tesseract::common::makeOrderedLinkPair(mp2, "link_2", "link_1");
-
-    EXPECT_EQ(p1.first, mp1.first);
-    EXPECT_EQ(p1.second, mp1.second);
-    EXPECT_EQ(p2.first, mp2.first);
-    EXPECT_EQ(p2.second, mp2.second);
-  }
-}
-
 /** @brief Tests calcRotationalError which return angle between [-PI, PI]*/
 TEST(TesseractCommonUnit, calcRotationalError)  // NOLINT
 {

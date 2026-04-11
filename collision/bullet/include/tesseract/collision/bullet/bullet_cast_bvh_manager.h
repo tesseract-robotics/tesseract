@@ -39,6 +39,11 @@
 #ifndef TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
 #define TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <unordered_set>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/collision/bullet/tesseract_collision_configuration.h>
@@ -92,7 +97,9 @@ public:
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
                                     const tesseract::common::VectorIsometry3d& poses) override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
+
+  void setCollisionObjectsTransform(tesseract::common::LinkId id, const Eigen::Isometry3d& pose) override final;
 
   void setCollisionObjectsTransform(const std::string& name,
                                     const Eigen::Isometry3d& pose1,
@@ -102,8 +109,9 @@ public:
                                     const tesseract::common::VectorIsometry3d& pose1,
                                     const tesseract::common::VectorIsometry3d& pose2) override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::TransformMap& pose1,
-                                    const tesseract::common::TransformMap& pose2) override final;
+  void setCollisionObjectsTransform(tesseract::common::LinkId id,
+                                    const Eigen::Isometry3d& pose1,
+                                    const Eigen::Isometry3d& pose2) override final;
 
   const std::vector<std::string>& getCollisionObjects() const override final;
 
@@ -144,6 +152,8 @@ private:
   std::string name_;
   /** @brief A list of the active collision objects */
   std::vector<std::string> active_;
+  /** @brief Active collision objects by LinkId (O(1) lookup) */
+  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_ids_;
   /** @brief A list of the collision objects */
   std::vector<std::string> collision_objects_;
   /** @brief The bullet collision dispatcher used for getting object to object collison algorithm */
@@ -156,9 +166,9 @@ private:
   TesseractCollisionConfiguration coll_config_;
   /** @brief The bullet broadphase interface */
   std::unique_ptr<btBroadphaseInterface> broadphase_;
-  /** @brief A map of collision objects being managed */
+  /** @brief A map of collision objects being managed, keyed by LinkId */
   bullet_internal::Link2Cow link2cow_;
-  /** @brief A map of cast collision objects being managed. */
+  /** @brief A map of cast collision objects being managed, keyed by LinkId */
   bullet_internal::Link2Cow link2castcow_;
 
   /**

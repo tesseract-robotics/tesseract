@@ -142,7 +142,6 @@ const std::string& Link::getName() const { return name_; }
 
 common::LinkId Link::getId() const { return id_; }
 
-std::size_t Link::getHash() const { return static_cast<std::size_t>(id_.value); }
 
 void Link::clear()
 {

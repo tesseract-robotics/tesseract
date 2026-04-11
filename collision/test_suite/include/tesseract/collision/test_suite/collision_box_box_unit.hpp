@@ -143,11 +143,14 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   EXPECT_NEAR(checker.getCollisionMarginData().getCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
-  location["box_link"] = Eigen::Isometry3d::Identity();
-  location["box_link"].translation()(0) = 0.2;
-  location["box_link"].translation()(1) = 0.1;
-  location["second_box_link"] = Eigen::Isometry3d::Identity();
+  const auto box_id = tesseract::common::LinkId::fromName("box_link");
+  const auto second_box_id = tesseract::common::LinkId::fromName("second_box_link");
+
+  tesseract::common::LinkIdTransformMap location;
+  location[box_id] = Eigen::Isometry3d::Identity();
+  location[box_id].translation()(0) = 0.2;
+  location[box_id].translation()(1) = 0.1;
+  location[second_box_id] = Eigen::Isometry3d::Identity();
 
   checker.setCollisionObjectsTransform(location);
 
@@ -164,7 +167,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -187,13 +190,13 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   // Test object is outside the contact distance
   ////////////////////////////////////////////////
   {
-    location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
+    location[box_id].translation() = Eigen::Vector3d(1.60, 0, 0);
     result.clear();
     result_vector.clear();
 
     // Use different method for setting transforms
     std::vector<std::string> names = { "box_link" };
-    tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
+    tesseract::common::VectorIsometry3d transforms = { location[box_id] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
     result.flattenCopyResults(result_vector);
@@ -210,13 +213,13 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
 
     EXPECT_EQ(checker.getCollisionMarginData().getMaxCollisionMargin(), 1.7);
     EXPECT_NEAR(checker.getCollisionMarginData().getCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);
-    location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
+    location[box_id].translation() = Eigen::Vector3d(1.60, 0, 0);
     result.clear();
     result_vector.clear();
 
     // Use different method for setting transforms
     std::vector<std::string> names = { "box_link" };
-    tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
+    tesseract::common::VectorIsometry3d transforms = { location[box_id] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
     result.flattenMoveResults(result_vector);
@@ -245,7 +248,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
     idx = { 0, 1, 1 };
-    if (result_vector[0].link_names[0] != "box_link")
+    if (result_vector[0].link_ids[0].name() != "box_link")
       idx = { 1, 0, -1 };
 
     if (result_vector[0].single_contact_point)
@@ -282,7 +285,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
     idx = { 0, 1, 1 };
-    if (result_vector[0].link_names[0] != "box_link")
+    if (result_vector[0].link_ids[0].name() != "box_link")
       idx = { 1, 0, -1 };
 
     if (result_vector[0].single_contact_point)

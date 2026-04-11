@@ -60,7 +60,7 @@ void runContactManagersFactoryTest(const std::filesystem::path& config_path)
 
   {
     std::vector<std::string> sl = factory.getSearchLibraries();
-    EXPECT_EQ(sl.size(), 2);
+    EXPECT_EQ(sl.size(), 3);
 
     for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
     {
@@ -68,7 +68,7 @@ void runContactManagersFactoryTest(const std::filesystem::path& config_path)
     }
   }
 
-  EXPECT_EQ(discrete_plugins.size(), 3);
+  EXPECT_EQ(discrete_plugins.size(), 4);
   for (auto cm_it = discrete_plugins.begin(); cm_it != discrete_plugins.end(); ++cm_it)
   {
     auto name = cm_it->first.as<std::string>();
@@ -77,7 +77,7 @@ void runContactManagersFactoryTest(const std::filesystem::path& config_path)
     EXPECT_TRUE(cm != nullptr);
   }
 
-  EXPECT_EQ(continuous_plugins.size(), 2);
+  EXPECT_EQ(continuous_plugins.size(), 3);
   for (auto cm_it = continuous_plugins.begin(); cm_it != continuous_plugins.end(); ++cm_it)
   {
     auto name = cm_it->first.as<std::string>();

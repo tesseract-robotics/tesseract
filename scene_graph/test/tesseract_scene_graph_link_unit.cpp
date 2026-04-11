@@ -136,8 +136,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkUnit)  // NOLINT
   Link l_clone = l.clone();
   // Names should be the same
   EXPECT_EQ(l_clone.getName(), "test_link");
-  // Hashes should be the same
-  EXPECT_EQ(l_clone.getHash(), l.getHash());
+  // IDs should be the same
+  EXPECT_EQ(l_clone.getId(), l.getId());
   EXPECT_TRUE(l_clone.inertial != l.inertial);
   EXPECT_TRUE(l_clone.inertial != nullptr);
   EXPECT_TRUE(l_clone.inertial->origin.isApprox(l.inertial->origin));
@@ -167,19 +167,19 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkUnit)  // NOLINT
   Link l_renamed_clone = l.clone("test_link");
   // We used the same name
   EXPECT_EQ(l_clone.getName(), "test_link");
-  // So the hash should be the same
-  EXPECT_EQ(l_renamed_clone.getHash(), l.getHash());
+  // So the ID should be the same
+  EXPECT_EQ(l_renamed_clone.getId(), l.getId());
 
   Link l_renamed_clone2 = l.clone("renamed_link");
   // We changed the name
   EXPECT_EQ(l_renamed_clone2.getName(), "renamed_link");
-  // So the hash should be different
-  EXPECT_NE(l_renamed_clone2.getHash(), l.getHash());
+  // So the ID should be different
+  EXPECT_NE(l_renamed_clone2.getId(), l.getId());
 
-  auto hash_before_clear = l.getHash();
+  auto id_before_clear = l.getId();
   l.clear();
   EXPECT_EQ(l.getName(), "test_link");
-  EXPECT_EQ(l.getHash(), hash_before_clear);
+  EXPECT_EQ(l.getId(), id_before_clear);
   EXPECT_TRUE(l.visual.empty());
   EXPECT_TRUE(l.collision.empty());
   EXPECT_TRUE(l.inertial == nullptr);
