@@ -158,24 +158,27 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the start location
-  tesseract::common::TransformMap location_start;
-  location_start["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere_link"].translation()(0) = -0.2;
-  location_start["sphere_link"].translation()(1) = -1.0;
+  const auto sphere_id = tesseract::common::LinkId::fromName("sphere_link");
+  const auto sphere1_id = tesseract::common::LinkId::fromName("sphere1_link");
 
-  location_start["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere1_link"].translation()(0) = 0.2;
-  location_start["sphere1_link"].translation()(2) = -1.0;
+  tesseract::common::LinkIdTransformMap location_start;
+  location_start[sphere_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere_id].translation()(0) = -0.2;
+  location_start[sphere_id].translation()(1) = -1.0;
+
+  location_start[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere1_id].translation()(0) = 0.2;
+  location_start[sphere1_id].translation()(2) = -1.0;
 
   // Set the end location
-  tesseract::common::TransformMap location_end;
-  location_end["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere_link"].translation()(0) = -0.2;
-  location_end["sphere_link"].translation()(1) = 1.0;
+  tesseract::common::LinkIdTransformMap location_end;
+  location_end[sphere_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere_id].translation()(0) = -0.2;
+  location_end[sphere_id].translation()(1) = 1.0;
 
-  location_end["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere1_link"].translation()(0) = 0.2;
-  location_end["sphere1_link"].translation()(2) = 1.0;
+  location_end[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere1_id].translation()(0) = 0.2;
+  location_end[sphere1_id].translation()(2) = 1.0;
 
   checker.setCollisionObjectsTransform(location_start, location_end);
 
@@ -190,7 +193,7 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.1, 0.0001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0].name() != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].cc_time[static_cast<size_t>(idx[0])], 0.5, 0.001);
@@ -216,11 +219,11 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][2], 0.25, 0.001);
 
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start["sphere_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start["sphere1_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end["sphere_link"], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start[sphere_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start[sphere1_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end[sphere_id], 0.0001));
   EXPECT_TRUE(
-      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end["sphere1_link"], 0.0001));
+      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end[sphere1_id], 0.0001));
 
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
@@ -231,22 +234,22 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   /////////////////////////////////////////////////////////////
 
   // Set the start location
-  location_start["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere_link"].translation()(0) = -0.2;
-  location_start["sphere_link"].translation()(1) = -0.5;
+  location_start[sphere_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere_id].translation()(0) = -0.2;
+  location_start[sphere_id].translation()(1) = -0.5;
 
-  location_start["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere1_link"].translation()(0) = 0.2;
-  location_start["sphere1_link"].translation()(2) = -1.0;
+  location_start[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere1_id].translation()(0) = 0.2;
+  location_start[sphere1_id].translation()(2) = -1.0;
 
   // Set the end location
-  location_end["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere_link"].translation()(0) = -0.2;
-  location_end["sphere_link"].translation()(1) = 1.0;
+  location_end[sphere_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere_id].translation()(0) = -0.2;
+  location_end[sphere_id].translation()(1) = 1.0;
 
-  location_end["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere1_link"].translation()(0) = 0.2;
-  location_end["sphere1_link"].translation()(2) = 1.0;
+  location_end[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere1_id].translation()(0) = 0.2;
+  location_end[sphere1_id].translation()(2) = 1.0;
 
   checker.setCollisionObjectsTransform(location_start, location_end);
 
@@ -261,7 +264,7 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.1, 0.0001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0].name() != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].cc_time[static_cast<size_t>(idx[0])], 0.3333, 0.001);
@@ -287,11 +290,11 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][2], 0.25, 0.001);
 
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start["sphere_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start["sphere1_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end["sphere_link"], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start[sphere_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start[sphere1_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end[sphere_id], 0.0001));
   EXPECT_TRUE(
-      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end["sphere1_link"], 0.0001));
+      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end[sphere1_id], 0.0001));
 
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
@@ -314,24 +317,27 @@ inline void runTestConvex(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the start location
-  tesseract::common::TransformMap location_start;
-  location_start["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere_link"].translation()(0) = -0.2;
-  location_start["sphere_link"].translation()(1) = -1.0;
+  const auto sphere_id = tesseract::common::LinkId::fromName("sphere_link");
+  const auto sphere1_id = tesseract::common::LinkId::fromName("sphere1_link");
 
-  location_start["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere1_link"].translation()(0) = 0.2;
-  location_start["sphere1_link"].translation()(2) = -1.0;
+  tesseract::common::LinkIdTransformMap location_start;
+  location_start[sphere_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere_id].translation()(0) = -0.2;
+  location_start[sphere_id].translation()(1) = -1.0;
+
+  location_start[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere1_id].translation()(0) = 0.2;
+  location_start[sphere1_id].translation()(2) = -1.0;
 
   // Set the end location
-  tesseract::common::TransformMap location_end;
-  location_end["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere_link"].translation()(0) = -0.2;
-  location_end["sphere_link"].translation()(1) = 1.0;
+  tesseract::common::LinkIdTransformMap location_end;
+  location_end[sphere_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere_id].translation()(0) = -0.2;
+  location_end[sphere_id].translation()(1) = 1.0;
 
-  location_end["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere1_link"].translation()(0) = 0.2;
-  location_end["sphere1_link"].translation()(2) = 1.0;
+  location_end[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere1_id].translation()(0) = 0.2;
+  location_end[sphere1_id].translation()(2) = 1.0;
 
   checker.setCollisionObjectsTransform(location_start, location_end);
 
@@ -346,7 +352,7 @@ inline void runTestConvex(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0].name() != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].cc_time[static_cast<size_t>(idx[0])], 0.5, 0.001);
@@ -372,11 +378,11 @@ inline void runTestConvex(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][2], 0.25, 0.001);
 
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start["sphere_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start["sphere1_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end["sphere_link"], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start[sphere_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start[sphere1_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end[sphere_id], 0.0001));
   EXPECT_TRUE(
-      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end["sphere1_link"], 0.0001));
+      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end[sphere1_id], 0.0001));
 
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
@@ -387,22 +393,22 @@ inline void runTestConvex(ContinuousContactManager& checker)
   /////////////////////////////////////////////////////////////
 
   // Set the start location
-  location_start["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere_link"].translation()(0) = -0.2;
-  location_start["sphere_link"].translation()(1) = -0.5;
+  location_start[sphere_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere_id].translation()(0) = -0.2;
+  location_start[sphere_id].translation()(1) = -0.5;
 
-  location_start["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_start["sphere1_link"].translation()(0) = 0.2;
-  location_start["sphere1_link"].translation()(2) = -1.0;
+  location_start[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_start[sphere1_id].translation()(0) = 0.2;
+  location_start[sphere1_id].translation()(2) = -1.0;
 
   // Set the end location
-  location_end["sphere_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere_link"].translation()(0) = -0.2;
-  location_end["sphere_link"].translation()(1) = 1.0;
+  location_end[sphere_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere_id].translation()(0) = -0.2;
+  location_end[sphere_id].translation()(1) = 1.0;
 
-  location_end["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location_end["sphere1_link"].translation()(0) = 0.2;
-  location_end["sphere1_link"].translation()(2) = 1.0;
+  location_end[sphere1_id] = Eigen::Isometry3d::Identity();
+  location_end[sphere1_id].translation()(0) = 0.2;
+  location_end[sphere1_id].translation()(2) = 1.0;
 
   checker.setCollisionObjectsTransform(location_start, location_end);
 
@@ -417,7 +423,7 @@ inline void runTestConvex(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0].name() != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].cc_time[static_cast<size_t>(idx[0])], 0.3848, 0.001);
@@ -443,11 +449,11 @@ inline void runTestConvex(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][1], 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points_local[static_cast<size_t>(idx[1])][2], 0.25, 0.001);
 
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start["sphere_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start["sphere1_link"], 0.0001));
-  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end["sphere_link"], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[0])].isApprox(location_start[sphere_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].transform[static_cast<size_t>(idx[1])].isApprox(location_start[sphere1_id], 0.0001));
+  EXPECT_TRUE(result_vector[0].cc_transform[static_cast<size_t>(idx[0])].isApprox(location_end[sphere_id], 0.0001));
   EXPECT_TRUE(
-      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end["sphere1_link"], 0.0001));
+      result_vector[0].cc_transform[static_cast<size_t>(idx[1])].isApprox(location_end[sphere1_id], 0.0001));
 
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);

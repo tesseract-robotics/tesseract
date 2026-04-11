@@ -27,6 +27,16 @@
 
 namespace tesseract::collision
 {
+void DiscreteContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
+{
+  for (const auto& name : getCollisionObjects())
+  {
+    auto it = transforms.find(tesseract::common::LinkId::fromName(name));
+    if (it != transforms.end())
+      setCollisionObjectsTransform(name, it->second);
+  }
+}
+
 void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
   config.validate();

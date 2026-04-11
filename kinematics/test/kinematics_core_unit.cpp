@@ -4,7 +4,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
+#include <tesseract/kinematics/joint_group.h>
 #include <tesseract/kinematics/utils.h>
+#include <tesseract/state_solver/kdl/kdl_state_solver.h>
+#include <tesseract/common/types.h>
 #include "kinematics_test_utils.h"
 
 #include <Eigen/Core>
@@ -492,6 +495,92 @@ TEST(TesseractKinematicsUnit, dampedPInv_EmptyMatrix)
   Eigen::MatrixXd P;
   bool success = tesseract::kinematics::dampedPInv(A, P, 1e-5, 0.01);
   EXPECT_FALSE(success);
+}
+
+// =============================================================================
+// Phase 2 test additions — Integer link/joint ID tests for JointGroup
+// =============================================================================
+
+TEST(TesseractKinematicsUnit, JointGroupCalcFwdKinLinkIdUnit)  // NOLINT
+{
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  // Create a JointGroup from the scene graph
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  auto joint_group = std::make_unique<tesseract::kinematics::JointGroup>(
+      "manipulator", std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                "joint_a5", "joint_a6", "joint_a7" },
+      *scene_graph, ss.getState());
+
+  Eigen::VectorXd jvals = Eigen::VectorXd::Zero(7);
+  jvals[1] = 0.5;
+  jvals[3] = -0.3;
+
+  // calcFwdKin returns LinkIdTransformMap
+  tesseract::common::LinkIdTransformMap result = joint_group->calcFwdKin(jvals);
+
+  // Verify specific LinkId keys are present
+  EXPECT_TRUE(result.count(LinkId::fromName("base_link")) > 0);
+  EXPECT_TRUE(result.count(LinkId::fromName("tool0")) > 0);
+  EXPECT_TRUE(result.count(LinkId::fromName("link_7")) > 0);
+
+  // Verify the result is non-empty and contains expected links
+  EXPECT_FALSE(result.empty());
+}
+
+TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
+{
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  auto joint_group = std::make_unique<tesseract::kinematics::JointGroup>(
+      "manipulator", std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                "joint_a5", "joint_a6", "joint_a7" },
+      *scene_graph, ss.getState());
+
+  // Active links are those moved by the active joints
+  for (const auto& name : joint_group->getActiveLinkNames())
+  {
+    EXPECT_TRUE(joint_group->isActiveLinkId(LinkId::fromName(name)));
+    EXPECT_TRUE(joint_group->isActiveLinkName(name));
+  }
+
+  // base_link should not be active (it's the fixed base)
+  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId::fromName("base_link")));
+
+  // Non-existent link should not be active
+  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId::fromName("nonexistent_link")));
+}
+
+TEST(TesseractKinematicsUnit, JointGroupCalcJacobianLinkIdUnit)  // NOLINT
+{
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  auto joint_group = std::make_unique<tesseract::kinematics::JointGroup>(
+      "manipulator", std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                "joint_a5", "joint_a6", "joint_a7" },
+      *scene_graph, ss.getState());
+
+  Eigen::VectorXd jvals = Eigen::VectorXd::Zero(7);
+  jvals[1] = 0.5;
+  jvals[3] = -0.3;
+
+  // calcJacobian(dofvals, LinkId) should match calcJacobian(dofvals, string)
+  const std::string link_name = "tool0";
+  Eigen::MatrixXd jac_by_name = joint_group->calcJacobian(jvals, link_name);
+  Eigen::MatrixXd jac_by_id = joint_group->calcJacobian(jvals, LinkId::fromName(link_name));
+
+  EXPECT_TRUE(jac_by_name.isApprox(jac_by_id, 1e-10));
 }
 
 int main(int argc, char** argv)

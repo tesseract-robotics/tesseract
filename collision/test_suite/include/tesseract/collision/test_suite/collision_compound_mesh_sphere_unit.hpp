@@ -134,10 +134,13 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
-  location["box_link"] = Eigen::Isometry3d::Identity();
-  location["sphere_link"] = Eigen::Isometry3d::Identity();
-  location["sphere_link"].translation()(0) = 0.2;
+  const auto box_id = tesseract::common::LinkId::fromName("box_link");
+  const auto sphere_id = tesseract::common::LinkId::fromName("sphere_link");
+
+  tesseract::common::LinkIdTransformMap location;
+  location[box_id] = Eigen::Isometry3d::Identity();
+  location[sphere_id] = Eigen::Isometry3d::Identity();
+  location[sphere_id].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -151,7 +154,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.19053635, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -182,12 +185,12 @@ inline void runTest(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location["sphere_link"].translation() = Eigen::Vector3d(0, 0, -0.3);
+  location[sphere_id].translation() = Eigen::Vector3d(0, 0, -0.3);
   result.clear();
   result_vector.clear();
 
   // Use different method for setting transforms
-  checker.setCollisionObjectsTransform("sphere_link", location["sphere_link"]);
+  checker.setCollisionObjectsTransform("sphere_link", location[sphere_id]);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenCopyResults(result_vector);
 
@@ -208,7 +211,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.1094636, 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -242,9 +245,9 @@ inline void runTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   result.clear();
   result_vector.clear();
-  location["sphere_link"].translation() = Eigen::Vector3d(0, 2.75, 0);
+  location[sphere_id].translation() = Eigen::Vector3d(0, 2.75, 0);
 
-  checker.setCollisionObjectsTransform("sphere_link", location["sphere_link"]);
+  checker.setCollisionObjectsTransform("sphere_link", location[sphere_id]);
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
@@ -254,7 +257,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.03130736, 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)

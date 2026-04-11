@@ -103,7 +103,7 @@ public:
                       std::string solver_name = KDL_INV_KIN_CHAIN_NR_JL_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract::common::TransformMap& tip_link_poses,
+                  const tesseract::common::LinkIdTransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   std::vector<std::string> getJointNames() const override final;
