@@ -846,8 +846,8 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
   auto env = getEnvironment();
 
   tesseract::common::JointTrajectory trajectory;
-  trajectory.push_back(tesseract::common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
-  trajectory.push_back(tesseract::common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Ones(2)));
+  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Ones(2)));
 
   std::string link_name = "traj_link";
   std::string parent_link_name = "base_link";
@@ -2970,6 +2970,11 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   joint_names.emplace_back("joint_a6");
   joint_names.emplace_back("joint_a7");
 
+  std::vector<tesseract::common::JointId> joint_ids;
+  joint_ids.reserve(joint_names.size());
+  for (const auto& name : joint_names)
+    joint_ids.push_back(tesseract::common::JointId::fromName(name));
+
   Eigen::VectorXd joint_start_pos(7);
   joint_start_pos(0) = -0.4;
   joint_start_pos(1) = 0.2762;
@@ -3038,7 +3043,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3057,7 +3062,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_results2 =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj_results2);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3076,7 +3081,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_results3 =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj_results3);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3097,7 +3102,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3113,7 +3118,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3130,7 +3135,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3148,7 +3153,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3167,7 +3172,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3187,7 +3192,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3212,7 +3217,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_END;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3225,7 +3230,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3234,7 +3239,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3250,7 +3255,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_START;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3264,7 +3269,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3275,7 +3280,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3291,7 +3296,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::INTERMEDIATE_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3304,7 +3309,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3313,7 +3318,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3328,13 +3333,13 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::END_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -3342,7 +3347,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -3354,19 +3359,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::START_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -3381,7 +3386,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3400,7 +3405,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3419,7 +3424,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3435,7 +3440,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3453,7 +3458,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3472,7 +3477,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3495,7 +3500,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     EXPECT_FALSE(
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, joint_start_pos.transpose(), config));
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, joint_start_pos.transpose(), config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -3510,7 +3515,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3533,7 +3538,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3552,7 +3557,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3573,7 +3578,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj4_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj4, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj4, config);
     EXPECT_TRUE(traj4_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj4.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3591,7 +3596,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj5_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj5, config);
     EXPECT_TRUE(traj5_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3611,7 +3616,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3627,7 +3632,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3644,7 +3649,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3660,7 +3665,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj4_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj4, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj4, config);
     EXPECT_TRUE(traj4_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3676,7 +3681,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj5_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj5, config);
     EXPECT_TRUE(traj5_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3696,7 +3701,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3715,7 +3720,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3735,7 +3740,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3755,7 +3760,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj4_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj4, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj4, config);
     EXPECT_TRUE(traj4_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj4.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -3774,7 +3779,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj5_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj5, config);
     EXPECT_TRUE(traj5_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -3799,7 +3804,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_END;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3813,7 +3818,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3823,7 +3828,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3835,7 +3840,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj4, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj4, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj4.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -3844,7 +3849,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj5, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -3857,7 +3862,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_START;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3872,7 +3877,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3883,7 +3888,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3894,14 +3899,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj4, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj4, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj4.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj5, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj5.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3918,7 +3923,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::INTERMEDIATE_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3932,7 +3937,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3942,7 +3947,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -3952,11 +3957,11 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj4, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj4, config));
     EXPECT_TRUE(contacts.empty());
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj5, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj5, config));
     EXPECT_TRUE(contacts.empty());
   }
 
@@ -3967,13 +3972,13 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::END_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -3982,7 +3987,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -3995,19 +4000,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::START_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -4024,7 +4029,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -4043,7 +4048,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -4062,7 +4067,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -4078,7 +4083,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_first_results);
     EXPECT_EQ(contacts.size(), 2);
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -4096,7 +4101,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -4115,7 +4120,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 0);
@@ -4139,7 +4144,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -4171,7 +4176,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -4199,7 +4204,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows()));
     EXPECT_EQ(contacts.at(0).size(), 3);
@@ -4229,7 +4234,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -4254,7 +4259,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -4279,7 +4284,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_first_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -4307,7 +4312,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -4335,7 +4340,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj2_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config);
     EXPECT_TRUE(traj2_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -4364,7 +4369,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
 
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj3_one_per_step_results =
-        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config);
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config);
     EXPECT_TRUE(traj3_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -4399,7 +4404,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_END;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4414,7 +4419,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4425,7 +4430,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4442,7 +4447,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_START;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4458,7 +4463,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4470,7 +4475,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows()));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4488,7 +4493,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::INTERMEDIATE_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4503,7 +4508,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4514,7 +4519,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4531,13 +4536,13 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::END_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -4546,7 +4551,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -4558,19 +4563,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::START_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -4673,7 +4678,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.contact_request.type = tesseract::collision::ContactTestType::FIRST;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -4684,7 +4689,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -4695,14 +4700,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     // Change exit condition to FIRST
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(1));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(1));
@@ -4711,7 +4716,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     // Change exit condition to ONE_PER_STEP
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -4722,7 +4727,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -4768,7 +4773,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -4788,7 +4793,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4798,7 +4803,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4811,7 +4816,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -4826,7 +4831,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -4834,7 +4839,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(3));
@@ -4844,7 +4849,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     // Change exit condition to ONE_PER_STEP
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4857,7 +4862,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4867,7 +4872,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4883,7 +4888,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_END;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4895,7 +4900,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -4904,7 +4909,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(3));
@@ -4919,7 +4924,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_START;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4931,7 +4936,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4941,7 +4946,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4956,7 +4961,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::INTERMEDIATE_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -4967,13 +4972,13 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -4985,19 +4990,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::END_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -5009,19 +5014,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::START_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -5034,7 +5039,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -5053,7 +5058,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -5066,7 +5071,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -5081,7 +5086,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(1));
@@ -5091,7 +5096,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     // Change exit condition to ONE_PER_STEP
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -5103,7 +5108,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -5121,7 +5126,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -5141,7 +5146,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5151,7 +5156,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5164,7 +5169,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -5179,7 +5184,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -5187,7 +5192,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(3));
@@ -5197,7 +5202,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     // Change exit condition to ONE_PER_STEP
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5210,7 +5215,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5220,7 +5225,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5237,7 +5242,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_END;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5249,7 +5254,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -5258,7 +5263,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(3));
@@ -5274,7 +5279,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_START;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5286,7 +5291,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5296,7 +5301,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5312,7 +5317,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::INTERMEDIATE_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5323,13 +5328,13 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 2));
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -5342,19 +5347,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::END_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -5367,19 +5372,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::START_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -5392,7 +5397,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -5419,7 +5424,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -5432,7 +5437,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -5457,7 +5462,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(1));
@@ -5468,7 +5473,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_one_per_step_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -5497,7 +5502,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
@@ -5514,7 +5519,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     tesseract::collision::ContactTrajectoryResults traj_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
@@ -5542,7 +5547,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5551,7 +5556,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5564,7 +5569,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::FIRST;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_first_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_first_results);
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -5589,7 +5594,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(1));
@@ -5597,7 +5602,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -5608,7 +5613,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.exit_condition = CollisionCheckExitType::ONE_PER_STEP;
     contacts.clear();
     tesseract::collision::ContactTrajectoryResults traj_one_per_step_results =
-        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
+        checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_one_per_step_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
@@ -5637,7 +5642,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5647,7 +5652,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5663,7 +5668,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_END;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5676,7 +5681,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(123));
@@ -5685,7 +5690,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(161));
@@ -5700,7 +5705,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::ALL_EXCEPT_START;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5713,7 +5718,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5723,7 +5728,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5739,7 +5744,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::INTERMEDIATE_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5751,7 +5756,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5761,7 +5766,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj3.rows() - 1));
     EXPECT_EQ(contacts.at(0).size(), 3);
     EXPECT_EQ(contacts.at(1).size(), 2);
@@ -5777,19 +5782,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::END_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
@@ -5801,19 +5806,19 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.check_program_mode = CollisionCheckProgramType::START_ONLY;
     config.exit_condition = CollisionCheckExitType::ALL;
     std::vector<tesseract::collision::ContactResultMap> contacts;
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
+    EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(0));
 
     contacts.clear();
-    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj3, config));
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
@@ -5965,10 +5970,10 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     checkProcessInterpolatedResults(contacts);
 
     // Compare joint states
-    EXPECT_EQ(joint_names.size(), traj_res2.joint_names.size());
-    for (std::size_t i = 0; i < joint_names.size(); ++i)
+    EXPECT_EQ(joint_ids.size(), traj_res2.joint_ids.size());
+    for (std::size_t i = 0; i < joint_ids.size(); ++i)
     {
-      EXPECT_EQ(joint_names.at(i), traj_res2.joint_names.at(i));
+      EXPECT_EQ(joint_ids.at(i), traj_res2.joint_ids.at(i));
     }
     // Get state at step 0
     tesseract::collision::ContactTrajectoryStepResults step0 = traj_res2.steps.at(0);
@@ -5985,7 +5990,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.type = CollisionEvaluatorType::CONTINUOUS;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
+    EXPECT_ANY_THROW(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj, config));
   }
   {
     tesseract::collision::CollisionCheckConfig config;
@@ -6000,7 +6005,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     std::vector<tesseract::collision::ContactResultMap> contacts;
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(checkTrajectory(
-        contacts, *discrete_manager, *state_solver, joint_names, tesseract::common::TrajArray(), config));
+        contacts, *discrete_manager, *state_solver, joint_ids, tesseract::common::TrajArray(), config));
   }
   {
     tesseract::collision::CollisionCheckConfig config;
@@ -6015,7 +6020,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.type = CollisionEvaluatorType::DISCRETE;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config));
+    EXPECT_ANY_THROW(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config));
   }
   {
     tesseract::collision::CollisionCheckConfig config;
@@ -6030,7 +6035,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     std::vector<tesseract::collision::ContactResultMap> contacts;
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(checkTrajectory(
-        contacts, *continuous_manager, *state_solver, joint_names, tesseract::common::TrajArray(), config));
+        contacts, *continuous_manager, *state_solver, joint_ids, tesseract::common::TrajArray(), config));
   }
   {
     tesseract::collision::CollisionCheckConfig config;
