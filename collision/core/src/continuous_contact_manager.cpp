@@ -29,22 +29,22 @@ namespace tesseract::collision
 {
 void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
-  for (const auto& name : getCollisionObjects())
+  for (const auto& id : getCollisionObjects())
   {
-    auto it = transforms.find(tesseract::common::LinkId::fromName(name));
+    auto it = transforms.find(id);
     if (it != transforms.end())
-      setCollisionObjectsTransform(name, it->second);
+      setCollisionObjectsTransform(id.name(), it->second);
   }
 }
 
 void ContinuousContactManager::setCollisionObjectsTransform(tesseract::common::LinkId id,
                                                             const Eigen::Isometry3d& pose)
 {
-  for (const auto& name : getCollisionObjects())
+  for (const auto& obj_id : getCollisionObjects())
   {
-    if (tesseract::common::LinkId::fromName(name) == id)
+    if (obj_id == id)
     {
-      setCollisionObjectsTransform(name, pose);
+      setCollisionObjectsTransform(obj_id.name(), pose);
       return;
     }
   }
@@ -53,13 +53,12 @@ void ContinuousContactManager::setCollisionObjectsTransform(tesseract::common::L
 void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
                                                             const tesseract::common::LinkIdTransformMap& pose2)
 {
-  for (const auto& name : getCollisionObjects())
+  for (const auto& id : getCollisionObjects())
   {
-    auto id = tesseract::common::LinkId::fromName(name);
     auto it1 = pose1.find(id);
     auto it2 = pose2.find(id);
     if (it1 != pose1.end() && it2 != pose2.end())
-      setCollisionObjectsTransform(name, it1->second, it2->second);
+      setCollisionObjectsTransform(id.name(), it1->second, it2->second);
   }
 }
 
@@ -67,11 +66,11 @@ void ContinuousContactManager::setCollisionObjectsTransform(tesseract::common::L
                                                             const Eigen::Isometry3d& pose1,
                                                             const Eigen::Isometry3d& pose2)
 {
-  for (const auto& name : getCollisionObjects())
+  for (const auto& obj_id : getCollisionObjects())
   {
-    if (tesseract::common::LinkId::fromName(name) == id)
+    if (obj_id == id)
     {
-      setCollisionObjectsTransform(name, pose1, pose2);
+      setCollisionObjectsTransform(obj_id.name(), pose1, pose2);
       return;
     }
   }
