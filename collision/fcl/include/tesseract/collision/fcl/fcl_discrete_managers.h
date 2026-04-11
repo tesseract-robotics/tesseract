@@ -147,7 +147,7 @@ private:
   fcl_internal::Link2COW link2cow_; /**< @brief A map of all (static and active) collision objects being managed */
   /** @brief Active collision objects by LinkId (O(1) lookup) */
   std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_ids_;
-  std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
+  std::vector<tesseract::common::LinkId> collision_objects_; /**< @brief A list of the collision objects */
   CollisionMarginData collision_margin_data_;  /**< @brief The contact distance threshold */
   std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator_; /**< @brief The is allowed collision
                                                                                   function */
