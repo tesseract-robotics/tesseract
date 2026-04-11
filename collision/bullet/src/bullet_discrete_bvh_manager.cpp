@@ -102,7 +102,7 @@ DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(getActiveCollisionObjects());
+  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -250,6 +250,20 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
+
+  // Now need to update the broadphase with correct aabb
+  for (auto& co : link2cow_)
+  {
+    COW::Ptr& cow = co.second;
+    updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
+    refreshBroadphaseProxy(cow, broadphase_, dispatcher_);
+  }
+}
+
+void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  active_ids_.clear();
+  active_ids_.insert(ids.begin(), ids.end());
 
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
