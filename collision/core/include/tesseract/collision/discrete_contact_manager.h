@@ -156,9 +156,9 @@ public:
 
   /**
    * @brief Get all collision objects
-   * @return A list of collision object names
+   * @return A list of collision object IDs
    */
-  virtual const std::vector<std::string>& getCollisionObjects() const = 0;
+  virtual const std::vector<tesseract::common::LinkId>& getCollisionObjects() const = 0;
 
   /**
    * @brief Set which collision objects can move
