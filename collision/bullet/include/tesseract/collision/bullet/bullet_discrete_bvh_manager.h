@@ -103,7 +103,7 @@ public:
 
   void setActiveCollisionObjects(const std::vector<std::string>& names) override final;
 
-  const std::vector<std::string>& getActiveCollisionObjects() const override final;
+  std::vector<std::string> getActiveCollisionObjects() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
 
@@ -136,8 +136,6 @@ public:
 
 private:
   std::string name_;
-  /** @brief A list of the active collision objects */
-  std::vector<std::string> active_;
   /** @brief Active collision objects by LinkId (O(1) lookup) */
   std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_ids_;
   /** @brief A list of the collision objects */
