@@ -147,10 +147,12 @@ public:
                                             const tesseract::common::VectorIsometry3d& poses) = 0;
 
   /**
-   * @brief Set a series of collision object's transforms
-   * @param transforms A transform map <name, pose>
+   * @brief Set a series of collision object's transforms using integer link IDs
+   * @param transforms A transform map <LinkId, pose>
+   * @details Default implementation looks up each registered collision object by computing its LinkId.
+   *          Concrete backends may override for direct ID-keyed lookup.
    */
-  virtual void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms);
 
   /**
    * @brief Get all collision objects

@@ -68,7 +68,7 @@ public:
    * @param joint_values The joint values
    */
   virtual void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                        const tesseract::common::TransformMap& floating_joint_values = {}) = 0;
+                        const tesseract::common::JointIdTransformMap& floating_joint_values = {}) = 0;
 
   /**
    * @brief Set the current state of the solver
@@ -78,16 +78,16 @@ public:
    *
    */
   virtual void setState(const std::unordered_map<std::string, double>& joint_values,
-                        const tesseract::common::TransformMap& floating_joint_values = {}) = 0;
+                        const tesseract::common::JointIdTransformMap& floating_joint_values = {}) = 0;
   virtual void setState(const std::vector<std::string>& joint_names,
                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                        const tesseract::common::TransformMap& floating_joint_values = {}) = 0;
+                        const tesseract::common::JointIdTransformMap& floating_joint_values = {}) = 0;
 
   /**
    * @brief Set the current state of the floating joint values
    * @param floating_joint_values The floating joint values to set
    */
-  virtual void setState(const tesseract::common::TransformMap& floating_joint_values) = 0;
+  virtual void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) = 0;
 
   /**
    * @brief Get the state of the solver given the joint values
@@ -96,7 +96,7 @@ public:
    * @param floating_joint_values The floating joint origin transform
    */
   virtual SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const = 0;
+                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the state of the scene for a given set or subset of joint values.
@@ -108,16 +108,16 @@ public:
    * @return A the state of the environment
    */
   virtual SceneState getState(const std::unordered_map<std::string, double>& joint_values,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const = 0;
+                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
   virtual SceneState getState(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const = 0;
+                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
   /**
    * @brief Get the state given floating joint values
    * @param floating_joint_values The floating joint values to leverage
    * @return A the state of the environment
    */
-  virtual SceneState getState(const tesseract::common::TransformMap& floating_joint_values) const = 0;
+  virtual SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const = 0;
 
   /**
    * @brief Get the link transforms of the scene for a given set or subset of joint values.
@@ -131,23 +131,18 @@ public:
    * @param joint_values The joint values
    * @param floating_joint_values The floating joint origin transform
    */
-  virtual void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
-                                 const std::vector<std::string>& joint_names,
-                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                 const tesseract::common::TransformMap& floating_joint_values) const = 0;
-
   /**
-   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   * @brief Get the link transforms as LinkIdTransformMap for a given set or subset of joint values.
    *
-   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   * This is provided to optimize motion planning where link_transforms are populated multiple times.
    *
    * This does not change the internal state of the solver.
    *
    * @param link_transforms The link_transforms to populate with data.
-   * @param joints A map of joint names to joint values to change.
+   * @param joint_names A list of joint names to change.
    * @param joint_values The joint values
    */
-  virtual void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
+  virtual void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                                  const std::vector<std::string>& joint_names,
                                  const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
 
@@ -165,7 +160,7 @@ public:
    */
   virtual Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                       const std::string& link_name,
-                                      const tesseract::common::TransformMap& floating_joint_values = {}) const = 0;
+                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the jacobian of the scene for a given set or subset of joint values.
@@ -181,11 +176,11 @@ public:
    */
   virtual Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
                                       const std::string& link_name,
-                                      const tesseract::common::TransformMap& floating_joint_values = {}) const = 0;
+                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
   virtual Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                       const std::string& link_name,
-                                      const tesseract::common::TransformMap& floating_joint_values = {}) const = 0;
+                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the random state of the environment

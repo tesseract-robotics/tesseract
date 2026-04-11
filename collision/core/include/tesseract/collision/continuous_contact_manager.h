@@ -154,10 +154,20 @@ public:
                                             const tesseract::common::VectorIsometry3d& poses) = 0;
 
   /**
-   * @brief Set a series of static collision object's tranforms
-   * @param transforms A transform map <name, pose>
+   * @brief Set a series of static collision object's transforms using integer link IDs
+   * @param transforms A transform map <LinkId, pose>
+   * @details Default implementation looks up each registered collision object by computing its LinkId.
+   *          Concrete backends may override for direct ID-keyed lookup.
    */
-  virtual void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms);
+
+  /**
+   * @brief Set a single static collision object's transform using integer link ID
+   * @param id The link ID of the object
+   * @param pose The transformation in world
+   * @details Default implementation looks up the name from registered collision objects.
+   */
+  virtual void setCollisionObjectsTransform(tesseract::common::LinkId id, const Eigen::Isometry3d& pose);
 
   /**
    * @brief Set a single cast(moving) collision object's tansforms
@@ -188,16 +198,24 @@ public:
                                             const tesseract::common::VectorIsometry3d& pose2) = 0;
 
   /**
-   * @brief Set a series of cast(moving) collision object's tranforms
-   *
-   * This should only be used for moving objects. Use the base
-   * class methods for static objects.
-   *
-   * @param pose1 A start transform map <name, pose>
-   * @param pose2 A end transform map <name, pose>
+   * @brief Set a series of cast(moving) collision object's transforms using integer link IDs
+   * @param pose1 A start transform map <LinkId, pose>
+   * @param pose2 A end transform map <LinkId, pose>
+   * @details Default implementation iterates registered collision objects and looks up by LinkId.
    */
-  virtual void setCollisionObjectsTransform(const tesseract::common::TransformMap& pose1,
-                                            const tesseract::common::TransformMap& pose2) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
+                                            const tesseract::common::LinkIdTransformMap& pose2);
+
+  /**
+   * @brief Set a single cast(moving) collision object's transforms using integer link ID
+   * @param id The link ID of the object
+   * @param pose1 The start transformation in world
+   * @param pose2 The end transformation in world
+   * @details Default implementation looks up the name from registered collision objects.
+   */
+  virtual void setCollisionObjectsTransform(tesseract::common::LinkId id,
+                                            const Eigen::Isometry3d& pose1,
+                                            const Eigen::Isometry3d& pose2);
 
   /**
    * @brief Get all collision objects

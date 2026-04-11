@@ -66,32 +66,32 @@ void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
  */
 void checkTrajectorySegment(tesseract::collision::ContactResultMap& contact_results,
                             tesseract::collision::ContinuousContactManager& manager,
-                            const tesseract::common::TransformMap& state0,
-                            const tesseract::common::TransformMap& state1,
+                            const tesseract::common::LinkIdTransformMap& state0,
+                            const tesseract::common::LinkIdTransformMap& state1,
                             const tesseract::collision::ContactRequest& contact_request);
 
 /**
  * @brief Should perform a discrete collision check a state first configuring manager with config
  * @param contact_results The contact results to populate. It does not get cleared
- * @param manager A discrete contact manager
- * @param state First environment state
+ * @param manager A continuous contact manager
+ * @param state Environment state (LinkId-keyed)
  * @param contact_request Contact request passed to the manager
  */
 void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_results,
                           tesseract::collision::ContinuousContactManager& manager,
-                          const tesseract::common::TransformMap& state,
+                          const tesseract::common::LinkIdTransformMap& state,
                           const tesseract::collision::ContactRequest& contact_request);
 
 /**
  * @brief Should perform a discrete collision check a state only passing contact_request to the manager
  * @param contact_results The contact results to populate. It does not get cleared
  * @param manager A discrete contact manager
- * @param state First environment state
+ * @param state Environment state (LinkId-keyed)
  * @param contact_request Contact request passed to the manager
  */
 void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_results,
                           tesseract::collision::DiscreteContactManager& manager,
-                          const tesseract::common::TransformMap& state,
+                          const tesseract::common::LinkIdTransformMap& state,
                           const tesseract::collision::ContactRequest& contact_request);
 
 /**

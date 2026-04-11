@@ -106,6 +106,8 @@ public:
 
   /** @brief Get the collision object name */
   const std::string& getName() const;
+  /** @brief Get the integer link ID (hash of the name) */
+  tesseract::common::LinkId getLinkId() const { return m_link_id; }
   /** @brief Get a user defined type */
   const int& getTypeID() const;
   /** \brief Check if two CollisionObjectWrapper objects point to the same source object */
@@ -137,6 +139,8 @@ public:
 protected:
   /** @brief The name of the collision object */
   std::string m_name;
+  /** @brief Integer link ID derived from m_name */
+  tesseract::common::LinkId m_link_id;
   /** @brief A user defined type id */
   int m_type_id{ -1 };
   /* @brief The shapes that define the collision object */
@@ -148,8 +152,8 @@ protected:
 };
 
 using COW = CollisionObjectWrapper;
-using Link2Cow = std::map<std::string, COW::Ptr>;
-using Link2ConstCow = std::map<std::string, COW::ConstPtr>;
+using Link2Cow = std::unordered_map<tesseract::common::LinkId, COW::Ptr, tesseract::common::LinkId::Hash>;
+using Link2ConstCow = std::unordered_map<tesseract::common::LinkId, COW::ConstPtr, tesseract::common::LinkId::Hash>;
 
 /** @brief This is a casted collision shape used for checking if an object is collision free between two transforms */
 struct CastHullShape : public btConvexShape

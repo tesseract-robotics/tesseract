@@ -126,10 +126,13 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionMarginPair("box_link", "cone_link", 0.1);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
-  location["box_link"] = Eigen::Isometry3d::Identity();
-  location["cone_link"] = Eigen::Isometry3d::Identity();
-  location["cone_link"].translation()(0) = 0.2;
+  const auto box_id = tesseract::common::LinkId::fromName("box_link");
+  const auto cone_id = tesseract::common::LinkId::fromName("cone_link");
+
+  tesseract::common::LinkIdTransformMap location;
+  location[box_id] = Eigen::Isometry3d::Identity();
+  location[cone_id] = Eigen::Isometry3d::Identity();
+  location[cone_id].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -143,7 +146,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.55, 0.0001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -173,12 +176,12 @@ inline void runTest(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location["cone_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  location[cone_id].translation() = Eigen::Vector3d(1, 0, 0);
   result.clear();
   result_vector.clear();
 
   // Use different method for setting transforms
-  checker.setCollisionObjectsTransform("cone_link", location["cone_link"]);
+  checker.setCollisionObjectsTransform("cone_link", location[cone_id]);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenCopyResults(result_vector);
 
@@ -199,7 +202,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.25, 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)

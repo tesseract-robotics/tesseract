@@ -262,14 +262,15 @@ inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
                             const Eigen::Isometry3d& change_base)
 {
   Eigen::MatrixXd jacobian, numerical_jacobian;
-  tesseract::common::TransformMap poses;
+  tesseract::common::LinkIdTransformMap poses;
 
   jacobian.resize(6, kin.numJoints());
 
   poses = kin.calcFwdKin(jvals);
+  const auto link_id = tesseract::common::LinkId::fromName(link_name);
   jacobian = kin.calcJacobian(jvals, link_name);
   tesseract::common::jacobianChangeBase(jacobian, change_base);
-  tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_name]).linear() * link_point);
+  tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_id]).linear() * link_point);
 
   numerical_jacobian.resize(6, kin.numJoints());
   tesseract::kinematics::numericalJacobian(numerical_jacobian, change_base, kin, jvals, link_name, link_point);
@@ -321,15 +322,16 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
   }
 
   std::vector<std::string> static_link_names = kin_group.getStaticLinkNames();
-  tesseract::common::TransformMap poses = kin_group.calcFwdKin(jvals);
+  tesseract::common::LinkIdTransformMap poses = kin_group.calcFwdKin(jvals);
   for (const auto& static_link_name : static_link_names)
   {
+    const auto static_link_id = tesseract::common::LinkId::fromName(static_link_name);
     {  // Test with all information
       jacobian = kin_group.calcJacobian(jvals, static_link_name, link_name, link_point);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(
-          numerical_jacobian, poses.at(static_link_name).inverse(), kin_group, jvals, link_name, link_point);
+          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_name, link_point);
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -341,7 +343,7 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(numerical_jacobian,
-                                               poses.at(static_link_name).inverse(),
+                                               poses.at(static_link_id).inverse(),
                                                kin_group,
                                                jvals,
                                                link_name,
@@ -501,14 +503,16 @@ inline void runInvKinTest(const tesseract::kinematics::InverseKinematics& inv_ki
   // Test Inverse kinematics
   ///////////////////////////
   EXPECT_TRUE(inv_kin.getBaseLinkName() == fwd_kin.getBaseLinkName());  // This only works if they are equal
-  tesseract::common::TransformMap input{ std::make_pair(tip_link_name, target_pose) };
+  tesseract::common::LinkIdTransformMap input{
+    { tesseract::common::LinkId::fromName(tip_link_name), target_pose }
+  };
   IKSolutions solutions = inv_kin.calcInvKin(input, seed);
   EXPECT_TRUE(!solutions.empty());
 
   for (const auto& sol : solutions)
   {
-    tesseract::common::TransformMap result_poses = fwd_kin.calcFwdKin(sol);
-    Eigen::Isometry3d result = result_poses[tip_link_name];
+    auto result_poses = fwd_kin.calcFwdKin(sol);
+    Eigen::Isometry3d result = result_poses[tesseract::common::LinkId::fromName(tip_link_name)];
     EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
 
     Eigen::Quaterniond rot_pose(target_pose.rotation());
@@ -537,10 +541,12 @@ inline void runInvKinTest(const tesseract::kinematics::KinematicGroup& kin_group
   IKSolutions solutions = kin_group.calcInvKin(input, seed);
   EXPECT_TRUE(!solutions.empty());
 
+  const auto wf_id = tesseract::common::LinkId::fromName(working_frame);
+  const auto tl_id = tesseract::common::LinkId::fromName(tip_link_name);
   for (const auto& sol : solutions)
   {
-    tesseract::common::TransformMap result_poses = kin_group.calcFwdKin(sol);
-    Eigen::Isometry3d result = result_poses.at(working_frame).inverse() * result_poses[tip_link_name];
+    tesseract::common::LinkIdTransformMap result_poses = kin_group.calcFwdKin(sol);
+    Eigen::Isometry3d result = result_poses.at(wf_id).inverse() * result_poses[tl_id];
     EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
 
     Eigen::Quaterniond rot_pose(target_pose.rotation());
@@ -572,10 +578,10 @@ inline void runFwdKinIIWATest(tesseract::kinematics::ForwardKinematics& kin)
   jvals.resize(7);
   jvals.setZero();
 
-  tesseract::common::TransformMap poses = kin.calcFwdKin(jvals);
+  auto poses = kin.calcFwdKin(jvals);
 
   EXPECT_EQ(poses.size(), 1);
-  Eigen::Isometry3d pose = poses.at("tool0");
+  Eigen::Isometry3d pose = poses.at(tesseract::common::LinkId::fromName("tool0"));
   Eigen::Isometry3d result;
   result.setIdentity();
   result.translation()[0] = 0;

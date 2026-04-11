@@ -72,14 +72,15 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
 {
   auto manager = std::make_unique<BulletDiscreteSimpleManager>(name_, config_info_.clone());
 
-  for (const auto& cow : link2cow_)
+  for (const auto& name : collision_objects_)
   {
-    COW::Ptr new_cow = cow.second->clone();
+    const auto& orig = link2cow_.at(tesseract::common::LinkId::fromName(name));
+    COW::Ptr new_cow = orig->clone();
 
     assert(new_cow->getCollisionShape());
     assert(new_cow->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
 
-    new_cow->setWorldTransform(cow.second->getWorldTransform());
+    new_cow->setWorldTransform(orig->getWorldTransform());
     auto margin =
         static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
     new_cow->setContactProcessingThreshold(margin);
@@ -100,7 +101,7 @@ bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
                                                      const tesseract::common::VectorIsometry3d& shape_poses,
                                                      bool enabled)
 {
-  if (link2cow_.find(name) != link2cow_.end())
+  if (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end())
     removeCollisionObject(name);
 
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
@@ -118,30 +119,32 @@ bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
 
 const CollisionShapesConst& BulletDiscreteSimpleManager::getCollisionObjectGeometries(const std::string& name) const
 {
-  auto cow = link2cow_.find(name);
+  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
 const tesseract::common::VectorIsometry3d&
 BulletDiscreteSimpleManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
-  auto cow = link2cow_.find(name);
+  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
 bool BulletDiscreteSimpleManager::hasCollisionObject(const std::string& name) const
 {
-  return (link2cow_.find(name) != link2cow_.end());
+  return (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end());
 }
 
 bool BulletDiscreteSimpleManager::removeCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(name);
+  const auto lid = tesseract::common::LinkId::fromName(name);
+  auto it = link2cow_.find(lid);
   if (it != link2cow_.end())
   {
     cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
-    link2cow_.erase(name);
+    link2cow_.erase(it);
+    active_ids_.erase(lid);
     return true;
   }
 
@@ -150,7 +153,7 @@ bool BulletDiscreteSimpleManager::removeCollisionObject(const std::string& name)
 
 bool BulletDiscreteSimpleManager::enableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
@@ -161,7 +164,7 @@ bool BulletDiscreteSimpleManager::enableCollisionObject(const std::string& name)
 
 bool BulletDiscreteSimpleManager::disableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
@@ -172,7 +175,7 @@ bool BulletDiscreteSimpleManager::disableCollisionObject(const std::string& name
 
 bool BulletDiscreteSimpleManager::isCollisionObjectEnabled(const std::string& name) const
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
   if (it != link2cow_.end())
     return it->second->m_enabled;
 
@@ -183,7 +186,7 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const std::string
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
   if (it != link2cow_.end())
     it->second->setWorldTransform(convertEigenToBt(pose));
 }
@@ -196,10 +199,14 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const std::vector
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
-void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
+void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
-  for (const auto& transform : transforms)
-    setCollisionObjectsTransform(transform.first, transform.second);
+  for (const auto& [id, tf] : transforms)
+  {
+    auto it = link2cow_.find(id);
+    if (it != link2cow_.end())
+      it->second->setWorldTransform(convertEigenToBt(tf));
+  }
 }
 
 const std::vector<std::string>& BulletDiscreteSimpleManager::getCollisionObjects() const { return collision_objects_; }
@@ -207,6 +214,9 @@ const std::vector<std::string>& BulletDiscreteSimpleManager::getCollisionObjects
 void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
+  active_ids_.clear();
+  for (const auto& name : names)
+    active_ids_.insert(tesseract::common::LinkId::fromName(name));
 
   cows_.clear();
   cows_.reserve(link2cow_.size());
@@ -348,7 +358,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
 {
   cow->setUserPointer(&contact_test_data_);
-  link2cow_[cow->getName()] = cow;
+  link2cow_[cow->getLinkId()] = cow;
   collision_objects_.push_back(cow->getName());
 
   if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)

@@ -86,7 +86,7 @@ public:
                  const std::vector<std::pair<std::string, std::string> >& chains,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
-  void calcFwdKin(tesseract::common::TransformMap& transforms,
+  void calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
   void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
@@ -111,7 +111,7 @@ private:
   static thread_local KDL::JntArray kdl_joints_cache;  // NOLINT
 
   /** @brief calcFwdKin helper function */
-  void calcFwdKinHelperAll(tesseract::common::TransformMap& transforms,
+  void calcFwdKinHelperAll(tesseract::common::LinkIdTransformMap& transforms,
                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcJacobian helper function */

@@ -70,7 +70,7 @@ public:
    * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
-  IKSolutions calcInvKin(const tesseract::common::TransformMap& tip_link_poses,
+  IKSolutions calcInvKin(const tesseract::common::LinkIdTransformMap& tip_link_poses,
                          const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   /**
@@ -88,7 +88,7 @@ public:
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
   virtual void calcInvKin(IKSolutions& solutions,
-                          const tesseract::common::TransformMap& tip_link_poses,
+                          const tesseract::common::LinkIdTransformMap& tip_link_poses,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**

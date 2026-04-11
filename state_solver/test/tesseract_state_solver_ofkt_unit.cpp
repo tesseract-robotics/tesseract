@@ -188,6 +188,54 @@ TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT
   EXPECT_TRUE(solver.getRevision() == 100);
 }
 
+// =============================================================================
+// Phase 2 test additions — SceneState integer-keyed tests
+// =============================================================================
+
+TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
+{
+  using tesseract::common::LinkId;
+  using tesseract::common::JointId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
+
+  OFKTStateSolver solver(*scene_graph);
+
+  // getState() returns SceneState with LinkIdTransformMap
+  const auto& state = solver.getState();
+
+  // link_transforms is keyed by LinkId
+  EXPECT_TRUE(state.link_transforms.count(LinkId::fromName("base_link")) > 0);
+
+  // All link names should map to a LinkId entry in link_transforms
+  for (const auto& link_name : solver.getLinkNames())
+  {
+    auto id = LinkId::fromName(link_name);
+    EXPECT_TRUE(state.link_transforms.count(id) > 0)
+        << "Missing LinkId entry for link: " << link_name;
+  }
+
+  // joints is keyed by JointId
+  for (const auto& joint_name : solver.getActiveJointNames())
+  {
+    auto jid = JointId::fromName(joint_name);
+    EXPECT_TRUE(state.joints.count(jid) > 0)
+        << "Missing JointId entry for joint: " << joint_name;
+  }
+
+  // Verify getState(names, values) also produces LinkIdTransformMap
+  auto names = solver.getActiveJointNames();
+  Eigen::VectorXd values = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(names.size()));
+  values[0] = 0.3;
+  auto new_state = solver.getState(names, values);
+
+  for (const auto& link_name : solver.getLinkNames())
+  {
+    EXPECT_TRUE(new_state.link_transforms.count(LinkId::fromName(link_name)) > 0);
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

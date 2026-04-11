@@ -45,7 +45,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   std::size_t t = 5;  // Because of unit test runtime this was reduced from 10 to 5.
   std::vector<std::string> link_names;
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   for (std::size_t x = 0; x < t; ++x)
   {
     for (std::size_t y = 0; y < t; ++y)
@@ -62,8 +62,9 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
         link_names.push_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
 
-        location[link_names.back()] = sphere_pose;
-        location[link_names.back()].translation() = Eigen::Vector3d(
+        auto link_id = tesseract::common::LinkId::fromName(link_names.back());
+        location[link_id] = sphere_pose;
+        location[link_id].translation() = Eigen::Vector3d(
             static_cast<double>(x) * delta, static_cast<double>(y) * delta, static_cast<double>(z) * delta);
         checker.addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses);
       }
@@ -95,7 +96,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
     if (result_vector.size() != 300)
       for (const auto& result : result_vector)
-        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << "\n";
+        std::cout << result.link_ids[0].name() << "," << result.link_ids[1].name() << "," << result.distance << "\n";
 
     EXPECT_EQ(result_vector.size(), 300);
   }

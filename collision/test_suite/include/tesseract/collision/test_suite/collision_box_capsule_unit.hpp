@@ -121,10 +121,13 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
-  location["box_link"] = Eigen::Isometry3d::Identity();
-  location["capsule_link"] = Eigen::Isometry3d::Identity();
-  location["capsule_link"].translation()(0) = 0.2;
+  const auto box_id = tesseract::common::LinkId::fromName("box_link");
+  const auto capsule_id = tesseract::common::LinkId::fromName("capsule_link");
+
+  tesseract::common::LinkIdTransformMap location;
+  location[box_id] = Eigen::Isometry3d::Identity();
+  location[capsule_id] = Eigen::Isometry3d::Identity();
+  location[capsule_id].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -140,7 +143,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -162,7 +165,7 @@ inline void runTest(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location["capsule_link"].translation() = Eigen::Vector3d(0, 0, 1);
+  location[capsule_id].translation() = Eigen::Vector3d(0, 0, 1);
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -189,7 +192,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0].name() != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)

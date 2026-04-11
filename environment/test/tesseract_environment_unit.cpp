@@ -39,11 +39,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/environment/command.h>
 #include <tesseract/environment/commands.h>
 #include <tesseract/environment/utils.h>
+#include <tesseract/common/types.h>
 
 using namespace tesseract::scene_graph;
 using namespace tesseract::srdf;
 using namespace tesseract::collision;
 using namespace tesseract::environment;
+using tesseract::common::LinkId;
+using tesseract::common::JointId;
 
 Eigen::Isometry3d tcpCallback(const tesseract::common::ManipulatorInfo& mi)
 {
@@ -128,34 +131,27 @@ void runGetLinkTransformsTest(Environment& env)
   for (int i = 0; i < 20; ++i)
   {
     SceneState random_state = state_solver->getRandomState();
-    env.setState(random_state.joints);
+    auto jn = env.getActiveJointNames();
+    env.setState(jn, random_state.getJointValues(jn));
 
     std::vector<std::string> link_names = env.getLinkNames();
 
-    std::vector<std::string> joint_names(random_state.joints.size());
-    Eigen::VectorXd joint_values(random_state.joints.size());
-    std::size_t j{ 0 };
-    for (const auto& joint : random_state.joints)
-    {
-      joint_names.at(j) = joint.first;
-      joint_values(static_cast<Eigen::Index>(j)) = joint.second;
-      ++j;
-    }
+    std::vector<std::string> joint_names = env.getActiveJointNames();
+    Eigen::VectorXd joint_values = random_state.getJointValues(joint_names);
 
     SceneState env_state = env.getState();
     tesseract::common::VectorIsometry3d link_transforms = env.getLinkTransforms();
-    tesseract::common::TransformMap link_transforms2;
+    tesseract::common::LinkIdTransformMap link_transforms2;
     env.getLinkTransforms(link_transforms2, joint_names, joint_values);
 
-    tesseract::common::TransformMap link_transforms3;
-    env.getLinkTransforms(link_transforms3, joint_names, joint_values, env.getCurrentFloatingJointValues());
     for (std::size_t i = 0; i < link_names.size(); ++i)
     {
       const std::string link_name = link_names.at(i);
-      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms.at(i), 1e-6));
-      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms2.at(link_name), 1e-6));
-      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms3.at(link_name), 1e-6));
-      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(env.getLinkTransform(link_name), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(LinkId::fromName(link_name)).isApprox(link_transforms.at(i), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(LinkId::fromName(link_name))
+                      .isApprox(link_transforms2.at(LinkId::fromName(link_name)), 1e-6));
+      EXPECT_TRUE(
+          env_state.link_transforms.at(LinkId::fromName(link_name)).isApprox(env.getLinkTransform(link_name), 1e-6));
     }
   }
 
@@ -166,7 +162,9 @@ void runGetLinkTransformsTest(Environment& env)
   {
     for (const auto& link2 : link_names)
     {
-      Eigen::Isometry3d t1 = env_state.link_transforms.at(link1).inverse() * env_state.link_transforms.at(link2);
+      Eigen::Isometry3d t1 =
+          env_state.link_transforms.at(LinkId::fromName(link1)).inverse() *
+          env_state.link_transforms.at(LinkId::fromName(link2));
       Eigen::Isometry3d t2 = env.getRelativeLinkTransform(link1, link2);
       EXPECT_TRUE(t1.isApprox(t2, 1e-6));
     }
@@ -710,9 +708,9 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
   tesseract::scene_graph::SceneState state = env->getState();
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name1) != joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("joint_" + link_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("joint_" + link_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("joint_" + link_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("joint_" + link_name1)) == state.joints.end());
 
   {
     auto cmd = std::make_shared<AddLinkCommand>(link_2, joint_1);
@@ -732,9 +730,9 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
   state = env->getState();
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "before_remove_link_unit.dot");
 
@@ -761,12 +759,12 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name1) == joint_names.end());
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) == link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) == state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("joint_" + link_name1) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("joint_" + link_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) == state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("joint_" + link_name1)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("joint_" + link_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "after_remove_link_unit.dot");
 
@@ -865,9 +863,9 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
   tesseract::scene_graph::SceneState state = env->getState();
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name) != joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("joint_" + link_name) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("joint_" + link_name) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("joint_" + link_name)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("joint_" + link_name)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "before_remove_traj_link_unit.dot");
 
@@ -891,11 +889,11 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name) == link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), link_name) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name) == state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("joint_" + link_name) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("joint_" + link_name) == state.joints.end());
-  EXPECT_TRUE(state.joint_transforms.find(link_name) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(link_name) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name)) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("joint_" + link_name)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("joint_" + link_name)) == state.joints.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(link_name)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(link_name)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "after_remove_traj_link_unit.dot");
 
@@ -1017,9 +1015,9 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   tesseract::scene_graph::SceneState state = env->getState();
   EXPECT_TRUE(env->getJoint("subgraph_joint") != nullptr);
   EXPECT_TRUE(env->getLink(link_name1) != nullptr);
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("subgraph_joint") != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("subgraph_joint") == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("subgraph_joint")) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("subgraph_joint")) == state.joints.end());
 
   {  // Adding twice with the same name should fail
     auto cmd = std::make_shared<AddSceneGraphCommand>(*subgraph);
@@ -1049,12 +1047,12 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   state = env->getState();
   EXPECT_TRUE(env->getJoint("prefix_subgraph_joint") != nullptr);
   EXPECT_TRUE(env->getLink("prefix_subgraph_base_link") != nullptr);
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("subgraph_joint") != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("subgraph_joint") == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find("prefix_subgraph_base_link") != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("prefix_subgraph_joint") != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("prefix_subgraph_joint") == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("subgraph_joint")) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("subgraph_joint")) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName("prefix_subgraph_base_link")) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("prefix_subgraph_joint")) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("prefix_subgraph_joint")) == state.joints.end());
 
   // Add subgraph with prefix and joint
   joint_1.child_link_name = "prefix2_subgraph_base_link";
@@ -1073,9 +1071,9 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   state = env->getState();
   EXPECT_TRUE(env->getJoint("provided_subgraph_joint") != nullptr);
   EXPECT_TRUE(env->getLink("prefix2_subgraph_base_link") != nullptr);
-  EXPECT_TRUE(state.link_transforms.find("prefix2_subgraph_base_link") != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("provided_subgraph_joint") != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find("provided_subgraph_joint") == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName("prefix2_subgraph_base_link")) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("provided_subgraph_joint")) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName("provided_subgraph_joint")) == state.joints.end());
 }
 
 TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
@@ -1234,9 +1232,9 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
   EXPECT_EQ(env->getRevision(), 4);
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 4);
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "before_change_joint_origin_unit.dot");
 
@@ -1257,8 +1255,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
   // Check that the origin got updated
   state = env->getState();
   EXPECT_TRUE(env->getJoint(joint_name1)->parent_to_joint_origin_transform.isApprox(new_origin));
-  EXPECT_TRUE(state.link_transforms.at(link_name1).isApprox(new_origin));
-  EXPECT_TRUE(state.joint_transforms.at(joint_name1).isApprox(new_origin));
+  EXPECT_TRUE(state.link_transforms.at(LinkId::fromName(link_name1)).isApprox(new_origin));
+  EXPECT_TRUE(state.joint_transforms.at(JointId::fromName(joint_name1)).isApprox(new_origin));
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "after_change_joint_origin_unit.dot");
 }
@@ -1629,9 +1627,9 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 4);
 
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_2, joint_2));
   EXPECT_EQ(env->getRevision(), 5);
@@ -1645,12 +1643,12 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) != joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "before_move_joint_unit.dot");
 
@@ -1670,12 +1668,12 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) != joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "after_move_joint_unit.dot");
 }
@@ -1712,9 +1710,9 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 4);
 
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_2, joint_2));
   EXPECT_EQ(env->getRevision(), 5);
@@ -1728,12 +1726,12 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) != joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "before_move_link_unit.dot");
 
@@ -1758,13 +1756,13 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), moved_joint_name) != joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) != joint_names.end());
 
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(moved_joint_name) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(moved_joint_name)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   env->getSceneGraph()->saveDOT(tesseract::common::getTempPath() + "after_move_link_unit.dot");
 }
@@ -1824,7 +1822,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   SceneState state = env->getState();
   for (auto& joint_state : joint_states)
   {
-    EXPECT_NEAR(state.joints.at(joint_state.first), joint_state.second, 1e-5);
+    EXPECT_NEAR(state.joints.at(JointId::fromName(joint_state.first)), joint_state.second, 1e-5);
   }
 
   Link link("link_n1");
@@ -1846,7 +1844,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   state = env->getState();
   for (auto& joint_state : joint_states)
   {
-    EXPECT_NEAR(state.joints.at(joint_state.first), joint_state.second, 1e-5);
+    EXPECT_NEAR(state.joints.at(JointId::fromName(joint_state.first)), joint_state.second, 1e-5);
   }
 
   // Check if visibility and collision enabled
@@ -1963,8 +1961,10 @@ void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_sol
   for (int i = 0; i < 10; ++i)
   {
     SceneState base_random_state = base_solver.getRandomState();
-    SceneState comp_state_const = comp_solver.getState(base_random_state.joints);
-    comp_solver.setState(base_random_state.joints);
+    auto ajn = base_solver.getActiveJointNames();
+    auto ajv = base_random_state.getJointValues(ajn);
+    SceneState comp_state_const = comp_solver.getState(ajn, ajv);
+    comp_solver.setState(ajn, ajv);
     const SceneState& comp_state = comp_solver.getState();
 
     runCompareSceneStates(base_random_state, comp_state_const);
@@ -2534,7 +2534,11 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   EXPECT_EQ(callback_counter, 1);
 
   // Set the environment to a random state
-  env->setState(env->getStateSolver()->getRandomState().joints);
+  {
+    auto rand_jn = env->getActiveJointNames();
+    auto rand_state = env->getStateSolver()->getRandomState();
+    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
+  }
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 2);
@@ -2542,7 +2546,11 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   states.push_back(env->getState(active_joint_names, jvals));
   states.push_back(env->getState(map_jvals));
 
-  env->setState(env->getStateSolver()->getRandomState().joints);
+  {
+    auto rand_jn = env->getActiveJointNames();
+    auto rand_state = env->getStateSolver()->getRandomState();
+    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
+  }
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 3);
@@ -2553,7 +2561,11 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   states.push_back(env->getState());
   EXPECT_EQ(callback_counter, 4);
 
-  env->setState(env->getStateSolver()->getRandomState().joints);
+  {
+    auto rand_jn = env->getActiveJointNames();
+    auto rand_state = env->getStateSolver()->getRandomState();
+    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
+  }
   cjv = env->getCurrentJointValues();
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 5);
@@ -2564,7 +2576,11 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   states.push_back(env->getState());
   EXPECT_EQ(callback_counter, 6);
 
-  env->setState(env->getStateSolver()->getRandomState().joints);
+  {
+    auto rand_jn = env->getActiveJointNames();
+    auto rand_state = env->getStateSolver()->getRandomState();
+    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
+  }
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 7);
@@ -2585,59 +2601,59 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
     // Check joints and links names
     for (const auto& joint_name : joint_names)
     {
-      EXPECT_TRUE(current_state.joint_transforms.find(joint_name) != current_state.joint_transforms.end());
+      EXPECT_TRUE(current_state.joint_transforms.find(JointId::fromName(joint_name)) != current_state.joint_transforms.end());
     }
 
     for (const auto& link_name : link_names)
     {
-      EXPECT_TRUE(current_state.link_transforms.find(link_name) != current_state.link_transforms.end());
+      EXPECT_TRUE(current_state.link_transforms.find(LinkId::fromName(link_name)) != current_state.link_transforms.end());
     }
 
     for (const auto& joint_name : active_joint_names)
     {
-      EXPECT_TRUE(current_state.joints.find(joint_name) != current_state.joints.end());
+      EXPECT_TRUE(current_state.joints.find(JointId::fromName(joint_name)) != current_state.joints.end());
     }
 
-    EXPECT_TRUE(current_state.link_transforms.at("base_link").isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("base_link")).isApprox(Eigen::Isometry3d::Identity()));
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity();
-      EXPECT_TRUE(current_state.link_transforms.at("link_1").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_1")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-0.00043624, 0, 0.36);
-      EXPECT_TRUE(current_state.link_transforms.at("link_2").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_2")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-0.00043624, 0, 0.36);
-      EXPECT_TRUE(current_state.link_transforms.at("link_3").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_3")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42);
-      EXPECT_TRUE(current_state.link_transforms.at("link_4").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_4")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42);
-      EXPECT_TRUE(current_state.link_transforms.at("link_5").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_5")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42 + 0.4);
-      EXPECT_TRUE(current_state.link_transforms.at("link_6").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_6")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.36 + 0.42 + 0.4);
-      EXPECT_TRUE(current_state.link_transforms.at("link_7").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_7")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 1.306);
-      EXPECT_TRUE(current_state.link_transforms.at("tool0").isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("tool0")).isApprox(result));
     }
   }
 }
@@ -2679,67 +2695,67 @@ TEST(TesseractEnvironmentUnit, EnvSetState2)  // NOLINT
     // Check joints and links names
     for (const auto& joint_name : joint_names)
     {
-      EXPECT_TRUE(current_state.joint_transforms.find(joint_name) != current_state.joint_transforms.end());
+      EXPECT_TRUE(current_state.joint_transforms.find(JointId::fromName(joint_name)) != current_state.joint_transforms.end());
     }
 
     for (const auto& link_name : link_names)
     {
-      EXPECT_TRUE(current_state.link_transforms.find(link_name) != current_state.link_transforms.end());
+      EXPECT_TRUE(current_state.link_transforms.find(LinkId::fromName(link_name)) != current_state.link_transforms.end());
     }
 
     int cnt = 0;
     for (const auto& joint_name : active_joint_names)
     {
-      EXPECT_TRUE(current_state.joints.find(joint_name) != current_state.joints.end());
-      EXPECT_NEAR(current_state.joints[joint_name], jvals(cnt++), 1e-5);
+      EXPECT_TRUE(current_state.joints.find(JointId::fromName(joint_name)) != current_state.joints.end());
+      EXPECT_NEAR(current_state.joints.at(JointId::fromName(joint_name)), jvals(cnt++), 1e-5);
     }
 
-    EXPECT_TRUE(current_state.link_transforms["base_link"].isApprox(Eigen::Isometry3d::Identity()));
-    EXPECT_TRUE(current_state.link_transforms["base"].isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("base_link")).isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("base")).isApprox(Eigen::Isometry3d::Identity()));
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity();
-      EXPECT_TRUE(current_state.link_transforms["link_1"].isApprox(result));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_1")).isApprox(result));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Translation3d(-0.00043624, 0, 0.36) * Eigen::AngleAxisd(M_PI_2, axis);
-      EXPECT_TRUE(current_state.link_transforms["link_2"].isApprox(result, 1e-4));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_2")).isApprox(result, 1e-4));
     }
 
     {
       Eigen::Isometry3d result = Eigen::Translation3d(-0.00043624, 0, 0.36) * Eigen::AngleAxisd(M_PI_2, axis);
-      EXPECT_TRUE(current_state.link_transforms["link_3"].isApprox(result, 1e-4));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_3")).isApprox(result, 1e-4));
     }
 
     {
       Eigen::Isometry3d result =
           Eigen::Translation3d(0.42 - 0.00043624, 0, 0.36 - 0.00043624) * Eigen::AngleAxisd(M_PI_2, axis);
-      EXPECT_TRUE(current_state.link_transforms["link_4"].isApprox(result, 1e-4));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_4")).isApprox(result, 1e-4));
     }
 
     {
       Eigen::Isometry3d result =
           Eigen::Translation3d(0.42 - 0.00043624, 0, 0.36 - 0.00043624) * Eigen::AngleAxisd(M_PI_2, axis);
-      EXPECT_TRUE(current_state.link_transforms["link_5"].isApprox(result, 1e-4));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_5")).isApprox(result, 1e-4));
     }
 
     {
       Eigen::Isometry3d result =
           Eigen::Translation3d(0.42 + 0.4 - 0.00043624, 0, 0.36 - 0.00043624) * Eigen::AngleAxisd(M_PI_2, axis);
-      EXPECT_TRUE(current_state.link_transforms["link_6"].isApprox(result, 1e-4));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_6")).isApprox(result, 1e-4));
     }
 
     {
       Eigen::Isometry3d result =
           Eigen::Translation3d(0.42 + 0.4 - 0.00043624, 0, 0.36 - 0.00043624) * Eigen::AngleAxisd(M_PI_2, axis);
-      EXPECT_TRUE(current_state.link_transforms["link_7"].isApprox(result, 1e-4));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("link_7")).isApprox(result, 1e-4));
     }
 
     {
       Eigen::Isometry3d result =
           Eigen::Translation3d(1.306 - 0.36 - 0.00043624, 0, 0.36 - 0.00043624) * Eigen::AngleAxisd(M_PI_2, axis);
-      EXPECT_TRUE(current_state.link_transforms["tool0"].isApprox(result, 1e-4));
+      EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("tool0")).isApprox(result, 1e-4));
     }
   }
 }
@@ -4647,10 +4663,10 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     std::vector<tesseract::collision::ContactResultMap> contacts;
     EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows()));
-    EXPECT_EQ(contacts.at(0).size(), 2);
+    EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
     EXPECT_EQ(contacts.at(2).size(), 1);
-    EXPECT_EQ(contacts.at(3).size(), 2);
+    EXPECT_EQ(contacts.at(3).size(), 1);
     EXPECT_EQ(contacts.at(4).size(), 0);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(134));
     checkProcessInterpolatedResults(contacts);
@@ -4658,7 +4674,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     contacts.clear();
     EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_names, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows()));
-    EXPECT_EQ(contacts.at(0).size(), 2);
+    EXPECT_EQ(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
     EXPECT_EQ(contacts.at(2).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(67));
@@ -5367,10 +5383,10 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
         checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
-    EXPECT_EQ(contacts.at(0).size(), 1);
+    EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 1);
     EXPECT_EQ(contacts.at(2).size(), 1);
-    EXPECT_EQ(contacts.at(3).size(), 1);
+    EXPECT_EQ(contacts.at(3).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(135));
     EXPECT_EQ(traj_results.numContacts(), static_cast<int>(135));
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
@@ -5393,7 +5409,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     contacts.clear();
     EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
-    EXPECT_EQ(contacts.at(0).size(), 1);
+    EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(67));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));

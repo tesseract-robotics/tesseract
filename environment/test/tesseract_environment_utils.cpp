@@ -137,10 +137,10 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.1m in collision
-    tesseract::common::TransformMap tmap;
-    tmap["boxbot_link"] = Eigen::Isometry3d::Identity();
-    tmap["test_box_link"] = Eigen::Isometry3d::Identity();
-    tmap["test_box_link"].translate(Eigen::Vector3d(0.9, 0, 0));
+    tesseract::common::LinkIdTransformMap tmap;
+    tmap[tesseract::common::LinkId::fromName("boxbot_link")] = Eigen::Isometry3d::Identity();
+    tmap[tesseract::common::LinkId::fromName("test_box_link")] = Eigen::Isometry3d::Identity();
+    tmap[tesseract::common::LinkId::fromName("test_box_link")].translate(Eigen::Vector3d(0.9, 0, 0));
 
     // In collision by default
     {
@@ -186,15 +186,15 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.1m in collision
-    tesseract::common::TransformMap tmap1;
-    tmap1["boxbot_link"] = Eigen::Isometry3d::Identity();
-    tmap1["test_box_link"] = Eigen::Isometry3d::Identity();
-    tmap1["test_box_link"].translate(Eigen::Vector3d(0.9, 2, 0));
+    tesseract::common::LinkIdTransformMap tmap1;
+    tmap1[tesseract::common::LinkId::fromName("boxbot_link")] = Eigen::Isometry3d::Identity();
+    tmap1[tesseract::common::LinkId::fromName("test_box_link")] = Eigen::Isometry3d::Identity();
+    tmap1[tesseract::common::LinkId::fromName("test_box_link")].translate(Eigen::Vector3d(0.9, 2, 0));
 
-    tesseract::common::TransformMap tmap2;
-    tmap2["boxbot_link"] = Eigen::Isometry3d::Identity();
-    tmap2["test_box_link"] = Eigen::Isometry3d::Identity();
-    tmap2["test_box_link"].translate(Eigen::Vector3d(0.9, -2, 0));
+    tesseract::common::LinkIdTransformMap tmap2;
+    tmap2[tesseract::common::LinkId::fromName("boxbot_link")] = Eigen::Isometry3d::Identity();
+    tmap2[tesseract::common::LinkId::fromName("test_box_link")] = Eigen::Isometry3d::Identity();
+    tmap2[tesseract::common::LinkId::fromName("test_box_link")].translate(Eigen::Vector3d(0.9, -2, 0));
 
     {
       contacts.clear();
@@ -264,10 +264,10 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.05m away from each other
-    tesseract::common::TransformMap tmap;
-    tmap["boxbot_link"] = Eigen::Isometry3d::Identity();
-    tmap["test_box_link"] = Eigen::Isometry3d::Identity();
-    tmap["test_box_link"].translate(Eigen::Vector3d(1.05, 0, 0));
+    tesseract::common::LinkIdTransformMap tmap;
+    tmap[tesseract::common::LinkId::fromName("boxbot_link")] = Eigen::Isometry3d::Identity();
+    tmap[tesseract::common::LinkId::fromName("test_box_link")] = Eigen::Isometry3d::Identity();
+    tmap[tesseract::common::LinkId::fromName("test_box_link")].translate(Eigen::Vector3d(1.05, 0, 0));
 
     // Not in collision
     {
@@ -310,15 +310,15 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.05m away from each other
-    tesseract::common::TransformMap tmap1;
-    tmap1["boxbot_link"] = Eigen::Isometry3d::Identity();
-    tmap1["test_box_link"] = Eigen::Isometry3d::Identity();
-    tmap1["test_box_link"].translate(Eigen::Vector3d(1.05, 2, 0));
+    tesseract::common::LinkIdTransformMap tmap1;
+    tmap1[tesseract::common::LinkId::fromName("boxbot_link")] = Eigen::Isometry3d::Identity();
+    tmap1[tesseract::common::LinkId::fromName("test_box_link")] = Eigen::Isometry3d::Identity();
+    tmap1[tesseract::common::LinkId::fromName("test_box_link")].translate(Eigen::Vector3d(1.05, 2, 0));
 
-    tesseract::common::TransformMap tmap2;
-    tmap2["boxbot_link"] = Eigen::Isometry3d::Identity();
-    tmap2["test_box_link"] = Eigen::Isometry3d::Identity();
-    tmap2["test_box_link"].translate(Eigen::Vector3d(1.05, -2, 0));
+    tesseract::common::LinkIdTransformMap tmap2;
+    tmap2[tesseract::common::LinkId::fromName("boxbot_link")] = Eigen::Isometry3d::Identity();
+    tmap2[tesseract::common::LinkId::fromName("test_box_link")] = Eigen::Isometry3d::Identity();
+    tmap2[tesseract::common::LinkId::fromName("test_box_link")].translate(Eigen::Vector3d(1.05, -2, 0));
 
     // Not in collision
     {

@@ -40,6 +40,11 @@
 #ifndef TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 #define TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <unordered_set>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/fcl/fcl_utils.h>
 
@@ -91,7 +96,7 @@ public:
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
                                     const tesseract::common::VectorIsometry3d& poses) override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
   const std::vector<std::string>& getCollisionObjects() const override final;
 
@@ -139,6 +144,8 @@ private:
 
   fcl_internal::Link2COW link2cow_; /**< @brief A map of all (static and active) collision objects being managed */
   std::vector<std::string> active_; /**< @brief A list of the active collision objects */
+  /** @brief Active collision objects by LinkId (O(1) lookup) */
+  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_ids_;
   std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
   CollisionMarginData collision_margin_data_;  /**< @brief The contact distance threshold */
   std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator_; /**< @brief The is allowed collision

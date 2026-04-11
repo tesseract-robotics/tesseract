@@ -16,9 +16,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/state_solver/kdl/kdl_state_solver.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::scene_graph::test_suite
 {
+using tesseract::common::LinkId;
+using tesseract::common::JointId;
 inline SceneGraph::UPtr getSceneGraph(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = locator.locateResource("package://tesseract/support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
@@ -112,41 +115,36 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
   {
     SceneState base_random_state;
     SceneState comp_state_const;
-    tesseract::common::TransformMap base_link_transforms;
-    tesseract::common::TransformMap comp_link_transforms;
-    tesseract::common::TransformMap comp_link_transforms1;
+    tesseract::common::LinkIdTransformMap base_link_transforms;
+    tesseract::common::LinkIdTransformMap comp_link_transforms;
+    tesseract::common::LinkIdTransformMap comp_link_transforms1;
     if (i < 3)
     {
       base_random_state = comp_solver.getRandomState();
-      comp_state_const = comp_solver.getState(base_random_state.joints);
+      // Convert JointValues (JointId-keyed) to string-keyed map for getState/setState API
+      std::vector<std::string> active_jn = comp_solver.getActiveJointNames();
+      Eigen::VectorXd active_jv = base_random_state.getJointValues(active_jn);
+      comp_state_const = comp_solver.getState(active_jn, active_jv);
 
-      comp_solver.setState(base_random_state.joints);
+      comp_solver.setState(active_jn, active_jv);
     }
     else if (i < 6)
     {
       base_random_state = base_solver.getRandomState();
-      comp_state_const = comp_solver.getState(base_random_state.joints);
-
-      std::vector<std::string> joint_names(base_random_state.joints.size());
-      Eigen::VectorXd joint_values(base_random_state.joints.size());
-      std::size_t j{ 0 };
-      for (const auto& joint : base_random_state.joints)
-      {
-        joint_names.at(j) = joint.first;
-        joint_values(static_cast<Eigen::Index>(j)) = joint.second;
-        ++j;
-      }
+      std::vector<std::string> joint_names = base_solver.getActiveJointNames();
+      Eigen::VectorXd joint_values = base_random_state.getJointValues(joint_names);
+      comp_state_const = comp_solver.getState(joint_names, joint_values);
 
       base_solver.getLinkTransforms(base_link_transforms, joint_names, joint_values);
       comp_solver.getLinkTransforms(comp_link_transforms, joint_names, joint_values);
-      comp_solver.getLinkTransforms(
-          comp_link_transforms1, joint_names, joint_values, base_random_state.floating_joints);
       comp_solver.setState(joint_names, joint_values);
     }
     else if (i < 10)
     {
       base_random_state = base_solver.getRandomState();
-      comp_state_const = comp_solver.getState(base_random_state.joints);
+      std::vector<std::string> active_jn = base_solver.getActiveJointNames();
+      Eigen::VectorXd active_jv = base_random_state.getJointValues(active_jn);
+      comp_state_const = comp_solver.getState(active_jn, active_jv);
 
       std::vector<std::string> joint_names = comp_solver.getActiveJointNames();
       Eigen::VectorXd joint_values = base_random_state.getJointValues(joint_names);
@@ -160,28 +158,31 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
 
     if (!comp_link_transforms.empty())
     {
-      for (const auto& link_pair : base_random_state.link_transforms)
+      for (const auto& link_pair : comp_link_transforms)
       {
-        EXPECT_TRUE(link_pair.second.isApprox(comp_link_transforms.at(link_pair.first), 1e-6));
+        EXPECT_TRUE(link_pair.second.isApprox(base_random_state.link_transforms.at(link_pair.first), 1e-6));
       }
 
-      for (const auto& link_pair : base_random_state.link_transforms)
+      for (const auto& link_pair : base_link_transforms)
       {
-        EXPECT_TRUE(link_pair.second.isApprox(base_link_transforms.at(link_pair.first), 1e-6));
+        EXPECT_TRUE(link_pair.second.isApprox(comp_link_transforms.at(link_pair.first), 1e-6));
       }
     }
 
     // Test differetn link transform methods
-    for (const auto& base_link_tf : base_random_state.link_transforms)
+    std::vector<std::string> all_link_names = comp_solver.getLinkNames();
+    for (const auto& ln : all_link_names)
     {
-      EXPECT_TRUE(base_link_tf.second.isApprox(comp_solver.getLinkTransform(base_link_tf.first), 1e-6));
+      EXPECT_TRUE(
+          base_random_state.link_transforms.at(LinkId::fromName(ln)).isApprox(comp_solver.getLinkTransform(ln), 1e-6));
     }
 
     std::vector<std::string> comp_link_names = comp_solver.getLinkNames();
     tesseract::common::VectorIsometry3d comp_link_tf = comp_solver.getLinkTransforms();
     for (std::size_t j = 0; j < comp_link_names.size(); ++j)
     {
-      EXPECT_TRUE(base_random_state.link_transforms[comp_link_names.at(j)].isApprox(comp_link_tf.at(j), 1e-6));
+      EXPECT_TRUE(base_random_state.link_transforms[LinkId::fromName(comp_link_names.at(j))].isApprox(
+          comp_link_tf.at(j), 1e-6));
     }
 
     for (const auto& from_link_name : comp_link_names)
@@ -189,8 +190,8 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
       for (const auto& to_link_name : comp_link_names)
       {
         Eigen::Isometry3d comp_tf = comp_solver.getRelativeLinkTransform(from_link_name, to_link_name);
-        Eigen::Isometry3d base_tf = base_random_state.link_transforms[from_link_name].inverse() *
-                                    base_random_state.link_transforms[to_link_name];
+        Eigen::Isometry3d base_tf = base_random_state.link_transforms[LinkId::fromName(from_link_name)].inverse() *
+                                    base_random_state.link_transforms[LinkId::fromName(to_link_name)];
         EXPECT_TRUE(base_tf.isApprox(comp_tf, 1e-6));
       }
     }
@@ -234,26 +235,27 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   Eigen::VectorXd njvals;
   double delta = 0.001;
-  tesseract::common::TransformMap poses;
+  const auto link_id = LinkId::fromName(link_name);
+  tesseract::common::LinkIdTransformMap poses;
   if (joint_names.empty())
     poses = state_solver.getState(joint_values).link_transforms;
   else
     poses = state_solver.getState(joint_names, joint_values).link_transforms;
 
-  Eigen::Isometry3d pose = poses[link_name];
+  Eigen::Isometry3d pose = poses[link_id];
   pose = change_base * pose;
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
     njvals = joint_values;
     njvals[i] += delta;
-    tesseract::common::TransformMap updated_poses;
+    tesseract::common::LinkIdTransformMap updated_poses;
     if (joint_names.empty())
       updated_poses = state_solver.getState(njvals).link_transforms;
     else
       updated_poses = state_solver.getState(joint_names, njvals).link_transforms;
 
-    Eigen::Isometry3d updated_pose = updated_poses[link_name];
+    Eigen::Isometry3d updated_pose = updated_poses[link_id];
     updated_pose = change_base * updated_pose;
 
     Eigen::Vector3d temp = pose * link_point;
@@ -296,7 +298,7 @@ inline void runCompareJacobian(StateSolver& state_solver,
   Eigen::MatrixXd jacobian, numerical_jacobian;
   jacobian.resize(6, jvals.size());
 
-  tesseract::common::TransformMap poses;
+  tesseract::common::LinkIdTransformMap poses;
 
   // The numerical jacobian orders things base on the provided joint list
   // The order needs to be calculated to compare
@@ -322,7 +324,8 @@ inline void runCompareJacobian(StateSolver& state_solver,
   }
 
   tesseract::common::jacobianChangeBase(jacobian, change_base);
-  tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_name]).linear() * link_point);
+  tesseract::common::jacobianChangeRefPoint(
+      jacobian, (change_base * poses[LinkId::fromName(link_name)]).linear() * link_point);
 
   numerical_jacobian.resize(6, jvals.size());
   numericalJacobian(numerical_jacobian, change_base, state_solver, joint_names, jvals, link_name, link_point);
@@ -354,7 +357,7 @@ inline void runCompareJacobian(StateSolver& state_solver,
     jvals(j++) = jv.second;
   }
 
-  tesseract::common::TransformMap poses;
+  tesseract::common::LinkIdTransformMap poses;
 
   // The numerical jacobian orders things base on the provided joint list
   // The order needs to be calculated to compare
@@ -368,7 +371,8 @@ inline void runCompareJacobian(StateSolver& state_solver,
   jacobian = state_solver.getJacobian(joints_values, link_name);
 
   tesseract::common::jacobianChangeBase(jacobian, change_base);
-  tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_name]).linear() * link_point);
+  tesseract::common::jacobianChangeRefPoint(
+      jacobian, (change_base * poses[LinkId::fromName(link_name)]).linear() * link_point);
 
   numerical_jacobian.resize(6, static_cast<Eigen::Index>(joints_values.size()));
   numericalJacobian(numerical_jacobian, change_base, state_solver, joint_names, jvals, link_name, link_point);
@@ -795,8 +799,8 @@ void runSetFloatingJointStateTest()
 
   {
     origin.translation()(1) = 1.5;
-    tesseract::common::TransformMap floating_joint_values;
-    floating_joint_values["joint_a1"] = origin;
+    tesseract::common::JointIdTransformMap floating_joint_values;
+    floating_joint_values[JointId::fromName("joint_a1")] = origin;
     state_solver.setState(floating_joint_values);
 
     EXPECT_TRUE(scene_graph->changeJointOrigin("joint_a1", origin));
@@ -812,8 +816,11 @@ void runSetFloatingJointStateTest()
   {
     origin.translation()(2) = 1.5;
     auto state = state_solver.getState();
-    state.floating_joints.at("joint_a1") = origin;
-    state_solver.setState(state.joints, state.floating_joints);
+    state.floating_joints.at(JointId::fromName("joint_a1")) = origin;
+    std::vector<std::string> active_jn = state_solver.getActiveJointNames();
+    Eigen::VectorXd active_jv = state.getJointValues(active_jn);
+    auto floating_jv = state.getFloatingJointValues(state_solver.getFloatingJointNames());
+    state_solver.setState(active_jn, active_jv, floating_jv);
 
     EXPECT_TRUE(scene_graph->changeJointOrigin("joint_a1", origin));
 
@@ -827,15 +834,18 @@ void runSetFloatingJointStateTest()
 
   // Failures
   {
-    tesseract::common::TransformMap floating_joint_values;
-    floating_joint_values["does_not_exist"] = origin;
+    tesseract::common::JointIdTransformMap floating_joint_values;
+    floating_joint_values[JointId::fromName("does_not_exist")] = origin;
     EXPECT_ANY_THROW(state_solver.setState(floating_joint_values));  // NOLINT
   }
 
   {
     auto state = state_solver.getState();
-    state.floating_joints["does_not_exist"] = origin;
-    EXPECT_ANY_THROW(state_solver.setState(state.joints, state.floating_joints));  // NOLINT
+    std::vector<std::string> active_jn = state_solver.getActiveJointNames();
+    Eigen::VectorXd active_jv = state.getJointValues(active_jn);
+    auto floating_jv = state.getFloatingJointValues(state_solver.getFloatingJointNames());
+    floating_jv[JointId::fromName("does_not_exist")] = origin;
+    EXPECT_ANY_THROW(state_solver.setState(active_jn, active_jv, floating_jv));  // NOLINT
   }
 }
 
@@ -892,10 +902,10 @@ void runAddandRemoveLinkTest()
   SceneState state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
   // Fixed joints are not listed
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
   EXPECT_TRUE(state.floating_joints.empty());
 
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
@@ -914,11 +924,11 @@ void runAddandRemoveLinkTest()
   state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name2)) != state.floating_joints.end());
   // Fixed joints are not listed
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_before_remove_link_unit.dot");
 
@@ -938,13 +948,13 @@ void runAddandRemoveLinkTest()
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) == state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) == state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name2) == state.floating_joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name2)) == state.floating_joints.end());
   EXPECT_TRUE(state.floating_joints.empty());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_after_remove_link_unit.dot");
@@ -1003,10 +1013,10 @@ void runAddandRemoveLinkTest()
   state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
   // Fixed joints are not listed
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
   EXPECT_TRUE(state_solver.addLink(link_2, joint_2));
@@ -1024,11 +1034,11 @@ void runAddandRemoveLinkTest()
   state = state_solver.getState();
   // Fixed joints are not listed
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name2)) != state.floating_joints.end());
   // Fixed joints are not listed
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_before_remove_link_unit2.dot");
 
@@ -1048,13 +1058,13 @@ void runAddandRemoveLinkTest()
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) == state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) == state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) == state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name2) == state.floating_joints.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) == state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name2)) == state.floating_joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
   EXPECT_TRUE(state.floating_joints.empty());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_after_remove_link_unit2.dot");
@@ -1169,9 +1179,9 @@ void runAddSceneGraphTest()
   std::vector<std::string> joint_names = state_solver.getActiveJointNames();
   SceneState state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), subgraph_joint_name) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(subgraph->getRoot()) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(subgraph_joint_name) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(subgraph_joint_name) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(subgraph->getRoot())) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(subgraph_joint_name)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(subgraph_joint_name)) == state.joints.end());
 
   // Adding twice with the same name should fail
   EXPECT_FALSE(scene_graph->insertSceneGraph(*subgraph, joint));
@@ -1208,10 +1218,13 @@ void runAddSceneGraphTest()
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot()) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) != state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(prefix + subgraph_joint_name) != state.floating_joints.end());
-  EXPECT_TRUE(state.joints.find(prefix + subgraph_joint_name) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(prefix + subgraph->getRoot())) !=
+              state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(prefix + subgraph_joint_name)) !=
+              state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(prefix + subgraph_joint_name)) !=
+              state.floating_joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(prefix + subgraph_joint_name)) == state.joints.end());
 
   // Add subgraph with prefix and joint
   prefix = "prefix2_";
@@ -1236,9 +1249,11 @@ void runAddSceneGraphTest()
 
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
   state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot()) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(prefix + subgraph_joint_name) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(prefix + subgraph->getRoot())) !=
+              state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(prefix + subgraph_joint_name)) !=
+              state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(prefix + subgraph_joint_name)) == state.joints.end());
 
   // Add empty subgraph with prefix and joint
   tesseract::scene_graph::SceneGraph empty_scene_graph;
@@ -1303,13 +1318,15 @@ void runChangeJointOriginTest()
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
   SceneState state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
-  EXPECT_TRUE(state.joint_transforms.at(joint_name2).isApprox(joint_2.parent_to_joint_origin_transform));
-  EXPECT_TRUE(state.floating_joints.at(joint_name2).isApprox(joint_2.parent_to_joint_origin_transform));
-  EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
+  EXPECT_TRUE(
+      state.joint_transforms.at(JointId::fromName(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
+  EXPECT_TRUE(
+      state.floating_joints.at(JointId::fromName(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name2)) != state.floating_joints.end());
   EXPECT_EQ(state.floating_joints.size(), 1);
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_before_change_joint_origin_unit.dot");
@@ -1336,11 +1353,11 @@ void runChangeJointOriginTest()
 
   // Check that the origin got updated
   state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.at(link_name1).isApprox(new_origin1));
-  EXPECT_TRUE(state.joint_transforms.at(joint_name1).isApprox(new_origin1));
-  EXPECT_TRUE(state.link_transforms.at(link_name2).isApprox(new_origin2));
-  EXPECT_TRUE(state.joint_transforms.at(joint_name2).isApprox(new_origin2));
-  EXPECT_TRUE(state.floating_joints.at(joint_name2).isApprox(new_origin2));
+  EXPECT_TRUE(state.link_transforms.at(LinkId::fromName(link_name1)).isApprox(new_origin1));
+  EXPECT_TRUE(state.joint_transforms.at(JointId::fromName(joint_name1)).isApprox(new_origin1));
+  EXPECT_TRUE(state.link_transforms.at(LinkId::fromName(link_name2)).isApprox(new_origin2));
+  EXPECT_TRUE(state.joint_transforms.at(JointId::fromName(joint_name2)).isApprox(new_origin2));
+  EXPECT_TRUE(state.floating_joints.at(JointId::fromName(joint_name2)).isApprox(new_origin2));
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_after_change_joint_origin_unit.dot");
 
@@ -1396,9 +1413,9 @@ void runMoveJointTest()
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
   SceneState state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
   EXPECT_TRUE(state_solver.addLink(link_2, joint_2));
@@ -1415,13 +1432,13 @@ void runMoveJointTest()
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name2)) != state.floating_joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_before_move_joint_unit.dot");
 
@@ -1441,13 +1458,13 @@ void runMoveJointTest()
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name2)) != state.floating_joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_after_move_joint_unit.dot");
 
@@ -1515,10 +1532,10 @@ void runMoveLinkTest()
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
   SceneState state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name1) != state.floating_joints.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name1)) != state.floating_joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
 
   EXPECT_TRUE(scene_graph->addLink(link_2, joint_2));
   EXPECT_TRUE(state_solver.addLink(link_2, joint_2));
@@ -1536,13 +1553,13 @@ void runMoveLinkTest()
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name1) != state.floating_joints.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name1)) != state.floating_joints.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_before_move_link_unit.dot");
 
@@ -1569,15 +1586,15 @@ void runMoveLinkTest()
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), moved_joint_name) == joint_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
 
-  EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(joint_name1) == state.floating_joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name1)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name1)) == state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(JointId::fromName(joint_name1)) == state.floating_joints.end());
   EXPECT_TRUE(state.floating_joints.empty());
-  EXPECT_TRUE(state.joint_transforms.find(moved_joint_name) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
-  EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
-  EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(moved_joint_name)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name1)) == state.joints.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName(link_name2)) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName(joint_name2)) != state.joint_transforms.end());
+  EXPECT_TRUE(state.joints.find(JointId::fromName(joint_name2)) == state.joints.end());
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_after_move_link_unit.dot");
 
@@ -1818,7 +1835,7 @@ void runReplaceJointTest()
       KDLStateSolver base_state_solver(*scene_graph);
 
       auto state = state_solver.getState();
-      EXPECT_TRUE(state.floating_joints.find("joint_a1") != state.floating_joints.end());
+      EXPECT_TRUE(state.floating_joints.find(JointId::fromName("joint_a1")) != state.floating_joints.end());
       EXPECT_FALSE(state.floating_joints.empty());
 
       runCompareStateSolver(base_state_solver, state_solver);
@@ -1841,7 +1858,7 @@ void runReplaceJointTest()
       KDLStateSolver base_state_solver(*scene_graph);
 
       auto state = state_solver.getState();
-      EXPECT_TRUE(state.floating_joints.find("joint_a1") != state.floating_joints.end());
+      EXPECT_TRUE(state.floating_joints.find(JointId::fromName("joint_a1")) != state.floating_joints.end());
       EXPECT_FALSE(state.floating_joints.empty());
 
       runCompareStateSolver(base_state_solver, state_solver);
@@ -1864,7 +1881,7 @@ void runReplaceJointTest()
       KDLStateSolver base_state_solver(*scene_graph);
 
       auto state = state_solver.getState();
-      EXPECT_TRUE(state.floating_joints.find("joint_a1") == state.floating_joints.end());
+      EXPECT_TRUE(state.floating_joints.find(JointId::fromName("joint_a1")) == state.floating_joints.end());
       EXPECT_TRUE(state.floating_joints.empty());
 
       runCompareStateSolver(base_state_solver, state_solver);

@@ -141,10 +141,13 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.0, 1e-5);
 
   // Test when object is inside another
-  tesseract::common::TransformMap location;
-  location["sphere_link"] = Eigen::Isometry3d::Identity();
-  location["sphere1_link"] = Eigen::Isometry3d::Identity();
-  location["sphere1_link"].translation()(0) = 0.2;
+  const auto sphere_id = tesseract::common::LinkId::fromName("sphere_link");
+  const auto sphere1_id = tesseract::common::LinkId::fromName("sphere1_link");
+
+  tesseract::common::LinkIdTransformMap location;
+  location[sphere_id] = Eigen::Isometry3d::Identity();
+  location[sphere1_id] = Eigen::Isometry3d::Identity();
+  location[sphere1_id].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -159,7 +162,7 @@ inline void runTest(DiscreteContactManager& checker)
   ///////////////////////////////////////////////
   // Test object is out side the contact distance
   ///////////////////////////////////////////////
-  location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  location[sphere1_id].translation() = Eigen::Vector3d(1, 0, 0);
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -184,7 +187,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.52448, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0].name() != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.23776, 0.001);
@@ -197,13 +200,13 @@ inline void runTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////////////////////////////////////
   // Test object inside the contact distance (Closest Feature Vertex to Vertex)
   /////////////////////////////////////////////////////////////////////////////
-  location["sphere1_link"].translation() = Eigen::Vector3d(0, 1, 0);
+  location[sphere1_id].translation() = Eigen::Vector3d(0, 1, 0);
   result.clear();
   result_vector.clear();
 
   // The closest feature of the mesh should be edge to edge
   // Use different method for setting transforms
-  checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
+  checker.setCollisionObjectsTransform("sphere1_link", location[sphere1_id]);
   checker.setCollisionMarginData(CollisionMarginData(0.55));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.55, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
@@ -213,7 +216,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0].name() != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1], 0.25, 0.001);
