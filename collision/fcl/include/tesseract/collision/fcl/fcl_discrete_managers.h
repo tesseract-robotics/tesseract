@@ -98,7 +98,7 @@ public:
 
   void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
-  const std::vector<std::string>& getCollisionObjects() const override final;
+  const std::vector<tesseract::common::LinkId>& getCollisionObjects() const override final;
 
   void setActiveCollisionObjects(const std::vector<std::string>& names) override final;
 

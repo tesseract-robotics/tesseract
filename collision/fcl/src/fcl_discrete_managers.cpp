@@ -60,8 +60,8 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
 {
   auto manager = std::make_unique<FCLDiscreteBVHManager>();
 
-  for (const auto& name : collision_objects_)
-    manager->addCollisionObject(link2cow_.at(tesseract::common::LinkId::fromName(name))->clone());
+  for (const auto& id : collision_objects_)
+    manager->addCollisionObject(link2cow_.at(id)->clone());
 
   manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
   manager->setCollisionMarginData(collision_margin_data_);
@@ -135,7 +135,7 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
         dynamic_manager_->unregisterObject(co.get());
     }
 
-    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), lid));
     link2cow_.erase(it);
     active_ids_.erase(lid);
     return true;
@@ -272,7 +272,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
     dynamic_manager_->update(dynamic_update_);
 }
 
-const std::vector<std::string>& FCLDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& FCLDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
 
 void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
@@ -388,7 +388,7 @@ void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   static_update_.reserve(fcl_co_count_);
   dynamic_update_.reserve(fcl_co_count_);
   link2cow_[cow->getLinkId()] = cow;
-  collision_objects_.push_back(cow->getName());
+  collision_objects_.push_back(cow->getLinkId());
 
   std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
   if (cow->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
