@@ -198,9 +198,6 @@ public:
 
   common::LinkId getId() const;
 
-  /** @deprecated Use getId() instead */
-  [[deprecated("Use getId() instead")]] std::size_t getHash() const;
-
   /// inertial element
   Inertial::Ptr inertial;
 

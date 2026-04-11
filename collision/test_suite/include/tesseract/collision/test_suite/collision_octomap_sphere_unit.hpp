@@ -102,10 +102,10 @@ inline void runTestTyped(DiscreteContactManager& checker, double tol, ContactTes
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
-  location["octomap_link"] = Eigen::Isometry3d::Identity();
-  location["sphere_link"] = Eigen::Isometry3d::Identity();
-  location["sphere_link"].translation() = Eigen::Vector3d(0, 0, 1);
+  tesseract::common::LinkIdTransformMap location;
+  location[tesseract::common::LinkId::fromName("octomap_link")] = Eigen::Isometry3d::Identity();
+  location[tesseract::common::LinkId::fromName("sphere_link")] = Eigen::Isometry3d::Identity();
+  location[tesseract::common::LinkId::fromName("sphere_link")].translation() = Eigen::Vector3d(0, 0, 1);
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check

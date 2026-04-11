@@ -258,15 +258,16 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
 }
 
 void URInvKin::calcInvKin(IKSolutions& solutions,
-                          const tesseract::common::TransformMap& tip_link_poses,
+                          const tesseract::common::LinkIdTransformMap& tip_link_poses,
                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
+  const auto tip_id = tesseract::common::LinkId::fromName(tip_link_name_);
   assert(tip_link_poses.size() == 1);
-  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
-  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);  // NOLINT
+  assert(tip_link_poses.find(tip_id) != tip_link_poses.end());
+  assert(std::abs(1.0 - tip_link_poses.at(tip_id).matrix().determinant()) < 1e-6);  // NOLINT
 
   Eigen::Isometry3d base_offset = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitZ());
-  Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_link_name_);
+  Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_id);
 
   // Do the analytic IK
   // NOLINTNEXTLINE

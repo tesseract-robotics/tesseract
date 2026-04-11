@@ -143,11 +143,11 @@ void KDLInvKinChainNR::calcInvKinHelper(IKSolutions& solutions,
 }
 
 void KDLInvKinChainNR::calcInvKin(IKSolutions& solutions,
-                                  const tesseract::common::TransformMap& tip_link_poses,
+                                  const tesseract::common::LinkIdTransformMap& tip_link_poses,
                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  assert(tip_link_poses.find(kdl_data_.tip_link_name) != tip_link_poses.end());
-  calcInvKinHelper(solutions, tip_link_poses.at(kdl_data_.tip_link_name), seed);
+  assert(tip_link_poses.find(tesseract::common::LinkId::fromName(kdl_data_.tip_link_name)) != tip_link_poses.end());
+  calcInvKinHelper(solutions, tip_link_poses.at(tesseract::common::LinkId::fromName(kdl_data_.tip_link_name)), seed);
 }
 
 std::vector<std::string> KDLInvKinChainNR::getJointNames() const { return kdl_data_.joint_names; }
