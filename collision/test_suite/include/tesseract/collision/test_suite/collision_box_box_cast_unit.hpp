@@ -93,9 +93,9 @@ inline void addCollisionObjects(ContinuousContactManager& checker)
   const auto& co = checker.getCollisionObjects();
   for (std::size_t i = 0; i < co.size(); ++i)
   {
-    EXPECT_TRUE(checker.getCollisionObjectGeometries(co[i]).size() == 1);
-    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co[i]).size() == 1);
-    const auto& cgt = checker.getCollisionObjectGeometriesTransforms(co[i]);
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co[i].name()).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co[i].name()).size() == 1);
+    const auto& cgt = checker.getCollisionObjectGeometriesTransforms(co[i].name());
     if (i != 2)
     {
       EXPECT_TRUE(cgt[0].isApprox(Eigen::Isometry3d::Identity(), 1e-5));
