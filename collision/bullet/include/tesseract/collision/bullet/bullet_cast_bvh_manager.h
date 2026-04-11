@@ -155,7 +155,7 @@ private:
   /** @brief Active collision objects by LinkId (O(1) lookup) */
   std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_ids_;
   /** @brief A list of the collision objects */
-  std::vector<std::string> collision_objects_;
+  std::vector<tesseract::common::LinkId> collision_objects_;
   /** @brief The bullet collision dispatcher used for getting object to object collison algorithm */
   std::unique_ptr<btCollisionDispatcher> dispatcher_;
   /** @brief The bullet collision dispatcher configuration information */
