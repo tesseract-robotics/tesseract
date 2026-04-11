@@ -143,7 +143,7 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, const Mapp
 void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
                                                        long sub_segment_index,
                                                        long sub_segment_last_index,
-                                                       const std::vector<std::string>& active_link_names,
+                                                       const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
                                                        double segment_dt,
                                                        bool discrete,
                                                        const tesseract::collision::ContactResultMap::FilterFn& filter)
@@ -157,8 +157,7 @@ void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_seg
       // Iterate over the two time values in r.cc_time
       for (size_t j = 0; j < 2; ++j)
       {
-        if (std::find(active_link_names.begin(), active_link_names.end(), r.link_ids[j].name()) !=
-            active_link_names.end())
+        if (active_link_ids.count(r.link_ids[j]) > 0)
         {
           r.cc_time[j] = (r.cc_time[j] < 0) ?
                              (static_cast<double>(sub_segment_index) * segment_dt) :

@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -199,7 +200,7 @@ public:
    * @param sub_segment_results The interpolated results to process
    * @param sub_segment_index The current sub segment index
    * @param sub_segment_last_index The last sub segment index
-   * @param active_link_names The active link names
+   * @param active_link_ids The set of active link IDs
    * @param segment_dt The segment dt
    * @param discrete If discrete contact checker was used
    * @param filter An option filter to exclude results
@@ -207,7 +208,7 @@ public:
   void addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
                                        long sub_segment_index,
                                        long sub_segment_last_index,
-                                       const std::vector<std::string>& active_link_names,
+                                       const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
                                        double segment_dt,
                                        bool discrete,
                                        const ContactResultMap::FilterFn& filter = nullptr);
