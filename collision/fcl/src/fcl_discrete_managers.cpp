@@ -63,7 +63,7 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
   for (const auto& name : collision_objects_)
     manager->addCollisionObject(link2cow_.at(tesseract::common::LinkId::fromName(name))->clone());
 
-  manager->setActiveCollisionObjects(getActiveCollisionObjects());
+  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
   manager->setCollisionMarginData(collision_margin_data_);
   manager->setContactAllowedValidator(validator_);
 
@@ -279,6 +279,19 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
+
+  for (auto& co : link2cow_)
+    updateCollisionObjectFilters(active_ids_, co.second, static_manager_, dynamic_manager_);
+
+  // This causes a refit on the bvh tree.
+  dynamic_manager_->update();
+  static_manager_->update();
+}
+
+void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  active_ids_.clear();
+  active_ids_.insert(ids.begin(), ids.end());
 
   for (auto& co : link2cow_)
     updateCollisionObjectFilters(active_ids_, co.second, static_manager_, dynamic_manager_);

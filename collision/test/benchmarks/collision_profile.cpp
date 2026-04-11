@@ -89,7 +89,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_single_link, 
   if (use_single_link)
     checker.addCollisionObject("sphere_link", 0, link_shapes, link_poses);
 
-  checker.setActiveCollisionObjects({ "move_link" });
+  checker.setActiveCollisionObjects(std::vector<std::string>{ "move_link" });
 }
 
 void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link, bool use_convex_mesh)
@@ -161,7 +161,7 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_single_link
   if (use_single_link)
     checker.addCollisionObject("sphere_link", 0, link_shapes, link_poses);
 
-  checker.setActiveCollisionObjects({ "move_link" });
+  checker.setActiveCollisionObjects(std::vector<std::string>{ "move_link" });
 }
 
 std::vector<Eigen::Isometry3d> getTransforms(std::size_t num_poses)
