@@ -49,6 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/eigen_types.h>
 #include <tesseract/common/any_poly.h>
 #include <tesseract/common/contact_allowed_validator.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::environment
 {
@@ -203,6 +204,9 @@ public:
    * @return A vector of joint names
    */
   std::vector<std::string> getGroupJointNames(const std::string& group_name) const;
+
+  /** @brief Get a groups joint IDs */
+  std::vector<tesseract::common::JointId> getGroupJointIds(const std::string& group_name) const;
 
   /**
    * @brief Get a joint group by name
@@ -365,6 +369,11 @@ public:
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
 
+  /** @brief Get the link transforms using JointId keys (avoids string-to-ID conversion) */
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<tesseract::common::JointId>& joint_ids,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+
   /** @brief Last update time. Updated when any change to the environment occurs */
   std::chrono::system_clock::time_point getTimestamp() const;
 
@@ -416,11 +425,17 @@ public:
    */
   std::vector<std::string> getJointNames() const;
 
+  /** @brief Get a vector of joint IDs in the environment */
+  std::vector<tesseract::common::JointId> getJointIds() const;
+
   /**
    * @brief Get a vector of active joint names in the environment
    * @return A vector of active joint names
    */
   std::vector<std::string> getActiveJointNames() const;
+
+  /** @brief Get a vector of active joint IDs in the environment */
+  std::vector<tesseract::common::JointId> getActiveJointIds() const;
 
   /**
    * @brief Get the current state of the environment
@@ -464,11 +479,17 @@ public:
    */
   std::vector<std::string> getLinkNames() const;
 
+  /** @brief Get a vector of link IDs in the environment */
+  std::vector<tesseract::common::LinkId> getLinkIds() const;
+
   /**
    * @brief Get a vector of active link names in the environment
    * @return A vector of active link names
    */
   std::vector<std::string> getActiveLinkNames() const;
+
+  /** @brief Get a vector of active link IDs in the environment */
+  std::vector<tesseract::common::LinkId> getActiveLinkIds() const;
 
   /**
    * @brief Get a vector of active link names affected by the provided joints in the environment
@@ -504,6 +525,9 @@ public:
    * @return Transform and is identity when no transform is available.
    */
   Eigen::Isometry3d getLinkTransform(const std::string& link_name) const;
+
+  /** @brief Get the transform for a link identified by LinkId */
+  Eigen::Isometry3d getLinkTransform(tesseract::common::LinkId link_id) const;
 
   /**
    * @brief Get transform between two links using the current state

@@ -251,7 +251,7 @@ struct Environment::Implementation
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::unordered_map<std::string, std::vector<std::string>> group_joint_names_cache;
+  mutable std::unordered_map<std::string, std::vector<tesseract::common::JointId>> group_joint_names_cache;
   mutable std::shared_mutex group_joint_names_cache_mutex;
 
   /**
@@ -314,6 +314,8 @@ struct Environment::Implementation
   void triggerCallbacks();
 
   std::vector<std::string> getGroupJointNames(const std::string& group_name) const;
+
+  std::vector<tesseract::common::JointId> getGroupJointIds(const std::string& group_name) const;
 
   std::shared_ptr<const tesseract::kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
@@ -562,13 +564,9 @@ Eigen::VectorXd Environment::Implementation::getCurrentJointValues(const std::ve
 
 tesseract::common::JointIdTransformMap Environment::Implementation::getCurrentFloatingJointValues() const
 {
-  using tesseract::common::JointId;
   tesseract::common::JointIdTransformMap fjv;
-  for (const auto& name : state_solver->getFloatingJointNames())
-  {
-    auto id = JointId::fromName(name);
+  for (const auto& id : state_solver->getFloatingJointIds())
     fjv[id] = current_state.floating_joints.at(id);
-  }
 
   return fjv;
 }
@@ -681,9 +679,8 @@ void Environment::Implementation::currentStateChanged()
   if (continuous_manager != nullptr)
   {
     // Build active link ID set for O(1) lookup
-    std::unordered_set<LinkId, LinkId::Hash> active_ids;
-    for (const auto& name : state_solver->getActiveLinkNames())
-      active_ids.insert(LinkId::fromName(name));
+    const std::vector<LinkId> active_link_ids = state_solver->getActiveLinkIds();
+    std::unordered_set<LinkId, LinkId::Hash> active_ids(active_link_ids.begin(), active_link_ids.end());
 
     for (const auto& [id, tf] : link_transforms)
     {
@@ -705,18 +702,18 @@ void Environment::Implementation::currentStateChanged()
 void Environment::Implementation::environmentChanged()
 {
   timestamp = std::chrono::system_clock::now();
-  std::vector<std::string> active_link_names = state_solver->getActiveLinkNames();
+  std::vector<tesseract::common::LinkId> active_link_ids = state_solver->getActiveLinkIds();
 
   {
     std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
     if (discrete_manager != nullptr)
-      discrete_manager->setActiveCollisionObjects(active_link_names);
+      discrete_manager->setActiveCollisionObjects(active_link_ids);
   }
 
   {
     std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
     if (continuous_manager != nullptr)
-      continuous_manager->setActiveCollisionObjects(active_link_names);
+      continuous_manager->setActiveCollisionObjects(active_link_ids);
   }
 
   {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
@@ -756,7 +753,59 @@ void Environment::Implementation::triggerCallbacks()
 std::vector<std::string> Environment::Implementation::getGroupJointNames(const std::string& group_name) const
 {
   auto it = std::find(kinematics_information.group_names.begin(), kinematics_information.group_names.end(), group_name);
+  if (it == kinematics_information.group_names.end())
+    throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
 
+  std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex);
+  auto cache_it = group_joint_names_cache.find(group_name);
+  if (cache_it != group_joint_names_cache.end())
+  {
+    std::vector<std::string> names;
+    names.reserve(cache_it->second.size());
+    for (const auto& id : cache_it->second)
+      names.push_back(id.name());
+    return names;
+  }
+
+  auto chain_it = kinematics_information.chain_groups.find(group_name);
+  if (chain_it != kinematics_information.chain_groups.end())
+  {
+    if (chain_it->second.size() > 1)
+      throw std::runtime_error("Environment, Groups with multiple chains is not supported!");
+
+    tesseract::scene_graph::ShortestPath path =
+        scene_graph->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
+
+    std::vector<tesseract::common::JointId> joint_ids;
+    joint_ids.reserve(path.active_joints.size());
+    for (const auto& name : path.active_joints)
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    group_joint_names_cache[group_name] = joint_ids;
+    return path.active_joints;
+  }
+
+  auto joint_it = kinematics_information.joint_groups.find(group_name);
+  if (joint_it != kinematics_information.joint_groups.end())
+  {
+    std::vector<tesseract::common::JointId> joint_ids;
+    joint_ids.reserve(joint_it->second.size());
+    for (const auto& name : joint_it->second)
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    group_joint_names_cache[group_name] = joint_ids;
+    return joint_it->second;
+  }
+
+  auto link_it = kinematics_information.link_groups.find(group_name);
+  if (link_it != kinematics_information.link_groups.end())
+    throw std::runtime_error("Environment, Link groups are currently not supported!");
+
+  throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
+}
+
+std::vector<tesseract::common::JointId>
+Environment::Implementation::getGroupJointIds(const std::string& group_name) const
+{
+  auto it = std::find(kinematics_information.group_names.begin(), kinematics_information.group_names.end(), group_name);
   if (it == kinematics_information.group_names.end())
     throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
 
@@ -774,15 +823,23 @@ std::vector<std::string> Environment::Implementation::getGroupJointNames(const s
     tesseract::scene_graph::ShortestPath path =
         scene_graph->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
-    group_joint_names_cache[group_name] = path.active_joints;
-    return path.active_joints;
+    std::vector<tesseract::common::JointId> joint_ids;
+    joint_ids.reserve(path.active_joints.size());
+    for (const auto& name : path.active_joints)
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    group_joint_names_cache[group_name] = joint_ids;
+    return joint_ids;
   }
 
   auto joint_it = kinematics_information.joint_groups.find(group_name);
   if (joint_it != kinematics_information.joint_groups.end())
   {
-    group_joint_names_cache[group_name] = joint_it->second;
-    return joint_it->second;
+    std::vector<tesseract::common::JointId> joint_ids;
+    joint_ids.reserve(joint_it->second.size());
+    for (const auto& name : joint_it->second)
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    group_joint_names_cache[group_name] = joint_ids;
+    return joint_ids;
   }
 
   auto link_it = kinematics_information.link_groups.find(group_name);
@@ -1010,7 +1067,7 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
       }
     }
 
-    manager->setActiveCollisionObjects(state_solver->getActiveLinkNames());
+    manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }
 
   manager->setCollisionMarginData(collision_margin_data);
@@ -1043,7 +1100,7 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
       }
     }
 
-    manager->setActiveCollisionObjects(state_solver->getActiveLinkNames());
+    manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }
 
   manager->setCollisionMarginData(collision_margin_data);
@@ -1053,9 +1110,8 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
     const auto& link_transforms = current_state.link_transforms;
 
     // Build active link ID set for O(1) lookup
-    std::unordered_set<LinkId, LinkId::Hash> active_ids;
-    for (const auto& name : state_solver->getActiveLinkNames())
-      active_ids.insert(LinkId::fromName(name));
+    const std::vector<LinkId> active_link_ids = state_solver->getActiveLinkIds();
+    std::unordered_set<LinkId, LinkId::Hash> active_ids(active_link_ids.begin(), active_link_ids.end());
 
     for (const auto& [id, tf] : link_transforms)
     {
@@ -1365,7 +1421,7 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
   per_state_collision_geom.reserve(traj.size());
   for (const auto& state : traj)
   {
-    if (state.joint_names.empty())
+    if (state.joint_ids.empty())
     {
       CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with empty joint names.", cmd->getLinkName().c_str());
       return false;
@@ -1377,17 +1433,17 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
       return false;
     }
 
-    if (static_cast<Eigen::Index>(state.joint_names.size()) != state.position.size())
+    if (static_cast<Eigen::Index>(state.joint_ids.size()) != state.position.size())
     {
       CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) where joint names and position are different sizes.",
                              cmd->getLinkName().c_str());
       return false;
     }
 
-    tesseract::scene_graph::SceneState scene_state = state_solver_clone->getState(state.joint_names, state.position);
-    if (joint_names.empty() || !tesseract::common::isIdentical(state.joint_names, joint_names, false))
+    tesseract::scene_graph::SceneState scene_state = state_solver_clone->getState(state.getJointNames(), state.position);
+    if (joint_names.empty() || !tesseract::common::isIdentical(state.getJointNames(), joint_names, false))
     {
-      joint_names = state.joint_names;
+      joint_names = state.getJointNames();
       active_link_names = scene_graph->getJointChildrenNames(joint_names);
 
       if (std::find(active_link_names.begin(), active_link_names.end(), cmd->getParentLinkName()) !=
@@ -2363,22 +2419,23 @@ void Environment::init(const std::vector<std::shared_ptr<const Command>>& comman
                        const std::chrono::system_clock::time_point& current_state_timestamp,
                        const std::shared_ptr<const tesseract::common::ResourceLocator>& resource_locator)
 {
-  using tesseract::common::JointId;
   std::unique_lock<std::shared_mutex> lock(mutex_);
   impl_->resource_locator = resource_locator;
   impl_->initHelper(commands);
   impl_->init_revision = init_revision;
 
-  // Convert integer-keyed joint values to string-keyed for the state solver
-  std::unordered_map<std::string, double> joints_str;
-  for (const auto& name : impl_->state_solver->getActiveJointNames())
-    joints_str[name] = current_state.joints.at(JointId::fromName(name));
+  // Restore joint state using ID-based methods
+  const auto active_ids = impl_->state_solver->getActiveJointIds();
+  Eigen::VectorXd joint_values(static_cast<Eigen::Index>(active_ids.size()));
+  for (std::size_t i = 0; i < active_ids.size(); ++i)
+    joint_values(static_cast<Eigen::Index>(i)) = current_state.joints.at(active_ids[i]);
 
   tesseract::common::JointIdTransformMap floating;
-  for (const auto& name : impl_->state_solver->getFloatingJointNames())
-    floating[JointId::fromName(name)] = current_state.floating_joints.at(JointId::fromName(name));
+  for (const auto& id : impl_->state_solver->getFloatingJointIds())
+    floating[id] = current_state.floating_joints.at(id);
 
-  impl_->setState(joints_str, floating);
+  impl_->state_solver->setState(joint_values, floating);
+  impl_->currentStateChanged();
   impl_->timestamp = timestamp;
   impl_->current_state_timestamp = current_state_timestamp;
 }
@@ -2452,6 +2509,12 @@ std::vector<std::string> Environment::getGroupJointNames(const std::string& grou
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).getGroupJointNames(group_name);
+}
+
+std::vector<tesseract::common::JointId> Environment::getGroupJointIds(const std::string& group_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getGroupJointIds(group_name);
 }
 
 std::shared_ptr<const tesseract::kinematics::JointGroup> Environment::getJointGroup(const std::string& group_name) const
@@ -2612,6 +2675,14 @@ void Environment::getLinkTransforms(tesseract::common::LinkIdTransformMap& link_
   std::as_const<Implementation>(*impl_).state_solver->getLinkTransforms(link_transforms, joint_names, joint_values);
 }
 
+void Environment::getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                                    const std::vector<tesseract::common::JointId>& joint_ids,
+                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  std::as_const<Implementation>(*impl_).state_solver->getLinkTransforms(link_transforms, joint_ids, joint_values);
+}
+
 std::chrono::system_clock::time_point Environment::getTimestamp() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -2668,6 +2739,18 @@ std::vector<std::string> Environment::getActiveJointNames() const
   return std::as_const<Implementation>(*impl_).state_solver->getActiveJointNames();
 }
 
+std::vector<tesseract::common::JointId> Environment::getJointIds() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getJointIds();
+}
+
+std::vector<tesseract::common::JointId> Environment::getActiveJointIds() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getActiveJointIds();
+}
+
 std::shared_ptr<const tesseract::scene_graph::Joint> Environment::getJoint(const std::string& name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -2717,6 +2800,18 @@ std::vector<std::string> Environment::getActiveLinkNames() const
   return std::as_const<Implementation>(*impl_).state_solver->getActiveLinkNames();
 }
 
+std::vector<tesseract::common::LinkId> Environment::getLinkIds() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getLinkIds();
+}
+
+std::vector<tesseract::common::LinkId> Environment::getActiveLinkIds() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getActiveLinkIds();
+}
+
 std::vector<std::string> Environment::getActiveLinkNames(const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -2745,6 +2840,12 @@ Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) co
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(link_name);
+}
+
+Eigen::Isometry3d Environment::getLinkTransform(tesseract::common::LinkId link_id) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(link_id);
 }
 
 Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
