@@ -122,7 +122,7 @@ inline void runTest(ContinuousContactManager& checker)
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "moving_box_link", "static_box_link" });
+  checker.setActiveCollisionObjects(std::vector<std::string>{ "moving_box_link", "static_box_link" });
 
   std::vector<std::string> active_links{ "moving_box_link" };
   checker.setActiveCollisionObjects(active_links);
