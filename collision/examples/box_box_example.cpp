@@ -254,7 +254,7 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform("Test when object is inside another");
 
   //! [collision_example_set_active_objects]
-  checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
+  checker.setActiveCollisionObjects(std::vector<std::string>{ "box_link", "second_box_link" });
   //! [collision_example_set_active_objects]
 
   //! [collision_example_set_margin_data]
