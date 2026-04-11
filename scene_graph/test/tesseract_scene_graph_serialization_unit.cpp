@@ -35,8 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/serialization.h>
 #include <tesseract/common/unit_test_utils.h>
 #include <tesseract/common/utils.h>
+#include <tesseract/common/types.h>
 
 using namespace tesseract::scene_graph;
+using tesseract::common::LinkId;
+using tesseract::common::JointId;
 
 /*********************************************************/
 /******                     Joint                    *****/
@@ -219,13 +222,13 @@ TEST(TesseractSceneGraphSerializationUnit, SceneGraph)  // NOLINT
 TEST(TesseractSceneGraphSerializationUnit, SceneState)  // NOLINT
 {
   auto object = std::make_shared<SceneState>();
-  object->joints["j_1"] = 12.3;
-  object->joints["j_2"] = -12.3;
-  object->joints["j_3"] = 1.23;
-  object->link_transforms["link_transforms_key"].setIdentity();
-  object->link_transforms["link_transforms_key"].translate(Eigen::Vector3d(1, 2, 3));
-  object->joint_transforms["joint_transforms_key"].setIdentity();
-  object->joint_transforms["joint_transforms_key"].translate(Eigen::Vector3d(5, 6, 7));
+  object->joints[JointId::fromName("j_1")] = 12.3;
+  object->joints[JointId::fromName("j_2")] = -12.3;
+  object->joints[JointId::fromName("j_3")] = 1.23;
+  object->link_transforms[LinkId::fromName("link_transforms_key")].setIdentity();
+  object->link_transforms[LinkId::fromName("link_transforms_key")].translate(Eigen::Vector3d(1, 2, 3));
+  object->joint_transforms[JointId::fromName("joint_transforms_key")].setIdentity();
+  object->joint_transforms[JointId::fromName("joint_transforms_key")].translate(Eigen::Vector3d(5, 6, 7));
   tesseract::common::testSerialization<SceneState>(*object, "SceneState");
 }
 

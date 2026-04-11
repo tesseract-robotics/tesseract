@@ -86,14 +86,15 @@ DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
 {
   auto manager = std::make_unique<BulletDiscreteBVHManager>(name_, config_info_.clone());
 
-  for (const auto& cow : link2cow_)
+  for (const auto& name : collision_objects_)
   {
-    COW::Ptr new_cow = cow.second->clone();
+    const auto& orig = link2cow_.at(tesseract::common::LinkId::fromName(name));
+    COW::Ptr new_cow = orig->clone();
 
     assert(new_cow->getCollisionShape());
     assert(new_cow->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
 
-    new_cow->setWorldTransform(cow.second->getWorldTransform());
+    new_cow->setWorldTransform(orig->getWorldTransform());
     auto margin =
         static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
     new_cow->setContactProcessingThreshold(margin);
@@ -114,7 +115,7 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                   const tesseract::common::VectorIsometry3d& shape_poses,
                                                   bool enabled)
 {
-  if (link2cow_.find(name) != link2cow_.end())
+  if (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end())
     removeCollisionObject(name);
 
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
@@ -132,30 +133,32 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
 
 const CollisionShapesConst& BulletDiscreteBVHManager::getCollisionObjectGeometries(const std::string& name) const
 {
-  auto cow = link2cow_.find(name);
+  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
 const tesseract::common::VectorIsometry3d&
 BulletDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
-  auto cow = link2cow_.find(name);
+  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
 bool BulletDiscreteBVHManager::hasCollisionObject(const std::string& name) const
 {
-  return (link2cow_.find(name) != link2cow_.end());
+  return (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end());
 }
 
 bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(name);  // Levi TODO: Should these check be removed?
+  const auto lid = tesseract::common::LinkId::fromName(name);
+  auto it = link2cow_.find(lid);  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     removeCollisionObjectFromBroadphase(it->second, broadphase_, dispatcher_);
-    link2cow_.erase(name);
+    link2cow_.erase(it);
+    active_ids_.erase(lid);
     return true;
   }
 
@@ -164,7 +167,7 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
 
 bool BulletDiscreteBVHManager::enableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(name);  // Levi TODO: Should these check be removed?
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
@@ -180,7 +183,7 @@ bool BulletDiscreteBVHManager::enableCollisionObject(const std::string& name)
 
 bool BulletDiscreteBVHManager::disableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(name);  // Levi TODO: Should these check be removed?
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
@@ -196,7 +199,7 @@ bool BulletDiscreteBVHManager::disableCollisionObject(const std::string& name)
 
 bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name) const
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
   if (it != link2cow_.end())
     return it->second->m_enabled;
 
@@ -207,7 +210,7 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::string& n
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
   if (it != link2cow_.end())
   {
     COW::Ptr& cow = it->second;
@@ -226,10 +229,18 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<st
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
-void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
+void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
-  for (const auto& transform : transforms)
-    setCollisionObjectsTransform(transform.first, transform.second);
+  for (const auto& [id, tf] : transforms)
+  {
+    auto it = link2cow_.find(id);
+    if (it != link2cow_.end())
+    {
+      COW::Ptr& cow = it->second;
+      cow->setWorldTransform(convertEigenToBt(tf));
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+    }
+  }
 }
 
 const std::vector<std::string>& BulletDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
@@ -237,6 +248,9 @@ const std::vector<std::string>& BulletDiscreteBVHManager::getCollisionObjects() 
 void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
+  active_ids_.clear();
+  for (const auto& name : names)
+    active_ids_.insert(tesseract::common::LinkId::fromName(name));
 
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
@@ -317,7 +331,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
 void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   cow->setUserPointer(&contact_test_data_);
-  link2cow_[cow->getName()] = cow;
+  link2cow_[cow->getLinkId()] = cow;
   collision_objects_.push_back(cow->getName());
 
   // Add collision object to broadphase

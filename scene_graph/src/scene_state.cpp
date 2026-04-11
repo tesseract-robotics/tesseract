@@ -33,19 +33,22 @@ namespace tesseract::scene_graph
 {
 Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint_names) const
 {
+  using tesseract::common::JointId;
   Eigen::VectorXd jv;
   jv.resize(static_cast<long int>(joint_names.size()));
   for (auto j = 0U; j < joint_names.size(); ++j)
-    jv(j) = joints.at(joint_names[j]);
+    jv(j) = joints.at(JointId::fromName(joint_names[j]));
 
   return jv;
 }
 
-tesseract::common::TransformMap SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
+tesseract::common::JointIdTransformMap
+SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
 {
-  tesseract::common::TransformMap fjv;
+  using tesseract::common::JointId;
+  tesseract::common::JointIdTransformMap fjv;
   for (const auto& joint_name : joint_names)
-    fjv[joint_name] = floating_joints.at(joint_name);
+    fjv[JointId::fromName(joint_name)] = floating_joints.at(JointId::fromName(joint_name));
 
   return fjv;
 }
@@ -58,10 +61,11 @@ bool SceneState::operator==(const SceneState& rhs) const
 
   using namespace tesseract::common;
   bool equal = true;
-  equal &= isIdenticalMap<std::unordered_map<std::string, double>, double>(joints, rhs.joints);
-  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(floating_joints, rhs.floating_joints, isometry_equal);
-  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
-  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(joint_transforms, rhs.joint_transforms, isometry_equal);
+  equal &= isIdenticalMap<JointValues, double>(joints, rhs.joints);
+  equal &= isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(floating_joints, rhs.floating_joints, isometry_equal);
+  equal &= isIdenticalMap<LinkIdTransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
+  equal &= isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(
+      joint_transforms, rhs.joint_transforms, isometry_equal);
 
   return equal;
 }

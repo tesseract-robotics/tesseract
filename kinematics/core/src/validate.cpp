@@ -71,13 +71,15 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
       joint_angles2[t] = M_PI_4;
 
       auto poses1 = manip.calcFwdKin(joint_angles2);
-      test1 = poses1.at(check.first).inverse() * poses1.at(check.second);
+      const auto wf_id = tesseract::common::LinkId::fromName(check.first);
+      const auto tl_id = tesseract::common::LinkId::fromName(check.second);
+      test1 = poses1.at(wf_id).inverse() * poses1.at(tl_id);
       KinGroupIKInput ik_input(test1, check.first, check.second);
       IKSolutions sols = manip.calcInvKin({ ik_input }, seed_angles);
       for (const auto& sol : sols)
       {
         auto poses2 = manip.calcFwdKin(sol);
-        test2 = poses2.at(check.first).inverse() * poses2.at(check.second);
+        test2 = poses2.at(wf_id).inverse() * poses2.at(tl_id);
 
         double translation_distance = (test1.translation() - test2.translation()).norm();
         double angular_distance =

@@ -55,7 +55,7 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
       const std::string& l2 = active_links[j];
       if (validator == nullptr ||
           !(*validator)(tesseract::common::LinkId::fromName(l1), tesseract::common::LinkId::fromName(l2)))
-        clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
+        clp.emplace_back((l1 <= l2) ? l1 : l2, (l1 <= l2) ? l2 : l1);
     }
   }
 
@@ -66,7 +66,7 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
     {
       if (validator == nullptr ||
           !(*validator)(tesseract::common::LinkId::fromName(l1), tesseract::common::LinkId::fromName(l2)))
-        clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
+        clp.emplace_back((l1 <= l2) ? l1 : l2, (l1 <= l2) ? l2 : l1);
     }
   }
 

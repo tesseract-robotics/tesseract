@@ -15,6 +15,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/scene_graph/kdl_parser.h>
 #include <tesseract/scene_graph/scene_state.h>
+#include <tesseract/common/types.h>
 
 // getLinks and getJoint use an internal map so need to check against graph
 void checkSceneGraph(tesseract::scene_graph::SceneGraph& scene_graph)
@@ -1505,19 +1506,21 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 
 TEST(TesseractSceneGraphUnit, TesseractSceneState)  // NOLINT
 {
+  using tesseract::common::JointId;
+
   tesseract::scene_graph::SceneState state;
-  state.joints["j1"] = 1;
-  state.joints["j2"] = 2;
-  state.joints["j3"] = 3;
-  state.joints["j4"] = 4;
-  state.joints["j5"] = 5;
-  state.joints["j6"] = 6;
+  state.joints[JointId::fromName("j1")] = 1;
+  state.joints[JointId::fromName("j2")] = 2;
+  state.joints[JointId::fromName("j3")] = 3;
+  state.joints[JointId::fromName("j4")] = 4;
+  state.joints[JointId::fromName("j5")] = 5;
+  state.joints[JointId::fromName("j6")] = 6;
 
   Eigen::VectorXd jv = state.getJointValues({ "j2", "j3", "j6" });
 
-  EXPECT_NEAR(jv(0), state.joints["j2"], 1e-6);
-  EXPECT_NEAR(jv(1), state.joints["j3"], 1e-6);
-  EXPECT_NEAR(jv(2), state.joints["j6"], 1e-6);
+  EXPECT_NEAR(jv(0), state.joints[JointId::fromName("j2")], 1e-6);
+  EXPECT_NEAR(jv(1), state.joints[JointId::fromName("j3")], 1e-6);
+  EXPECT_NEAR(jv(2), state.joints[JointId::fromName("j6")], 1e-6);
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphKDLConversions)  // NOLINT

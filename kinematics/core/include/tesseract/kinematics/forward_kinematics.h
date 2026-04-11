@@ -63,9 +63,9 @@ public:
    * This should return a transform for every link listed in getTipLinkNames()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @return A map of tip link names and transforms
+   * @return A map of link IDs to transforms
    */
-  tesseract::common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+  tesseract::common::LinkIdTransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
    * @brief Calculates the Jacobian matrix for a given joint state in the reference frame of the specified link
@@ -86,9 +86,8 @@ public:
    * Throws an exception on failures (including uninitialized)
    * @param transforms(out) The object to populate with transforms
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @return A map of tip link names and transforms
    */
-  virtual void calcFwdKin(tesseract::common::TransformMap& transforms,
+  virtual void calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
