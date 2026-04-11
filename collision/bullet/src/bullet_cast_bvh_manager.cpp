@@ -106,7 +106,7 @@ ContinuousContactManager::UPtr BulletCastBVHManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(active_);
+  manager->setActiveCollisionObjects(getActiveCollisionObjects());
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -470,7 +470,6 @@ const std::vector<std::string>& BulletCastBVHManager::getCollisionObjects() cons
 
 void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  active_ = names;
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
@@ -484,16 +483,16 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     {
       // Update with active
-      updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getLinkId()];
 
       // Update with active
-      updateCollisionObjectFilters(active_, active_cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_ids_, active_cow, broadphase_, dispatcher_);
 
       // Check if the link is still active.
-      if (!isLinkActive(active_, cow->getName()))
+      if (!isLinkActive(active_ids_, cow->getLinkId()))
       {
         // Remove the active collision object from the broadphase
         removeCollisionObjectFromBroadphase(active_cow, broadphase_, dispatcher_);
@@ -505,16 +504,16 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
     else
     {
       // Update with active
-      updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getLinkId()];
 
       // Update with active
-      updateCollisionObjectFilters(active_, active_cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_ids_, active_cow, broadphase_, dispatcher_);
 
       // Check if link is now active
-      if (isLinkActive(active_, cow->getName()))
+      if (isLinkActive(active_ids_, cow->getLinkId()))
       {
         // Remove the static collision object from the broadphase
         removeCollisionObjectFromBroadphase(cow, broadphase_, dispatcher_);
@@ -526,7 +525,14 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
   }
 }
 
-const std::vector<std::string>& BulletCastBVHManager::getActiveCollisionObjects() const { return active_; }
+std::vector<std::string> BulletCastBVHManager::getActiveCollisionObjects() const
+{
+  std::vector<std::string> result;
+  result.reserve(active_ids_.size());
+  for (const auto& id : active_ids_)
+    result.push_back(id.name());
+  return result;
+}
 
 void BulletCastBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {

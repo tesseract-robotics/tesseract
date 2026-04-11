@@ -532,12 +532,16 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     // Test after clone if active list correct
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
     const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
-    const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
-    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
+    auto d_active_list = discrete_manager->getActiveCollisionObjects();
+    std::sort(d_active_list.begin(), d_active_list.end());
+    auto e_sorted = e_active_list;
+    std::sort(e_sorted.begin(), e_sorted.end());
+    EXPECT_EQ(e_sorted, d_active_list);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
-    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
+    auto c_active_list = cast_manager->getActiveCollisionObjects();
+    std::sort(c_active_list.begin(), c_active_list.end());
+    EXPECT_EQ(e_sorted, c_active_list);
   }
 
   {  // Get the environment
@@ -546,12 +550,16 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     // Test after clone if active list correct
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
     const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
-    const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
-    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
+    auto d_active_list = discrete_manager->getActiveCollisionObjects();
+    std::sort(d_active_list.begin(), d_active_list.end());
+    auto e_sorted = e_active_list;
+    std::sort(e_sorted.begin(), e_sorted.end());
+    EXPECT_EQ(e_sorted, d_active_list);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
-    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
+    auto c_active_list = cast_manager->getActiveCollisionObjects();
+    std::sort(c_active_list.begin(), c_active_list.end());
+    EXPECT_EQ(e_sorted, c_active_list);
   }
 
   {  // Get the environment
@@ -560,12 +568,16 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     // Test after clone if active list correct
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
     const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
-    const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
-    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
+    auto d_active_list = discrete_manager->getActiveCollisionObjects();
+    std::sort(d_active_list.begin(), d_active_list.end());
+    auto e_sorted = e_active_list;
+    std::sort(e_sorted.begin(), e_sorted.end());
+    EXPECT_EQ(e_sorted, d_active_list);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
-    EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
+    auto c_active_list = cast_manager->getActiveCollisionObjects();
+    std::sort(c_active_list.begin(), c_active_list.end());
+    EXPECT_EQ(e_sorted, c_active_list);
   }
 }
 

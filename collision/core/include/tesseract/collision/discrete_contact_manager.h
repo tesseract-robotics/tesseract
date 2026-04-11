@@ -170,7 +170,7 @@ public:
    * @brief Get which collision objects can move
    * @return A list of collision object names
    */
-  virtual const std::vector<std::string>& getActiveCollisionObjects() const = 0;
+  virtual std::vector<std::string> getActiveCollisionObjects() const = 0;
 
   /**
    * @brief Set the contact distance threshold

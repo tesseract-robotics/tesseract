@@ -88,7 +88,7 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(active_);
+  manager->setActiveCollisionObjects(getActiveCollisionObjects());
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -213,7 +213,6 @@ const std::vector<std::string>& BulletDiscreteSimpleManager::getCollisionObjects
 
 void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  active_ = names;
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
@@ -225,7 +224,7 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
   {
     COW::Ptr& cow = co.second;
 
-    updateCollisionObjectFilters(active_, cow);
+    updateCollisionObjectFilters(active_ids_, cow);
 
     // Update collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
@@ -235,7 +234,14 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
   }
 }
 
-const std::vector<std::string>& BulletDiscreteSimpleManager::getActiveCollisionObjects() const { return active_; }
+std::vector<std::string> BulletDiscreteSimpleManager::getActiveCollisionObjects() const
+{
+  std::vector<std::string> result;
+  result.reserve(active_ids_.size());
+  for (const auto& id : active_ids_)
+    result.push_back(id.name());
+  return result;
+}
 
 void BulletDiscreteSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
