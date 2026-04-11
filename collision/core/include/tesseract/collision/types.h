@@ -598,8 +598,8 @@ struct ContactTrajectoryResults
   // LCOV_EXCL_STOP
 
   ContactTrajectoryResults() = default;
-  ContactTrajectoryResults(std::vector<std::string> j_names);
-  ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
+  ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids);
+  ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids, int num_steps);
 
   using UPtr = std::unique_ptr<ContactTrajectoryResults>;
 
@@ -633,7 +633,7 @@ struct ContactTrajectoryResults
   std::stringstream condensedSummary() const;
 
   std::vector<ContactTrajectoryStepResults> steps;
-  std::vector<std::string> joint_names;
+  std::vector<tesseract::common::JointId> joint_ids;
   int total_steps = 0;
 };
 
