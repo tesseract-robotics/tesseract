@@ -46,6 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/narrowphase/collision-inl.h>
 #include <fcl/narrowphase/distance-inl.h>
 #include <memory>
+#include <unordered_map>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -91,6 +92,7 @@ public:
   bool m_enabled{ true };
 
   const std::string& getName() const { return name_; }
+  tesseract::common::LinkId getLinkId() const { return link_id_; }
   const int& getTypeID() const { return type_id_; }
   /** \brief Check if two objects point to the same source object */
   bool sameObject(const CollisionObjectWrapper& other) const
@@ -135,6 +137,7 @@ public:
   {
     auto clone_cow = std::make_shared<CollisionObjectWrapper>();
     clone_cow->name_ = name_;
+    clone_cow->link_id_ = link_id_;
     clone_cow->type_id_ = type_id_;
     clone_cow->shapes_ = shapes_;
     clone_cow->shape_poses_ = shape_poses_;
@@ -169,6 +172,7 @@ public:
 
 protected:
   std::string name_;                                              // name of the collision object
+  tesseract::common::LinkId link_id_;                             // integer link ID (hash of name)
   int type_id_{ -1 };                                             // user defined type id
   Eigen::Isometry3d world_pose_{ Eigen::Isometry3d::Identity() }; /**< @brief Collision Object World Transformation */
   CollisionShapesConst shapes_;
@@ -187,8 +191,10 @@ protected:
 CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
 
 using COW = CollisionObjectWrapper;
-using Link2COW = std::map<std::string, COW::Ptr>;
-using Link2ConstCOW = std::map<std::string, COW::ConstPtr>;
+using Link2COW =
+    std::unordered_map<tesseract::common::LinkId, COW::Ptr, tesseract::common::LinkId::Hash>;
+using Link2ConstCOW =
+    std::unordered_map<tesseract::common::LinkId, COW::ConstPtr, tesseract::common::LinkId::Hash>;
 
 inline COW::Ptr createFCLCollisionObject(const std::string& name,
                                          const int& type_id,

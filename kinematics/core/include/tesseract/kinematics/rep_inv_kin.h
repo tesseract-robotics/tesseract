@@ -101,7 +101,7 @@ public:
             std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract::common::TransformMap& tip_link_poses,
+                  const tesseract::common::LinkIdTransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   std::vector<std::string> getJointNames() const override final;
@@ -135,18 +135,18 @@ private:
 
   /** @brief calcFwdKin helper function */
   void calcInvKinHelper(IKSolutions& solutions,
-                        const tesseract::common::TransformMap& tip_link_poses,
+                        const tesseract::common::LinkIdTransformMap& tip_link_poses,
                         const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void nested_ik(IKSolutions& solutions,
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
-                 const tesseract::common::TransformMap& tip_link_poses,
+                 const tesseract::common::LinkIdTransformMap& tip_link_poses,
                  Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void ikAt(IKSolutions& solutions,
-            const tesseract::common::TransformMap& tip_link_poses,
+            const tesseract::common::LinkIdTransformMap& tip_link_poses,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };

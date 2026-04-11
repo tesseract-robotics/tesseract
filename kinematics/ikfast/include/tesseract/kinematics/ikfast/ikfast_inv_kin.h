@@ -104,7 +104,7 @@ public:
                std::vector<std::vector<double>> free_joint_states = {});
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract::common::TransformMap& tip_link_poses,
+                  const tesseract::common::LinkIdTransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
   Eigen::Index numJoints() const override;

@@ -31,10 +31,10 @@
 
 namespace tesseract::kinematics
 {
-tesseract::common::TransformMap
+tesseract::common::LinkIdTransformMap
 ForwardKinematics::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  tesseract::common::TransformMap transforms;
+  tesseract::common::LinkIdTransformMap transforms;
   calcFwdKin(transforms, joint_angles);
   return transforms;
 }  // LCOV_EXCL_LINE

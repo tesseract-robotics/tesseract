@@ -59,7 +59,9 @@ std::unique_ptr<Environment> DefaultEnvironmentCache::getCachedEnvironment() con
   assert(!cache_.empty());
   std::unique_ptr<Environment> t = std::move(cache_.back());
   // Update to the current joint values
-  t->setState(current_state.joints);
+  auto joint_names = t->getActiveJointNames();
+  auto joint_values = current_state.getJointValues(joint_names);
+  t->setState(joint_names, joint_values);
 
   cache_.pop_back();
 

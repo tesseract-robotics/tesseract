@@ -77,7 +77,7 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& other)
   return *this;
 }
 
-void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::TransformMap& transforms,
+void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::LinkIdTransformMap& transforms,
                                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   if (joint_angles.rows() != kdl_data_.robot_chain.getNrOfJoints())
@@ -94,11 +94,11 @@ void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::TransformMap& transf
     fk_solver_->JntToCart(kdl_joints_cache, kdl_pose);
   }
 
-  Eigen::Isometry3d& pose = transforms[kdl_data_.tip_link_name];
+  Eigen::Isometry3d& pose = transforms[tesseract::common::LinkId::fromName(kdl_data_.tip_link_name)];
   KDLToEigen(kdl_pose, pose);
 }
 
-void KDLFwdKinChain::calcFwdKin(tesseract::common::TransformMap& transforms,
+void KDLFwdKinChain::calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                                 const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(joint_angles.size() == numJoints());

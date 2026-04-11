@@ -28,7 +28,9 @@
 #include <tesseract/state_solver/fwd.h>
 #include <tesseract/common/eigen_types.h>
 #include <tesseract/common/kinematic_limits.h>
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/scene_state.h>
+#include <unordered_set>
 
 namespace tesseract::kinematics
 {
@@ -70,22 +72,31 @@ public:
              const tesseract::scene_graph::SceneState& scene_state);
 
   /**
-   * @brief Calculates tool pose of robot chain
+   * @brief Calculates tool pose of robot chain (integer-keyed, primary)
    * @details Throws an exception on failures (including uninitialized)
-   * @param pose Transform of end-of-tip relative to root
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
+   * @return A map of LinkId to transforms
    */
-  tesseract::common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+  tesseract::common::LinkIdTransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
-   * @brief Calculates tool pose of robot chain
+   * @brief Calculates tool pose of robot chain (integer-keyed, populate by reference)
    * @details Throws an exception on failures (including uninitialized)
-   * @param transforms The object to populated with transforms
-   * @param pose Transform of end-of-tip relative to root
+   * @param transforms The integer-keyed map to populate with transforms
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    */
-  void calcFwdKin(tesseract::common::TransformMap& transforms,
+  void calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+
+
+  /**
+   * @brief Calculated jacobian of robot given joint angles
+   * @param joint_angles Input vector of joint angles
+   * @param link_id The LinkId of the frame that the jacobian is calculated for
+   * @return The jacobian at the provided link relative to the joint group base link
+   */
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               tesseract::common::LinkId link_id) const;
 
   /**
    * @brief Calculated jacobian of robot given joint angles
@@ -160,6 +171,13 @@ public:
   std::vector<std::string> getStaticLinkNames() const;
 
   /**
+   * @brief Check if link is an active link (by ID, O(1))
+   * @param link_id The link ID to check
+   * @return True if active, otherwise false
+   */
+  bool isActiveLinkId(tesseract::common::LinkId link_id) const;
+
+  /**
    * @brief Check if link is an active link
    * @param link_name The link name to check
    * @return True if active, otherwise false
@@ -172,6 +190,12 @@ public:
    * @return True if it exists, otherwise false
    */
   bool hasLinkName(const std::string& link_name) const;
+
+  /** @brief Get the link IDs */
+  const std::vector<tesseract::common::LinkId>& getLinkIds() const;
+
+  /** @brief Get the joint IDs */
+  const std::vector<tesseract::common::JointId>& getJointIds() const;
 
   /**
    * @brief Get the kinematic limits (joint, velocity, acceleration, etc.)
@@ -216,8 +240,11 @@ protected:
   std::unique_ptr<tesseract::scene_graph::StateSolver> state_solver_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
+  std::vector<tesseract::common::LinkId> link_ids_;
+  std::vector<tesseract::common::JointId> joint_ids_;
+  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_link_ids_;
   std::vector<std::string> static_link_names_;
-  tesseract::common::TransformMap static_link_transforms_;
+  tesseract::common::LinkIdTransformMap static_link_transforms_;
   tesseract::common::KinematicLimits limits_;
   std::vector<Eigen::Index> redundancy_indices_;
   std::vector<Eigen::Index> jacobian_map_;

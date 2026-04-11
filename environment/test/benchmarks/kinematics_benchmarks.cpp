@@ -33,13 +33,16 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::comm
   return srdf;
 }
 
-using CalcStateFn = std::function<tesseract::common::TransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
+using CalcStateFn =
+    std::function<tesseract::common::LinkIdTransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
+using CalcFwdKinFn =
+    std::function<tesseract::common::LinkIdTransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
 
 static void BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
                                                      const CalcStateFn& fn,
                                                      const tesseract::common::TrajArray& traj)
 {
-  tesseract::common::TransformMap transform_map;
+  tesseract::common::LinkIdTransformMap transform_map;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -53,7 +56,7 @@ static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& s
                                                              const CalcStateFn& fn,
                                                              const tesseract::common::TrajArray& traj)
 {
-  tesseract::common::TransformMap transform_map;
+  tesseract::common::LinkIdTransformMap transform_map;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -80,10 +83,10 @@ static void BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
 }
 
 static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state,
-                                  const CalcStateFn& fn,
+                                  const CalcFwdKinFn& fn,
                                   const tesseract::common::TrajArray& traj)
 {
-  tesseract::common::TransformMap transforms;
+  tesseract::common::LinkIdTransformMap transforms;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -168,8 +171,9 @@ int main(int argc, char** argv)
 
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn = [local_ss,
-                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
+    CalcStateFn fn =
+        [local_ss,
+         joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
       return local_ss->getState(joint_names, state).link_transforms;
     };
 
@@ -183,8 +187,9 @@ int main(int argc, char** argv)
   }
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn = [local_ss,
-                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
+    CalcStateFn fn =
+        [local_ss,
+         joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
       local_ss->setState(joint_names, state);
       return local_ss->getState().link_transforms;
     };
@@ -211,11 +216,12 @@ int main(int argc, char** argv)
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
   {
-    CalcStateFn fn = [joint_group](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
+    CalcFwdKinFn fn =
+        [joint_group](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
       return joint_group->calcFwdKin(state);
     };
 
-    std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_CFK_MANIP =
+    std::function<void(benchmark::State&, CalcFwdKinFn, const tesseract::common::TrajArray&)> BM_CFK_MANIP =
         BM_CALC_FWD_KIN_MANIP;
     std::string name = "BM_CALC_FWD_KIN_MANIP";
     // NOLINTNEXTLINE
