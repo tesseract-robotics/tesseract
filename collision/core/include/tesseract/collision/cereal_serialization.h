@@ -40,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
 #include <tesseract/collision/contact_result_validator.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
@@ -169,10 +170,27 @@ void serialize(Archive& ar, tesseract::collision::ContactTrajectoryStepResults& 
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
+void save(Archive& ar, const tesseract::collision::ContactTrajectoryResults& g)
 {
   ar(cereal::make_nvp("steps", g.steps));
-  ar(cereal::make_nvp("joint_names", g.joint_names));
+  std::vector<std::string> joint_names;
+  joint_names.reserve(g.joint_ids.size());
+  for (const auto& jid : g.joint_ids)
+    joint_names.push_back(jid.name());
+  ar(cereal::make_nvp("joint_names", joint_names));
+  ar(cereal::make_nvp("total_steps", g.total_steps));
+}
+
+template <class Archive>
+void load(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
+{
+  ar(cereal::make_nvp("steps", g.steps));
+  std::vector<std::string> joint_names;
+  ar(cereal::make_nvp("joint_names", joint_names));
+  g.joint_ids.clear();
+  g.joint_ids.reserve(joint_names.size());
+  for (const auto& name : joint_names)
+    g.joint_ids.push_back(tesseract::common::JointId::fromName(name));
   ar(cereal::make_nvp("total_steps", g.total_steps));
 }
 }  // namespace tesseract::collision
