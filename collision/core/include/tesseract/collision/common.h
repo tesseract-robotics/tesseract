@@ -26,12 +26,14 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <unordered_set>
 #include <vector>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
 #include <tesseract/common/contact_allowed_validator.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
@@ -51,11 +53,12 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator = nullptr);
 
 /**
- * @brief This will check if a link is active provided a list. If the list is empty the link is considered active.
- * @param active List of active link names
- * @param name The name of link to check if it is active.
+ * @brief This will check if a link is active provided a set. If the set is empty the link is considered active.
+ * @param active_ids Set of active LinkIds
+ * @param id The LinkId to check if it is active.
  */
-bool isLinkActive(const std::vector<std::string>& active, const std::string& name);
+bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+                  tesseract::common::LinkId id);
 
 /**
  * @brief Determine if contact is allowed between two objects.

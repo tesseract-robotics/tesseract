@@ -86,7 +86,7 @@ ContinuousContactManager::UPtr BulletCastSimpleManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(active_);
+  manager->setActiveCollisionObjects(getActiveCollisionObjects());
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -385,7 +385,6 @@ const std::vector<std::string>& BulletCastSimpleManager::getCollisionObjects() c
 
 void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  active_ = names;
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
@@ -399,13 +398,13 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::s
     COW::Ptr& cow = co.second;
 
     // Update with request
-    updateCollisionObjectFilters(active_, cow);
+    updateCollisionObjectFilters(active_ids_, cow);
 
     // Get the cast collision object
     COW::Ptr cast_cow = link2castcow_[cow->getLinkId()];
 
     // Update with request
-    updateCollisionObjectFilters(active_, cast_cow);
+    updateCollisionObjectFilters(active_ids_, cast_cow);
 
     // Add to collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
@@ -419,7 +418,14 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::s
   }
 }
 
-const std::vector<std::string>& BulletCastSimpleManager::getActiveCollisionObjects() const { return active_; }
+std::vector<std::string> BulletCastSimpleManager::getActiveCollisionObjects() const
+{
+  std::vector<std::string> result;
+  result.reserve(active_ids_.size());
+  for (const auto& id : active_ids_)
+    result.push_back(id.name());
+  return result;
+}
 
 void BulletCastSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {

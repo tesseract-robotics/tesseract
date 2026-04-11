@@ -63,7 +63,7 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
   for (const auto& name : collision_objects_)
     manager->addCollisionObject(link2cow_.at(tesseract::common::LinkId::fromName(name))->clone());
 
-  manager->setActiveCollisionObjects(active_);
+  manager->setActiveCollisionObjects(getActiveCollisionObjects());
   manager->setCollisionMarginData(collision_margin_data_);
   manager->setContactAllowedValidator(validator_);
 
@@ -276,20 +276,26 @@ const std::vector<std::string>& FCLDiscreteBVHManager::getCollisionObjects() con
 
 void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  active_ = names;
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
 
   for (auto& co : link2cow_)
-    updateCollisionObjectFilters(active_, co.second, static_manager_, dynamic_manager_);
+    updateCollisionObjectFilters(active_ids_, co.second, static_manager_, dynamic_manager_);
 
   // This causes a refit on the bvh tree.
   dynamic_manager_->update();
   static_manager_->update();
 }
 
-const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
+std::vector<std::string> FCLDiscreteBVHManager::getActiveCollisionObjects() const
+{
+  std::vector<std::string> result;
+  result.reserve(active_ids_.size());
+  for (const auto& id : active_ids_)
+    result.push_back(id.name());
+  return result;
+}
 
 void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
@@ -385,8 +391,8 @@ void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   }
 
   // If active links is not empty update filters to replace the active links list
-  if (!active_.empty())
-    updateCollisionObjectFilters(active_, cow, static_manager_, dynamic_manager_);
+  if (!active_ids_.empty())
+    updateCollisionObjectFilters(active_ids_, cow, static_manager_, dynamic_manager_);
 
   // This causes a refit on the bvh tree.
   dynamic_manager_->update();
