@@ -47,6 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/narrowphase/distance-inl.h>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -218,19 +219,20 @@ inline COW::Ptr createFCLCollisionObject(const std::string& name,
 
 /**
  * @brief Update collision objects filters
- * @param active The active collision objects
+ * @param active_ids Set of active collision object LinkIds
  * @param cow The collision object to update
  * @param static_manager Broadphasse manager for static objects
  * @param dynamic_manager Broadphase manager for dynamic objects
  */
-inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
-                                         const COW::Ptr& cow,
-                                         const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& static_manager,
-                                         const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager)
+inline void updateCollisionObjectFilters(
+    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+    const COW::Ptr& cow,
+    const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& static_manager,
+    const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager)
 {
   // For descrete checks we can check static to kinematic and kinematic to
   // kinematic
-  if (!isLinkActive(active, cow->getName()))
+  if (!isLinkActive(active_ids, cow->getLinkId()))
   {
     if (cow->m_collisionFilterGroup != CollisionFilterGroups::StaticFilter)
     {
