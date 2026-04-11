@@ -1398,10 +1398,14 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 {
   // Test constructor with joint names
   {
-    std::vector<std::string> joint_names = { "joint1", "joint2", "joint3" };
-    tesseract::collision::ContactTrajectoryResults results(joint_names);
+    std::vector<tesseract::common::JointId> joint_ids;
+    for (const auto& name : std::vector<std::string>{ "joint1", "joint2", "joint3" })
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    tesseract::collision::ContactTrajectoryResults results(joint_ids);
 
-    EXPECT_EQ(results.joint_names, joint_names);
+    EXPECT_EQ(results.joint_ids.size(), joint_ids.size());
+    for (std::size_t i = 0; i < joint_ids.size(); ++i)
+      EXPECT_EQ(results.joint_ids[i], joint_ids[i]);
     EXPECT_EQ(results.total_steps, 0);
     EXPECT_EQ(results.steps.size(), 0);
     EXPECT_EQ(results.numSteps(), 0);
@@ -1410,12 +1414,16 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
   // Test constructor with joint names and num_steps
   {
-    std::vector<std::string> joint_names = { "joint1", "joint2" };
+    std::vector<tesseract::common::JointId> joint_ids;
+    for (const auto& name : std::vector<std::string>{ "joint1", "joint2" })
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
     int num_steps = 3;
 
-    tesseract::collision::ContactTrajectoryResults results(joint_names, num_steps);
+    tesseract::collision::ContactTrajectoryResults results(joint_ids, num_steps);
 
-    EXPECT_EQ(results.joint_names, joint_names);
+    EXPECT_EQ(results.joint_ids.size(), joint_ids.size());
+    for (std::size_t i = 0; i < joint_ids.size(); ++i)
+      EXPECT_EQ(results.joint_ids[i], joint_ids[i]);
     EXPECT_EQ(results.total_steps, num_steps);
     EXPECT_EQ(results.steps.size(), num_steps);
     EXPECT_EQ(results.numSteps(), num_steps);
@@ -1424,9 +1432,10 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
   // Test resize method
   {
-    std::vector<std::string> joint_names = { "joint1" };
-
-    tesseract::collision::ContactTrajectoryResults results(joint_names);
+    std::vector<tesseract::common::JointId> joint_ids;
+    for (const auto& name : std::vector<std::string>{ "joint1" })
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    tesseract::collision::ContactTrajectoryResults results(joint_ids);
     EXPECT_EQ(results.steps.size(), 0);
 
     results.resize(5);
@@ -1437,10 +1446,12 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
   // Test with contacts in steps
   {
-    std::vector<std::string> joint_names = { "joint1", "joint2" };
+    std::vector<tesseract::common::JointId> joint_ids;
+    for (const auto& name : std::vector<std::string>{ "joint1", "joint2" })
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
     int num_steps = 2;
 
-    tesseract::collision::ContactTrajectoryResults results(joint_names, num_steps);
+    tesseract::collision::ContactTrajectoryResults results(joint_ids, num_steps);
 
     // Setup Step 1
     Eigen::VectorXd step1_start(2);
@@ -1557,8 +1568,10 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
   // Test with no contacts
   {
-    std::vector<std::string> joint_names = { "joint1" };
-    tesseract::collision::ContactTrajectoryResults results(joint_names);
+    std::vector<tesseract::common::JointId> joint_ids;
+    for (const auto& name : std::vector<std::string>{ "joint1" })
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    tesseract::collision::ContactTrajectoryResults results(joint_ids);
 
     EXPECT_EQ(results.numContacts(), 0);
 
@@ -1596,10 +1609,12 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
   // Test addContact methods
   {
-    std::vector<std::string> joint_names = { "joint1", "joint2", "joint3" };
+    std::vector<tesseract::common::JointId> joint_ids;
+    for (const auto& name : std::vector<std::string>{ "joint1", "joint2", "joint3" })
+      joint_ids.push_back(tesseract::common::JointId::fromName(name));
     int num_steps = 3;
 
-    tesseract::collision::ContactTrajectoryResults results(joint_names, num_steps);
+    tesseract::collision::ContactTrajectoryResults results(joint_ids, num_steps);
 
     // Test basic addContact functionality - ensure higher level calls properly initialize lower levels
     {
