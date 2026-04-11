@@ -72,9 +72,9 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
 {
   auto manager = std::make_unique<BulletDiscreteSimpleManager>(name_, config_info_.clone());
 
-  for (const auto& name : collision_objects_)
+  for (const auto& id : collision_objects_)
   {
-    const auto& orig = link2cow_.at(tesseract::common::LinkId::fromName(name));
+    const auto& orig = link2cow_.at(id);
     COW::Ptr new_cow = orig->clone();
 
     assert(new_cow->getCollisionShape());
@@ -82,7 +82,7 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
 
     new_cow->setWorldTransform(orig->getWorldTransform());
     auto margin =
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getLinkId()));
     new_cow->setContactProcessingThreshold(margin);
 
     manager->addCollisionObject(new_cow);
@@ -142,7 +142,7 @@ bool BulletDiscreteSimpleManager::removeCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
-    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), lid));
     link2cow_.erase(it);
     active_ids_.erase(lid);
     return true;
@@ -209,7 +209,7 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::
   }
 }
 
-const std::vector<std::string>& BulletDiscreteSimpleManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& BulletDiscreteSimpleManager::getCollisionObjects() const { return collision_objects_; }
 
 void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
@@ -387,7 +387,7 @@ void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
 {
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getLinkId()] = cow;
-  collision_objects_.push_back(cow->getName());
+  collision_objects_.push_back(cow->getLinkId());
 
   if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     cows_.insert(cows_.begin(), cow);

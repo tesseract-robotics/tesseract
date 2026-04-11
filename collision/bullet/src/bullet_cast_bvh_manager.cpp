@@ -90,9 +90,9 @@ ContinuousContactManager::UPtr BulletCastBVHManager::clone() const
 {
   auto manager = std::make_unique<BulletCastBVHManager>(name_, config_info_.clone());
 
-  for (const auto& name : collision_objects_)
+  for (const auto& id : collision_objects_)
   {
-    const auto& orig = link2cow_.at(tesseract::common::LinkId::fromName(name));
+    const auto& orig = link2cow_.at(id);
     COW::Ptr new_cow = orig->clone();
 
     assert(new_cow->getCollisionShape());
@@ -100,7 +100,7 @@ ContinuousContactManager::UPtr BulletCastBVHManager::clone() const
 
     new_cow->setWorldTransform(orig->getWorldTransform());
     auto margin =
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getLinkId()));
     new_cow->setContactProcessingThreshold(margin);
 
     manager->addCollisionObject(new_cow);
@@ -160,7 +160,7 @@ bool BulletCastBVHManager::removeCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     COW::Ptr& cow1 = it->second;
-    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), lid));
     removeCollisionObjectFromBroadphase(cow1, broadphase_, dispatcher_);
     link2cow_.erase(it);
 
@@ -466,7 +466,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(tesseract::common::LinkI
   }
 }
 
-const std::vector<std::string>& BulletCastBVHManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& BulletCastBVHManager::getCollisionObjects() const { return collision_objects_; }
 
 void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
@@ -662,7 +662,7 @@ void BulletCastBVHManager::addCollisionObject(const COW::Ptr& cow)
   cow->setUserPointer(&contact_test_data_);
   const auto lid = cow->getLinkId();
   link2cow_[lid] = cow;
-  collision_objects_.push_back(cow->getName());
+  collision_objects_.push_back(cow->getLinkId());
 
   // Create cast collision object
   COW::Ptr cast_cow = makeCastCollisionObject(cow);
