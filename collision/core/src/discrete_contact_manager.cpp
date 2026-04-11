@@ -37,6 +37,15 @@ void DiscreteContactManager::setCollisionObjectsTransform(const tesseract::commo
   }
 }
 
+void DiscreteContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  std::vector<std::string> names;
+  names.reserve(ids.size());
+  for (const auto& id : ids)
+    names.push_back(id.name());
+  setActiveCollisionObjects(names);
+}
+
 void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
   config.validate();

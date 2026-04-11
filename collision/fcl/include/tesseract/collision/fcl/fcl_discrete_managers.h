@@ -102,6 +102,8 @@ public:
 
   void setActiveCollisionObjects(const std::vector<std::string>& names) override final;
 
+  void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids) override final;
+
   std::vector<std::string> getActiveCollisionObjects() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;

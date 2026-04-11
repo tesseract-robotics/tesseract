@@ -106,7 +106,7 @@ ContinuousContactManager::UPtr BulletCastBVHManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(getActiveCollisionObjects());
+  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -473,6 +473,62 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
   active_ids_.clear();
   for (const auto& name : names)
     active_ids_.insert(tesseract::common::LinkId::fromName(name));
+
+  // Now need to update the broadphase with correct aabb
+  for (auto& co : link2cow_)
+  {
+    COW::Ptr& cow = co.second;
+
+    // Need to check if a collision object is still active
+    if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+    {
+      // Update with active
+      updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
+
+      // Get the active collision object
+      COW::Ptr& active_cow = link2castcow_[cow->getLinkId()];
+
+      // Update with active
+      updateCollisionObjectFilters(active_ids_, active_cow, broadphase_, dispatcher_);
+
+      // Check if the link is still active.
+      if (!isLinkActive(active_ids_, cow->getLinkId()))
+      {
+        // Remove the active collision object from the broadphase
+        removeCollisionObjectFromBroadphase(active_cow, broadphase_, dispatcher_);
+
+        // Add the active collision object to the broadphase
+        addCollisionObjectToBroadphase(cow, broadphase_, dispatcher_);
+      }
+    }
+    else
+    {
+      // Update with active
+      updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
+
+      // Get the active collision object
+      COW::Ptr& active_cow = link2castcow_[cow->getLinkId()];
+
+      // Update with active
+      updateCollisionObjectFilters(active_ids_, active_cow, broadphase_, dispatcher_);
+
+      // Check if link is now active
+      if (isLinkActive(active_ids_, cow->getLinkId()))
+      {
+        // Remove the static collision object from the broadphase
+        removeCollisionObjectFromBroadphase(cow, broadphase_, dispatcher_);
+
+        // Add the active collision object to the broadphase
+        addCollisionObjectToBroadphase(active_cow, broadphase_, dispatcher_);
+      }
+    }
+  }
+}
+
+void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  active_ids_.clear();
+  active_ids_.insert(ids.begin(), ids.end());
 
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
