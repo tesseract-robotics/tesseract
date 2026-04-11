@@ -176,6 +176,11 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   tesseract::collision::ContactResultMap state_results;
   tesseract::collision::ContactResultMap sub_state_results;
 
+  // Build active link ID set once for O(1) lookup in addInterpolatedCollisionResults
+  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_link_ids;
+  for (const auto& name : manager.getActiveCollisionObjects())
+    active_link_ids.insert(tesseract::common::LinkId::fromName(name));
+
   if (config.check_program_mode == tesseract::collision::CollisionCheckProgramType::START_ONLY)
   {
     auto state = state_fn(traj.row(0));
@@ -186,8 +191,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
     {
       traj_contacts.addContact(0, 0, 1, traj.row(0), traj.row(0), traj.row(0), traj.row(0), sub_state_results);
       // Always use addInterpolatedCollisionResults so cc_type is defined correctly
-      state_results.addInterpolatedCollisionResults(
-          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, false);
+      state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, false);
       if (debug_logging)
         printContinuousDebugInfo(joint_names, traj.row(0), traj.row(0), 0, traj.rows() - 1);
     }
@@ -213,8 +217,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                traj.row(traj.rows() - 1),
                                sub_state_results);
       // Always use addInterpolatedCollisionResults so cc_type is defined correctly
-      state_results.addInterpolatedCollisionResults(
-          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, false);
+      state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, false);
       if (debug_logging)
         printContinuousDebugInfo(joint_names, traj.row(traj.rows() - 1), traj.row(traj.rows() - 1), 0, traj.rows() - 1);
     }
@@ -279,12 +282,8 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
 
             double segment_dt = (sub_segment_last_index > 0) ? 1.0 / static_cast<double>(sub_segment_last_index) : 0.0;
             // Always use addInterpolatedCollisionResults so cc_type is defined correctly
-            state_results.addInterpolatedCollisionResults(sub_state_results,
-                                                          iSubStep,
-                                                          sub_segment_last_index,
-                                                          manager.getActiveCollisionObjects(),
-                                                          segment_dt,
-                                                          false);
+            state_results.addInterpolatedCollisionResults(
+                sub_state_results, iSubStep, sub_segment_last_index, active_link_ids, segment_dt, false);
 
             // Exit behavior
             if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
@@ -450,6 +449,11 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   tesseract::collision::ContactResultMap state_results;
   tesseract::collision::ContactResultMap sub_state_results;
 
+  // Build active link ID set once for O(1) lookup in addInterpolatedCollisionResults
+  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_link_ids;
+  for (const auto& name : manager.getActiveCollisionObjects())
+    active_link_ids.insert(tesseract::common::LinkId::fromName(name));
+
   if (config.check_program_mode == tesseract::collision::CollisionCheckProgramType::START_ONLY)
   {
     auto state = state_fn(traj.row(0));
@@ -460,8 +464,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
     {
       traj_contacts.addContact(0, 0, 1, traj.row(0), traj.row(0), traj.row(0), traj.row(0), sub_state_results);
       // Always use addInterpolatedCollisionResults so cc_type is defined correctly
-      state_results.addInterpolatedCollisionResults(
-          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+      state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, true);
       if (debug_logging)
         printDiscreteDebugInfo(joint_names, traj.row(0), 0, traj.rows() - 1);
     }
@@ -486,8 +489,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                traj.row(traj.rows() - 1),
                                sub_state_results);
       // Always use addInterpolatedCollisionResults so cc_type is defined correctly
-      state_results.addInterpolatedCollisionResults(
-          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+      state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, true);
       if (debug_logging)
         printDiscreteDebugInfo(joint_names, traj.row(traj.rows() - 1), 0, traj.rows() - 1);
     }
@@ -513,7 +515,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
 
     double segment_dt = (sub_segment_last_index > 0) ? 1.0 / static_cast<double>(sub_segment_last_index) : 0.0;
     state_results.addInterpolatedCollisionResults(
-        sub_state_results, 0, sub_segment_last_index, manager.getActiveCollisionObjects(), segment_dt, true);
+        sub_state_results, 0, sub_segment_last_index, active_link_ids, segment_dt, true);
     contacts.push_back(state_results);
 
     if (traj_contacts && debug_logging)
@@ -564,12 +566,8 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                      subtraj.row(iSubStep),
                                      sub_state_results);
             double segment_dt = (sub_segment_last_index > 0) ? 1.0 / static_cast<double>(sub_segment_last_index) : 0.0;
-            state_results.addInterpolatedCollisionResults(sub_state_results,
-                                                          iSubStep,
-                                                          sub_segment_last_index,
-                                                          manager.getActiveCollisionObjects(),
-                                                          segment_dt,
-                                                          true);
+            state_results.addInterpolatedCollisionResults(
+                sub_state_results, iSubStep, sub_segment_last_index, active_link_ids, segment_dt, true);
             if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
             {
               // Break out of substep loop and outer step loop
@@ -603,7 +601,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
               traj_contacts.addContact(
                   iStep, 0, 1, traj.row(iStep), traj.row(iStep), traj.row(iStep), traj.row(iStep), sub_state_results);
               state_results.addInterpolatedCollisionResults(
-                  sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+                  sub_state_results, 0, 0, active_link_ids, 0, true);
               if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
               {
                 contacts.push_back(state_results);
@@ -635,7 +633,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                        traj.row(iStep + 1),
                                        sub_state_results);
               state_results.addInterpolatedCollisionResults(
-                  sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+                  sub_state_results, 0, 0, active_link_ids, 0, true);
               if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
               {
                 contacts.push_back(state_results);
@@ -665,7 +663,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
           traj_contacts.addContact(
               iStep, 0, 1, traj.row(iStep), traj.row(iStep), traj.row(iStep), traj.row(iStep), sub_state_results);
           state_results.addInterpolatedCollisionResults(
-              sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+              sub_state_results, 0, 0, active_link_ids, 0, true);
 
           // Exit behavior
           if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
@@ -701,7 +699,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                    traj.row(iStep + 1),
                                    sub_state_results);
           state_results.addInterpolatedCollisionResults(
-              sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+              sub_state_results, 0, 0, active_link_ids, 0, true);
         }
         contacts.push_back(state_results);
       }
@@ -741,7 +739,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                  traj.row(iStep),
                                  sub_state_results);
         state_results.addInterpolatedCollisionResults(
-            sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+            sub_state_results, 0, 0, active_link_ids, 0, true);
       }
       contacts.push_back(state_results);
 
