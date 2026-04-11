@@ -596,12 +596,12 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::mostCollisionsSubs
   return most_collisions_substep;
 }
 
-ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names) : joint_names(std::move(j_names))
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids) : joint_ids(std::move(j_ids))
 {
 }
 
-ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps)
-  : joint_names(std::move(j_names)), total_steps(num_steps)
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids, int num_steps)
+  : joint_ids(std::move(j_ids)), total_steps(num_steps)
 {
   steps.resize(static_cast<std::size_t>(num_steps));
 }
@@ -721,8 +721,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
   // Joint Names can vary widely
   std::string joint_name_title = "JOINT NAMES";
   int longest_joint_name_width = static_cast<int>(joint_name_title.size()) + 2;
-  for (const auto& name : joint_names)
-    longest_joint_name_width = std::max(static_cast<int>(name.size()) + 2, longest_joint_name_width);
+  for (const auto& jid : joint_ids)
+    longest_joint_name_width = std::max(static_cast<int>(jid.name().size()) + 2, longest_joint_name_width);
 
   step_details_width += longest_joint_name_width;
 
@@ -860,10 +860,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         ss << std::setw(longest_steps_width) << step_number_string;
 
         // Check if we still need to be adding to the joint state information
-        if (line_number < static_cast<int>(joint_names.size()))
+        if (line_number < static_cast<int>(joint_ids.size()))
         {
           ss << std::setprecision(4) << std::fixed;
-          ss << std::setw(longest_joint_name_width) << joint_names[static_cast<std::size_t>(line_number)];
+          ss << std::setw(longest_joint_name_width) << joint_ids[static_cast<std::size_t>(line_number)].name();
           ss << std::setw(longest_state0_width) << step.state0(line_number);
           ss << std::setw(longest_state1_width) << step.state1(line_number);
         }
@@ -887,9 +887,9 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 
       // Make new line for seperator between substates
       ss << std::setw(longest_steps_width) << step_number_string;
-      if (line_number < static_cast<int>(joint_names.size()))
+      if (line_number < static_cast<int>(joint_ids.size()))
       {
-        ss << std::setw(longest_joint_name_width) << joint_names[static_cast<std::size_t>(line_number)];
+        ss << std::setw(longest_joint_name_width) << joint_ids[static_cast<std::size_t>(line_number)].name();
         ss << std::setw(longest_state0_width) << step.state0(line_number);
         ss << std::setw(longest_state1_width) << step.state1(line_number);
       }
@@ -905,10 +905,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
     }
 
     // Finish writing joint state if necessary
-    while (line_number < static_cast<int>(joint_names.size()))
+    while (line_number < static_cast<int>(joint_ids.size()))
     {
       ss << std::setw(longest_steps_width) << step_number_string;
-      ss << std::setw(longest_joint_name_width) << joint_names[static_cast<std::size_t>(line_number)];
+      ss << std::setw(longest_joint_name_width) << joint_ids[static_cast<std::size_t>(line_number)].name();
       ss << std::setw(longest_state0_width) << step.state0(line_number);
       ss << std::setw(longest_state1_width) << step.state1(line_number);
       ss << "|\n";
