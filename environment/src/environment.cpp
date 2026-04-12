@@ -2841,7 +2841,7 @@ Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) co
   return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(link_name);
 }
 
-Eigen::Isometry3d Environment::getLinkTransform(tesseract::common::LinkId link_id) const
+Eigen::Isometry3d Environment::getLinkTransform(const tesseract::common::LinkId& link_id) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(link_id);

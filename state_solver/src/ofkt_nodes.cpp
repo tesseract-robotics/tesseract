@@ -39,6 +39,7 @@ namespace tesseract::scene_graph
 OFKTBaseNode::OFKTBaseNode(JointType type, OFKTNode* parent, std::string link_name)
   : type_(type), parent_(parent), link_name_(std::move(link_name))
 {
+  link_id_ = tesseract::common::LinkId::fromName(link_name_);
 }
 
 OFKTBaseNode::OFKTBaseNode(JointType type,
@@ -53,6 +54,8 @@ OFKTBaseNode::OFKTBaseNode(JointType type,
   , static_tf_(static_tf)
   , local_tf_(static_tf)
 {
+  link_id_ = tesseract::common::LinkId::fromName(link_name_);
+  joint_id_ = tesseract::common::JointId::fromName(joint_name_);
 }
 
 tesseract::scene_graph::JointType OFKTBaseNode::getType() const { return type_; }
@@ -67,6 +70,8 @@ const OFKTNode* OFKTBaseNode::getParent() const { return parent_; }
 
 const std::string& OFKTBaseNode::getLinkName() const { return link_name_; }
 const std::string& OFKTBaseNode::getJointName() const { return joint_name_; }
+tesseract::common::LinkId OFKTBaseNode::getLinkId() const { return link_id_; }
+tesseract::common::JointId OFKTBaseNode::getJointId() const { return joint_id_; }
 
 void OFKTBaseNode::storeJointValue(double joint_value)
 {

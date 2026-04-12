@@ -110,32 +110,31 @@ KinematicGroup::KinematicGroup(std::string name,
                                const tesseract::scene_graph::SceneGraph& scene_graph,
                                const tesseract::scene_graph::SceneState& scene_state)
   : JointGroup(std::move(name), joint_names, scene_graph, scene_state)
-  , joint_names_(std::move(joint_names))
   , inv_kin_(std::move(inv_kin))
 {
+  // joint_names parameter is still valid (JointGroup's by-value param made a copy)
   std::vector<std::string> inv_kin_joint_names = inv_kin_->getJointNames();
 
-  if (static_cast<Eigen::Index>(joint_names_.size()) != inv_kin_->numJoints())
+  if (static_cast<Eigen::Index>(joint_names.size()) != inv_kin_->numJoints())
     throw std::runtime_error("KinematicGroup: joint_names is not the correct size");
 
-  if (!tesseract::common::isIdentical(joint_names_, inv_kin_joint_names, false))
+  if (!tesseract::common::isIdentical(joint_names, inv_kin_joint_names, false))
     throw std::runtime_error("KinematicGroup: joint_names does not match same names in inverse kinematics object!");
 
-  reorder_required_ = !tesseract::common::isIdentical(joint_names_, inv_kin_joint_names, true);
+  reorder_required_ = !tesseract::common::isIdentical(joint_names, inv_kin_joint_names, true);
 
   if (reorder_required_)
   {
-    inv_kin_joint_map_.reserve(joint_names_.size());
-    for (const auto& joint_name : joint_names_)
+    inv_kin_joint_map_.reserve(joint_names.size());
+    for (const auto& joint_name : joint_names)
       inv_kin_joint_map_.push_back(std::distance(
           inv_kin_joint_names.begin(), std::find(inv_kin_joint_names.begin(), inv_kin_joint_names.end(), joint_name)));
   }
 
-  std::vector<std::string> active_link_names = state_solver_->getActiveLinkNames();
-
   // Get the IK solver working frame name, and check that it exists in the scene state
   const std::string working_frame = inv_kin_->getWorkingFrame();
-  if (state_.link_transforms.find(LinkId::fromName(working_frame)) == state_.link_transforms.end())
+  const auto working_frame_id = LinkId::fromName(working_frame);
+  if (state_.link_transforms.find(working_frame_id) == state_.link_transforms.end())
     throw std::runtime_error("Working frame '" + working_frame + "' is not a link in the scene state");
 
   // Get the IK solver tip link names, and make sure they exist in the scene state
@@ -144,61 +143,59 @@ KinematicGroup::KinematicGroup(std::string name,
     if (state_.link_transforms.find(LinkId::fromName(link)) == state_.link_transforms.end())
       throw std::runtime_error("Tip link '" + link + "' is not a link in the scene state");
 
-  // Configure working frames
-  auto it = std::find(active_link_names.begin(), active_link_names.end(), working_frame);
-  if (it == active_link_names.end())
+  // Configure working frames — use active_link_ids_ set (O(1)) instead of linear scan
+  if (active_link_ids_.count(working_frame_id) == 0)
   {
-    working_frames_.reserve(static_link_names_.size());
-    std::copy(static_link_names_.begin(), static_link_names_.end(), std::back_inserter(working_frames_));
+    // Working frame is static — all static links are valid working frames
+    working_frame_ids_.reserve(static_link_ids_.size());
+    std::copy(static_link_ids_.begin(), static_link_ids_.end(), std::back_inserter(working_frame_ids_));
   }
   else
   {
-    working_frames_.push_back(working_frame);
+    working_frame_ids_.push_back(working_frame_id);
 
-    // The working frame can be any link in the fixed-joint kinematic tree that contains the input working frame.
     const std::vector<std::string> working_frame_fixed_joint_kin_tree_links =
         getLinksInFixedJointKinematicTree(working_frame, scene_graph);
     for (const std::string& link : working_frame_fixed_joint_kin_tree_links)
     {
-      // Check that the link exists in the scene state
-      if (state_.link_transforms.find(LinkId::fromName(link)) == state_.link_transforms.end())
+      const auto link_id = LinkId::fromName(link);
+      if (state_.link_transforms.find(link_id) == state_.link_transforms.end())
         throw std::runtime_error("Working frame '" + link + "' is not a link in the scene state");
 
-      working_frames_.push_back(link);
+      working_frame_ids_.push_back(link_id);
     }
   }
 
   // Configure the tip link frames
-  // The tip links can be any link in the fixed-joint kinematic tree that contains the input tip link
   for (const auto& tip_link : tip_links)
   {
+    const auto tip_link_id = LinkId::fromName(tip_link);
     const std::vector<std::string> tip_link_fixed_joint_kin_tree_links =
         getLinksInFixedJointKinematicTree(tip_link, scene_graph);
     for (const std::string& link : tip_link_fixed_joint_kin_tree_links)
     {
-      // Check that the link exists in the scene state
-      if (state_.link_transforms.find(LinkId::fromName(link)) == state_.link_transforms.end())
+      const auto link_id = LinkId::fromName(link);
+      if (state_.link_transforms.find(link_id) == state_.link_transforms.end())
         throw std::runtime_error("Tip link '" + link + "' is not a link in the scene state");
 
-      inv_tip_links_map_[link] = tip_link;
+      inv_tip_links_map_[link_id] = tip_link_id;
     }
   }
 
   inv_to_fwd_base_ = state_.link_transforms.at(LinkId::fromName(inv_kin_->getBaseLinkName())).inverse() *
-                     state_.link_transforms.at(LinkId::fromName(state_solver_->getBaseLinkName()));
+                     state_.link_transforms.at(state_solver_->getBaseLinkId());
 
-  if (static_link_names_.size() + active_link_names.size() != scene_graph.getLinks().size())
+  if (static_link_ids_.size() + active_link_ids_.size() != scene_graph.getLinks().size())
     throw std::runtime_error("KinematicGroup: Static link names are not correct!");
 }
 
 KinematicGroup::KinematicGroup(const KinematicGroup& other)
   : JointGroup(other)
-  , joint_names_(other.joint_names_)
   , reorder_required_(other.reorder_required_)
   , inv_kin_joint_map_(other.inv_kin_joint_map_)
   , inv_kin_(other.inv_kin_->clone())
   , inv_to_fwd_base_(other.inv_to_fwd_base_)
-  , working_frames_(other.working_frames_)
+  , working_frame_ids_(other.working_frame_ids_)
   , inv_tip_links_map_(other.inv_tip_links_map_)
 {
 }
@@ -211,12 +208,11 @@ KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
     return *this;
 
   JointGroup::operator=(other);
-  joint_names_ = other.joint_names_;
   reorder_required_ = other.reorder_required_;
   inv_kin_joint_map_ = other.inv_kin_joint_map_;
   inv_kin_ = other.inv_kin_->clone();
   inv_to_fwd_base_ = other.inv_to_fwd_base_;
-  working_frames_ = other.working_frames_;
+  working_frame_ids_ = other.working_frame_ids_;
   inv_tip_links_map_ = other.inv_tip_links_map_;
   return *this;
 }
@@ -239,62 +235,58 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
                                 const KinGroupIKInputs& tip_link_poses,
                                 const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  // Convert to IK Inputs
   tesseract::common::LinkIdTransformMap ik_inputs;
   for (const auto& tip_link_pose : tip_link_poses)
   {
-    // Check that the specified pose working frame exists in the list of identified working frames
-    if (std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) == working_frames_.end())
+    const auto wf_id = LinkId::fromName(tip_link_pose.working_frame);
+    const auto tl_id = LinkId::fromName(tip_link_pose.tip_link_name);
+
+    // Check working frame
+    if (std::find(working_frame_ids_.begin(), working_frame_ids_.end(), wf_id) == working_frame_ids_.end())
     {
       std::stringstream ss;
       ss << "Specified working frame (" << tip_link_pose.working_frame
          << ") is not in the list of identified working frames. Available working frames are: [";
-      for (const std::string& f : working_frames_)
-        ss << f << ", ";
+      for (const auto& f : working_frame_ids_)
+        ss << f.name() << ", ";
       ss << "].";
       throw std::runtime_error(ss.str());
     }
 
-    // Check that specified pose tip link exists in the map of known tip links
-    if (inv_tip_links_map_.find(tip_link_pose.tip_link_name) == inv_tip_links_map_.end())
+    // Check tip link
+    auto tip_it = inv_tip_links_map_.find(tl_id);
+    if (tip_it == inv_tip_links_map_.end())
     {
       std::stringstream ss;
       ss << "Failed to find specified tip link (" << tip_link_pose.tip_link_name << "). Available tip links are: [";
       for (const auto& pair : inv_tip_links_map_)
-        ss << pair.first << ", ";
+        ss << pair.first.name() << ", ";
       ss << "].";
       throw std::runtime_error(ss.str());
     }
 
-    // Check that the orientation component of the specified pose is orthogonal
     assert(std::abs(1.0 - tip_link_pose.pose.matrix().determinant()) < 1e-6);  // NOLINT
 
-    // The IK Solvers tip link and working frame
-    std::string ik_solver_tip_link = inv_tip_links_map_.at(tip_link_pose.tip_link_name);
-    std::string working_frame = inv_kin_->getWorkingFrame();
+    // The IK Solver's tip link (as LinkId) and working frame
+    const LinkId ik_solver_tip_link_id = tip_it->second;
+    const auto ik_working_frame_id = LinkId::fromName(inv_kin_->getWorkingFrame());
 
-    // Get transform from working frame to user working frame (reference frame for the target IK pose)
-    const Eigen::Isometry3d& world_to_user_wf =
-        state_.link_transforms.at(LinkId::fromName(tip_link_pose.working_frame));
-    const Eigen::Isometry3d& world_to_wf = state_.link_transforms.at(LinkId::fromName(working_frame));
+    const Eigen::Isometry3d& world_to_user_wf = state_.link_transforms.at(wf_id);
+    const Eigen::Isometry3d& world_to_wf = state_.link_transforms.at(ik_working_frame_id);
     const Eigen::Isometry3d wf_to_user_wf = world_to_wf.inverse() * world_to_user_wf;
 
-    // Get the transform from IK solver tip link to the user tip link
-    const Eigen::Isometry3d& world_to_user_tl =
-        state_.link_transforms.at(LinkId::fromName(tip_link_pose.tip_link_name));
-    const Eigen::Isometry3d& world_to_tl = state_.link_transforms.at(LinkId::fromName(ik_solver_tip_link));
+    const Eigen::Isometry3d& world_to_user_tl = state_.link_transforms.at(tl_id);
+    const Eigen::Isometry3d& world_to_tl = state_.link_transforms.at(ik_solver_tip_link_id);
     const Eigen::Isometry3d tl_to_user_tl = world_to_tl.inverse() * world_to_user_tl;
 
-    // Get the transformation from the IK solver working frame to the IK solver tip frame
-    const Eigen::Isometry3d& user_wf_to_user_tl = tip_link_pose.pose;  // an unnecessary but helpful alias
+    const Eigen::Isometry3d& user_wf_to_user_tl = tip_link_pose.pose;
     const Eigen::Isometry3d wf_to_tl = wf_to_user_wf * user_wf_to_user_tl * tl_to_user_tl.inverse();
 
-    ik_inputs[LinkId::fromName(ik_solver_tip_link)] = wf_to_tl;
+    ik_inputs[ik_solver_tip_link_id] = wf_to_tl;
   }
 
   const long num_sol = static_cast<long>(solutions.size());
 
-  // format seed for inverse kinematic solver
   if (reorder_required_)
   {
     Eigen::VectorXd ordered = seed;
@@ -329,15 +321,21 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
   calcInvKin(solutions, KinGroupIKInputs{ tip_link_pose }, seed);  // NOLINT
 }
 
-std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const { return working_frames_; }
+std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const
+{
+  std::vector<std::string> frames;
+  frames.reserve(working_frame_ids_.size());
+  for (const auto& id : working_frame_ids_)
+    frames.push_back(id.name());
+  return frames;
+}
 
 std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const
 {
   std::vector<std::string> ik_tip_links;
   ik_tip_links.reserve(inv_tip_links_map_.size());
   for (const auto& pair : inv_tip_links_map_)
-    ik_tip_links.push_back(pair.first);
-
+    ik_tip_links.push_back(pair.first.name());
   return ik_tip_links;
 }
 
