@@ -258,7 +258,7 @@ public:
 
   const std::string& getName() const;
 
-  common::JointId getId() const;
+  const common::JointId& getId() const;
 
   /// The type of joint
   JointType type{ JointType::UNKNOWN };
@@ -271,7 +271,7 @@ public:
   ///            FLOATING    N/A
   ///            PLANAR      plane normal axis
   ///            FIXED       N/A
-  Eigen::Vector3d axis;
+  Eigen::Vector3d axis{ Eigen::Vector3d::UnitX() };
 
   /// child Link element
   ///   child link frame is the same as the Joint frame
@@ -315,9 +315,7 @@ public:
   bool operator!=(const Joint& rhs) const;
 
 private:
-  std::string name_;
-
-  /** @brief The integer identity of this joint, computed from name_ */
+  /** @brief The integer identity of this joint, also carries the name string */
   common::JointId id_{};
 
   template <class Archive>
