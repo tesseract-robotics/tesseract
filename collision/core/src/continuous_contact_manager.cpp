@@ -27,6 +27,51 @@
 
 namespace tesseract::collision
 {
+bool ContinuousContactManager::addCollisionObject(tesseract::common::LinkId id,
+                                                  const int& mask_id,
+                                                  const CollisionShapesConst& shapes,
+                                                  const tesseract::common::VectorIsometry3d& shape_poses,
+                                                  bool enabled)
+{
+  return addCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+}
+
+const CollisionShapesConst& ContinuousContactManager::getCollisionObjectGeometries(tesseract::common::LinkId id) const
+{
+  return getCollisionObjectGeometries(id.name());
+}
+
+const tesseract::common::VectorIsometry3d&
+ContinuousContactManager::getCollisionObjectGeometriesTransforms(tesseract::common::LinkId id) const
+{
+  return getCollisionObjectGeometriesTransforms(id.name());
+}
+
+bool ContinuousContactManager::hasCollisionObject(tesseract::common::LinkId id) const
+{
+  return hasCollisionObject(id.name());
+}
+
+bool ContinuousContactManager::removeCollisionObject(tesseract::common::LinkId id)
+{
+  return removeCollisionObject(id.name());
+}
+
+bool ContinuousContactManager::enableCollisionObject(tesseract::common::LinkId id)
+{
+  return enableCollisionObject(id.name());
+}
+
+bool ContinuousContactManager::disableCollisionObject(tesseract::common::LinkId id)
+{
+  return disableCollisionObject(id.name());
+}
+
+bool ContinuousContactManager::isCollisionObjectEnabled(tesseract::common::LinkId id) const
+{
+  return isCollisionObjectEnabled(id.name());
+}
+
 void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
   for (const auto& id : getCollisionObjects())
