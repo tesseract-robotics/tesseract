@@ -531,7 +531,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const Co
           {
             // Update the contact threshold to be pair specific
             cc.m_closestDistanceThreshold =
-                contact_test_data_.collision_margin_data.getCollisionMargin(cow1->getName(), cow2->getName());
+                contact_test_data_.collision_margin_data.getCollisionMargin(cow1->getLinkId(), cow2->getLinkId());
             TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);
 
             // discrete collision detection query
