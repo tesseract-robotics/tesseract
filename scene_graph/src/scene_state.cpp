@@ -34,10 +34,19 @@ namespace tesseract::scene_graph
 Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint_names) const
 {
   using tesseract::common::JointId;
+  std::vector<JointId> ids;
+  ids.reserve(joint_names.size());
+  for (const auto& name : joint_names)
+    ids.push_back(JointId::fromName(name));
+  return getJointValues(ids);
+}
+
+Eigen::VectorXd SceneState::getJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const
+{
   Eigen::VectorXd jv;
-  jv.resize(static_cast<long int>(joint_names.size()));
-  for (auto j = 0U; j < joint_names.size(); ++j)
-    jv(j) = joints.at(JointId::fromName(joint_names[j]));
+  jv.resize(static_cast<long int>(joint_ids.size()));
+  for (auto j = 0U; j < joint_ids.size(); ++j)
+    jv(j) = joints.at(joint_ids[j]);
 
   return jv;
 }
@@ -46,9 +55,19 @@ tesseract::common::JointIdTransformMap
 SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
 {
   using tesseract::common::JointId;
+  std::vector<JointId> ids;
+  ids.reserve(joint_names.size());
+  for (const auto& name : joint_names)
+    ids.push_back(JointId::fromName(name));
+  return getFloatingJointValues(ids);
+}
+
+tesseract::common::JointIdTransformMap
+SceneState::getFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const
+{
   tesseract::common::JointIdTransformMap fjv;
-  for (const auto& joint_name : joint_names)
-    fjv[JointId::fromName(joint_name)] = floating_joints.at(JointId::fromName(joint_name));
+  for (const auto& joint_id : joint_ids)
+    fjv[joint_id] = floating_joints.at(joint_id);
 
   return fjv;
 }
