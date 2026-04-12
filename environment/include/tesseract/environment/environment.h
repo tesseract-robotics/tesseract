@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/fwd.h>
 #include <tesseract/geometry/fwd.h>
 #include <tesseract/scene_graph/fwd.h>
+#include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/state_solver/fwd.h>
 #include <tesseract/srdf/fwd.h>
 #include <tesseract/kinematics/fwd.h>
@@ -322,6 +323,15 @@ public:
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joints = {});
 
+  /** @brief Set state using JointId-keyed map (avoids string-to-ID conversion) */
+  void setState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joints = {});
+
+  /** @brief Set state using vector of JointIds (avoids string-to-ID conversion) */
+  void setState(const std::vector<tesseract::common::JointId>& joint_ids,
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joints = {});
+
   /**
    * @brief Set the current state of the floating joint values
    * @param floating_joint_values The floating joint values to set
@@ -339,6 +349,15 @@ public:
   tesseract::scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints,
                                               const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
   tesseract::scene_graph::SceneState getState(const std::vector<std::string>& joint_names,
+                                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                              const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
+
+  /** @brief Get state using JointId-keyed map (avoids string-to-ID conversion) */
+  tesseract::scene_graph::SceneState getState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
+                                              const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
+
+  /** @brief Get state using vector of JointIds (avoids string-to-ID conversion) */
+  tesseract::scene_graph::SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
                                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                               const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
 
@@ -461,11 +480,18 @@ public:
    */
   tesseract::common::JointIdTransformMap getCurrentFloatingJointValues() const;
 
+  /** @brief Get current joint values by JointId vector (avoids string-to-ID conversion) */
+  Eigen::VectorXd getCurrentJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
+
   /**
    * @brief Get the current floating joint values
    * @return The joint origin transform for the floating joint
    */
   tesseract::common::JointIdTransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
+
+  /** @brief Get current floating joint values by JointId vector (avoids string-to-ID conversion) */
+  tesseract::common::JointIdTransformMap
+  getCurrentFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   /**
    * @brief Get the root link name
