@@ -99,6 +99,14 @@ public:
   void setCollisionMargin(const std::string& obj1, const std::string& obj2, double margin);
 
   /**
+   * @brief Set the margin for a given contact pair (LinkId overload)
+   * @param id1 The first object LinkId. Order doesn't matter
+   * @param id2 The second object LinkId. Order doesn't matter
+   * @param margin contacts with distance < collision_margin are considered in collision
+   */
+  void setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin);
+
+  /**
    * @brief Get the pairs collision margin data
    *
    * If a collision margin for the request pair does not exist it returns the default collision margin data.
@@ -178,6 +186,9 @@ private:
   /** @brief Set the margin for a given contact pair without updating the max margins */
   void setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin);
 
+  /** @brief Set the margin for a given contact pair without updating the max margins (LinkId overload) */
+  void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);
+
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
 
@@ -223,6 +234,14 @@ public:
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
   void setCollisionMargin(const std::string& obj1, const std::string& obj2, double collision_margin);
+
+  /**
+   * @brief Set the margin for a given contact pair (LinkId overload)
+   * @param id1 The first object LinkId. Order doesn't matter
+   * @param id2 The second object LinkId. Order doesn't matter
+   * @param collision_margin contacts with distance < collision_margin are considered in collision
+   */
+  void setCollisionMargin(const LinkId& id1, const LinkId& id2, double collision_margin);
 
   /**
    * @brief Get the pairs collision margin data
