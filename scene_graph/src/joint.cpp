@@ -200,11 +200,11 @@ std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
 /*********************************************************/
 /******                     Joint                    *****/
 /*********************************************************/
-Joint::Joint(std::string name) : name_(std::move(name)), id_(common::JointId::fromName(name_)) { this->clear(); }
+Joint::Joint(std::string name) : id_(common::JointId::fromName(name)) { this->clear(); }
 
-const std::string& Joint::getName() const { return name_; }
+const std::string& Joint::getName() const { return id_.name(); }
 
-common::JointId Joint::getId() const { return id_; }
+const common::JointId& Joint::getId() const { return id_; }
 
 void Joint::clear()
 {
@@ -220,7 +220,7 @@ void Joint::clear()
   this->type = JointType::UNKNOWN;
 }
 
-Joint Joint::clone() const { return clone(name_); }
+Joint Joint::clone() const { return clone(id_.name()); }
 
 Joint Joint::clone(const std::string& name) const
 {
@@ -266,7 +266,7 @@ bool Joint::operator==(const Joint& rhs) const
   equal &= tesseract::common::pointersEqual(safety, rhs.safety);
   equal &= tesseract::common::pointersEqual(calibration, rhs.calibration);
   equal &= tesseract::common::pointersEqual(mimic, rhs.mimic);
-  equal &= name_ == rhs.name_;
+  equal &= id_ == rhs.id_;
   return equal;
 }
 bool Joint::operator!=(const Joint& rhs) const { return !operator==(rhs); }

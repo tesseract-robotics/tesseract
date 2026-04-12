@@ -196,7 +196,7 @@ public:
 
   const std::string& getName() const;
 
-  common::LinkId getId() const;
+  const common::LinkId& getId() const;
 
   /// inertial element
   Inertial::Ptr inertial;
@@ -228,9 +228,7 @@ public:
   Link clone(const std::string& name) const;
 
 private:
-  std::string name_;
-
-  /** @brief The integer identity of this link, computed from name_ */
+  /** @brief The integer identity of this link, also carries the name string */
   common::LinkId id_{};
 
   template <class Archive>
