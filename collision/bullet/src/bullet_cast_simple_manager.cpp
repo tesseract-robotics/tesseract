@@ -106,7 +106,7 @@ bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
   if (new_cow != nullptr)
   {
     auto margin =
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getName()));
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(new_cow->getLinkId()));
     new_cow->setContactProcessingThreshold(margin);
     addCollisionObject(new_cow);
     return true;
@@ -604,14 +604,14 @@ void BulletCastSimpleManager::onCollisionMarginDataChanged()
   for (auto& co : link2cow_)
   {
     auto margin =
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(co.second->getName()));
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(co.second->getLinkId()));
     co.second->setContactProcessingThreshold(margin);
   }
 
   for (auto& co : link2castcow_)
   {
     auto margin =
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(co.second->getName()));
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(co.second->getLinkId()));
     co.second->setContactProcessingThreshold(margin);
   }
 }
