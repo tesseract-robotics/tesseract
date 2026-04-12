@@ -65,6 +65,11 @@ public:
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
   void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
+  void setState(const SceneState::JointValues& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+  void setState(const std::vector<tesseract::common::JointId>& joint_ids,
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
 
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
@@ -74,6 +79,11 @@ public:
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
   SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
+  SceneState getState(const SceneState::JointValues& joint_values,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+  SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
   SceneState getState() const override final;
 
@@ -148,18 +158,22 @@ private:
   KDLTreeData data_;                                           /**< KDL tree data */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;        /**< KDL Jacobian Solver */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
+  std::unordered_map<tesseract::common::JointId, unsigned int, tesseract::common::JointId::Hash>
+      joint_id_to_qnr_; /**< Map between joint ID and kdl q index */
   std::vector<int> joint_qnr_;                /**< The kdl segment number corresponding to joint in joint names */
   KDL::JntArray kdl_jnt_array_;               /**< The kdl joint array */
   tesseract::common::KinematicLimits limits_; /**< The kinematic limits */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
-  /** @brief Cached LinkId/JointId per KDL segment, avoiding per-FK fromName() calls */
+  /** @brief Cached LinkId/JointId per KDL segment, avoiding per-FK fromName() calls.
+   *  Keyed by pointer to KDL TreeElement (pointer-stable in std::map). */
   struct SegmentIdCache
   {
     tesseract::common::LinkId link_id;
     tesseract::common::JointId joint_id;
   };
-  std::unordered_map<std::string, SegmentIdCache> segment_id_cache_;
+  std::unordered_map<const KDL::TreeElementType*, SegmentIdCache> segment_id_cache_;
+  const KDL::TreeElementType* root_element_{ nullptr }; /**< Cached root element pointer for fast comparison */
 
   static thread_local KDL::JntArray kdl_joints_cache;    // NOLINT
   static thread_local KDL::Jacobian kdl_jacobian_cache;  // NOLINT
