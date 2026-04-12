@@ -76,10 +76,19 @@ bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                const tesseract::common::VectorIsometry3d& shape_poses,
                                                bool enabled)
 {
-  if (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end())
-    removeCollisionObject(name);
+  return addCollisionObject(tesseract::common::LinkId::fromName(name), mask_id, shapes, shape_poses, enabled);
+}
 
-  COW::Ptr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, enabled);
+bool FCLDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkId& id,
+                                               const int& mask_id,
+                                               const CollisionShapesConst& shapes,
+                                               const tesseract::common::VectorIsometry3d& shape_poses,
+                                               bool enabled)
+{
+  if (link2cow_.find(id) != link2cow_.end())
+    removeCollisionObject(id);
+
+  COW::Ptr new_cow = createFCLCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);
@@ -91,26 +100,47 @@ bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
 
 const CollisionShapesConst& FCLDiscreteBVHManager::getCollisionObjectGeometries(const std::string& name) const
 {
-  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return getCollisionObjectGeometries(tesseract::common::LinkId::fromName(name));
+}
+
+const CollisionShapesConst&
+FCLDiscreteBVHManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
+{
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
 const tesseract::common::VectorIsometry3d&
 FCLDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
-  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return getCollisionObjectGeometriesTransforms(tesseract::common::LinkId::fromName(name));
+}
+
+const tesseract::common::VectorIsometry3d&
+FCLDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const
+{
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
 bool FCLDiscreteBVHManager::hasCollisionObject(const std::string& name) const
 {
-  return (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end());
+  return hasCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool FCLDiscreteBVHManager::hasCollisionObject(const tesseract::common::LinkId& id) const
+{
+  return (link2cow_.find(id) != link2cow_.end());
 }
 
 bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
 {
-  const auto lid = tesseract::common::LinkId::fromName(name);
-  auto it = link2cow_.find(lid);
+  return removeCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool FCLDiscreteBVHManager::removeCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     std::vector<CollisionObjectPtr>& objects = it->second->getCollisionObjects();
@@ -135,9 +165,9 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
         dynamic_manager_->unregisterObject(co.get());
     }
 
-    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), lid));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
     link2cow_.erase(it);
-    active_ids_.erase(lid);
+    active_ids_.erase(id);
     return true;
   }
   return false;
@@ -145,7 +175,12 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
 
 bool FCLDiscreteBVHManager::enableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return enableCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool FCLDiscreteBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
@@ -156,7 +191,12 @@ bool FCLDiscreteBVHManager::enableCollisionObject(const std::string& name)
 
 bool FCLDiscreteBVHManager::disableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return disableCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool FCLDiscreteBVHManager::disableCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
@@ -167,7 +207,12 @@ bool FCLDiscreteBVHManager::disableCollisionObject(const std::string& name)
 
 bool FCLDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name) const
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return isCollisionObjectEnabled(tesseract::common::LinkId::fromName(name));
+}
+
+bool FCLDiscreteBVHManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
     return it->second->m_enabled;
 
@@ -176,7 +221,13 @@ bool FCLDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name) co
 
 void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose);
+}
+
+void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+                                                         const Eigen::Isometry3d& pose)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
