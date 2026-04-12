@@ -77,8 +77,10 @@ struct SceneState
   tesseract::common::JointIdTransformMap joint_transforms;
 
   Eigen::VectorXd getJointValues(const std::vector<std::string>& joint_names) const;
+  Eigen::VectorXd getJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   tesseract::common::JointIdTransformMap getFloatingJointValues(const std::vector<std::string>& joint_names) const;
+  tesseract::common::JointIdTransformMap getFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   bool operator==(const SceneState& rhs) const;
   bool operator!=(const SceneState& rhs) const;
