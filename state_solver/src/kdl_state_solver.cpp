@@ -74,6 +74,7 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   joint_qnr_ = other.joint_qnr_;
   kdl_jnt_array_ = other.kdl_jnt_array_;
   limits_ = other.limits_;
+  segment_id_cache_ = other.segment_id_cache_;
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
   return *this;
 }
@@ -474,6 +475,16 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
 
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
+  // Cache LinkId/JointId per segment to avoid per-FK fromName() calls
+  segment_id_cache_.clear();
+  for (const auto& seg : data_.tree.getSegments())
+  {
+    SegmentIdCache entry;
+    entry.link_id = LinkId::fromName(seg.first);
+    entry.joint_id = JointId::fromName(seg.second.segment.getJoint().getName());
+    segment_id_cache_[seg.first] = entry;
+  }
+
   calculateTransforms(current_state_.link_transforms,
                       current_state_.joint_transforms,
                       kdl_jnt_array_,
@@ -514,9 +525,10 @@ void KDLStateSolver::calculateTransformsHelper(tesseract::common::LinkIdTransfor
 
     Eigen::Isometry3d local_frame = convert(current_frame);
     Eigen::Isometry3d global_frame{ parent_frame * local_frame };
-    link_transforms[LinkId::fromName(current_element.segment.getName())] = global_frame;
+    const auto& cached = segment_id_cache_.at(current_element.segment.getName());
+    link_transforms[cached.link_id] = global_frame;
     if (current_element.segment.getName() != data_.tree.getRootSegment()->first)
-      joint_transforms[JointId::fromName(current_element.segment.getJoint().getName())] = global_frame;
+      joint_transforms[cached.joint_id] = global_frame;
 
     for (const auto& child : current_element.children)
     {
