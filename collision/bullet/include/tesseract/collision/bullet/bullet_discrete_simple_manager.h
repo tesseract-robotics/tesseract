@@ -77,22 +77,46 @@ public:
                           const tesseract::common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override final;
 
+  bool addCollisionObject(const tesseract::common::LinkId& id,
+                          const int& mask_id,
+                          const CollisionShapesConst& shapes,
+                          const tesseract::common::VectorIsometry3d& shape_poses,
+                          bool enabled = true) override final;
+
   const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override final;
+
+  const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const override final;
 
   const tesseract::common::VectorIsometry3d&
   getCollisionObjectGeometriesTransforms(const std::string& name) const override final;
 
+  const tesseract::common::VectorIsometry3d&
+  getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const override final;
+
   bool hasCollisionObject(const std::string& name) const override final;
+
+  bool hasCollisionObject(const tesseract::common::LinkId& id) const override final;
 
   bool removeCollisionObject(const std::string& name) override final;
 
+  bool removeCollisionObject(const tesseract::common::LinkId& id) override final;
+
   bool enableCollisionObject(const std::string& name) override final;
+
+  bool enableCollisionObject(const tesseract::common::LinkId& id) override final;
 
   bool disableCollisionObject(const std::string& name) override final;
 
+  bool disableCollisionObject(const tesseract::common::LinkId& id) override final;
+
   bool isCollisionObjectEnabled(const std::string& name) const override final;
 
+  bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const override final;
+
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override final;
+
+  void setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+                                    const Eigen::Isometry3d& pose) override final;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
                                     const tesseract::common::VectorIsometry3d& poses) override final;
