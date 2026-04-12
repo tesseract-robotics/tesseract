@@ -90,7 +90,7 @@ void serialize(Archive& ar, Inertial& obj)
   ar(cereal::make_nvp("ixz", obj.ixz));
   ar(cereal::make_nvp("iyy", obj.iyy));
   ar(cereal::make_nvp("iyz", obj.iyz));
-  ar(cereal::make_nvp("iyz", obj.izz));
+  ar(cereal::make_nvp("izz", obj.izz));
 }
 
 template <class Archive>
@@ -119,7 +119,7 @@ void serialize(Archive& ar, Link& obj)
   ar(cereal::make_nvp("visible", obj.visible));
   ar(cereal::make_nvp("collision_enabled", obj.collision_enabled));
   ar(cereal::make_nvp("hash", obj.id_.value));
-  ar(cereal::make_nvp("name", obj.name_));
+  ar(cereal::make_nvp("name", obj.id_.name_));
 }
 
 template <class Archive>
@@ -178,7 +178,7 @@ void serialize(Archive& ar, Joint& obj)
   ar(cereal::make_nvp("safety", obj.safety));
   ar(cereal::make_nvp("calibration", obj.calibration));
   ar(cereal::make_nvp("mimic", obj.mimic));
-  ar(cereal::make_nvp("name", obj.name_));
+  ar(cereal::make_nvp("name", obj.id_.name_));
   ar(cereal::make_nvp("id", obj.id_.value));
 }
 
