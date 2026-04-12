@@ -99,10 +99,19 @@ bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
                                                  const tesseract::common::VectorIsometry3d& shape_poses,
                                                  bool enabled)
 {
-  if (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end())
-    removeCollisionObject(name);
+  return addCollisionObject(tesseract::common::LinkId::fromName(name), mask_id, shapes, shape_poses, enabled);
+}
 
-  COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
+bool BulletCastSimpleManager::addCollisionObject(const tesseract::common::LinkId& id,
+                                                 const int& mask_id,
+                                                 const CollisionShapesConst& shapes,
+                                                 const tesseract::common::VectorIsometry3d& shape_poses,
+                                                 bool enabled)
+{
+  if (link2cow_.find(id) != link2cow_.end())
+    removeCollisionObject(id);
+
+  COW::Ptr new_cow = createCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     auto margin =
@@ -117,33 +126,55 @@ bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
 
 const CollisionShapesConst& BulletCastSimpleManager::getCollisionObjectGeometries(const std::string& name) const
 {
-  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return getCollisionObjectGeometries(tesseract::common::LinkId::fromName(name));
+}
+
+const CollisionShapesConst&
+BulletCastSimpleManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
+{
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
 const tesseract::common::VectorIsometry3d&
 BulletCastSimpleManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
-  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return getCollisionObjectGeometriesTransforms(tesseract::common::LinkId::fromName(name));
+}
+
+const tesseract::common::VectorIsometry3d&
+BulletCastSimpleManager::getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const
+{
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
 bool BulletCastSimpleManager::hasCollisionObject(const std::string& name) const
 {
-  return (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end());
+  return hasCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletCastSimpleManager::hasCollisionObject(const tesseract::common::LinkId& id) const
+{
+  return (link2cow_.find(id) != link2cow_.end());
 }
 
 bool BulletCastSimpleManager::removeCollisionObject(const std::string& name)
 {
-  const auto lid = tesseract::common::LinkId::fromName(name);
-  auto it = link2cow_.find(lid);
+  return removeCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletCastSimpleManager::removeCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
+    const auto& name = id.name();
     cows_.erase(std::find_if(cows_.begin(), cows_.end(), [&name](const auto& p) { return p->getName() == name; }));
-    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), lid));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
     link2cow_.erase(it);
-    link2castcow_.erase(lid);
-    active_ids_.erase(lid);
+    link2castcow_.erase(id);
+    active_ids_.erase(id);
     return true;
   }
 
@@ -152,12 +183,16 @@ bool BulletCastSimpleManager::removeCollisionObject(const std::string& name)
 
 bool BulletCastSimpleManager::enableCollisionObject(const std::string& name)
 {
-  const auto lid = tesseract::common::LinkId::fromName(name);
-  auto it = link2cow_.find(lid);
+  return enableCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletCastSimpleManager::enableCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
-    link2castcow_[lid]->m_enabled = true;
+    link2castcow_[id]->m_enabled = true;
     return true;
   }
 
@@ -166,12 +201,16 @@ bool BulletCastSimpleManager::enableCollisionObject(const std::string& name)
 
 bool BulletCastSimpleManager::disableCollisionObject(const std::string& name)
 {
-  const auto lid = tesseract::common::LinkId::fromName(name);
-  auto it = link2cow_.find(lid);
+  return disableCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletCastSimpleManager::disableCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
-    link2castcow_[lid]->m_enabled = false;
+    link2castcow_[id]->m_enabled = false;
     return true;
   }
 
@@ -180,7 +219,12 @@ bool BulletCastSimpleManager::disableCollisionObject(const std::string& name)
 
 bool BulletCastSimpleManager::isCollisionObjectEnabled(const std::string& name) const
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return isCollisionObjectEnabled(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletCastSimpleManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
     return it->second->m_enabled;
 
@@ -189,16 +233,7 @@ bool BulletCastSimpleManager::isCollisionObjectEnabled(const std::string& name) 
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
-  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
-  // geometry
-  const auto lid = tesseract::common::LinkId::fromName(name);
-  auto it = link2cow_.find(lid);
-  if (it != link2cow_.end())
-  {
-    btTransform tf = convertEigenToBt(pose);
-    it->second->setWorldTransform(tf);
-    link2castcow_[lid]->setWorldTransform(tf);
-  }
+  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose);
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
@@ -239,70 +274,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
                                                            const Eigen::Isometry3d& pose1,
                                                            const Eigen::Isometry3d& pose2)
 {
-  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
-  // geometry
-  const auto lid = tesseract::common::LinkId::fromName(name);
-  auto it = link2castcow_.find(lid);
-  if (it != link2castcow_.end())
-  {
-    COW::Ptr& cow = it->second;
-    assert(cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
-
-    btTransform tf1 = convertEigenToBt(pose1);
-    btTransform tf2 = convertEigenToBt(pose2);
-
-    cow->setWorldTransform(tf1);
-    link2cow_[lid]->setWorldTransform(tf1);
-
-    // If collision object is disabled dont proceed
-    if (cow->m_enabled)
-    {
-      if (btBroadphaseProxy::isConvex(cow->getCollisionShape()->getShapeType()))
-      {
-        assert(dynamic_cast<CastHullShape*>(cow->getCollisionShape()) != nullptr);
-        static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
-      }
-      else if (btBroadphaseProxy::isCompound(cow->getCollisionShape()->getShapeType()))
-      {
-        assert(dynamic_cast<btCompoundShape*>(cow->getCollisionShape()) != nullptr);
-        auto* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
-        for (int i = 0; i < compound->getNumChildShapes(); ++i)
-        {
-          if (btBroadphaseProxy::isConvex(compound->getChildShape(i)->getShapeType()))
-          {
-            assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
-            const btTransform& local_tf = compound->getChildTransform(i);
-
-            btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
-            static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(delta_tf);
-            compound->updateChildTransform(i, local_tf, false);  // This is required to update the BVH tree
-          }
-          else if (btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()))
-          {
-            assert(dynamic_cast<btCompoundShape*>(compound->getChildShape(i)) != nullptr);
-            auto* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));
-
-            for (int j = 0; j < second_compound->getNumChildShapes(); ++j)
-            {
-              assert(!btBroadphaseProxy::isCompound(second_compound->getChildShape(j)->getShapeType()));
-              assert(dynamic_cast<CastHullShape*>(second_compound->getChildShape(j)) != nullptr);
-              const btTransform& local_tf = second_compound->getChildTransform(j);
-
-              btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
-              static_cast<CastHullShape*>(second_compound->getChildShape(j))->updateCastTransform(delta_tf);
-              second_compound->updateChildTransform(j, local_tf, false);  // This is required to update the BVH tree
-            }
-            second_compound->recalculateLocalAabb();
-          }
-        }
-        compound->recalculateLocalAabb();
-      }
-      else
-      {
-        throw std::runtime_error("I can only collision check convex shapes and compound shapes made of convex shapes");
-      }
-    }
-  }
+  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose1, pose2);
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
