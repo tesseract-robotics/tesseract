@@ -756,12 +756,12 @@ tesseract::common::KinematicLimits OFKTStateSolver::getLimits() const
 bool OFKTStateSolver::addLink(const Link& link, const Joint& joint)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (link_map_.find(LinkId::fromName(link.getName())) != link_map_.end())
+  if (link_map_.find(link.getId()) != link_map_.end())
   {
     return false;
   }
 
-  if (nodes_.find(JointId::fromName(joint.getName())) != nodes_.end())
+  if (nodes_.find(joint.getId()) != nodes_.end())
   {
     return false;
   }
@@ -783,7 +783,7 @@ bool OFKTStateSolver::addLink(const Link& link, const Joint& joint)
 bool OFKTStateSolver::replaceJoint(const Joint& joint)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  auto it = nodes_.find(JointId::fromName(joint.getName()));
+  auto it = nodes_.find(joint.getId());
   if (it == nodes_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to replace joint '%s' which does not exist!",
@@ -1081,7 +1081,7 @@ bool OFKTStateSolver::insertSceneGraph(const SceneGraph& scene_graph, const Join
     return false;
   }
 
-  if (nodes_.find(JointId::fromName(joint.getName())) != nodes_.end())
+  if (nodes_.find(joint.getId()) != nodes_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, Failed to add inserted graph, provided joint name %s already exists!",
                             joint.getName().c_str());
@@ -1319,7 +1319,7 @@ void OFKTStateSolver::moveLinkHelper(std::vector<std::shared_ptr<const JointLimi
 
   addNode(joint, joint.getName(), joint.parent_link_name, joint.child_link_name, new_joint_limits);
 
-  const auto new_jid = JointId::fromName(joint.getName());
+  const auto& new_jid = joint.getId();
   auto& replaced_node = nodes_[new_jid];
 
   // add back original nodes children and update parents
@@ -1335,7 +1335,7 @@ void OFKTStateSolver::moveLinkHelper(std::vector<std::shared_ptr<const JointLimi
 void OFKTStateSolver::replaceJointHelper(std::vector<std::shared_ptr<const JointLimits>>& new_joint_limits,
                                          const Joint& joint)
 {
-  const auto jid = JointId::fromName(joint.getName());
+  const auto& jid = joint.getId();
   auto& n = nodes_[jid];
 
   if (n->getType() == joint.type && n->getParent()->getLinkName() == joint.parent_link_name)
