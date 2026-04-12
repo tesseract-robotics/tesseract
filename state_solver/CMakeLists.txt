@@ -2,20 +2,28 @@ find_package(orocos_kdl REQUIRED)
 
 set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "state_solver" PARENT_SCOPE)
 
-add_library(state_solver INTERFACE)
+add_library(state_solver src/mutable_state_solver.cpp)
 add_library(tesseract::state_solver ALIAS state_solver)
+set_target_properties(state_solver PROPERTIES OUTPUT_NAME tesseract_state_solver)
 target_link_libraries(
   state_solver
-  INTERFACE Eigen3::Eigen
-            tesseract::common
-            tesseract::scene_graph
-            console_bridge::console_bridge)
-target_compile_options(state_solver INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(state_solver INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
+  PUBLIC Eigen3::Eigen
+         tesseract::common
+         tesseract::scene_graph
+         console_bridge::console_bridge)
+target_compile_options(state_solver PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(state_solver PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(state_solver PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(state_solver ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(state_solver INTERFACE VERSION ${TESSERACT_CXX_VERSION})
-target_include_directories(state_solver INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                  "$<INSTALL_INTERFACE:include>")
+target_cxx_version(state_solver PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  state_solver
+  PRIVATE
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+target_include_directories(state_solver PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                               "$<INSTALL_INTERFACE:include>")
 
 add_library(state_solver_kdl src/kdl_state_solver.cpp)
 add_library(tesseract::state_solver_kdl ALIAS state_solver_kdl)
