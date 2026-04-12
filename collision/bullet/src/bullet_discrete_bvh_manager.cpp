@@ -115,10 +115,19 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                   const tesseract::common::VectorIsometry3d& shape_poses,
                                                   bool enabled)
 {
-  if (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end())
-    removeCollisionObject(name);
+  return addCollisionObject(tesseract::common::LinkId::fromName(name), mask_id, shapes, shape_poses, enabled);
+}
 
-  COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
+bool BulletDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkId& id,
+                                                  const int& mask_id,
+                                                  const CollisionShapesConst& shapes,
+                                                  const tesseract::common::VectorIsometry3d& shape_poses,
+                                                  bool enabled)
+{
+  if (link2cow_.find(id) != link2cow_.end())
+    removeCollisionObject(id);
+
+  COW::Ptr new_cow = createCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     auto margin =
@@ -133,32 +142,53 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
 
 const CollisionShapesConst& BulletDiscreteBVHManager::getCollisionObjectGeometries(const std::string& name) const
 {
-  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return getCollisionObjectGeometries(tesseract::common::LinkId::fromName(name));
+}
+
+const CollisionShapesConst&
+BulletDiscreteBVHManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
+{
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
 const tesseract::common::VectorIsometry3d&
 BulletDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
-  auto cow = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return getCollisionObjectGeometriesTransforms(tesseract::common::LinkId::fromName(name));
+}
+
+const tesseract::common::VectorIsometry3d&
+BulletDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const
+{
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
 bool BulletDiscreteBVHManager::hasCollisionObject(const std::string& name) const
 {
-  return (link2cow_.find(tesseract::common::LinkId::fromName(name)) != link2cow_.end());
+  return hasCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletDiscreteBVHManager::hasCollisionObject(const tesseract::common::LinkId& id) const
+{
+  return (link2cow_.find(id) != link2cow_.end());
 }
 
 bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
 {
-  const auto lid = tesseract::common::LinkId::fromName(name);
-  auto it = link2cow_.find(lid);  // Levi TODO: Should these check be removed?
+  return removeCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletDiscreteBVHManager::removeCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
-    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), lid));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
     removeCollisionObjectFromBroadphase(it->second, broadphase_, dispatcher_);
     link2cow_.erase(it);
-    active_ids_.erase(lid);
+    active_ids_.erase(id);
     return true;
   }
 
@@ -167,7 +197,12 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
 
 bool BulletDiscreteBVHManager::enableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));  // Levi TODO: Should these check be removed?
+  return enableCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletDiscreteBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
@@ -183,7 +218,12 @@ bool BulletDiscreteBVHManager::enableCollisionObject(const std::string& name)
 
 bool BulletDiscreteBVHManager::disableCollisionObject(const std::string& name)
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));  // Levi TODO: Should these check be removed?
+  return disableCollisionObject(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletDiscreteBVHManager::disableCollisionObject(const tesseract::common::LinkId& id)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
@@ -199,7 +239,12 @@ bool BulletDiscreteBVHManager::disableCollisionObject(const std::string& name)
 
 bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name) const
 {
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  return isCollisionObjectEnabled(tesseract::common::LinkId::fromName(name));
+}
+
+bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
     return it->second->m_enabled;
 
@@ -208,9 +253,13 @@ bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name)
 
 void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
-  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
-  // geometry
-  auto it = link2cow_.find(tesseract::common::LinkId::fromName(name));
+  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose);
+}
+
+void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+                                                            const Eigen::Isometry3d& pose)
+{
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     COW::Ptr& cow = it->second;
