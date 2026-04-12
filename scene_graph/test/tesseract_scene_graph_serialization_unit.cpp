@@ -115,6 +115,12 @@ TEST(TesseractSceneGraphSerializationUnit, Inertial)  // NOLINT
   object->iyz = 6.7;
   object->izz = 7.8;
   tesseract::common::testSerialization<Inertial>(*object, "Inertial");
+
+  // Verify that each inertia component uses a distinct key in the serialized output.
+  // A previous bug serialized izz with key "iyz", which went undetected because cereal
+  // reads duplicate keys sequentially and the round-trip happened to preserve both values.
+  std::string xml = tesseract::common::Serialization::toArchiveStringXML<Inertial>(*object);
+  EXPECT_NE(xml.find("<izz>"), std::string::npos) << "Serialized XML must contain an <izz> element";
 }
 
 TEST(TesseractSceneGraphSerializationUnit, Visual)  // NOLINT
