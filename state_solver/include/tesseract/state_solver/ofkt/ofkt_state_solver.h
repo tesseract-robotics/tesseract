@@ -84,6 +84,11 @@ public:
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
   void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
+  void setState(const SceneState::JointValues& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+  void setState(const std::vector<tesseract::common::JointId>& joint_ids,
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
 
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
@@ -93,6 +98,11 @@ public:
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
   SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
+  SceneState getState(const SceneState::JointValues& joint_values,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+  SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
   void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                          const std::vector<std::string>& joint_names,
@@ -219,6 +229,12 @@ private:
   mutable std::shared_mutex mutex_;
 
   bool initHelper(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& prefix);
+
+  /**
+   * @brief Unlocked implementation of getState(JointValues). Caller must hold at least a shared lock.
+   */
+  SceneState getStateUnlocked(const SceneState::JointValues& joint_values,
+                              const tesseract::common::JointIdTransformMap& floating_joint_values) const;
 
   void clear();
 

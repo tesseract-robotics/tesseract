@@ -249,42 +249,51 @@ void OFKTStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_va
 void OFKTStateSolver::setState(const std::unordered_map<std::string, double>& joint_values,
                                const tesseract::common::JointIdTransformMap& floating_joint_values)
 {
-  std::unique_lock<std::shared_mutex> lock(mutex_);
-
-  for (const auto& joint : joint_values)
-  {
-    const auto jid = JointId::fromName(joint.first);
-    nodes_[jid]->storeJointValue(joint.second);
-    current_state_.joints[jid] = joint.second;
-  }
-
-  for (const auto& [joint_id, transform] : floating_joint_values)
-  {
-    current_state_.floating_joints.at(joint_id) = transform;
-    for (const auto& fj_id : floating_joint_ids_)
-    {
-      if (fj_id == joint_id)
-      {
-        nodes_[fj_id]->setStaticTransformation(transform);
-        break;
-      }
-    }
-  }
-
-  update(root_.get(), false);
+  SceneState::JointValues id_values;
+  id_values.reserve(joint_values.size());
+  for (const auto& [name, val] : joint_values)
+    id_values[JointId::fromName(name)] = val;
+  setState(id_values, floating_joint_values);
 }
 
 void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                const tesseract::common::JointIdTransformMap& floating_joint_values)
 {
+  std::vector<JointId> ids;
+  ids.reserve(joint_names.size());
+  for (const auto& name : joint_names)
+    ids.push_back(JointId::fromName(name));
+  setState(ids, joint_values, floating_joint_values);
+}
+
+void OFKTStateSolver::setState(const tesseract::common::JointIdTransformMap& floating_joint_values)
+{
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  assert(joint_names.size() == static_cast<std::size_t>(joint_values.size()));
-  for (std::size_t i = 0; i < joint_names.size(); ++i)
+  for (const auto& [joint_id, transform] : floating_joint_values)
   {
-    const auto jid = JointId::fromName(joint_names[i]);
-    nodes_[jid]->storeJointValue(joint_values(static_cast<long>(i)));
-    current_state_.joints[jid] = joint_values(static_cast<long>(i));
+    current_state_.floating_joints.at(joint_id) = transform;
+    for (const auto& fj_id : floating_joint_ids_)
+    {
+      if (fj_id == joint_id)
+      {
+        nodes_[fj_id]->setStaticTransformation(transform);
+        break;
+      }
+    }
+  }
+
+  update(root_.get(), false);
+}
+
+void OFKTStateSolver::setState(const SceneState::JointValues& joint_values,
+                               const tesseract::common::JointIdTransformMap& floating_joint_values)
+{
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  for (const auto& [joint_id, value] : joint_values)
+  {
+    nodes_[joint_id]->storeJointValue(value);
+    current_state_.joints[joint_id] = value;
   }
 
   for (const auto& [joint_id, transform] : floating_joint_values)
@@ -303,9 +312,18 @@ void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
   update(root_.get(), false);
 }
 
-void OFKTStateSolver::setState(const tesseract::common::JointIdTransformMap& floating_joint_values)
+void OFKTStateSolver::setState(const std::vector<tesseract::common::JointId>& joint_ids,
+                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                               const tesseract::common::JointIdTransformMap& floating_joint_values)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
+  assert(joint_ids.size() == static_cast<std::size_t>(joint_values.size()));
+  for (std::size_t i = 0; i < joint_ids.size(); ++i)
+  {
+    nodes_[joint_ids[i]]->storeJointValue(joint_values(static_cast<long>(i)));
+    current_state_.joints[joint_ids[i]] = joint_values(static_cast<long>(i));
+  }
+
   for (const auto& [joint_id, transform] : floating_joint_values)
   {
     current_state_.floating_joints.at(joint_id) = transform;
@@ -343,39 +361,23 @@ SceneState OFKTStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& jo
 SceneState OFKTStateSolver::getState(const std::unordered_map<std::string, double>& joint_values,
                                      const tesseract::common::JointIdTransformMap& floating_joint_values) const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-
-  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
-
-  auto state = SceneState(current_state_);
-  for (const auto& joint : joint_values)
-    state.joints[JointId::fromName(joint.first)] = joint.second;
-
-  for (const auto& [joint_id, transform] : floating_joint_values)
-    state.floating_joints.at(joint_id) = transform;
-
-  update(state, root_.get(), parent_frame, false);
-  return state;
+  SceneState::JointValues id_values;
+  id_values.reserve(joint_values.size());
+  for (const auto& [name, val] : joint_values)
+    id_values[JointId::fromName(name)] = val;
+  return getState(id_values, floating_joint_values);
 }
 
 SceneState OFKTStateSolver::getState(const std::vector<std::string>& joint_names,
                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                      const tesseract::common::JointIdTransformMap& floating_joint_values) const
 {
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-
-  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
-
-  auto state = SceneState(current_state_);
   assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
-  for (std::size_t i = 0; i < joint_names.size(); ++i)
-    state.joints[JointId::fromName(joint_names[i])] = joint_values[static_cast<long>(i)];
-
-  for (const auto& [joint_id, transform] : floating_joint_values)
-    state.floating_joints.at(joint_id) = transform;
-
-  update(state, root_.get(), parent_frame, false);
-  return state;
+  std::vector<JointId> ids;
+  ids.reserve(joint_names.size());
+  for (const auto& name : joint_names)
+    ids.push_back(JointId::fromName(name));
+  return getState(ids, joint_values, floating_joint_values);
 }
 
 SceneState OFKTStateSolver::getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const
@@ -390,6 +392,41 @@ SceneState OFKTStateSolver::getState(const tesseract::common::JointIdTransformMa
 
   update(state, root_.get(), parent_frame, false);
   return state;
+}
+
+SceneState OFKTStateSolver::getStateUnlocked(const SceneState::JointValues& joint_values,
+                                             const tesseract::common::JointIdTransformMap& floating_joint_values) const
+{
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  auto state = SceneState(current_state_);
+  for (const auto& [joint_id, value] : joint_values)
+    state.joints[joint_id] = value;
+
+  for (const auto& [joint_id, transform] : floating_joint_values)
+    state.floating_joints.at(joint_id) = transform;
+
+  update(state, root_.get(), parent_frame, false);
+  return state;
+}
+
+SceneState OFKTStateSolver::getState(const SceneState::JointValues& joint_values,
+                                     const tesseract::common::JointIdTransformMap& floating_joint_values) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return getStateUnlocked(joint_values, floating_joint_values);
+}
+
+SceneState OFKTStateSolver::getState(const std::vector<tesseract::common::JointId>& joint_ids,
+                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                     const tesseract::common::JointIdTransformMap& floating_joint_values) const
+{
+  assert(joint_ids.size() == static_cast<std::size_t>(joint_values.size()));
+  SceneState::JointValues id_values;
+  id_values.reserve(joint_ids.size());
+  for (std::size_t i = 0; i < joint_ids.size(); ++i)
+    id_values[joint_ids[i]] = joint_values[static_cast<long>(i)];
+  return getState(id_values, floating_joint_values);
 }
 
 SceneState OFKTStateSolver::getState() const
@@ -432,11 +469,12 @@ void OFKTStateSolver::getLinkTransforms(tesseract::common::LinkIdTransformMap& l
 SceneState OFKTStateSolver::getRandomState() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> names;
-  names.reserve(active_joint_ids_.size());
-  for (const auto& id : active_joint_ids_)
-    names.push_back(id.name());
-  return getState(names, tesseract::common::generateRandomNumber(limits_.joint_limits));
+  const Eigen::VectorXd random_values = tesseract::common::generateRandomNumber(limits_.joint_limits);
+  SceneState::JointValues id_values;
+  id_values.reserve(active_joint_ids_.size());
+  for (std::size_t i = 0; i < active_joint_ids_.size(); ++i)
+    id_values[active_joint_ids_[i]] = random_values[static_cast<long>(i)];
+  return getStateUnlocked(id_values, {});
 }
 
 Eigen::MatrixXd OFKTStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
