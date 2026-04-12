@@ -527,7 +527,7 @@ public:
   Eigen::Isometry3d getLinkTransform(const std::string& link_name) const;
 
   /** @brief Get the transform for a link identified by LinkId */
-  Eigen::Isometry3d getLinkTransform(tesseract::common::LinkId link_id) const;
+  Eigen::Isometry3d getLinkTransform(const tesseract::common::LinkId& link_id) const;
 
   /**
    * @brief Get transform between two links using the current state

@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/fwd.h>
 
 namespace tesseract::scene_graph
@@ -106,6 +107,18 @@ public:
    * @return The link name
    */
   virtual const std::string& getJointName() const = 0;
+
+  /**
+   * @brief Get the link ID associated with the node
+   * @return The link ID (pre-computed from link name)
+   */
+  virtual tesseract::common::LinkId getLinkId() const = 0;
+
+  /**
+   * @brief Get the joint ID associated with the node
+   * @return The joint ID (pre-computed from joint name)
+   */
+  virtual tesseract::common::JointId getJointId() const = 0;
 
   /**
    * @brief Set the nodes joint value if it has one.
