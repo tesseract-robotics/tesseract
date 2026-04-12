@@ -95,7 +95,7 @@ public:
   using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
 
   CollisionObjectWrapper() = default;
-  CollisionObjectWrapper(std::string name,
+  CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          CollisionShapesConst shapes,
                          tesseract::common::VectorIsometry3d shape_poses);
@@ -107,7 +107,7 @@ public:
   /** @brief Get the collision object name */
   const std::string& getName() const;
   /** @brief Get the integer link ID (hash of the name) */
-  tesseract::common::LinkId getLinkId() const { return m_link_id; }
+  const tesseract::common::LinkId& getLinkId() const { return m_link_id; }
   /** @brief Get a user defined type */
   const int& getTypeID() const;
   /** \brief Check if two CollisionObjectWrapper objects point to the same source object */
@@ -137,9 +137,7 @@ public:
   void manageReserve(std::size_t s);
 
 protected:
-  /** @brief The name of the collision object */
-  std::string m_name;
-  /** @brief Integer link ID derived from m_name */
+  /** @brief Link ID derived from name, also carries the name string */
   tesseract::common::LinkId m_link_id;
   /** @brief A user defined type id */
   int m_type_id{ -1 };
