@@ -320,6 +320,116 @@ Eigen::Isometry3d KDLStateSolver::getRelativeLinkTransform(const std::string& fr
          current_state_.link_transforms.at(LinkId::fromName(to_link_name));
 }
 
+// --- ID-based overloads ---
+
+std::vector<JointId> KDLStateSolver::getJointIds() const
+{
+  std::vector<JointId> ids;
+  ids.reserve(data_.joint_names.size());
+  for (const auto& n : data_.joint_names)
+    ids.push_back(JointId::fromName(n));
+  return ids;
+}
+
+std::vector<JointId> KDLStateSolver::getFloatingJointIds() const
+{
+  std::vector<JointId> ids;
+  ids.reserve(data_.floating_joint_names.size());
+  for (const auto& n : data_.floating_joint_names)
+    ids.push_back(JointId::fromName(n));
+  return ids;
+}
+
+std::vector<JointId> KDLStateSolver::getActiveJointIds() const
+{
+  std::vector<JointId> ids;
+  ids.reserve(data_.active_joint_names.size());
+  for (const auto& n : data_.active_joint_names)
+    ids.push_back(JointId::fromName(n));
+  return ids;
+}
+
+LinkId KDLStateSolver::getBaseLinkId() const { return LinkId::fromName(data_.base_link_name); }
+
+std::vector<LinkId> KDLStateSolver::getLinkIds() const
+{
+  std::vector<LinkId> ids;
+  ids.reserve(data_.link_names.size());
+  for (const auto& n : data_.link_names)
+    ids.push_back(LinkId::fromName(n));
+  return ids;
+}
+
+std::vector<LinkId> KDLStateSolver::getActiveLinkIds() const
+{
+  std::vector<LinkId> ids;
+  ids.reserve(data_.active_link_names.size());
+  for (const auto& n : data_.active_link_names)
+    ids.push_back(LinkId::fromName(n));
+  return ids;
+}
+
+std::vector<LinkId> KDLStateSolver::getStaticLinkIds() const
+{
+  std::vector<LinkId> ids;
+  ids.reserve(data_.static_link_names.size());
+  for (const auto& n : data_.static_link_names)
+    ids.push_back(LinkId::fromName(n));
+  return ids;
+}
+
+bool KDLStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
+{
+  return isActiveLinkName(link_id.name());
+}
+
+bool KDLStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const
+{
+  return hasLinkName(link_id.name());
+}
+
+Eigen::Isometry3d KDLStateSolver::getLinkTransform(const tesseract::common::LinkId& link_id) const
+{
+  return current_state_.link_transforms.at(link_id);
+}
+
+Eigen::Isometry3d KDLStateSolver::getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
+                                                           const tesseract::common::LinkId& to_link_id) const
+{
+  return current_state_.link_transforms.at(from_link_id).inverse() *
+         current_state_.link_transforms.at(to_link_id);
+}
+
+Eigen::MatrixXd KDLStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                             const tesseract::common::LinkId& link_id,
+                                             const tesseract::common::JointIdTransformMap& floating_joint_values) const
+{
+  return getJacobian(joint_values, link_id.name(), floating_joint_values);
+}
+
+Eigen::MatrixXd KDLStateSolver::getJacobian(const std::vector<JointId>& joint_ids,
+                                             const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                             const tesseract::common::LinkId& link_id,
+                                             const tesseract::common::JointIdTransformMap& floating_joint_values) const
+{
+  std::vector<std::string> names;
+  names.reserve(joint_ids.size());
+  for (const auto& id : joint_ids)
+    names.push_back(id.name());
+  return getJacobian(names, joint_values, link_id.name(), floating_joint_values);
+}
+
+void KDLStateSolver::getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                                       const std::vector<JointId>& joint_ids,
+                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  std::vector<std::string> names;
+  names.reserve(joint_ids.size());
+  for (const auto& id : joint_ids)
+    names.push_back(id.name());
+  getLinkTransforms(link_transforms, names, joint_values);
+}
+
 tesseract::common::KinematicLimits KDLStateSolver::getLimits() const { return limits_; }
 
 bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& scene_graph)
