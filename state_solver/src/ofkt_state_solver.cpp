@@ -840,13 +840,15 @@ bool OFKTStateSolver::moveLink(const Joint& joint)
   return true;
 }
 
-bool OFKTStateSolver::removeLink(const std::string& name)
+bool OFKTStateSolver::removeLink(const std::string& name) { return removeLink(LinkId::fromName(name)); }
+
+bool OFKTStateSolver::removeLink(const LinkId& link_id)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  auto it = link_map_.find(LinkId::fromName(name));
+  auto it = link_map_.find(link_id);
   if (it == link_map_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to remove link '%s' which does not exist!", name.c_str());
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to remove link '%s' which does not exist!", link_id.name().c_str());
     return false;
   }
 
@@ -872,13 +874,16 @@ bool OFKTStateSolver::removeLink(const std::string& name)
   return true;
 }
 
-bool OFKTStateSolver::removeJoint(const std::string& name)
+bool OFKTStateSolver::removeJoint(const std::string& name) { return removeJoint(JointId::fromName(name)); }
+
+bool OFKTStateSolver::removeJoint(const JointId& joint_id)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  auto it = nodes_.find(JointId::fromName(name));
+  auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to remove joint '%s' which does not exist!", name.c_str());
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to remove joint '%s' which does not exist!",
+                            joint_id.name().c_str());
     return false;
   }
 
@@ -906,27 +911,31 @@ bool OFKTStateSolver::removeJoint(const std::string& name)
 
 bool OFKTStateSolver::moveJoint(const std::string& name, const std::string& parent_link)
 {
+  return moveJoint(JointId::fromName(name), LinkId::fromName(parent_link));
+}
+
+bool OFKTStateSolver::moveJoint(const JointId& joint_id, const LinkId& parent_link_id)
+{
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  const auto jid = JointId::fromName(name);
-  auto it = nodes_.find(jid);
+  auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move joint '%s' which does not exist!", name.c_str());
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move joint '%s' which does not exist!",
+                            joint_id.name().c_str());
     return false;
   }
 
-  const auto parent_lid = LinkId::fromName(parent_link);
-  if (link_map_.find(parent_lid) == link_map_.end())
+  if (link_map_.find(parent_link_id) == link_map_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move joint '%s' to parent link '%s' which does not exist!",
-                            name.c_str(),
-                            parent_link.c_str());
+                            joint_id.name().c_str(),
+                            parent_link_id.name().c_str());
     return false;
   }
 
   auto& n = it->second;
   n->getParent()->removeChild(n.get());
-  OFKTNode* new_parent = link_map_[parent_lid];
+  OFKTNode* new_parent = link_map_[parent_link_id];
   n->setParent(new_parent);
   new_parent->addChild(n.get());
 
@@ -937,18 +946,23 @@ bool OFKTStateSolver::moveJoint(const std::string& name, const std::string& pare
 
 bool OFKTStateSolver::changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin)
 {
+  return changeJointOrigin(JointId::fromName(name), new_origin);
+}
+
+bool OFKTStateSolver::changeJointOrigin(const JointId& joint_id, const Eigen::Isometry3d& new_origin)
+{
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  const auto jid = JointId::fromName(name);
-  auto it = nodes_.find(jid);
+  auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' origin which does not exist!", name.c_str());
+    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' origin which does not exist!",
+                            joint_id.name().c_str());
     return false;
   }
 
   it->second->setStaticTransformation(new_origin);
   if (it->second->getType() == JointType::FLOATING)
-    current_state_.floating_joints[jid] = new_origin;
+    current_state_.floating_joints[joint_id] = new_origin;
 
   update(root_.get(), false);
 
@@ -957,18 +971,22 @@ bool OFKTStateSolver::changeJointOrigin(const std::string& name, const Eigen::Is
 
 bool OFKTStateSolver::changeJointPositionLimits(const std::string& name, double lower, double upper)
 {
+  return changeJointPositionLimits(JointId::fromName(name), lower, upper);
+}
+
+bool OFKTStateSolver::changeJointPositionLimits(const JointId& joint_id, double lower, double upper)
+{
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  const auto jid = JointId::fromName(name);
-  auto it = nodes_.find(jid);
+  auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            name.c_str());
+                            joint_id.name().c_str());
     return false;
   }
 
   long idx = std::distance(active_joint_ids_.begin(),
-                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), jid));
+                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), joint_id));
   limits_.joint_limits(idx, 0) = lower;
   limits_.joint_limits(idx, 1) = upper;
   return true;
@@ -976,18 +994,22 @@ bool OFKTStateSolver::changeJointPositionLimits(const std::string& name, double 
 
 bool OFKTStateSolver::changeJointVelocityLimits(const std::string& name, double limit)
 {
+  return changeJointVelocityLimits(JointId::fromName(name), limit);
+}
+
+bool OFKTStateSolver::changeJointVelocityLimits(const JointId& joint_id, double limit)
+{
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  const auto jid = JointId::fromName(name);
-  auto it = nodes_.find(jid);
+  auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            name.c_str());
+                            joint_id.name().c_str());
     return false;
   }
 
   long idx = std::distance(active_joint_ids_.begin(),
-                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), jid));
+                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), joint_id));
   limits_.velocity_limits(idx, 0) = -limit;
   limits_.velocity_limits(idx, 1) = limit;
   return true;
@@ -995,18 +1017,22 @@ bool OFKTStateSolver::changeJointVelocityLimits(const std::string& name, double 
 
 bool OFKTStateSolver::changeJointAccelerationLimits(const std::string& name, double limit)
 {
+  return changeJointAccelerationLimits(JointId::fromName(name), limit);
+}
+
+bool OFKTStateSolver::changeJointAccelerationLimits(const JointId& joint_id, double limit)
+{
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  const auto jid = JointId::fromName(name);
-  auto it = nodes_.find(jid);
+  auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            name.c_str());
+                            joint_id.name().c_str());
     return false;
   }
 
   long idx = std::distance(active_joint_ids_.begin(),
-                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), jid));
+                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), joint_id));
   limits_.acceleration_limits(idx, 0) = -limit;
   limits_.acceleration_limits(idx, 1) = limit;
   return true;
@@ -1014,18 +1040,22 @@ bool OFKTStateSolver::changeJointAccelerationLimits(const std::string& name, dou
 
 bool OFKTStateSolver::changeJointJerkLimits(const std::string& name, double limit)
 {
+  return changeJointJerkLimits(JointId::fromName(name), limit);
+}
+
+bool OFKTStateSolver::changeJointJerkLimits(const JointId& joint_id, double limit)
+{
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  const auto jid = JointId::fromName(name);
-  auto it = nodes_.find(jid);
+  auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            name.c_str());
+                            joint_id.name().c_str());
     return false;
   }
 
   long idx = std::distance(active_joint_ids_.begin(),
-                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), jid));
+                           std::find(active_joint_ids_.begin(), active_joint_ids_.end(), joint_id));
   limits_.jerk_limits(idx, 0) = -limit;
   limits_.jerk_limits(idx, 1) = limit;
   return true;

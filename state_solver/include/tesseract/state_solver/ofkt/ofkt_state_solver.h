@@ -167,22 +167,32 @@ public:
   bool moveLink(const Joint& joint) override final;
 
   bool removeLink(const std::string& name) override final;
+  bool removeLink(const tesseract::common::LinkId& link_id) override final;
 
   bool replaceJoint(const Joint& joint) override final;
 
   bool removeJoint(const std::string& name) override final;
+  bool removeJoint(const tesseract::common::JointId& joint_id) override final;
 
   bool moveJoint(const std::string& name, const std::string& parent_link) override final;
+  bool moveJoint(const tesseract::common::JointId& joint_id,
+                 const tesseract::common::LinkId& parent_link_id) override final;
 
   bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin) override final;
+  bool changeJointOrigin(const tesseract::common::JointId& joint_id,
+                         const Eigen::Isometry3d& new_origin) override final;
 
   bool changeJointPositionLimits(const std::string& name, double lower, double upper) override final;
+  bool changeJointPositionLimits(const tesseract::common::JointId& joint_id, double lower, double upper) override final;
 
   bool changeJointVelocityLimits(const std::string& name, double limit) override final;
+  bool changeJointVelocityLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
   bool changeJointAccelerationLimits(const std::string& name, double limit) override final;
+  bool changeJointAccelerationLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
   bool changeJointJerkLimits(const std::string& name, double limit) override final;
+  bool changeJointJerkLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
   bool insertSceneGraph(const SceneGraph& scene_graph,
                         const Joint& joint,
