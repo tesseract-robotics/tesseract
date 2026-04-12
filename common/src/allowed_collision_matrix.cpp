@@ -48,40 +48,51 @@ void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
                                                  const std::string& link_name2,
                                                  const std::string& reason)
 {
-  auto key = LinkIdPair::make(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
+  addAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2), reason);
+}
+
+void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
+                                                 const LinkId& link_id2,
+                                                 const std::string& reason)
+{
+  auto key = LinkIdPair::make(link_id1, link_id2);
 
   // Hash collision check
   auto it = lookup_table_.find(key);
   if (it != lookup_table_.end())
   {
-    // Key exists — verify names match (canonically ordered)
-    bool names_match = (it->second.name1 == link_name1 && it->second.name2 == link_name2) ||
-                       (it->second.name1 == link_name2 && it->second.name2 == link_name1);
+    bool names_match = (it->second.name1 == link_id1.name() && it->second.name2 == link_id2.name()) ||
+                       (it->second.name1 == link_id2.name() && it->second.name2 == link_id1.name());
     if (!names_match)
-      throw std::runtime_error("ACM LinkIdPair hash collision: ('" + link_name1 + "', '" + link_name2 +
+      throw std::runtime_error("ACM LinkIdPair hash collision: ('" + link_id1.name() + "', '" + link_id2.name() +
                                "') collides with ('" + it->second.name1 + "', '" + it->second.name2 + "')");
   }
 
-  // Canonical name ordering: match LinkIdPair's canonical order
-  auto id1 = LinkId::fromName(link_name1);
-  auto id2 = LinkId::fromName(link_name2);
-  if (id1.value <= id2.value)
-    lookup_table_[key] = ACMEntry{ link_name1, link_name2, reason };
+  if (link_id1.value <= link_id2.value)
+    lookup_table_[key] = ACMEntry{ link_id1.name(), link_id2.name(), reason };
   else
-    lookup_table_[key] = ACMEntry{ link_name2, link_name1, reason };
+    lookup_table_[key] = ACMEntry{ link_id2.name(), link_id1.name(), reason };
 }
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
 
 void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
 {
-  auto key = LinkIdPair::make(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
-  lookup_table_.erase(key);
+  removeAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
+}
+
+void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2)
+{
+  lookup_table_.erase(LinkIdPair::make(link_id1, link_id2));
 }
 
 void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name)
 {
-  auto link_id = LinkId::fromName(link_name);
+  removeAllowedCollision(LinkId::fromName(link_name));
+}
+
+void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
+{
   for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
     if (it->first.first == link_id || it->first.second == link_id)
