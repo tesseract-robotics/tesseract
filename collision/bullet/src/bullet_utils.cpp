@@ -459,19 +459,18 @@ void updateCollisionObjectFilters(
   }
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
+CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : m_name(std::move(name))
-  , m_link_id(tesseract::common::LinkId::fromName(m_name))
+  : m_link_id(tesseract::common::LinkId::fromName(name))
   , m_type_id(type_id)
   , m_shapes(std::move(shapes))
   , m_shape_poses(std::move(shape_poses))
 {
   assert(!m_shapes.empty());
   assert(!m_shape_poses.empty());
-  assert(!m_name.empty());
+  assert(!m_link_id.name().empty());
   assert(m_shapes.size() == m_shape_poses.size());
 
   m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
@@ -510,13 +509,13 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   setWorldTransform(trans);
 }
 
-const std::string& CollisionObjectWrapper::getName() const { return m_name; }
+const std::string& CollisionObjectWrapper::getName() const { return m_link_id.name(); }
 
 const int& CollisionObjectWrapper::getTypeID() const { return m_type_id; }
 
 bool CollisionObjectWrapper::sameObject(const CollisionObjectWrapper& other) const
 {
-  return m_name == other.m_name && m_type_id == other.m_type_id && m_shapes.size() == other.m_shapes.size() &&
+  return m_link_id == other.m_link_id && m_type_id == other.m_type_id && m_shapes.size() == other.m_shapes.size() &&
          m_shape_poses.size() == other.m_shape_poses.size() &&
          std::equal(m_shapes.begin(), m_shapes.end(), other.m_shapes.begin()) &&
          std::equal(m_shape_poses.begin(),
@@ -544,7 +543,6 @@ void CollisionObjectWrapper::getAABB(btVector3& aabb_min, btVector3& aabb_max) c
 std::shared_ptr<CollisionObjectWrapper> CollisionObjectWrapper::clone()
 {
   auto clone_cow = std::make_shared<CollisionObjectWrapper>();
-  clone_cow->m_name = m_name;
   clone_cow->m_link_id = m_link_id;
   clone_cow->m_type_id = m_type_id;
   clone_cow->m_shapes = m_shapes;
