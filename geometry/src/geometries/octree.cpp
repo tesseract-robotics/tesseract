@@ -45,7 +45,7 @@ OctreeSubType Octree::getSubType() const { return sub_type_; }
 
 bool Octree::getPruned() const { return pruned_; }
 
-Geometry::Ptr Octree::clone() const { return std::make_shared<Octree>(octree_, sub_type_); }
+Geometry::Ptr Octree::clone() const { return std::make_shared<Octree>(octree_, sub_type_, pruned_, binary_octree_); }
 
 long Octree::calcNumSubShapes() const
 {
@@ -92,15 +92,18 @@ bool Octree::pruneNode(octomap::OcTree& octree, octomap::OcTreeNode* node)
   if (!isNodeCollapsible(octree, node))
     return false;
 
-  // set value to children's values (all assumed equal)
-  node->copyData(*(octree.getNodeChild(node, 0)));
+  // Equalize child values so octomap's pruneNode passes its stricter
+  // value-equality check (requires identical values, not just above
+  // threshold). The values don't matter — they're about to be deleted.
+  const float ref = octree.getNodeChild(node, 0)->getValue();
+  for (unsigned int i = 1; i < 8; i++)
+    octree.getNodeChild(node, i)->setValue(ref);
 
-  // delete children (known to be leafs at this point!)
-  for (unsigned int i = 0; i < 8; i++)
-  {
-    octree.deleteNodeChild(node, i);
-  }
-
+  // Delegate actual deletion to octomap, which owns the cleanup of the
+  // protected children array. The original code deleted children
+  // individually but never freed the array, causing an assertion failure
+  // in ~OcTreeDataNode (children == NULL) on octomap >= 1.9.
+  octree.pruneNode(node);
   return true;
 }
 
