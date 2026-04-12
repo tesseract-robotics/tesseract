@@ -2,7 +2,7 @@ find_package(orocos_kdl REQUIRED)
 
 set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "state_solver" PARENT_SCOPE)
 
-add_library(state_solver src/mutable_state_solver.cpp)
+add_library(state_solver src/mutable_state_solver.cpp src/state_solver.cpp)
 add_library(tesseract::state_solver ALIAS state_solver)
 set_target_properties(state_solver PROPERTIES OUTPUT_NAME tesseract_state_solver)
 target_link_libraries(
