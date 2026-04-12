@@ -66,6 +66,14 @@ public:
                                    const std::string& reason);
 
   /**
+   * @brief Disable collision between two collision objects (LinkId overload)
+   * @param link_id1 Collision object LinkId
+   * @param link_id2 Collision object LinkId
+   * @param reason The reason for disabling collision
+   */
+  virtual void addAllowedCollision(const LinkId& link_id1, const LinkId& link_id2, const std::string& reason);
+
+  /**
    * @brief Get all of the entries in the allowed collision matrix
    * @return AllowedCollisionEntries keyed by LinkIdPair with ACMEntry values containing names and reason
    */
@@ -79,10 +87,23 @@ public:
   virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
 
   /**
+   * @brief Remove disabled collision pair from allowed collision matrix (LinkId overload)
+   * @param link_id1 Collision object LinkId
+   * @param link_id2 Collision object LinkId
+   */
+  virtual void removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2);
+
+  /**
    * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
    * @param link_name Collision object name
    */
   virtual void removeAllowedCollision(const std::string& link_name);
+
+  /**
+   * @brief Remove disabled collision for any pair with link_id from allowed collision matrix
+   * @param link_id Collision object LinkId
+   */
+  virtual void removeAllowedCollision(const LinkId& link_id);
 
   /**
    * @brief This checks if two links are allowed to be in collision (Tier 1 — LinkId, hot-path)
