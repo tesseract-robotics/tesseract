@@ -223,7 +223,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::comm
   }
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(tesseract::common::LinkId id, const Eigen::Isometry3d& pose)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+                                                           const Eigen::Isometry3d& pose)
 {
   auto it = link2cow_.find(id);
   if (it != link2cow_.end())
@@ -314,7 +315,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(tesseract::common::LinkId id,
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                                            const Eigen::Isometry3d& pose1,
                                                            const Eigen::Isometry3d& pose2)
 {
