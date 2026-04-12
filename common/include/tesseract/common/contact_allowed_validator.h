@@ -53,7 +53,7 @@ public:
 
   virtual ~ContactAllowedValidator() = default;
 
-  virtual bool operator()(LinkId, LinkId) const = 0;
+  virtual bool operator()(const LinkId&, const LinkId&) const = 0;
 };
 
 class ACMContactAllowedValidator : public ContactAllowedValidator
@@ -67,7 +67,7 @@ public:
   ACMContactAllowedValidator() = default;  // Required for serialization
   ACMContactAllowedValidator(tesseract::common::AllowedCollisionMatrix acm);
 
-  bool operator()(LinkId link_id1, LinkId link_id2) const override;
+  bool operator()(const LinkId& link_id1, const LinkId& link_id2) const override;
 
 protected:
   tesseract::common::AllowedCollisionMatrix acm_;
@@ -98,7 +98,7 @@ public:
   CombinedContactAllowedValidator(std::vector<std::shared_ptr<const ContactAllowedValidator>> validators,
                                   CombinedContactAllowedValidatorType type);
 
-  bool operator()(LinkId link_id1, LinkId link_id2) const override;
+  bool operator()(const LinkId& link_id1, const LinkId& link_id2) const override;
 
 protected:
   std::vector<std::shared_ptr<const ContactAllowedValidator>> validators_;

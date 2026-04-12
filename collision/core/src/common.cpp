@@ -74,13 +74,13 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
 }
 
 bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
-                  tesseract::common::LinkId id)
+                  const tesseract::common::LinkId& id)
 {
   return active_ids.empty() || (active_ids.count(id) > 0);
 }
 
-bool isContactAllowed(tesseract::common::LinkId id1,
-                      tesseract::common::LinkId id2,
+bool isContactAllowed(const tesseract::common::LinkId& id1,
+                      const tesseract::common::LinkId& id2,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose)
 {

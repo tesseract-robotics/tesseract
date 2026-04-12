@@ -76,8 +76,8 @@ EnvironmentContactAllowedValidator::EnvironmentContactAllowedValidator(
 {
 }
 
-bool EnvironmentContactAllowedValidator::operator()(tesseract::common::LinkId link_id1,
-                                                    tesseract::common::LinkId link_id2) const
+bool EnvironmentContactAllowedValidator::operator()(const tesseract::common::LinkId& link_id1,
+                                                    const tesseract::common::LinkId& link_id2) const
 {
   return scene_graph_->isCollisionAllowed(link_id1, link_id2);
 }
@@ -541,12 +541,11 @@ void Environment::Implementation::setState(const tesseract::common::JointIdTrans
 
 Eigen::VectorXd Environment::Implementation::getCurrentJointValues() const
 {
-  using tesseract::common::JointId;
   Eigen::VectorXd jv;
-  std::vector<std::string> active_joint_names = state_solver->getActiveJointNames();
-  jv.resize(static_cast<long int>(active_joint_names.size()));
-  for (auto j = 0U; j < active_joint_names.size(); ++j)
-    jv(j) = current_state.joints.at(JointId::fromName(active_joint_names[j]));
+  std::vector<tesseract::common::JointId> active_joint_ids = state_solver->getActiveJointIds();
+  jv.resize(static_cast<long int>(active_joint_ids.size()));
+  for (auto j = 0U; j < active_joint_ids.size(); ++j)
+    jv(j) = current_state.joints.at(active_joint_ids[j]);
 
   return jv;
 }

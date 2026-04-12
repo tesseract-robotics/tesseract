@@ -783,7 +783,8 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-bool SceneGraph::isCollisionAllowed(tesseract::common::LinkId link_id1, tesseract::common::LinkId link_id2) const
+bool SceneGraph::isCollisionAllowed(const tesseract::common::LinkId& link_id1,
+                                    const tesseract::common::LinkId& link_id2) const
 {
   return acm_->isCollisionAllowed(link_id1, link_id2);
 }
