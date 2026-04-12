@@ -76,7 +76,7 @@ public:
   EnvironmentContactAllowedValidator() = default;  // Required for serialization
   EnvironmentContactAllowedValidator(std::shared_ptr<const tesseract::scene_graph::SceneGraph> scene_graph);
 
-  bool operator()(tesseract::common::LinkId link_id1, tesseract::common::LinkId link_id2) const override;
+  bool operator()(const tesseract::common::LinkId& link_id1, const tesseract::common::LinkId& link_id2) const override;
 
 protected:
   std::shared_ptr<const tesseract::scene_graph::SceneGraph> scene_graph_;
