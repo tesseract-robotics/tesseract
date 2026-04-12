@@ -153,6 +153,14 @@ private:
   tesseract::common::KinematicLimits limits_; /**< The kinematic limits */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
+  /** @brief Cached LinkId/JointId per KDL segment, avoiding per-FK fromName() calls */
+  struct SegmentIdCache
+  {
+    tesseract::common::LinkId link_id;
+    tesseract::common::JointId joint_id;
+  };
+  std::unordered_map<std::string, SegmentIdCache> segment_id_cache_;
+
   static thread_local KDL::JntArray kdl_joints_cache;    // NOLINT
   static thread_local KDL::Jacobian kdl_jacobian_cache;  // NOLINT
 
