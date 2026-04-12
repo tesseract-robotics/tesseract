@@ -49,25 +49,34 @@ void CollisionMarginPairData::setCollisionMargin(const std::string& obj1, const 
 
 void CollisionMarginPairData::setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin)
 {
-  auto id1 = LinkId::fromName(obj1);
-  auto id2 = LinkId::fromName(obj2);
+  setCollisionMarginHelper(LinkId::fromName(obj1), LinkId::fromName(obj2), margin);
+}
+
+void CollisionMarginPairData::setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin)
+{
+  setCollisionMarginHelper(id1, id2, margin);
+  updateMaxMargins();
+}
+
+void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin)
+{
   auto key = LinkIdPair::make(id1, id2);
 
   // Hash collision check
   auto it = lookup_table_.find(key);
   if (it != lookup_table_.end())
   {
-    bool names_match = (it->second.name1 == obj1 && it->second.name2 == obj2) ||
-                       (it->second.name1 == obj2 && it->second.name2 == obj1);
+    bool names_match = (it->second.name1 == id1.name() && it->second.name2 == id2.name()) ||
+                       (it->second.name1 == id2.name() && it->second.name2 == id1.name());
     if (!names_match)
-      throw std::runtime_error("MarginData LinkIdPair hash collision: ('" + obj1 + "', '" + obj2 +
+      throw std::runtime_error("MarginData LinkIdPair hash collision: ('" + id1.name() + "', '" + id2.name() +
                                "') collides with ('" + it->second.name1 + "', '" + it->second.name2 + "')");
   }
 
   if (id1.value <= id2.value)
-    lookup_table_[key] = MarginEntry{ obj1, obj2, margin };
+    lookup_table_[key] = MarginEntry{ id1.name(), id2.name(), margin };
   else
-    lookup_table_[key] = MarginEntry{ obj2, obj1, margin };
+    lookup_table_[key] = MarginEntry{ id2.name(), id1.name(), margin };
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
@@ -249,7 +258,12 @@ double CollisionMarginData::getDefaultCollisionMargin() const { return default_c
 
 void CollisionMarginData::setCollisionMargin(const std::string& obj1, const std::string& obj2, double margin)
 {
-  pair_margins_.setCollisionMargin(obj1, obj2, margin);
+  pair_margins_.setCollisionMargin(LinkId::fromName(obj1), LinkId::fromName(obj2), margin);
+}
+
+void CollisionMarginData::setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin)
+{
+  pair_margins_.setCollisionMargin(id1, id2, margin);
 }
 
 double CollisionMarginData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
