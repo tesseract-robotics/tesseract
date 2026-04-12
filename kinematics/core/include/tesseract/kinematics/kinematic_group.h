@@ -174,13 +174,12 @@ public:
   const InverseKinematics& getInverseKinematics() const;
 
 private:
-  std::vector<std::string> joint_names_;
   bool reorder_required_{ false };
   std::vector<Eigen::Index> inv_kin_joint_map_;
   std::unique_ptr<InverseKinematics> inv_kin_;
   Eigen::Isometry3d inv_to_fwd_base_{ Eigen::Isometry3d::Identity() };
-  std::vector<std::string> working_frames_;
-  std::unordered_map<std::string, std::string> inv_tip_links_map_;
+  std::vector<tesseract::common::LinkId> working_frame_ids_;
+  std::unordered_map<tesseract::common::LinkId, tesseract::common::LinkId, tesseract::common::LinkId::Hash> inv_tip_links_map_;
 };
 
 }  // namespace tesseract::kinematics
