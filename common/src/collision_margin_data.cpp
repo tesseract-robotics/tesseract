@@ -70,7 +70,7 @@ void CollisionMarginPairData::setCollisionMarginHelper(const std::string& obj1, 
     lookup_table_[key] = MarginEntry{ obj2, obj1, margin };
 }
 
-std::optional<double> CollisionMarginPairData::getCollisionMargin(LinkId id1, LinkId id2) const
+std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
 {
   const auto it = lookup_table_.find(LinkIdPair::make(id1, id2));
   if (it != lookup_table_.end())
@@ -86,7 +86,7 @@ std::optional<double> CollisionMarginPairData::getCollisionMargin(const std::str
 
 std::optional<double> CollisionMarginPairData::getMaxCollisionMargin() const { return max_collision_margin_; }
 
-std::optional<double> CollisionMarginPairData::getMaxCollisionMargin(LinkId obj_id) const
+std::optional<double> CollisionMarginPairData::getMaxCollisionMargin(const LinkId& obj_id) const
 {
   auto it = object_max_margins_.find(obj_id);
   if (it != object_max_margins_.end())
@@ -252,7 +252,7 @@ void CollisionMarginData::setCollisionMargin(const std::string& obj1, const std:
   pair_margins_.setCollisionMargin(obj1, obj2, margin);
 }
 
-double CollisionMarginData::getCollisionMargin(LinkId id1, LinkId id2) const
+double CollisionMarginData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
 {
   std::optional<double> margin = pair_margins_.getCollisionMargin(id1, id2);
   if (margin.has_value())
@@ -279,7 +279,7 @@ double CollisionMarginData::getMaxCollisionMargin() const
   return std::max(default_collision_margin_, mv.value());
 }
 
-double CollisionMarginData::getMaxCollisionMargin(LinkId obj_id) const
+double CollisionMarginData::getMaxCollisionMargin(const LinkId& obj_id) const
 {
   if (pair_margins_.empty())
     return default_collision_margin_;

@@ -91,7 +91,7 @@ void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name
   }
 }
 
-bool AllowedCollisionMatrix::isCollisionAllowed(LinkId link_id1, LinkId link_id2) const
+bool AllowedCollisionMatrix::isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const
 {
   return lookup_table_.find(LinkIdPair::make(link_id1, link_id2)) != lookup_table_.end();
 }

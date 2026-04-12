@@ -58,7 +58,7 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
  * @param id The LinkId to check if it is active.
  */
 bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
-                  tesseract::common::LinkId id);
+                  const tesseract::common::LinkId& id);
 
 /**
  * @brief Determine if contact is allowed between two objects.
@@ -68,8 +68,8 @@ bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract:
  * @param verbose If true print debug information
  * @return True if contact is allowed between the two object, otherwise false.
  */
-bool isContactAllowed(tesseract::common::LinkId id1,
-                      tesseract::common::LinkId id2,
+bool isContactAllowed(const tesseract::common::LinkId& id1,
+                      const tesseract::common::LinkId& id2,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose = false);
 

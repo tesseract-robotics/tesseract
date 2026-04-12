@@ -90,7 +90,7 @@ public:
    * @param link_id2 Second link id
    * @return True if allowed to be in collision, otherwise false
    */
-  virtual bool isCollisionAllowed(LinkId link_id1, LinkId link_id2) const;
+  virtual bool isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const;
 
   /**
    * @brief This checks if two links are allowed to be in collision (Tier 3 — string)

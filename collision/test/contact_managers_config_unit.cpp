@@ -39,19 +39,19 @@ using namespace tesseract::collision;
 class AlwaysTrueContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(tesseract::common::LinkId, tesseract::common::LinkId) const override { return true; }
+  bool operator()(const tesseract::common::LinkId&, const tesseract::common::LinkId&) const override { return true; }
 };
 
 class AlwaysFalseContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(tesseract::common::LinkId, tesseract::common::LinkId) const override { return false; }
+  bool operator()(const tesseract::common::LinkId&, const tesseract::common::LinkId&) const override { return false; }
 };
 
 class TestOrigContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(tesseract::common::LinkId id1, tesseract::common::LinkId id2) const override
+  bool operator()(const tesseract::common::LinkId& id1, const tesseract::common::LinkId& id2) const override
   {
     auto pair = tesseract::common::LinkIdPair::make(id1, id2);
 
@@ -70,7 +70,7 @@ public:
 class TestOvrdContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(tesseract::common::LinkId id1, tesseract::common::LinkId id2) const override
+  bool operator()(const tesseract::common::LinkId& id1, const tesseract::common::LinkId& id2) const override
   {
     return tesseract::common::LinkIdPair::make(id1, id2) ==
            tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link_1"),
