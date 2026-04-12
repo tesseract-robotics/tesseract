@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/fwd.h>
 #include <tesseract/common/types.h>
 #include <tesseract/scene_graph/fwd.h>
+#include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/common/eigen_types.h>
 
 namespace tesseract::scene_graph
@@ -91,6 +92,24 @@ public:
   virtual void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) = 0;
 
   /**
+   * @brief Set the current state using a JointId-keyed map (avoids string-to-ID conversion)
+   * @param joint_values A map of JointId to joint values to change
+   * @param floating_joint_values The floating joint origin transform
+   */
+  virtual void setState(const SceneState::JointValues& joint_values,
+                        const tesseract::common::JointIdTransformMap& floating_joint_values = {});
+
+  /**
+   * @brief Set the current state using a vector of JointIds (avoids string-to-ID conversion)
+   * @param joint_ids A vector of JointIds
+   * @param joint_values The joint values (same order as joint_ids)
+   * @param floating_joint_values The floating joint origin transform
+   */
+  virtual void setState(const std::vector<tesseract::common::JointId>& joint_ids,
+                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                        const tesseract::common::JointIdTransformMap& floating_joint_values = {});
+
+  /**
    * @brief Get the state of the solver given the joint values
    * @details This must be the same size and order as what is returned by getJointNames
    * @param joint_values The joint values
@@ -119,6 +138,26 @@ public:
    * @return A the state of the environment
    */
   virtual SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const = 0;
+
+  /**
+   * @brief Get the state using a JointId-keyed map (avoids string-to-ID conversion)
+   * @param joint_values A map of JointId to joint values to change
+   * @param floating_joint_values The floating joint origin transform
+   * @return The state of the environment
+   */
+  virtual SceneState getState(const SceneState::JointValues& joint_values,
+                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const;
+
+  /**
+   * @brief Get the state using a vector of JointIds (avoids string-to-ID conversion)
+   * @param joint_ids A vector of JointIds
+   * @param joint_values The joint values (same order as joint_ids)
+   * @param floating_joint_values The floating joint origin transform
+   * @return The state of the environment
+   */
+  virtual SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
+                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const;
 
   /**
    * @brief Get the link transforms of the scene for a given set or subset of joint values.
