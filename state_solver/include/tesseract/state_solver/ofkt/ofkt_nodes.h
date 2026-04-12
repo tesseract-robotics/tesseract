@@ -59,6 +59,8 @@ public:
 
   const std::string& getLinkName() const override;
   const std::string& getJointName() const override;
+  tesseract::common::LinkId getLinkId() const override;
+  tesseract::common::JointId getJointId() const override;
 
   void storeJointValue(double joint_value) override;
 
@@ -88,6 +90,8 @@ protected:
   OFKTNode* parent_{ nullptr };
   std::string link_name_;
   std::string joint_name_;
+  tesseract::common::LinkId link_id_;
+  tesseract::common::JointId joint_id_;
   Eigen::Isometry3d static_tf_{ Eigen::Isometry3d::Identity() };
   Eigen::Isometry3d joint_tf_{ Eigen::Isometry3d::Identity() };
   Eigen::Isometry3d local_tf_{ Eigen::Isometry3d::Identity() };
