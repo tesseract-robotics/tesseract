@@ -27,6 +27,56 @@
 
 namespace tesseract::collision
 {
+bool DiscreteContactManager::addCollisionObject(tesseract::common::LinkId id,
+                                                const int& mask_id,
+                                                const CollisionShapesConst& shapes,
+                                                const tesseract::common::VectorIsometry3d& shape_poses,
+                                                bool enabled)
+{
+  return addCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+}
+
+const CollisionShapesConst& DiscreteContactManager::getCollisionObjectGeometries(tesseract::common::LinkId id) const
+{
+  return getCollisionObjectGeometries(id.name());
+}
+
+const tesseract::common::VectorIsometry3d&
+DiscreteContactManager::getCollisionObjectGeometriesTransforms(tesseract::common::LinkId id) const
+{
+  return getCollisionObjectGeometriesTransforms(id.name());
+}
+
+bool DiscreteContactManager::hasCollisionObject(tesseract::common::LinkId id) const
+{
+  return hasCollisionObject(id.name());
+}
+
+bool DiscreteContactManager::removeCollisionObject(tesseract::common::LinkId id)
+{
+  return removeCollisionObject(id.name());
+}
+
+bool DiscreteContactManager::enableCollisionObject(tesseract::common::LinkId id)
+{
+  return enableCollisionObject(id.name());
+}
+
+bool DiscreteContactManager::disableCollisionObject(tesseract::common::LinkId id)
+{
+  return disableCollisionObject(id.name());
+}
+
+bool DiscreteContactManager::isCollisionObjectEnabled(tesseract::common::LinkId id) const
+{
+  return isCollisionObjectEnabled(id.name());
+}
+
+void DiscreteContactManager::setCollisionObjectsTransform(tesseract::common::LinkId id, const Eigen::Isometry3d& pose)
+{
+  setCollisionObjectsTransform(id.name(), pose);
+}
+
 void DiscreteContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
   for (const auto& id : getCollisionObjects())
