@@ -419,7 +419,7 @@ void FCLDiscreteBVHManager::onCollisionMarginDataChanged()
 
   for (auto& cow : link2cow_)
   {
-    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin(cow.second->getName()));
+    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin(cow.second->getLinkId()));
     std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
     if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
     {
