@@ -96,7 +96,7 @@ public:
    * @return The jacobian at the provided link relative to the joint group base link
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               tesseract::common::LinkId link_id) const;
+                               const tesseract::common::LinkId& link_id) const;
 
   /**
    * @brief Calculated jacobian of robot given joint angles
@@ -106,6 +106,17 @@ public:
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name) const;
+
+  /**
+   * @brief Calculated jacobian of robot given joint angles
+   * @param joint_angles Input vector of joint angles
+   * @param link_id The LinkId of the frame that the jacobian is calculated for
+   * @param link_point A point on the link that the jacobian is calculated for
+   * @return The jacobian at the provided link relative to the joint group base link
+   */
+  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                               const tesseract::common::LinkId& link_id,
+                               const Eigen::Vector3d& link_point) const;
 
   /**
    * @brief Calculated jacobian of robot given joint angles
@@ -170,12 +181,24 @@ public:
    */
   std::vector<std::string> getStaticLinkNames() const;
 
+  /** @brief Get the active link IDs as a vector */
+  std::vector<tesseract::common::LinkId> getActiveLinkIds() const;
+
+  /** @brief Get the static link IDs */
+  const std::vector<tesseract::common::LinkId>& getStaticLinkIds() const;
+
+  /** @brief Check if link ID exists (O(1)) */
+  bool hasLinkId(const tesseract::common::LinkId& link_id) const;
+
+  /** @brief Get the base link ID */
+  tesseract::common::LinkId getBaseLinkId() const;
+
   /**
    * @brief Check if link is an active link (by ID, O(1))
    * @param link_id The link ID to check
    * @return True if active, otherwise false
    */
-  bool isActiveLinkId(tesseract::common::LinkId link_id) const;
+  bool isActiveLinkId(const tesseract::common::LinkId& link_id) const;
 
   /**
    * @brief Check if link is an active link
@@ -238,12 +261,11 @@ protected:
   std::string name_;
   tesseract::scene_graph::SceneState state_;
   std::unique_ptr<tesseract::scene_graph::StateSolver> state_solver_;
-  std::vector<std::string> joint_names_;
-  std::vector<std::string> link_names_;
   std::vector<tesseract::common::LinkId> link_ids_;
   std::vector<tesseract::common::JointId> joint_ids_;
+  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> link_id_set_;
   std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_link_ids_;
-  std::vector<std::string> static_link_names_;
+  std::vector<tesseract::common::LinkId> static_link_ids_;
   tesseract::common::LinkIdTransformMap static_link_transforms_;
   tesseract::common::KinematicLimits limits_;
   std::vector<Eigen::Index> redundancy_indices_;
