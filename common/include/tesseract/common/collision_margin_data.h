@@ -108,7 +108,7 @@ public:
    * @return A link pair contact margin if exists
    */
   /** @brief Tier 1 — LinkId overload (hot-path) */
-  std::optional<double> getCollisionMargin(LinkId id1, LinkId id2) const;
+  std::optional<double> getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
   /** @brief Tier 3 — string overload */
   std::optional<double> getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
@@ -123,7 +123,7 @@ public:
    * @brief Get the largest collision margin for the given object
    * @return Max contact distance threshold if object exists
    */
-  std::optional<double> getMaxCollisionMargin(LinkId obj_id) const;
+  std::optional<double> getMaxCollisionMargin(const LinkId& obj_id) const;
   std::optional<double> getMaxCollisionMargin(const std::string& obj) const;
 
   /**
@@ -234,7 +234,7 @@ public:
    * @return A Vector2d[Contact Distance Threshold, Coefficient]
    */
   /** @brief Tier 1 — LinkId overload (hot-path) */
-  double getCollisionMargin(LinkId id1, LinkId id2) const;
+  double getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
   /** @brief Tier 3 — string overload */
   double getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
@@ -261,7 +261,7 @@ public:
    *
    * @return Max contact distance threshold
    */
-  double getMaxCollisionMargin(LinkId obj_id) const;
+  double getMaxCollisionMargin(const LinkId& obj_id) const;
   double getMaxCollisionMargin(const std::string& obj) const;
 
   /**

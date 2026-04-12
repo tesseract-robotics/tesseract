@@ -19,7 +19,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 class TestContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(tesseract::common::LinkId id1, tesseract::common::LinkId id2) const override
+  bool operator()(const tesseract::common::LinkId& id1, const tesseract::common::LinkId& id2) const override
   {
     return tesseract::common::LinkIdPair::make(id1, id2) ==
            tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("base_link"),
