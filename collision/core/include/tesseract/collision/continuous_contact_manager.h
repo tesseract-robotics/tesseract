@@ -90,12 +90,22 @@ public:
                                   const tesseract::common::VectorIsometry3d& shape_poses,
                                   bool enabled = true) = 0;
 
+  /** @brief Add a collision object using LinkId */
+  virtual bool addCollisionObject(tesseract::common::LinkId id,
+                                  const int& mask_id,
+                                  const CollisionShapesConst& shapes,
+                                  const tesseract::common::VectorIsometry3d& shape_poses,
+                                  bool enabled = true);
+
   /**
    * @brief Get a collision objects collision geometries
    * @param name The collision objects name
    * @return A vector of collision geometries. The vector will be empty if the collision object is not found.
    */
   virtual const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const = 0;
+
+  /** @brief Get collision geometries by LinkId */
+  virtual const CollisionShapesConst& getCollisionObjectGeometries(tesseract::common::LinkId id) const;
 
   /**
    * @brief Get a collision objects collision geometries transforms
@@ -105,12 +115,19 @@ public:
   virtual const tesseract::common::VectorIsometry3d&
   getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
 
+  /** @brief Get collision geometry transforms by LinkId */
+  virtual const tesseract::common::VectorIsometry3d&
+  getCollisionObjectGeometriesTransforms(tesseract::common::LinkId id) const;
+
   /**
    * @brief Find if a collision object already exists
    * @param name The name of the collision object
    * @return true if it exists, otherwise false.
    */
   virtual bool hasCollisionObject(const std::string& name) const = 0;
+
+  /** @brief Check if collision object exists by LinkId */
+  virtual bool hasCollisionObject(tesseract::common::LinkId id) const;
 
   /**
    * @brief Remove an object from the checker
@@ -119,11 +136,17 @@ public:
    */
   virtual bool removeCollisionObject(const std::string& name) = 0;
 
+  /** @brief Remove collision object by LinkId */
+  virtual bool removeCollisionObject(tesseract::common::LinkId id);
+
   /**
    * @brief Enable an object
    * @param name The name of the object
    */
   virtual bool enableCollisionObject(const std::string& name) = 0;
+
+  /** @brief Enable collision object by LinkId */
+  virtual bool enableCollisionObject(tesseract::common::LinkId id);
 
   /**
    * @brief Disable an object
@@ -131,12 +154,18 @@ public:
    */
   virtual bool disableCollisionObject(const std::string& name) = 0;
 
+  /** @brief Disable collision object by LinkId */
+  virtual bool disableCollisionObject(tesseract::common::LinkId id);
+
   /**
    * @brief Check if collision object is enabled
    * @param name The name of the object
    * @return True if enabled, otherwise false
    */
   virtual bool isCollisionObjectEnabled(const std::string& name) const = 0;
+
+  /** @brief Check if collision object is enabled by LinkId */
+  virtual bool isCollisionObjectEnabled(tesseract::common::LinkId id) const;
 
   /**
    * @brief Set a single static collision object's tansforms
