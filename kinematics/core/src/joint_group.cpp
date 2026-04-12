@@ -96,7 +96,7 @@ JointGroup::JointGroup(std::string name,
   // Build link_ids_, link_id_set_, static_link_ids_, static_link_transforms_
   for (const auto& link : scene_graph.getLinks())
   {
-    const auto link_id = LinkId::fromName(link->getName());
+    const auto& link_id = link->getId();
     link_ids_.push_back(link_id);
     link_id_set_.insert(link_id);
     if (active_link_ids_.count(link_id) == 0)
