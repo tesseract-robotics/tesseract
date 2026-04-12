@@ -383,7 +383,7 @@ public:
    * @return True if the two links are allowed to be in collision, otherwise false
    */
   bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
-  bool isCollisionAllowed(tesseract::common::LinkId link_id1, tesseract::common::LinkId link_id2) const;
+  bool isCollisionAllowed(const tesseract::common::LinkId& link_id1, const tesseract::common::LinkId& link_id2) const;
 
   /**
    * @brief Get the allowed collision matrix
