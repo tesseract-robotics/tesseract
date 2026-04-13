@@ -133,29 +133,9 @@ void serialize(Archive& ar, CombinedContactAllowedValidator& obj)
 }
 
 template <class Archive>
-void save(Archive& ar, const JointState& obj)
+void serialize(Archive& ar, JointState& obj)
 {
-  std::vector<std::string> names;
-  names.reserve(obj.joint_ids.size());
-  for (const auto& id : obj.joint_ids)
-    names.push_back(id.name());
-  ar(cereal::make_nvp("joint_names", names));
-  ar(cereal::make_nvp("position", obj.position));
-  ar(cereal::make_nvp("velocity", obj.velocity));
-  ar(cereal::make_nvp("acceleration", obj.acceleration));
-  ar(cereal::make_nvp("effort", obj.effort));
-  ar(cereal::make_nvp("time", obj.time));
-}
-
-template <class Archive>
-void load(Archive& ar, JointState& obj)
-{
-  std::vector<std::string> names;
-  ar(cereal::make_nvp("joint_names", names));
-  obj.joint_ids.clear();
-  obj.joint_ids.reserve(names.size());
-  for (const auto& name : names)
-    obj.joint_ids.push_back(JointId::fromName(name));
+  ar(cereal::make_nvp("joint_names", obj.joint_ids));
   ar(cereal::make_nvp("position", obj.position));
   ar(cereal::make_nvp("velocity", obj.velocity));
   ar(cereal::make_nvp("acceleration", obj.acceleration));
@@ -176,8 +156,8 @@ void save(Archive& ar, const ManipulatorInfo& obj)
 {
   ar(cereal::make_nvp("manipulator", obj.manipulator));
   ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
-  ar(cereal::make_nvp("working_frame", obj.working_frame.name_));
-  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame.name_));
+  ar(cereal::make_nvp("working_frame", obj.working_frame));
+  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
 
   // Serialize tcp_offset as variant<string, Isometry3d> for backward compat
   if (obj.tcp_offset.index() == 0)
@@ -197,24 +177,16 @@ void load(Archive& ar, ManipulatorInfo& obj)
 {
   ar(cereal::make_nvp("manipulator", obj.manipulator));
   ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
-  std::string working_frame, tcp_frame;
-  ar(cereal::make_nvp("working_frame", working_frame));
-  ar(cereal::make_nvp("tcp_frame", tcp_frame));
-  obj.working_frame = working_frame.empty() ? LinkId{} : LinkId::fromName(working_frame);
-  obj.tcp_frame = tcp_frame.empty() ? LinkId{} : LinkId::fromName(tcp_frame);
+  ar(cereal::make_nvp("working_frame", obj.working_frame));
+  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
 
   // Load tcp_offset as variant<string, Isometry3d>, then convert string to LinkId
   std::variant<std::string, Eigen::Isometry3d> tcp_offset_compat;
   ar(cereal::make_nvp("tcp_offset", tcp_offset_compat));
   if (tcp_offset_compat.index() == 0)
-  {
-    const auto& name = std::get<std::string>(tcp_offset_compat);
-    obj.tcp_offset = name.empty() ? LinkId{} : LinkId::fromName(name);
-  }
+    obj.tcp_offset = LinkId::fromName(std::get<std::string>(tcp_offset_compat));
   else
-  {
     obj.tcp_offset = std::get<Eigen::Isometry3d>(tcp_offset_compat);
-  }
 }
 
 template <class Archive>
