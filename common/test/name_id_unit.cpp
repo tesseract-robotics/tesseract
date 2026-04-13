@@ -54,11 +54,16 @@ TEST(NameIdTest, SentinelIsInvalid)  // NOLINT
 
 TEST(NameIdTest, ZeroGuard)  // NOLINT
 {
-  // If std::hash<std::string> ever returns 0, fromName maps it to 1
-  // We can't easily force this, but verify any id from a real name is valid
-  const LinkId id = LinkId::fromName("");
-  EXPECT_TRUE(id.isValid());
-  EXPECT_NE(id.value, 0U);
+  // Empty name returns the invalid sentinel, not a hashed ID
+  const LinkId empty_id = LinkId::fromName("");
+  EXPECT_FALSE(empty_id.isValid());
+  EXPECT_EQ(empty_id.value, 0U);
+  EXPECT_TRUE(empty_id.name().empty());
+
+  // Non-empty names always produce a valid (non-zero) ID even if hash happens to be 0
+  const LinkId valid_id = LinkId::fromName("any_link");
+  EXPECT_TRUE(valid_id.isValid());
+  EXPECT_NE(valid_id.value, 0U);
 }
 
 // ======================== Name accessor ========================
