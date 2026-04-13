@@ -8,12 +8,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include "state_solver_test_suite.h"
 
 using namespace tesseract::scene_graph;
+using tesseract::common::JointId;
+using tesseract::common::LinkId;
 
 // Most of OFKT is tested in the tesseract_environment_unit.cpp
 TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 {
   {  // OFKTRootNode
-    OFKTRootNode node("base_link");
+    OFKTRootNode node(LinkId::fromName("base_link"));
     EXPECT_ANY_THROW(node.setParent(nullptr));                                      // NOLINT
     EXPECT_ANY_THROW(node.storeJointValue(0));                                      // NOLINT
     EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));  // NOLINT
@@ -26,7 +28,7 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   }
 
   {  // OFKTRootNode
-    OFKTRootNode node("base_link");
+    OFKTRootNode node(LinkId::fromName("base_link"));
     EXPECT_ANY_THROW(node.setParent(nullptr));                                      // NOLINT
     EXPECT_ANY_THROW(node.storeJointValue(0));                                      // NOLINT
     EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));  // NOLINT
@@ -35,8 +37,9 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   }
 
   {  // OFKTFixedNode
-    OFKTRootNode root_node("base_link");
-    OFKTFixedNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
+    OFKTRootNode root_node(LinkId::fromName("base_link"));
+    OFKTFixedNode node(
+        &root_node, LinkId::fromName("base_link"), JointId::fromName("joint_a1"), Eigen::Isometry3d::Identity());
     const OFKTFixedNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_ANY_THROW(node.storeJointValue(M_PI_2));  // NOLINT
@@ -54,8 +57,9 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   }
 
   {  // OFKTFloatingNode
-    OFKTRootNode root_node("base_link");
-    OFKTFloatingNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
+    OFKTRootNode root_node(LinkId::fromName("base_link"));
+    OFKTFloatingNode node(
+        &root_node, LinkId::fromName("base_link"), JointId::fromName("joint_a1"), Eigen::Isometry3d::Identity());
     const OFKTFloatingNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_ANY_THROW(node.storeJointValue(M_PI_2));  // NOLINT
@@ -74,8 +78,12 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTRevoluteNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d(0, 0, 1));
-    OFKTRootNode root_node("base_link");
-    OFKTRevoluteNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity(), Eigen::Vector3d(0, 0, 1));
+    OFKTRootNode root_node(LinkId::fromName("base_link"));
+    OFKTRevoluteNode node(&root_node,
+                          LinkId::fromName("base_link"),
+                          JointId::fromName("joint_a1"),
+                          Eigen::Isometry3d::Identity(),
+                          Eigen::Vector3d(0, 0, 1));
     EXPECT_TRUE(node.getParent() == &root_node);
     EXPECT_FALSE(node.updateWorldTransformationRequired());
     EXPECT_TRUE(node.getAxis().isApprox(Eigen::Vector3d(0, 0, 1), 1e-6));
@@ -91,9 +99,12 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTContinuousNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d(0, 0, 1));
-    OFKTRootNode root_node("base_link");
-    OFKTContinuousNode node(
-        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity(), Eigen::Vector3d(0, 0, 1));
+    OFKTRootNode root_node(LinkId::fromName("base_link"));
+    OFKTContinuousNode node(&root_node,
+                            LinkId::fromName("base_link"),
+                            JointId::fromName("joint_a1"),
+                            Eigen::Isometry3d::Identity(),
+                            Eigen::Vector3d(0, 0, 1));
     const OFKTContinuousNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_FALSE(node.updateWorldTransformationRequired());
@@ -110,9 +121,12 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTPrismaticNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::Translation3d(1.45, 0, 0);
-    OFKTRootNode root_node("base_link");
-    OFKTPrismaticNode node(
-        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity(), Eigen::Vector3d(1, 0, 0));
+    OFKTRootNode root_node(LinkId::fromName("base_link"));
+    OFKTPrismaticNode node(&root_node,
+                           LinkId::fromName("base_link"),
+                           JointId::fromName("joint_a1"),
+                           Eigen::Isometry3d::Identity(),
+                           Eigen::Vector3d(1, 0, 0));
     EXPECT_TRUE(node.getParent() == &root_node);
     EXPECT_FALSE(node.updateWorldTransformationRequired());
     EXPECT_TRUE(node.getAxis().isApprox(Eigen::Vector3d(1, 0, 0), 1e-6));
@@ -194,8 +208,8 @@ TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT
 
 TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
 {
-  using tesseract::common::LinkId;
   using tesseract::common::JointId;
+  using tesseract::common::LinkId;
 
   tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
@@ -212,16 +226,14 @@ TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
   for (const auto& link_name : solver.getLinkNames())
   {
     auto id = LinkId::fromName(link_name);
-    EXPECT_TRUE(state.link_transforms.count(id) > 0)
-        << "Missing LinkId entry for link: " << link_name;
+    EXPECT_TRUE(state.link_transforms.count(id) > 0) << "Missing LinkId entry for link: " << link_name;
   }
 
   // joints is keyed by JointId
   for (const auto& joint_name : solver.getActiveJointNames())
   {
     auto jid = JointId::fromName(joint_name);
-    EXPECT_TRUE(state.joints.count(jid) > 0)
-        << "Missing JointId entry for joint: " << joint_name;
+    EXPECT_TRUE(state.joints.count(jid) > 0) << "Missing JointId entry for joint: " << joint_name;
   }
 
   // Verify getState(names, values) also produces LinkIdTransformMap

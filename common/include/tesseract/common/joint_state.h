@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/any_poly.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::common
 {
@@ -40,9 +41,16 @@ class JointState
 public:
   JointState() = default;
   JointState(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position);
+  JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Eigen::VectorXd>& position);
 
-  /** @brief The joint corresponding to the position vector. */
-  std::vector<std::string> joint_names;
+  /** @brief The joint IDs corresponding to the position vector (carries names via .name()). */
+  std::vector<JointId> joint_ids;
+
+  /** @brief Get joint names derived from joint_ids */
+  std::vector<std::string> getJointNames() const;
+
+  /** @brief Get the joint IDs */
+  const std::vector<JointId>& getJointIds() const;
 
   /** @brief The joint position at the waypoint */
   Eigen::VectorXd position;
