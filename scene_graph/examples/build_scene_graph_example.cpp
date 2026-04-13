@@ -209,6 +209,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/common/utils.h>
+#include <tesseract/common/types.h>
 
 using namespace tesseract::scene_graph;
 
@@ -248,26 +249,26 @@ int main(int /*argc*/, char** /*argv*/)
   //! [build_scene_graph_create_joints]
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = "link_1";
-  joint_1.child_link_name = "link_2";
+  joint_1.parent_link_id = tesseract::common::LinkId::fromName("link_1");
+  joint_1.child_link_id = tesseract::common::LinkId::fromName("link_2");
   joint_1.type = JointType::FIXED;
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = "link_2";
-  joint_2.child_link_name = "link_3";
+  joint_2.parent_link_id = tesseract::common::LinkId::fromName("link_2");
+  joint_2.child_link_id = tesseract::common::LinkId::fromName("link_3");
   joint_2.type = JointType::PLANAR;
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_name = "link_3";
-  joint_3.child_link_name = "link_4";
+  joint_3.parent_link_id = tesseract::common::LinkId::fromName("link_3");
+  joint_3.child_link_id = tesseract::common::LinkId::fromName("link_4");
   joint_3.type = JointType::FLOATING;
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_4.parent_link_name = "link_2";
-  joint_4.child_link_name = "link_5";
+  joint_4.parent_link_id = tesseract::common::LinkId::fromName("link_2");
+  joint_4.child_link_id = tesseract::common::LinkId::fromName("link_5");
   joint_4.type = JointType::REVOLUTE;
   //! [build_scene_graph_create_joints]
 
@@ -332,8 +333,8 @@ int main(int /*argc*/, char** /*argv*/)
   //! [build_scene_graph_add_cycle]
   Joint joint_5("joint_5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5.parent_link_name = "link_5";
-  joint_5.child_link_name = "link_4";
+  joint_5.parent_link_id = tesseract::common::LinkId::fromName("link_5");
+  joint_5.child_link_id = tesseract::common::LinkId::fromName("link_4");
   joint_5.type = JointType::CONTINUOUS;
   g.addJoint(joint_5);
   //! [build_scene_graph_add_cycle]

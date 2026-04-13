@@ -10,6 +10,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
 
+using tesseract::common::LinkId;
+
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointDynamicsUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
@@ -133,9 +135,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
 
   Joint joint_1("joint_n1");
   EXPECT_TRUE(joint_1.parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity()));
-  EXPECT_TRUE(joint_1.child_link_name.empty());
-  EXPECT_TRUE(joint_1.parent_link_name.empty());
-  EXPECT_TRUE(joint_1.child_link_name.empty());
+  EXPECT_TRUE(joint_1.child_link_id.name().empty());
+  EXPECT_TRUE(joint_1.parent_link_id.name().empty());
+  EXPECT_TRUE(joint_1.child_link_id.name().empty());
   EXPECT_TRUE(joint_1.dynamics == nullptr);
   EXPECT_TRUE(joint_1.limits == nullptr);
   EXPECT_TRUE(joint_1.safety == nullptr);
@@ -144,8 +146,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
   EXPECT_TRUE(joint_1.type == JointType::UNKNOWN);
 
   joint_1.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 2, 3);
-  joint_1.parent_link_name = "link_n1";
-  joint_1.child_link_name = "link_n2";
+  joint_1.parent_link_id = LinkId::fromName("link_n1");
+  joint_1.child_link_id = LinkId::fromName("link_n2");
   joint_1.axis = Eigen::Vector3d::UnitZ();
   joint_1.type = JointType::PRISMATIC;
   joint_1.dynamics = std::make_shared<JointDynamics>();
@@ -173,8 +175,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
 
   Joint joint_1_clone = joint_1.clone();
   EXPECT_EQ(joint_1_clone.getName(), "joint_n1");
-  EXPECT_EQ(joint_1_clone.parent_link_name, "link_n1");
-  EXPECT_EQ(joint_1_clone.child_link_name, "link_n2");
+  EXPECT_EQ(joint_1_clone.parent_link_id.name(), "link_n1");
+  EXPECT_EQ(joint_1_clone.child_link_id.name(), "link_n2");
   EXPECT_TRUE(joint_1_clone.parent_to_joint_origin_transform.isApprox(joint_1.parent_to_joint_origin_transform));
   EXPECT_TRUE(joint_1_clone.axis.isApprox(Eigen::Vector3d::UnitZ()));
   EXPECT_EQ(joint_1_clone.type, JointType::PRISMATIC);
@@ -223,9 +225,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
   joint_1.clear();
   EXPECT_EQ(joint_1.getName(), "joint_n1");
   EXPECT_TRUE(joint_1.parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity()));
-  EXPECT_TRUE(joint_1.child_link_name.empty());
-  EXPECT_TRUE(joint_1.parent_link_name.empty());
-  EXPECT_TRUE(joint_1.child_link_name.empty());
+  EXPECT_TRUE(joint_1.child_link_id.name().empty());
+  EXPECT_TRUE(joint_1.parent_link_id.name().empty());
+  EXPECT_TRUE(joint_1.child_link_id.name().empty());
   EXPECT_TRUE(joint_1.dynamics == nullptr);
   EXPECT_TRUE(joint_1.limits == nullptr);
   EXPECT_TRUE(joint_1.safety == nullptr);
