@@ -2338,17 +2338,14 @@ TEST(TesseractCoreUnit, ProcessResultLinkIdPairKeyUnit)  // NOLINT
 
   // Create a contact result
   tesseract::collision::ContactResult contact;
-  contact.link_ids[0] = tesseract::common::LinkId::fromName("link_a");
-  contact.link_ids[1] = tesseract::common::LinkId::fromName("link_b");
   contact.link_ids[0] = LinkId::fromName("link_a");
   contact.link_ids[1] = LinkId::fromName("link_b");
   contact.distance = -0.05;
 
   auto key = LinkIdPair::make(LinkId::fromName("link_a"), LinkId::fromName("link_b"));
-  const double security_margin = cdata.collision_margin_data.getCollisionMargin(key);
 
   // Process result — should be stored under LinkIdPair key
-  auto* stored = tesseract::collision::processResult(cdata, std::move(contact), key, false, security_margin);
+  auto* stored = tesseract::collision::processResult(cdata, contact, key, false);
   EXPECT_NE(stored, nullptr);
   EXPECT_EQ(results.size(), 1);
   EXPECT_EQ(results.count(), 1);
@@ -2360,13 +2357,11 @@ TEST(TesseractCoreUnit, ProcessResultLinkIdPairKeyUnit)  // NOLINT
 
   // Process another result for the same key (found=true, ALL mode)
   tesseract::collision::ContactResult contact2;
-  contact2.link_ids[0] = tesseract::common::LinkId::fromName("link_a");
-  contact2.link_ids[1] = tesseract::common::LinkId::fromName("link_b");
   contact2.link_ids[0] = LinkId::fromName("link_a");
   contact2.link_ids[1] = LinkId::fromName("link_b");
   contact2.distance = -0.03;
 
-  stored = tesseract::collision::processResult(cdata, std::move(contact2), key, true, security_margin);
+  stored = tesseract::collision::processResult(cdata, contact2, key, true);
   EXPECT_NE(stored, nullptr);
   EXPECT_EQ(results.count(), 2);
   it = results.find(key);

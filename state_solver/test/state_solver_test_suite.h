@@ -20,8 +20,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::scene_graph::test_suite
 {
-using tesseract::common::LinkId;
 using tesseract::common::JointId;
+using tesseract::common::LinkId;
 inline SceneGraph::UPtr getSceneGraph(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = locator.locateResource("package://tesseract/support/urdf/lbr_iiwa_14_r820.urdf")->getFilePath();
@@ -49,8 +49,8 @@ inline SceneGraph::UPtr getSubSceneGraph()
 
   Joint joint_1(joint_name1);
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = link_name1;
-  joint_1.child_link_name = link_name2;
+  joint_1.parent_link_id = LinkId::fromName(link_name1);
+  joint_1.child_link_id = LinkId::fromName(link_name2);
   joint_1.type = JointType::FIXED;
 
   subgraph->addLink(link_1);
@@ -324,8 +324,8 @@ inline void runCompareJacobian(StateSolver& state_solver,
   }
 
   tesseract::common::jacobianChangeBase(jacobian, change_base);
-  tesseract::common::jacobianChangeRefPoint(
-      jacobian, (change_base * poses[LinkId::fromName(link_name)]).linear() * link_point);
+  tesseract::common::jacobianChangeRefPoint(jacobian,
+                                            (change_base * poses[LinkId::fromName(link_name)]).linear() * link_point);
 
   numerical_jacobian.resize(6, jvals.size());
   numericalJacobian(numerical_jacobian, change_base, state_solver, joint_names, jvals, link_name, link_point);
@@ -371,8 +371,8 @@ inline void runCompareJacobian(StateSolver& state_solver,
   jacobian = state_solver.getJacobian(joints_values, link_name);
 
   tesseract::common::jacobianChangeBase(jacobian, change_base);
-  tesseract::common::jacobianChangeRefPoint(
-      jacobian, (change_base * poses[LinkId::fromName(link_name)]).linear() * link_point);
+  tesseract::common::jacobianChangeRefPoint(jacobian,
+                                            (change_base * poses[LinkId::fromName(link_name)]).linear() * link_point);
 
   numerical_jacobian.resize(6, static_cast<Eigen::Index>(joints_values.size()));
   numericalJacobian(numerical_jacobian, change_base, state_solver, joint_names, jvals, link_name, link_point);
@@ -781,8 +781,8 @@ void runSetFloatingJointStateTest()
   {
     Joint joint_1("joint_a1");
     joint_1.parent_to_joint_origin_transform = origin;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_1";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_1");
     joint_1.type = JointType::FLOATING;
 
     EXPECT_TRUE(scene_graph->removeJoint("joint_a1"));
@@ -872,16 +872,16 @@ void runAddandRemoveLinkTest()
   link_1.collision.push_back(collision);
 
   Joint joint_1(joint_name1);
-  joint_1.parent_link_name = scene_graph->getRoot();
-  joint_1.child_link_name = link_name1;
+  joint_1.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  joint_1.child_link_id = LinkId::fromName(link_name1);
   joint_1.type = JointType::FIXED;
 
   Link link_2(link_name2);
 
   Joint joint_2(joint_name2);
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = link_name1;
-  joint_2.child_link_name = link_name2;
+  joint_2.parent_link_id = LinkId::fromName(link_name1);
+  joint_2.child_link_id = LinkId::fromName(link_name2);
   joint_2.type = JointType::FLOATING;
 
   // Test adding link
@@ -1114,8 +1114,8 @@ void runAddandRemoveLinkTest()
   // joint already exists
   Link link_10("link_10");
   Joint joint_exists("joint_a1");
-  joint_exists.parent_link_name = scene_graph->getRoot();
-  joint_exists.child_link_name = "link_10";
+  joint_exists.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  joint_exists.child_link_id = LinkId::fromName("link_10");
   joint_exists.type = JointType::FIXED;
 
   EXPECT_FALSE(state_solver.addLink(link_10, joint_exists));
@@ -1139,8 +1139,8 @@ void runAddSceneGraphTest()
   subgraph->setName("subgraph");
 
   Joint joint_1_empty("provided_subgraph_joint");
-  joint_1_empty.parent_link_name = "base_link";
-  joint_1_empty.child_link_name = "prefix_subgraph_base_link";
+  joint_1_empty.parent_link_id = LinkId::fromName("base_link");
+  joint_1_empty.child_link_id = LinkId::fromName("prefix_subgraph_base_link");
   joint_1_empty.type = JointType::FLOATING;
 
   EXPECT_FALSE(scene_graph->insertSceneGraph(*subgraph, joint_1_empty));
@@ -1160,8 +1160,8 @@ void runAddSceneGraphTest()
   const std::string subgraph_joint_name = "attach_subgraph_joint";
 
   Joint joint(subgraph_joint_name);
-  joint.parent_link_name = scene_graph->getRoot();
-  joint.child_link_name = subgraph->getRoot();
+  joint.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  joint.child_link_id = LinkId::fromName(subgraph->getRoot());
   joint.type = JointType::FIXED;
 
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, joint));
@@ -1199,8 +1199,8 @@ void runAddSceneGraphTest()
   // Add subgraph with prefix
   std::string prefix = "prefix_";
   Joint prefix_joint(prefix + subgraph_joint_name);
-  prefix_joint.parent_link_name = scene_graph->getRoot();
-  prefix_joint.child_link_name = prefix + subgraph->getRoot();
+  prefix_joint.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  prefix_joint.child_link_id = LinkId::fromName(prefix + subgraph->getRoot());
   prefix_joint.type = JointType::FLOATING;
 
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint, prefix));
@@ -1229,8 +1229,8 @@ void runAddSceneGraphTest()
   // Add subgraph with prefix and joint
   prefix = "prefix2_";
   Joint prefix_joint2(prefix + subgraph_joint_name);
-  prefix_joint2.parent_link_name = scene_graph->getRoot();
-  prefix_joint2.child_link_name = prefix + subgraph->getRoot();
+  prefix_joint2.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  prefix_joint2.child_link_id = LinkId::fromName(prefix + subgraph->getRoot());
   prefix_joint2.type = JointType::FIXED;
 
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint2, prefix));
@@ -1259,8 +1259,8 @@ void runAddSceneGraphTest()
   tesseract::scene_graph::SceneGraph empty_scene_graph;
   prefix = "prefix3_";
   Joint prefix_joint3(prefix + subgraph_joint_name);
-  prefix_joint3.parent_link_name = scene_graph->getRoot();
-  prefix_joint3.child_link_name = "empty";
+  prefix_joint3.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  prefix_joint3.child_link_id = LinkId::fromName("empty");
   prefix_joint3.type = JointType::FIXED;
 
   EXPECT_FALSE(state_solver.insertSceneGraph(empty_scene_graph, prefix_joint3, prefix));
@@ -1288,8 +1288,8 @@ void runChangeJointOriginTest()
   Link link_1(link_name1);
 
   Joint joint_1(joint_name1);
-  joint_1.parent_link_name = scene_graph->getRoot();
-  joint_1.child_link_name = link_name1;
+  joint_1.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  joint_1.child_link_id = LinkId::fromName(link_name1);
   joint_1.type = JointType::FIXED;
 
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
@@ -1300,8 +1300,8 @@ void runChangeJointOriginTest()
   Link link_2(link_name2);
 
   Joint joint_2(joint_name2);
-  joint_2.parent_link_name = scene_graph->getRoot();
-  joint_2.child_link_name = link_name2;
+  joint_2.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  joint_2.child_link_id = LinkId::fromName(link_name2);
   joint_2.type = JointType::FLOATING;
   joint_2.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 1, 1);
 
@@ -1390,14 +1390,14 @@ void runMoveJointTest()
   Link link_2(link_name2);
 
   Joint joint_1(joint_name1);
-  joint_1.parent_link_name = scene_graph->getRoot();
-  joint_1.child_link_name = link_name1;
+  joint_1.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  joint_1.child_link_id = LinkId::fromName(link_name1);
   joint_1.type = JointType::FIXED;
 
   Joint joint_2(joint_name2);
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = link_name1;
-  joint_2.child_link_name = link_name2;
+  joint_2.parent_link_id = LinkId::fromName(link_name1);
+  joint_2.child_link_id = LinkId::fromName(link_name2);
   joint_2.type = JointType::FLOATING;
 
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
@@ -1509,14 +1509,14 @@ void runMoveLinkTest()
   Link link_2(link_name2);
 
   Joint joint_1(joint_name1);
-  joint_1.parent_link_name = scene_graph->getRoot();
-  joint_1.child_link_name = link_name1;
+  joint_1.parent_link_id = LinkId::fromName(scene_graph->getRoot());
+  joint_1.child_link_id = LinkId::fromName(link_name1);
   joint_1.type = JointType::FLOATING;
 
   Joint joint_2(joint_name2);
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = link_name1;
-  joint_2.child_link_name = link_name2;
+  joint_2.parent_link_id = LinkId::fromName(link_name1);
+  joint_2.child_link_id = LinkId::fromName(link_name2);
   joint_2.type = JointType::FIXED;
 
   EXPECT_TRUE(scene_graph->addLink(link_1, joint_1));
@@ -1565,7 +1565,7 @@ void runMoveLinkTest()
 
   std::string moved_joint_name = joint_name1 + "_moved";
   Joint move_link_joint = joint_1.clone(moved_joint_name);
-  move_link_joint.parent_link_name = "tool0";
+  move_link_joint.parent_link_id = LinkId::fromName("tool0");
   move_link_joint.type = JointType::FIXED;
 
   EXPECT_TRUE(scene_graph->moveLink(move_link_joint));
@@ -1601,8 +1601,8 @@ void runMoveLinkTest()
   // Child link does not exist
   std::string moved_joint_name_err = joint_name1 + "_err";
   Joint move_link_joint_err1 = joint_1.clone(moved_joint_name_err);
-  move_link_joint_err1.child_link_name = "link_does_not_exist";
-  move_link_joint_err1.parent_link_name = "tool0";
+  move_link_joint_err1.child_link_id = LinkId::fromName("link_does_not_exist");
+  move_link_joint_err1.parent_link_id = LinkId::fromName("tool0");
 
   EXPECT_FALSE(state_solver.moveLink(move_link_joint_err1));
 
@@ -1613,7 +1613,7 @@ void runMoveLinkTest()
 
   // Parent link does not exist
   Joint move_link_joint_err2 = joint_1.clone(moved_joint_name_err);
-  move_link_joint_err2.parent_link_name = "link_does_not_exist";
+  move_link_joint_err2.parent_link_id = LinkId::fromName("link_does_not_exist");
 
   EXPECT_FALSE(state_solver.moveLink(move_link_joint_err2));
 
@@ -1732,8 +1732,8 @@ void runReplaceJointTest()
 
     Joint joint_1("joint_a1");
     joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_1";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_1");
     joint_1.type = JointType::FIXED;
 
     EXPECT_TRUE(scene_graph->removeJoint("joint_a1"));
@@ -1757,8 +1757,8 @@ void runReplaceJointTest()
 
     Joint joint_1("joint_a1");
     joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_2_does_not_exist";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_2_does_not_exist");
     joint_1.type = JointType::FIXED;
 
     EXPECT_FALSE(state_solver.replaceJoint(joint_1));
@@ -1945,7 +1945,7 @@ void runReplaceJointTest()
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a3 = scene_graph->getJoint("joint_a3")->clone();
-    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.parent_link_id = LinkId::fromName("base_link");
 
     EXPECT_TRUE(state_solver.replaceJoint(new_joint_a3));
 
@@ -1985,7 +1985,7 @@ void runReplaceJointTest()
     auto state_solver = S(*scene_graph);
 
     Joint new_joint_a3 = scene_graph->getJoint("joint_a3")->clone();
-    new_joint_a3.parent_link_name = "link_does_not_exist";
+    new_joint_a3.parent_link_id = LinkId::fromName("link_does_not_exist");
 
     EXPECT_FALSE(state_solver.replaceJoint(new_joint_a3));
 
