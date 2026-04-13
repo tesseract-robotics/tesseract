@@ -3965,16 +3965,16 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
     YAML::Node n(data_original);
     auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")).margin, 0.8);
-    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")).margin, 1.5);
+    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")), 0.8);
+    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")), 1.5);
   }
 
   {
     YAML::Node n = YAML::Load(yaml_string);
     auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")).margin, 0.8);
-    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")).margin, 1.5);
+    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")), 0.8);
+    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")), 1.5);
   }
 
   {  // Failure: Is not map
@@ -4816,9 +4816,9 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   EXPECT_EQ(margins.size(), 1);
   const auto it = margins.find(LinkIdPair::make(id_x, id_y));
   ASSERT_NE(it, margins.end());
-  EXPECT_FALSE(it->second.name1.empty());
-  EXPECT_FALSE(it->second.name2.empty());
-  EXPECT_NEAR(it->second.margin, 0.1, 1e-12);
+  EXPECT_FALSE(it->first.first.name().empty());
+  EXPECT_FALSE(it->first.second.name().empty());
+  EXPECT_NEAR(it->second, 0.1, 1e-12);
 
   // Max margin tests with LinkId
   EXPECT_NEAR(margin_data.getMaxCollisionMargin(id_x), 0.1, 1e-12);

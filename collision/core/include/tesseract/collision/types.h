@@ -30,7 +30,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <vector>
 #include <memory>
-#include <map>
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
@@ -158,9 +157,11 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using KeyType = tesseract::common::LinkIdPair;
   using MappedType = ContactResultVector;
-  using ContainerType =
-      std::unordered_map<KeyType, MappedType, tesseract::common::LinkIdPair::Hash, std::equal_to<KeyType>,
-                         Eigen::aligned_allocator<std::pair<const KeyType, MappedType>>>;
+  using ContainerType = std::unordered_map<KeyType,
+                                           MappedType,
+                                           tesseract::common::LinkIdPair::Hash,
+                                           std::equal_to<>,
+                                           Eigen::aligned_allocator<std::pair<const KeyType, MappedType>>>;
   using ConstReferenceType = typename ContainerType::const_reference;
   using ConstIteratorType = typename ContainerType::const_iterator;
   using PairType = typename std::pair<const KeyType, MappedType>;
@@ -205,13 +206,14 @@ public:
    * @param discrete If discrete contact checker was used
    * @param filter An option filter to exclude results
    */
-  void addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
-                                       long sub_segment_index,
-                                       long sub_segment_last_index,
-                                       const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
-                                       double segment_dt,
-                                       bool discrete,
-                                       const ContactResultMap::FilterFn& filter = nullptr);
+  void addInterpolatedCollisionResults(
+      ContactResultMap& sub_segment_results,
+      long sub_segment_index,
+      long sub_segment_last_index,
+      const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
+      double segment_dt,
+      bool discrete,
+      const ContactResultMap::FilterFn& filter = nullptr);
 
   // Flatten functions
   void flattenMoveResults(ContactResultVector& v);
