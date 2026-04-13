@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/any_poly.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::common
 {
@@ -45,8 +46,8 @@ struct ManipulatorInfo
 
   ManipulatorInfo() = default;
   ManipulatorInfo(std::string manipulator_,
-                  std::string working_frame_,
-                  std::string tcp_frame_,
+                  LinkId working_frame_,
+                  LinkId tcp_frame_,
                   std::variant<std::string, Eigen::Isometry3d> tcp_offset_ = Eigen::Isometry3d::Identity());
 
   /** @brief Name of the manipulator group */
@@ -57,13 +58,13 @@ struct ManipulatorInfo
    * @details If the tcp_frame is external to manipulator then the working frame must be an active frame on the
    * manipulator
    */
-  std::string working_frame;
+  LinkId working_frame;
 
   /**
    * @brief The coordinate frame within to the environment to use as the reference frame for the tool center
    * point (TCP) which is defined by an offset transform relative to this frame
    */
-  std::string tcp_frame;
+  LinkId tcp_frame;
 
   /** @brief (Optional) Offset transform applied to the tcp_frame link to represent the manipulator TCP */
   std::variant<std::string, Eigen::Isometry3d> tcp_offset{ Eigen::Isometry3d::Identity() };

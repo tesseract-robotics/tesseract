@@ -167,12 +167,25 @@ void serialize(Archive& ar, JointTrajectory& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, ManipulatorInfo& obj)
+void save(Archive& ar, const ManipulatorInfo& obj)
 {
   ar(cereal::make_nvp("manipulator", obj.manipulator));
   ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
-  ar(cereal::make_nvp("working_frame", obj.working_frame));
-  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
+  ar(cereal::make_nvp("working_frame", obj.working_frame.name_));
+  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame.name_));
+  ar(cereal::make_nvp("tcp_offset", obj.tcp_offset));
+}
+
+template <class Archive>
+void load(Archive& ar, ManipulatorInfo& obj)
+{
+  ar(cereal::make_nvp("manipulator", obj.manipulator));
+  ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
+  std::string working_frame, tcp_frame;
+  ar(cereal::make_nvp("working_frame", working_frame));
+  ar(cereal::make_nvp("tcp_frame", tcp_frame));
+  obj.working_frame = working_frame.empty() ? LinkId{} : LinkId::fromName(working_frame);
+  obj.tcp_frame = tcp_frame.empty() ? LinkId{} : LinkId::fromName(tcp_frame);
   ar(cereal::make_nvp("tcp_offset", obj.tcp_offset));
 }
 

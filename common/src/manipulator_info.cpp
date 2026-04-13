@@ -28,8 +28,8 @@
 namespace tesseract::common
 {
 ManipulatorInfo::ManipulatorInfo(std::string manipulator_,
-                                 std::string working_frame_,
-                                 std::string tcp_frame_,
+                                 LinkId working_frame_,
+                                 LinkId tcp_frame_,
                                  std::variant<std::string, Eigen::Isometry3d> tcp_offset_)
   : manipulator(std::move(manipulator_))
   , working_frame(std::move(working_frame_))
@@ -48,10 +48,10 @@ ManipulatorInfo ManipulatorInfo::getCombined(const ManipulatorInfo& manip_info_o
   if (!manip_info_override.manipulator_ik_solver.empty())
     combined.manipulator_ik_solver = manip_info_override.manipulator_ik_solver;
 
-  if (!manip_info_override.working_frame.empty())
+  if (manip_info_override.working_frame.isValid())
     combined.working_frame = manip_info_override.working_frame;
 
-  if (!manip_info_override.tcp_frame.empty())
+  if (manip_info_override.tcp_frame.isValid())
   {
     combined.tcp_frame = manip_info_override.tcp_frame;
     combined.tcp_offset = manip_info_override.tcp_offset;
@@ -63,7 +63,7 @@ ManipulatorInfo ManipulatorInfo::getCombined(const ManipulatorInfo& manip_info_o
 bool ManipulatorInfo::empty() const
 {
   // This struct is empty if either the manipulator or tcp_frame members are empty since they are required
-  return manipulator.empty() || working_frame.empty() || tcp_frame.empty();
+  return manipulator.empty() || !working_frame.isValid() || !tcp_frame.isValid();
 }
 
 bool ManipulatorInfo::operator==(const ManipulatorInfo& rhs) const
