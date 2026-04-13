@@ -248,7 +248,12 @@ struct convert<tesseract::collision::ContactManagerConfig>
     node["pair_margin_data"] = rhs.pair_margin_data;
     node["acm_override_type"] = rhs.acm_override_type;
     node["acm"] = rhs.acm;
-    node["modify_object_enabled"] = rhs.modify_object_enabled;
+    {
+      YAML::Node moe_node;
+      for (const auto& [id, enabled] : rhs.modify_object_enabled)
+        moe_node[id.name()] = enabled;
+      node["modify_object_enabled"] = moe_node;
+    }
     return node;
   }
 
@@ -273,7 +278,16 @@ struct convert<tesseract::collision::ContactManagerConfig>
       rhs.acm = n.as<tesseract::common::AllowedCollisionMatrix>();
 
     if (const YAML::Node& n = node["modify_object_enabled"])
-      rhs.modify_object_enabled = n.as<std::unordered_map<std::string, bool>>();
+    {
+      if (!n.IsMap())
+        return false;
+      rhs.modify_object_enabled.clear();
+      for (const auto& entry : n)
+      {
+        const std::string name = entry.first.as<std::string>();
+        rhs.modify_object_enabled[tesseract::common::LinkId::fromName(name)] = entry.second.as<bool>();
+      }
+    }
 
     return true;
   }
