@@ -47,6 +47,7 @@ inline IKFastInvKin::IKFastInvKin(std::string base_link_name,
   , solver_name_(std::move(solver_name))
   , free_joint_states_(std::move(free_joint_states))
 {
+  tip_link_id_ = tesseract::common::LinkId::fromName(tip_link_name_);
 }
 
 inline InverseKinematics::UPtr IKFastInvKin::clone() const { return std::make_unique<IKFastInvKin>(*this); }
@@ -60,6 +61,7 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
 
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
+  tip_link_id_ = other.tip_link_id_;
   joint_names_ = other.joint_names_;
   solver_name_ = other.solver_name_;
   free_joint_states_ = other.free_joint_states_;
@@ -71,7 +73,7 @@ inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
                                      const tesseract::common::LinkIdTransformMap& tip_link_poses,
                                      const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  const auto tip_id = tesseract::common::LinkId::fromName(tip_link_name_);
+  const auto tip_id = tip_link_id_;
   assert(tip_link_poses.size() == 1);
   assert(tip_link_poses.find(tip_id) != tip_link_poses.end());
   assert(std::abs(1.0 - tip_link_poses.at(tip_id).matrix().determinant()) < 1e-6);
