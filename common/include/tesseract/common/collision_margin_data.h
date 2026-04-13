@@ -107,6 +107,13 @@ public:
   void setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin);
 
   /**
+   * @brief Set the margin for a given contact pair (LinkIdPair overload)
+   * @param pair The canonical link id pair. Order doesn't matter
+   * @param margin contacts with distance < collision_margin are considered in collision
+   */
+  void setCollisionMargin(const LinkIdPair& pair, double margin);
+
+  /**
    * @brief Get the pairs collision margin data
    *
    * If a collision margin for the request pair does not exist it returns the default collision margin data.
@@ -115,6 +122,9 @@ public:
    * @param obj2 The second object name
    * @return A link pair contact margin if exists
    */
+  /** @brief Tier 0 — LinkIdPair overload (primary hot-path) */
+  std::optional<double> getCollisionMargin(const LinkIdPair& pair) const;
+
   /** @brief Tier 1 — LinkId overload (hot-path) */
   std::optional<double> getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
@@ -189,6 +199,9 @@ private:
   /** @brief Set the margin for a given contact pair without updating the max margins (LinkId overload) */
   void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);
 
+  /** @brief Set the margin for a given contact pair without updating the max margins (LinkIdPair primary overload) */
+  void setCollisionMarginHelper(const LinkIdPair& pair, double margin);
+
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
 
@@ -244,6 +257,13 @@ public:
   void setCollisionMargin(const LinkId& id1, const LinkId& id2, double collision_margin);
 
   /**
+   * @brief Set the margin for a given contact pair (LinkIdPair overload)
+   * @param pair The canonical link id pair. Order doesn't matter
+   * @param collision_margin contacts with distance < collision_margin are considered in collision
+   */
+  void setCollisionMargin(const LinkIdPair& pair, double collision_margin);
+
+  /**
    * @brief Get the pairs collision margin data
    *
    * If a collision margin for the request pair does not exist it returns the default collision margin data.
@@ -252,6 +272,9 @@ public:
    * @param obj2 The second object name
    * @return A Vector2d[Contact Distance Threshold, Coefficient]
    */
+  /** @brief Tier 0 — LinkIdPair overload (primary hot-path) */
+  double getCollisionMargin(const LinkIdPair& pair) const;
+
   /** @brief Tier 1 — LinkId overload (hot-path) */
   double getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
