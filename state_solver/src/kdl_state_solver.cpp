@@ -405,7 +405,7 @@ bool KDLStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) co
 
 bool KDLStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const
 {
-  return hasLinkName(link_id.name());
+  return std::find(link_ids_.begin(), link_ids_.end(), link_id) != link_ids_.end();
 }
 
 Eigen::Isometry3d KDLStateSolver::getLinkTransform(const tesseract::common::LinkId& link_id) const
