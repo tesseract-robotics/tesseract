@@ -60,9 +60,11 @@ struct NameId
   uint64_t value{ 0 };
   std::string name_;
 
-  /** @brief Compute an ID from a name string. Guaranteed non-zero for any input. */
+  /** @brief Compute an ID from a name string. Empty name returns the invalid (default-constructed) sentinel. */
   static NameId fromName(const std::string& name)
   {
+    if (name.empty())
+      return NameId{};
     auto h = static_cast<uint64_t>(std::hash<std::string>{}(name));
     NameId id;
     id.value = (h == 0) ? uint64_t{ 1 } : h;
