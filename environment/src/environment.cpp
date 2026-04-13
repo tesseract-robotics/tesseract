@@ -955,14 +955,14 @@ Eigen::Isometry3d Environment::Implementation::findTCPOffset(const tesseract::co
     return std::get<1>(manip_info.tcp_offset);
 
   // Check if the tcp offset name is a link in the scene, if so throw an exception
-  const std::string& tcp_offset_name = std::get<0>(manip_info.tcp_offset);
-  if (state_solver->hasLinkName(tcp_offset_name))
-    throw std::runtime_error("The tcp offset name '" + tcp_offset_name +
+  const common::LinkId& tcp_offset = std::get<0>(manip_info.tcp_offset);
+  if (state_solver->hasLinkId(tcp_offset))
+    throw std::runtime_error("The tcp offset name '" + tcp_offset.name() +
                              "' should not be an existing link in the scene. Assign it as the tcp_frame instead!");
 
   // Check Manipulator Manager for TCP
-  if (kinematics_information.hasGroupTCP(manip_info.manipulator, tcp_offset_name))
-    return kinematics_information.group_tcps.at(manip_info.manipulator).at(tcp_offset_name);
+  if (kinematics_information.hasGroupTCP(manip_info.manipulator, tcp_offset.name()))
+    return kinematics_information.group_tcps.at(manip_info.manipulator).at(tcp_offset.name());
 
   // Check callbacks for TCP Offset
   for (const auto& fn : find_tcp_cb)
@@ -978,7 +978,7 @@ Eigen::Isometry3d Environment::Implementation::findTCPOffset(const tesseract::co
     }
   }
 
-  throw std::runtime_error("Could not find tcp by name " + tcp_offset_name + "'!");
+  throw std::runtime_error("Could not find tcp by name " + tcp_offset.name() + "'!");
 }
 
 std::unique_ptr<tesseract::collision::DiscreteContactManager>
