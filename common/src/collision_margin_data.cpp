@@ -54,37 +54,50 @@ void CollisionMarginPairData::setCollisionMarginHelper(const std::string& obj1, 
 
 void CollisionMarginPairData::setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin)
 {
-  setCollisionMarginHelper(id1, id2, margin);
+  setCollisionMarginHelper(LinkIdPair::make(id1, id2), margin);
+  updateMaxMargins();
+}
+
+void CollisionMarginPairData::setCollisionMargin(const LinkIdPair& pair, double margin)
+{
+  setCollisionMarginHelper(pair, margin);
   updateMaxMargins();
 }
 
 void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin)
 {
-  auto key = LinkIdPair::make(id1, id2);
+  setCollisionMarginHelper(LinkIdPair::make(id1, id2), margin);
+}
 
+void CollisionMarginPairData::setCollisionMarginHelper(const LinkIdPair& pair, double margin)
+{
   // Hash collision check
-  auto it = lookup_table_.find(key);
+  auto it = lookup_table_.find(pair);
   if (it != lookup_table_.end())
   {
-    bool names_match = (it->second.name1 == id1.name() && it->second.name2 == id2.name()) ||
-                       (it->second.name1 == id2.name() && it->second.name2 == id1.name());
+    bool names_match = (it->second.name1 == pair.first.name() && it->second.name2 == pair.second.name()) ||
+                       (it->second.name1 == pair.second.name() && it->second.name2 == pair.first.name());
     if (!names_match)
-      throw std::runtime_error("MarginData LinkIdPair hash collision: ('" + id1.name() + "', '" + id2.name() +
-                               "') collides with ('" + it->second.name1 + "', '" + it->second.name2 + "')");
+      throw std::runtime_error("MarginData LinkIdPair hash collision: ('" + pair.first.name() + "', '" +
+                               pair.second.name() + "') collides with ('" + it->second.name1 + "', '" +
+                               it->second.name2 + "')");
   }
 
-  if (id1.value <= id2.value)
-    lookup_table_[key] = MarginEntry{ id1.name(), id2.name(), margin };
-  else
-    lookup_table_[key] = MarginEntry{ id2.name(), id1.name(), margin };
+  // pair is already canonical (first.value <= second.value), so first/second match name order
+  lookup_table_[pair] = MarginEntry{ pair.first.name(), pair.second.name(), margin };
+}
+
+std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkIdPair& pair) const
+{
+  const auto it = lookup_table_.find(pair);
+  if (it != lookup_table_.end())
+    return it->second.margin;
+  return {};
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
 {
-  const auto it = lookup_table_.find(LinkIdPair::make(id1, id2));
-  if (it != lookup_table_.end())
-    return it->second.margin;
-  return {};
+  return getCollisionMargin(LinkIdPair::make(id1, id2));
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const std::string& obj1,
@@ -263,20 +276,30 @@ void CollisionMarginData::setCollisionMargin(const std::string& obj1, const std:
 
 void CollisionMarginData::setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin)
 {
-  pair_margins_.setCollisionMargin(id1, id2, margin);
+  pair_margins_.setCollisionMargin(LinkIdPair::make(id1, id2), margin);
 }
 
-double CollisionMarginData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
+void CollisionMarginData::setCollisionMargin(const LinkIdPair& pair, double margin)
 {
-  std::optional<double> margin = pair_margins_.getCollisionMargin(id1, id2);
+  pair_margins_.setCollisionMargin(pair, margin);
+}
+
+double CollisionMarginData::getCollisionMargin(const LinkIdPair& pair) const
+{
+  std::optional<double> margin = pair_margins_.getCollisionMargin(pair);
   if (margin.has_value())
     return margin.value();
   return default_collision_margin_;
 }
 
+double CollisionMarginData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
+{
+  return getCollisionMargin(LinkIdPair::make(id1, id2));
+}
+
 double CollisionMarginData::getCollisionMargin(const std::string& obj1, const std::string& obj2) const
 {
-  return getCollisionMargin(LinkId::fromName(obj1), LinkId::fromName(obj2));
+  return getCollisionMargin(LinkIdPair::make(LinkId::fromName(obj1), LinkId::fromName(obj2)));
 }
 
 const CollisionMarginPairData& CollisionMarginData::getCollisionMarginPairData() const { return pair_margins_; }
