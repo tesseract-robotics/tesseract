@@ -945,7 +945,7 @@ struct convert<tesseract::common::AllowedCollisionEntries>
       auto id1 = tesseract::common::LinkId::fromName(name1);
       auto id2 = tesseract::common::LinkId::fromName(name2);
       auto pair_key = tesseract::common::LinkIdPair::make(id1, id2);
-      if (id1.value <= id2.value)
+      if (id1.value() <= id2.value())
         rhs.emplace(pair_key, tesseract::common::ACMEntry{ std::move(name1), std::move(name2), std::move(reason) });
       else
         rhs.emplace(pair_key, tesseract::common::ACMEntry{ std::move(name2), std::move(name1), std::move(reason) });
