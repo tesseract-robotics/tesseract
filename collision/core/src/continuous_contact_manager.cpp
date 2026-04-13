@@ -24,111 +24,102 @@
 
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/collision/utils.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
-bool ContinuousContactManager::addCollisionObject(const tesseract::common::LinkId& id,
+bool ContinuousContactManager::addCollisionObject(const std::string& name,
                                                   const int& mask_id,
                                                   const CollisionShapesConst& shapes,
                                                   const tesseract::common::VectorIsometry3d& shape_poses,
                                                   bool enabled)
 {
-  return addCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+  return addCollisionObject(tesseract::common::LinkId::fromName(name), mask_id, shapes, shape_poses, enabled);
 }
 
-const CollisionShapesConst&
-ContinuousContactManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
+const CollisionShapesConst& ContinuousContactManager::getCollisionObjectGeometries(const std::string& name) const
 {
-  return getCollisionObjectGeometries(id.name());
+  return getCollisionObjectGeometries(tesseract::common::LinkId::fromName(name));
 }
 
 const tesseract::common::VectorIsometry3d&
-ContinuousContactManager::getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const
+ContinuousContactManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
-  return getCollisionObjectGeometriesTransforms(id.name());
+  return getCollisionObjectGeometriesTransforms(tesseract::common::LinkId::fromName(name));
 }
 
-bool ContinuousContactManager::hasCollisionObject(const tesseract::common::LinkId& id) const
+bool ContinuousContactManager::hasCollisionObject(const std::string& name) const
 {
-  return hasCollisionObject(id.name());
+  return hasCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool ContinuousContactManager::removeCollisionObject(const tesseract::common::LinkId& id)
+bool ContinuousContactManager::removeCollisionObject(const std::string& name)
 {
-  return removeCollisionObject(id.name());
+  return removeCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool ContinuousContactManager::enableCollisionObject(const tesseract::common::LinkId& id)
+bool ContinuousContactManager::enableCollisionObject(const std::string& name)
 {
-  return enableCollisionObject(id.name());
+  return enableCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool ContinuousContactManager::disableCollisionObject(const tesseract::common::LinkId& id)
+bool ContinuousContactManager::disableCollisionObject(const std::string& name)
 {
-  return disableCollisionObject(id.name());
+  return disableCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool ContinuousContactManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
+bool ContinuousContactManager::isCollisionObjectEnabled(const std::string& name) const
 {
-  return isCollisionObjectEnabled(id.name());
+  return isCollisionObjectEnabled(tesseract::common::LinkId::fromName(name));
 }
 
-void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
+void ContinuousContactManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
-  for (const auto& id : getCollisionObjects())
-  {
-    auto it = transforms.find(id);
-    if (it != transforms.end())
-      setCollisionObjectsTransform(id, it->second);
-  }
+  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose);
 }
 
-void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
-                                                            const Eigen::Isometry3d& pose)
+void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                            const tesseract::common::VectorIsometry3d& poses)
 {
-  for (const auto& obj_id : getCollisionObjects())
-  {
-    if (obj_id == id)
-    {
-      setCollisionObjectsTransform(obj_id.name(), pose);
-      return;
-    }
-  }
+  assert(names.size() == poses.size());
+  for (auto i = 0U; i < names.size(); ++i)
+    setCollisionObjectsTransform(tesseract::common::LinkId::fromName(names[i]), poses[i]);
 }
 
-void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
-                                                            const tesseract::common::LinkIdTransformMap& pose2)
-{
-  for (const auto& id : getCollisionObjects())
-  {
-    auto it1 = pose1.find(id);
-    auto it2 = pose2.find(id);
-    if (it1 != pose1.end() && it2 != pose2.end())
-      setCollisionObjectsTransform(id, it1->second, it2->second);
-  }
-}
-
-void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+void ContinuousContactManager::setCollisionObjectsTransform(const std::string& name,
                                                             const Eigen::Isometry3d& pose1,
                                                             const Eigen::Isometry3d& pose2)
 {
-  for (const auto& obj_id : getCollisionObjects())
-  {
-    if (obj_id == id)
-    {
-      setCollisionObjectsTransform(obj_id, pose1, pose2);
-      return;
-    }
-  }
+  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose1, pose2);
 }
 
-void ContinuousContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                            const tesseract::common::VectorIsometry3d& pose1,
+                                                            const tesseract::common::VectorIsometry3d& pose2)
 {
-  std::vector<std::string> names;
-  names.reserve(ids.size());
+  assert(names.size() == pose1.size());
+  assert(names.size() == pose2.size());
+  for (auto i = 0U; i < names.size(); ++i)
+    setCollisionObjectsTransform(tesseract::common::LinkId::fromName(names[i]), pose1[i], pose2[i]);
+}
+
+void ContinuousContactManager::setActiveCollisionObjects(const std::vector<std::string>& names)
+{
+  std::vector<tesseract::common::LinkId> ids;
+  ids.reserve(names.size());
+  for (const auto& name : names)
+    ids.push_back(tesseract::common::LinkId::fromName(name));
+  setActiveCollisionObjects(ids);
+}
+
+std::vector<std::string> ContinuousContactManager::getActiveCollisionObjects() const
+{
+  const auto& ids = getActiveCollisionObjectIds();
+  std::vector<std::string> result;
+  result.reserve(ids.size());
   for (const auto& id : ids)
-    names.push_back(id.name());
-  setActiveCollisionObjects(names);
+    result.push_back(id.name());
+  return result;
 }
 
 void ContinuousContactManager::applyContactManagerConfig(const ContactManagerConfig& config)

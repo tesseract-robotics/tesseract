@@ -109,15 +109,6 @@ DiscreteContactManager::UPtr BulletDiscreteBVHManager::clone() const
   return manager;
 }
 
-bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
-                                                  const int& mask_id,
-                                                  const CollisionShapesConst& shapes,
-                                                  const tesseract::common::VectorIsometry3d& shape_poses,
-                                                  bool enabled)
-{
-  return addCollisionObject(tesseract::common::LinkId::fromName(name), mask_id, shapes, shape_poses, enabled);
-}
-
 bool BulletDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkId& id,
                                                   const int& mask_id,
                                                   const CollisionShapesConst& shapes,
@@ -140,22 +131,11 @@ bool BulletDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkI
   return false;
 }
 
-const CollisionShapesConst& BulletDiscreteBVHManager::getCollisionObjectGeometries(const std::string& name) const
-{
-  return getCollisionObjectGeometries(tesseract::common::LinkId::fromName(name));
-}
-
 const CollisionShapesConst&
 BulletDiscreteBVHManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
 {
   auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
-}
-
-const tesseract::common::VectorIsometry3d&
-BulletDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
-{
-  return getCollisionObjectGeometriesTransforms(tesseract::common::LinkId::fromName(name));
 }
 
 const tesseract::common::VectorIsometry3d&
@@ -165,19 +145,9 @@ BulletDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const tesseract
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
-bool BulletDiscreteBVHManager::hasCollisionObject(const std::string& name) const
-{
-  return hasCollisionObject(tesseract::common::LinkId::fromName(name));
-}
-
 bool BulletDiscreteBVHManager::hasCollisionObject(const tesseract::common::LinkId& id) const
 {
   return (link2cow_.find(id) != link2cow_.end());
-}
-
-bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
-{
-  return removeCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
 bool BulletDiscreteBVHManager::removeCollisionObject(const tesseract::common::LinkId& id)
@@ -193,11 +163,6 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const tesseract::common::Li
   }
 
   return false;
-}
-
-bool BulletDiscreteBVHManager::enableCollisionObject(const std::string& name)
-{
-  return enableCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
 bool BulletDiscreteBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)
@@ -216,11 +181,6 @@ bool BulletDiscreteBVHManager::enableCollisionObject(const tesseract::common::Li
   return false;
 }
 
-bool BulletDiscreteBVHManager::disableCollisionObject(const std::string& name)
-{
-  return disableCollisionObject(tesseract::common::LinkId::fromName(name));
-}
-
 bool BulletDiscreteBVHManager::disableCollisionObject(const tesseract::common::LinkId& id)
 {
   auto it = link2cow_.find(id);
@@ -237,11 +197,6 @@ bool BulletDiscreteBVHManager::disableCollisionObject(const tesseract::common::L
   return false;
 }
 
-bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name) const
-{
-  return isCollisionObjectEnabled(tesseract::common::LinkId::fromName(name));
-}
-
 bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
 {
   auto it = link2cow_.find(id);
@@ -249,11 +204,6 @@ bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const tesseract::common:
     return it->second->m_enabled;
 
   return false;
-}
-
-void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
-{
-  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose);
 }
 
 void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
@@ -268,14 +218,6 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::com
     // Update Collision Object Broadphase AABB
     updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
-}
-
-void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                            const tesseract::common::VectorIsometry3d& poses)
-{
-  assert(names.size() == poses.size());
-  for (auto i = 0U; i < names.size(); ++i)
-    setCollisionObjectsTransform(names[i], poses[i]);
 }
 
 void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
@@ -294,21 +236,6 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::com
 
 const std::vector<tesseract::common::LinkId>& BulletDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
 
-void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
-{
-  active_ids_.clear();
-  for (const auto& name : names)
-    active_ids_.insert(tesseract::common::LinkId::fromName(name));
-
-  // Now need to update the broadphase with correct aabb
-  for (auto& co : link2cow_)
-  {
-    COW::Ptr& cow = co.second;
-    updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
-    refreshBroadphaseProxy(cow, broadphase_, dispatcher_);
-  }
-}
-
 void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
   active_ids_.clear();
@@ -323,13 +250,10 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<tesse
   }
 }
 
-std::vector<std::string> BulletDiscreteBVHManager::getActiveCollisionObjects() const
+const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+BulletDiscreteBVHManager::getActiveCollisionObjectIds() const
 {
-  std::vector<std::string> result;
-  result.reserve(active_ids_.size());
-  for (const auto& id : active_ids_)
-    result.push_back(id.name());
-  return result;
+  return active_ids_;
 }
 
 void BulletDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
