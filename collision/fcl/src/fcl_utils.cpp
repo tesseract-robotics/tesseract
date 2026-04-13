@@ -250,7 +250,6 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
     return false;
 
   auto link_pair = tesseract::common::LinkIdPair::make(cd1->getLinkId(), cd2->getLinkId());
-  const double security_margin = cdata->collision_margin_data.getCollisionMargin(link_pair);
 
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
   const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
@@ -281,7 +280,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
     const auto it = cdata->res->find(link_pair);
     bool found = (it != cdata->res->end() && !it->second.empty());
 
-    processResult(*cdata, std::move(contact), link_pair, found, security_margin);
+    processResult(*cdata, contact, link_pair, found);
   }
 
   return cdata->done;
@@ -340,7 +339,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   const auto it = cdata->res->find(link_pair);
   bool found = (it != cdata->res->end() && !it->second.empty());
 
-  processResult(*cdata, std::move(contact), link_pair, found, security_margin);
+  processResult(*cdata, contact, link_pair, found);
 
   return cdata->done;
 }

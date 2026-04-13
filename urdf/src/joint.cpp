@@ -73,18 +73,22 @@ tesseract::scene_graph::Joint::Ptr parseJoint(const tinyxml2::XMLElement* xml_el
   if (parent == nullptr)
     std::throw_with_nested(std::runtime_error("Joint: Missing element 'parent' for joint '" + joint_name + "'!"));
 
-  if (tesseract::common::QueryStringAttribute(parent, "link", j->parent_link_name) != tinyxml2::XML_SUCCESS)
+  std::string parent_link_str;
+  if (tesseract::common::QueryStringAttribute(parent, "link", parent_link_str) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(
         std::runtime_error("Joint: Failed parsing element 'parent' attribute 'link' for joint '" + joint_name + "'!"));
+  j->parent_link_id = tesseract::common::LinkId::fromName(parent_link_str);
 
   // get child link
   const tinyxml2::XMLElement* child = xml_element->FirstChildElement("child");
   if (child == nullptr)
     std::throw_with_nested(std::runtime_error("Joint: Missing element 'child' for joint '" + joint_name + "'!"));
 
-  if (tesseract::common::QueryStringAttribute(child, "link", j->child_link_name) != tinyxml2::XML_SUCCESS)
+  std::string child_link_str;
+  if (tesseract::common::QueryStringAttribute(child, "link", child_link_str) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(
         std::runtime_error("Joint: Failed parsing element 'child' attribute 'link' for joint '" + joint_name + "'!"));
+  j->child_link_id = tesseract::common::LinkId::fromName(child_link_str);
 
   // get joint type
   std::string joint_type;
@@ -248,12 +252,12 @@ tinyxml2::XMLElement* writeJoint(const std::shared_ptr<const tesseract::scene_gr
 
   // Set parent link
   tinyxml2::XMLElement* xml_parent = doc.NewElement("parent");
-  xml_parent->SetAttribute("link", joint->parent_link_name.c_str());
+  xml_parent->SetAttribute("link", joint->parent_link_id.name().c_str());
   xml_element->InsertEndChild(xml_parent);
 
   // Set child link
   tinyxml2::XMLElement* xml_child = doc.NewElement("child");
-  xml_child->SetAttribute("link", joint->child_link_name.c_str());
+  xml_child->SetAttribute("link", joint->child_link_id.name().c_str());
   xml_element->InsertEndChild(xml_child);
 
   // Set joint type
