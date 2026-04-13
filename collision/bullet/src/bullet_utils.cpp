@@ -768,7 +768,8 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  if (processResult(collisions, contact, key, found) == nullptr)
+  const double security_margin = collisions.collision_margin_data.getCollisionMargin(key);
+  if (processResult(collisions, std::move(contact), key, found, security_margin) == nullptr)
     return 0;
 
   return 1;
@@ -907,7 +908,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  ContactResult* col = processResult(collisions, contact, key, found);
+  const double security_margin = collisions.collision_margin_data.getCollisionMargin(key);
+  ContactResult* col = processResult(collisions, std::move(contact), key, found, security_margin);
   if (col == nullptr)
     return 0;
 
