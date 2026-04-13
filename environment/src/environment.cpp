@@ -826,12 +826,12 @@ std::vector<std::string> Environment::Implementation::getGroupJointNames(const s
   auto joint_it = kinematics_information.joint_groups.find(group_name);
   if (joint_it != kinematics_information.joint_groups.end())
   {
-    std::vector<tesseract::common::JointId> joint_ids;
-    joint_ids.reserve(joint_it->second.size());
-    for (const auto& name : joint_it->second)
-      joint_ids.push_back(tesseract::common::JointId::fromName(name));
-    group_joint_names_cache[group_name] = joint_ids;
-    return joint_it->second;
+    group_joint_names_cache[group_name] = joint_it->second;
+    std::vector<std::string> names;
+    names.reserve(joint_it->second.size());
+    for (const auto& id : joint_it->second)
+      names.push_back(id.name());
+    return names;
   }
 
   auto link_it = kinematics_information.link_groups.find(group_name);
@@ -873,12 +873,8 @@ Environment::Implementation::getGroupJointIds(const std::string& group_name) con
   auto joint_it = kinematics_information.joint_groups.find(group_name);
   if (joint_it != kinematics_information.joint_groups.end())
   {
-    std::vector<tesseract::common::JointId> joint_ids;
-    joint_ids.reserve(joint_it->second.size());
-    for (const auto& name : joint_it->second)
-      joint_ids.push_back(tesseract::common::JointId::fromName(name));
-    group_joint_names_cache[group_name] = joint_ids;
-    return joint_ids;
+    group_joint_names_cache[group_name] = joint_it->second;
+    return joint_it->second;
   }
 
   auto link_it = kinematics_information.link_groups.find(group_name);
@@ -962,7 +958,7 @@ Eigen::Isometry3d Environment::Implementation::findTCPOffset(const tesseract::co
 
   // Check Manipulator Manager for TCP
   if (kinematics_information.hasGroupTCP(manip_info.manipulator, tcp_offset.name()))
-    return kinematics_information.group_tcps.at(manip_info.manipulator).at(tcp_offset.name());
+    return kinematics_information.group_tcps.at(manip_info.manipulator).at(tcp_offset);
 
   // Check callbacks for TCP Offset
   for (const auto& fn : find_tcp_cb)

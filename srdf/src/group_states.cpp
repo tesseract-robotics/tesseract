@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/common/utils.h>
+#include <tesseract/common/types.h>
 #include <tesseract/srdf/group_states.h>
 
 namespace tesseract::srdf
@@ -94,7 +95,7 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                group_name.c_str(),
                                                                                joint_name.c_str())));
 
-      joint_state[joint_name] = joint_value;
+      joint_state[tesseract::common::JointId::fromName(joint_name)] = joint_value;
     }
 
     if (joint_state.empty())
