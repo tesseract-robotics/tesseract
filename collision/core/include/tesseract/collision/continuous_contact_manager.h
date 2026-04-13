@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
@@ -68,30 +69,21 @@ public:
   virtual ContinuousContactManager::UPtr clone() const = 0;
 
   /**
-   * @brief Add a collision object to the checker
-   *
-   * All objects are added should initially be added as static objects. Use the
-   * setContactRequest method of defining which collision objects are moving.
-   *
-   * @param name            The name of the object, must be unique.
+   * @brief Add a object to the checker
+   * @param id              The LinkId of the object, must be unique.
    * @param mask_id         User defined id which gets stored in the results structure.
    * @param shapes          A vector of shapes that make up the collision object.
    * @param shape_poses     A vector of poses for each shape, must be same length as shapes
-   * @param shape_types     A vector of shape types for encode the collision object. If the vector is of length 1 it is
-   * used for all shapes.
-   * @param collision_object_types A int identifying a conversion mode for the object. (ex. convert meshes to
-   * convex_hulls)
-   * @param enabled         Indicate if the object is enabled for collision checking.
    * @return true if successfully added, otherwise false.
    */
-  virtual bool addCollisionObject(const std::string& name,
+  virtual bool addCollisionObject(const tesseract::common::LinkId& id,
                                   const int& mask_id,
                                   const CollisionShapesConst& shapes,
                                   const tesseract::common::VectorIsometry3d& shape_poses,
                                   bool enabled = true) = 0;
 
-  /** @brief Add a collision object using LinkId */
-  virtual bool addCollisionObject(const tesseract::common::LinkId& id,
+  /** @brief Add a collision object by name (delegates to LinkId overload) */
+  virtual bool addCollisionObject(const std::string& name,
                                   const int& mask_id,
                                   const CollisionShapesConst& shapes,
                                   const tesseract::common::VectorIsometry3d& shape_poses,
@@ -99,152 +91,125 @@ public:
 
   /**
    * @brief Get a collision objects collision geometries
-   * @param name The collision objects name
+   * @param id The collision object's LinkId
    * @return A vector of collision geometries. The vector will be empty if the collision object is not found.
    */
-  virtual const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const = 0;
+  virtual const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const = 0;
 
-  /** @brief Get collision geometries by LinkId */
-  virtual const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const;
+  /** @brief Get collision geometries by name (delegates to LinkId overload) */
+  virtual const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const;
 
   /**
    * @brief Get a collision objects collision geometries transforms
-   * @param name  The collision objects name
+   * @param id The collision object's LinkId
    * @return A vector of collision geometries transforms. The vector will be empty if the collision object is not found.
    */
   virtual const tesseract::common::VectorIsometry3d&
-  getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
+  getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const = 0;
 
-  /** @brief Get collision geometry transforms by LinkId */
+  /** @brief Get collision geometry transforms by name (delegates to LinkId overload) */
   virtual const tesseract::common::VectorIsometry3d&
-  getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const;
+  getCollisionObjectGeometriesTransforms(const std::string& name) const;
 
   /**
    * @brief Find if a collision object already exists
-   * @param name The name of the collision object
+   * @param id The LinkId of the collision object
    * @return true if it exists, otherwise false.
    */
-  virtual bool hasCollisionObject(const std::string& name) const = 0;
+  virtual bool hasCollisionObject(const tesseract::common::LinkId& id) const = 0;
 
-  /** @brief Check if collision object exists by LinkId */
-  virtual bool hasCollisionObject(const tesseract::common::LinkId& id) const;
+  /** @brief Check if collision object exists by name (delegates to LinkId overload) */
+  virtual bool hasCollisionObject(const std::string& name) const;
 
   /**
    * @brief Remove an object from the checker
-   * @param name The name of the object
+   * @param id The LinkId of the object
    * @return true if successfully removed, otherwise false.
    */
-  virtual bool removeCollisionObject(const std::string& name) = 0;
+  virtual bool removeCollisionObject(const tesseract::common::LinkId& id) = 0;
 
-  /** @brief Remove collision object by LinkId */
-  virtual bool removeCollisionObject(const tesseract::common::LinkId& id);
+  /** @brief Remove collision object by name (delegates to LinkId overload) */
+  virtual bool removeCollisionObject(const std::string& name);
 
   /**
    * @brief Enable an object
-   * @param name The name of the object
+   * @param id The LinkId of the object
    */
-  virtual bool enableCollisionObject(const std::string& name) = 0;
+  virtual bool enableCollisionObject(const tesseract::common::LinkId& id) = 0;
 
-  /** @brief Enable collision object by LinkId */
-  virtual bool enableCollisionObject(const tesseract::common::LinkId& id);
+  /** @brief Enable collision object by name (delegates to LinkId overload) */
+  virtual bool enableCollisionObject(const std::string& name);
 
   /**
    * @brief Disable an object
-   * @param name The name of the object
+   * @param id The LinkId of the object
    */
-  virtual bool disableCollisionObject(const std::string& name) = 0;
+  virtual bool disableCollisionObject(const tesseract::common::LinkId& id) = 0;
 
-  /** @brief Disable collision object by LinkId */
-  virtual bool disableCollisionObject(const tesseract::common::LinkId& id);
+  /** @brief Disable collision object by name (delegates to LinkId overload) */
+  virtual bool disableCollisionObject(const std::string& name);
 
   /**
    * @brief Check if collision object is enabled
-   * @param name The name of the object
+   * @param id The LinkId of the object
    * @return True if enabled, otherwise false
    */
-  virtual bool isCollisionObjectEnabled(const std::string& name) const = 0;
+  virtual bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const = 0;
 
-  /** @brief Check if collision object is enabled by LinkId */
-  virtual bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const;
-
-  /**
-   * @brief Set a single static collision object's tansforms
-   * @param name The name of the object
-   * @param pose The tranformation in world
-   */
-  virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) = 0;
+  /** @brief Check if collision object is enabled by name (delegates to LinkId overload) */
+  virtual bool isCollisionObjectEnabled(const std::string& name) const;
 
   /**
-   * @brief Set a series of static collision object's tranforms
-   * @param names The name of the object
-   * @param poses The tranformation in world
-   */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const tesseract::common::VectorIsometry3d& poses) = 0;
-
-  /**
-   * @brief Set a series of static collision object's transforms using integer link IDs
-   * @param transforms A transform map <LinkId, pose>
-   * @details Default implementation looks up each registered collision object by computing its LinkId.
-   *          Concrete backends may override for direct ID-keyed lookup.
-   */
-  virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms);
-
-  /**
-   * @brief Set a single static collision object's transform using integer link ID
-   * @param id The link ID of the object
+   * @brief Set a single collision object's transforms
+   * @param id The LinkId of the object
    * @param pose The transformation in world
-   * @details Default implementation looks up the name from registered collision objects.
    */
-  virtual void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose);
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) = 0;
+
+  /** @brief Set a single collision object's transform by name (delegates to LinkId overload) */
+  virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose);
 
   /**
-   * @brief Set a single cast(moving) collision object's tansforms
+   * @brief Set a series of collision object's transforms using integer link IDs
+   * @param transforms A transform map <LinkId, pose>
+   */
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) = 0;
+
+  /** @brief Set a series of collision object's transforms by name (delegates to LinkId overload) */
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const tesseract::common::VectorIsometry3d& poses);
+
+  /**
+   * @brief Set a single cast(moving) collision object's transforms
    *
    * This should only be used for moving objects. Use the base
    * class methods for static objects.
    *
-   * @param name The name of the object
-   * @param pose1 The start tranformation in world
-   * @param pose2 The end tranformation in world
+   * @param id The LinkId of the object
+   * @param pose1 The start transformation in world
+   * @param pose2 The end transformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::string& name,
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                             const Eigen::Isometry3d& pose1,
                                             const Eigen::Isometry3d& pose2) = 0;
 
-  /**
-   * @brief Set a series of cast(moving) collision object's tranforms
-   *
-   * This should only be used for moving objects. Use the base
-   * class methods for static objects.
-   *
-   * @param names The name of the object
-   * @param pose1 The start tranformations in world
-   * @param pose2 The end tranformations in world
-   */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const tesseract::common::VectorIsometry3d& pose1,
-                                            const tesseract::common::VectorIsometry3d& pose2) = 0;
+  /** @brief Set a single cast collision object's transforms by name (delegates to LinkId overload) */
+  virtual void setCollisionObjectsTransform(const std::string& name,
+                                            const Eigen::Isometry3d& pose1,
+                                            const Eigen::Isometry3d& pose2);
 
   /**
    * @brief Set a series of cast(moving) collision object's transforms using integer link IDs
    * @param pose1 A start transform map <LinkId, pose>
-   * @param pose2 A end transform map <LinkId, pose>
-   * @details Default implementation iterates registered collision objects and looks up by LinkId.
+   * @param pose2 An end transform map <LinkId, pose>
    */
   virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
-                                            const tesseract::common::LinkIdTransformMap& pose2);
+                                            const tesseract::common::LinkIdTransformMap& pose2) = 0;
 
-  /**
-   * @brief Set a single cast(moving) collision object's transforms using integer link ID
-   * @param id The link ID of the object
-   * @param pose1 The start transformation in world
-   * @param pose2 The end transformation in world
-   * @details Default implementation looks up the name from registered collision objects.
-   */
-  virtual void setCollisionObjectsTransform(const tesseract::common::LinkId& id,
-                                            const Eigen::Isometry3d& pose1,
-                                            const Eigen::Isometry3d& pose2);
+  /** @brief Set a series of cast collision object's transforms by name (delegates to LinkId overload) */
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const tesseract::common::VectorIsometry3d& pose1,
+                                            const tesseract::common::VectorIsometry3d& pose2);
 
   /**
    * @brief Get all collision objects
@@ -253,24 +218,26 @@ public:
   virtual const std::vector<tesseract::common::LinkId>& getCollisionObjects() const = 0;
 
   /**
-   * @brief Set which collision objects can move
-   * @param names A vector of collision object names
-   */
-  virtual void setActiveCollisionObjects(const std::vector<std::string>& names) = 0;
-
-  /**
    * @brief Set which collision objects can move using integer link IDs
    * @param ids A vector of LinkIds identifying the active collision objects
-   * @details Default implementation converts IDs to strings and delegates to the string overload.
-   *          Concrete backends override for direct ID-keyed insertion (skipping string->ID conversion).
    */
-  virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids);
+  virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids) = 0;
+
+  /** @brief Set which collision objects can move by name (delegates to LinkId overload) */
+  virtual void setActiveCollisionObjects(const std::vector<std::string>& names);
 
   /**
-   * @brief Get which collision objects can move
-   * @return A list of collision object names
+   * @brief Get which collision objects can move as LinkIds
+   * @return A set of active collision object LinkIds
    */
-  virtual std::vector<std::string> getActiveCollisionObjects() const = 0;
+  virtual const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+  getActiveCollisionObjectIds() const = 0;
+
+  /**
+   * @brief Get which collision objects can move as names
+   * @return A list of collision object names (derived from getActiveCollisionObjectIds)
+   */
+  virtual std::vector<std::string> getActiveCollisionObjects() const;
 
   /**
    * @brief Set the contact distance threshold
