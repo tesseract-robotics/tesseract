@@ -86,8 +86,8 @@ void save(Archive& ar, const CollisionMarginPairData& obj)
 {
   // Serialize as string-based format for backwards compatibility
   std::map<std::pair<std::string, std::string>, double> compat;
-  for (const auto& [key, entry] : obj.lookup_table_)
-    compat[{ entry.name1, entry.name2 }] = entry.margin;
+  for (const auto& [key, margin] : obj.lookup_table_)
+    compat[{ key.first.name(), key.second.name() }] = margin;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 

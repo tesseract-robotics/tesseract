@@ -67,18 +67,7 @@ enum class CollisionMarginPairOverrideType : std::uint8_t
   MODIFY
 };
 
-/** @brief Value stored in each margin pair entry — names for serialization/display, margin for computation. */
-struct MarginEntry
-{
-  std::string name1;
-  std::string name2;
-  double margin{ 0 };
-
-  bool operator==(const MarginEntry& other) const;
-  bool operator!=(const MarginEntry& other) const;
-};
-
-using PairsCollisionMarginData = std::unordered_map<LinkIdPair, MarginEntry, LinkIdPair::Hash>;
+using PairsCollisionMarginData = std::unordered_map<LinkIdPair, double, LinkIdPair::Hash>;
 
 class CollisionMarginPairData
 {

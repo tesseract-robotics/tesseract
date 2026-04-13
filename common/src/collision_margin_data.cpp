@@ -27,17 +27,10 @@
 
 namespace tesseract::common
 {
-bool MarginEntry::operator==(const MarginEntry& other) const
-{
-  return name1 == other.name1 && name2 == other.name2 &&
-         tesseract::common::almostEqualRelativeAndAbs(margin, other.margin, 1e-5);
-}
-bool MarginEntry::operator!=(const MarginEntry& other) const { return !(*this == other); }
-
 CollisionMarginPairData::CollisionMarginPairData(const PairsCollisionMarginData& pair_margins)
 {
-  for (const auto& [key, entry] : pair_margins)
-    setCollisionMarginHelper(entry.name1, entry.name2, entry.margin);
+  for (const auto& [key, margin] : pair_margins)
+    setCollisionMarginHelper(key, margin);
   updateMaxMargins();
 }
 
@@ -75,23 +68,22 @@ void CollisionMarginPairData::setCollisionMarginHelper(const LinkIdPair& pair, d
   auto it = lookup_table_.find(pair);
   if (it != lookup_table_.end())
   {
-    bool names_match = (it->second.name1 == pair.first.name() && it->second.name2 == pair.second.name()) ||
-                       (it->second.name1 == pair.second.name() && it->second.name2 == pair.first.name());
+    bool names_match = (it->first.first.name() == pair.first.name() && it->first.second.name() == pair.second.name()) ||
+                       (it->first.first.name() == pair.second.name() && it->first.second.name() == pair.first.name());
     if (!names_match)
       throw std::runtime_error("MarginData LinkIdPair hash collision: ('" + pair.first.name() + "', '" +
-                               pair.second.name() + "') collides with ('" + it->second.name1 + "', '" +
-                               it->second.name2 + "')");
+                               pair.second.name() + "') collides with ('" + it->first.first.name() + "', '" +
+                               it->first.second.name() + "')");
   }
 
-  // pair is already canonical (first.value <= second.value), so first/second match name order
-  lookup_table_[pair] = MarginEntry{ pair.first.name(), pair.second.name(), margin };
+  lookup_table_[pair] = margin;
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkIdPair& pair) const
 {
   const auto it = lookup_table_.find(pair);
   if (it != lookup_table_.end())
-    return it->second.margin;
+    return it->second;
   return {};
 }
 
@@ -130,8 +122,8 @@ void CollisionMarginPairData::incrementMargins(double increment)
 
   assert(max_collision_margin_.has_value());
   max_collision_margin_.value() += increment;  // NOLINT
-  for (auto& [key, entry] : lookup_table_)
-    entry.margin += increment;
+  for (auto& [key, margin] : lookup_table_)
+    margin += increment;
 
   for (auto& [id, max_margin] : object_max_margins_)
     max_margin += increment;
@@ -144,8 +136,8 @@ void CollisionMarginPairData::scaleMargins(double scale)
 
   assert(max_collision_margin_.has_value());
   max_collision_margin_.value() *= scale;  // NOLINT
-  for (auto& [key, entry] : lookup_table_)
-    entry.margin *= scale;
+  for (auto& [key, margin] : lookup_table_)
+    margin *= scale;
 
   for (auto& [id, max_margin] : object_max_margins_)
     max_margin *= scale;
@@ -167,25 +159,22 @@ void CollisionMarginPairData::updateMaxMargins()
 
   max_collision_margin_ = std::numeric_limits<double>::lowest();
   object_max_margins_.clear();
-  for (const auto& [key, entry] : lookup_table_)
+  for (const auto& [key, margin] : lookup_table_)
   {
-    auto id1 = LinkId::fromName(entry.name1);
-    auto id2 = LinkId::fromName(entry.name2);
-
     assert(max_collision_margin_.has_value());
-    max_collision_margin_ = std::max(max_collision_margin_.value(), entry.margin);  // NOLINT
+    max_collision_margin_ = std::max(max_collision_margin_.value(), margin);  // NOLINT
 
-    auto it1 = object_max_margins_.find(id1);
+    auto it1 = object_max_margins_.find(key.first);
     if (it1 == object_max_margins_.end())
-      object_max_margins_[id1] = entry.margin;
+      object_max_margins_[key.first] = margin;
     else
-      it1->second = std::max(it1->second, entry.margin);
+      it1->second = std::max(it1->second, margin);
 
-    auto it2 = object_max_margins_.find(id2);
+    auto it2 = object_max_margins_.find(key.second);
     if (it2 == object_max_margins_.end())
-      object_max_margins_[id2] = entry.margin;
+      object_max_margins_[key.second] = margin;
     else
-      it2->second = std::max(it2->second, entry.margin);
+      it2->second = std::max(it2->second, margin);
   }
 }
 
@@ -228,14 +217,14 @@ bool CollisionMarginPairData::operator==(const CollisionMarginPairData& rhs) con
 
   if (ret_val)
   {
-    for (const auto& [key, entry] : lookup_table_)
+    for (const auto& [key, margin] : lookup_table_)
     {
       auto cp = rhs.lookup_table_.find(key);
       ret_val = (cp != rhs.lookup_table_.end());
       if (!ret_val)
         break;
 
-      ret_val = tesseract::common::almostEqualRelativeAndAbs(entry.margin, cp->second.margin, 1e-5);
+      ret_val = tesseract::common::almostEqualRelativeAndAbs(margin, cp->second, 1e-5);
       if (!ret_val)
         break;
     }
