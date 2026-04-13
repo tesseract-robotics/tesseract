@@ -79,7 +79,7 @@ void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::com
   {
     auto it = transforms.find(id);
     if (it != transforms.end())
-      setCollisionObjectsTransform(id.name(), it->second);
+      setCollisionObjectsTransform(id, it->second);
   }
 }
 
@@ -104,7 +104,7 @@ void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::com
     auto it1 = pose1.find(id);
     auto it2 = pose2.find(id);
     if (it1 != pose1.end() && it2 != pose2.end())
-      setCollisionObjectsTransform(id.name(), it1->second, it2->second);
+      setCollisionObjectsTransform(id, it1->second, it2->second);
   }
 }
 
@@ -116,7 +116,7 @@ void ContinuousContactManager::setCollisionObjectsTransform(const tesseract::com
   {
     if (obj_id == id)
     {
-      setCollisionObjectsTransform(obj_id.name(), pose1, pose2);
+      setCollisionObjectsTransform(obj_id, pose1, pose2);
       return;
     }
   }

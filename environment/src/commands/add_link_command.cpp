@@ -48,7 +48,7 @@ AddLinkCommand::AddLinkCommand(const tesseract::scene_graph::Link& link,
   , joint_(std::make_shared<tesseract::scene_graph::Joint>(joint.clone()))
   , replace_allowed_(replace_allowed)
 {
-  if (joint_->child_link_name != link.getName())
+  if (joint_->child_link_id.name() != link.getName())
     throw std::runtime_error("AddLinkCommand: The provided joint child link name must equal the name of the provided "
                              "link.");
 

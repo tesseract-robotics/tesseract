@@ -128,9 +128,29 @@ void serialize(Archive& ar, CombinedContactAllowedValidator& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, JointState& obj)
+void save(Archive& ar, const JointState& obj)
 {
-  ar(cereal::make_nvp("joint_names", obj.joint_names));
+  std::vector<std::string> names;
+  names.reserve(obj.joint_ids.size());
+  for (const auto& id : obj.joint_ids)
+    names.push_back(id.name());
+  ar(cereal::make_nvp("joint_names", names));
+  ar(cereal::make_nvp("position", obj.position));
+  ar(cereal::make_nvp("velocity", obj.velocity));
+  ar(cereal::make_nvp("acceleration", obj.acceleration));
+  ar(cereal::make_nvp("effort", obj.effort));
+  ar(cereal::make_nvp("time", obj.time));
+}
+
+template <class Archive>
+void load(Archive& ar, JointState& obj)
+{
+  std::vector<std::string> names;
+  ar(cereal::make_nvp("joint_names", names));
+  obj.joint_ids.clear();
+  obj.joint_ids.reserve(names.size());
+  for (const auto& name : names)
+    obj.joint_ids.push_back(JointId::fromName(name));
   ar(cereal::make_nvp("position", obj.position));
   ar(cereal::make_nvp("velocity", obj.velocity));
   ar(cereal::make_nvp("acceleration", obj.acceleration));

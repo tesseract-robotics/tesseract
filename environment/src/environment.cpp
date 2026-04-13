@@ -299,7 +299,8 @@ struct Environment::Implementation
 
   tesseract::common::JointIdTransformMap getCurrentFloatingJointValues() const;
 
-  tesseract::common::JointIdTransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
+  tesseract::common::JointIdTransformMap
+  getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
   tesseract::common::JointIdTransformMap
   getCurrentFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
@@ -617,8 +618,7 @@ Environment::Implementation::getCurrentFloatingJointValues(const std::vector<std
   return fjv;
 }
 
-tesseract::common::JointIdTransformMap
-Environment::Implementation::getCurrentFloatingJointValues(
+tesseract::common::JointIdTransformMap Environment::Implementation::getCurrentFloatingJointValues(
     const std::vector<tesseract::common::JointId>& joint_ids) const
 {
   return current_state.getFloatingJointValues(joint_ids);
@@ -1412,7 +1412,7 @@ bool Environment::Implementation::applyAddCommand(const AddLinkCommand::ConstPtr
   // The command should not allow this to occur but adding an assert to catch if something changes
   assert(!(!cmd->getLink() && !cmd->getJoint()));  // NOLINT
   assert(!((cmd->getLink() != nullptr) && (cmd->getJoint() != nullptr) &&
-           (cmd->getJoint()->child_link_name != cmd->getLink()->getName())));
+           (cmd->getJoint()->child_link_id.name() != cmd->getLink()->getName())));
 
   if (!applyAddLinkCommandHelper(cmd->getLink(), cmd->getJoint(), cmd->replaceAllowed()))
     return false;
@@ -1479,7 +1479,7 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
       return false;
     }
 
-    tesseract::scene_graph::SceneState scene_state = state_solver_clone->getState(state.getJointNames(), state.position);
+    tesseract::scene_graph::SceneState scene_state = state_solver_clone->getState(state.joint_ids, state.position);
     if (joint_names.empty() || !tesseract::common::isIdentical(state.getJointNames(), joint_names, false))
     {
       joint_names = state.getJointNames();
@@ -1608,8 +1608,8 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
 
   auto traj_joint = std::make_shared<tesseract::scene_graph::Joint>("joint_" + cmd->getLinkName());
   traj_joint->type = tesseract::scene_graph::JointType::FIXED;
-  traj_joint->parent_link_name = cmd->getParentLinkName();
-  traj_joint->child_link_name = cmd->getLinkName();
+  traj_joint->parent_link_id = tesseract::common::LinkId::fromName(cmd->getParentLinkName());
+  traj_joint->child_link_id = tesseract::common::LinkId::fromName(cmd->getLinkName());
   traj_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
   if (!applyAddLinkCommandHelper(traj_link, traj_joint, cmd->replaceAllowed()))
@@ -1686,7 +1686,7 @@ bool Environment::Implementation::applyAddLinkCommandHelper(
     tesseract::scene_graph::Link::ConstPtr orig_link = scene_graph->getLink(link_name);
     tesseract::scene_graph::Joint::ConstPtr orig_joint = scene_graph->getJoint(joint_name);
 
-    if (orig_joint->child_link_name != orig_link->getName())
+    if (orig_joint->child_link_id.name() != orig_link->getName())
     {
       CONSOLE_BRIDGE_logWarn("Tried to replace link (%s) and joint (%s) which are currently not linked. This is not "
                              "supported.",
@@ -1728,8 +1728,8 @@ bool Environment::Implementation::applyAddLinkCommandHelper(
     std::string joint_name = "joint_" + link_name;
     tesseract::scene_graph::Joint joint(joint_name);
     joint.type = tesseract::scene_graph::JointType::FIXED;
-    joint.child_link_name = link_name;
-    joint.parent_link_name = scene_graph->getRoot();
+    joint.child_link_id = tesseract::common::LinkId::fromName(link_name);
+    joint.parent_link_id = tesseract::common::LinkId::fromName(scene_graph->getRoot());
 
     if (!scene_graph->addLink(*link, joint))
       return false;
@@ -1850,7 +1850,7 @@ bool Environment::Implementation::applyReplaceJointCommand(const std::shared_ptr
     return false;
   }
 
-  if (cmd->getJoint()->child_link_name != current_joint->child_link_name)
+  if (cmd->getJoint()->child_link_id != current_joint->child_link_id)
   {
     CONSOLE_BRIDGE_logWarn("Tried to replace Joint (%s) where the child links are not the same",
                            cmd->getJoint()->getName().c_str());
@@ -2007,8 +2007,8 @@ bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<cons
     // Connect root of subgraph to graph
     tesseract::scene_graph::Joint root_joint(cmd->getPrefix() + cmd->getSceneGraph()->getName() + "_joint");
     root_joint.type = tesseract::scene_graph::JointType::FIXED;
-    root_joint.parent_link_name = scene_graph->getRoot();
-    root_joint.child_link_name = cmd->getPrefix() + cmd->getSceneGraph()->getRoot();
+    root_joint.parent_link_id = tesseract::common::LinkId::fromName(scene_graph->getRoot());
+    root_joint.child_link_id = tesseract::common::LinkId::fromName(cmd->getPrefix() + cmd->getSceneGraph()->getRoot());
     root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
     tesseract::scene_graph::SceneGraph::ConstPtr sg = cmd->getSceneGraph();
@@ -2704,22 +2704,25 @@ void Environment::setState(const std::vector<tesseract::common::JointId>& joint_
   impl_->triggerCurrentStateChangedCallbacks();
 }
 
-tesseract::scene_graph::SceneState Environment::getState(const std::unordered_map<std::string, double>& joints,
-                                                         const tesseract::common::JointIdTransformMap& floating_joints) const
+tesseract::scene_graph::SceneState
+Environment::getState(const std::unordered_map<std::string, double>& joints,
+                      const tesseract::common::JointIdTransformMap& floating_joints) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getState(joints, floating_joints);
 }
 
-tesseract::scene_graph::SceneState Environment::getState(const std::vector<std::string>& joint_names,
-                                                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                                         const tesseract::common::JointIdTransformMap& floating_joints) const
+tesseract::scene_graph::SceneState
+Environment::getState(const std::vector<std::string>& joint_names,
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract::common::JointIdTransformMap& floating_joints) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getState(joint_names, joint_values, floating_joints);
 }
 
-tesseract::scene_graph::SceneState Environment::getState(const tesseract::common::JointIdTransformMap& floating_joints) const
+tesseract::scene_graph::SceneState
+Environment::getState(const tesseract::common::JointIdTransformMap& floating_joints) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getState(floating_joints);

@@ -28,8 +28,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::FLOATING);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration != nullptr);
     EXPECT_TRUE(elem->dynamics != nullptr);
     EXPECT_TRUE(elem->limits == nullptr);
@@ -55,8 +55,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::REVOLUTE);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration != nullptr);
     EXPECT_TRUE(elem->dynamics != nullptr);
     EXPECT_TRUE(elem->limits != nullptr);
@@ -78,8 +78,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::REVOLUTE);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, 1), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
     EXPECT_TRUE(elem->dynamics == nullptr);
     EXPECT_TRUE(elem->limits != nullptr);
@@ -101,8 +101,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::CONTINUOUS);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, 1), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
     EXPECT_TRUE(elem->dynamics == nullptr);
     EXPECT_TRUE(elem->limits != nullptr);
@@ -123,8 +123,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::CONTINUOUS);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, 1), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
     EXPECT_TRUE(elem->dynamics == nullptr);
     EXPECT_TRUE(elem->limits != nullptr);
@@ -146,8 +146,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::FIXED);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
     EXPECT_TRUE(elem->dynamics == nullptr);
     EXPECT_TRUE(elem->limits == nullptr);
@@ -169,8 +169,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::PRISMATIC);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, -1), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
     EXPECT_TRUE(elem->dynamics == nullptr);
     EXPECT_TRUE(elem->limits != nullptr);
@@ -192,8 +192,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::REVOLUTE);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, -1), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
     EXPECT_TRUE(elem->dynamics == nullptr);
     EXPECT_TRUE(elem->limits != nullptr);
@@ -215,8 +215,8 @@ TEST(TesseractURDFUnit, parse_joint)  // NOLINT
     EXPECT_TRUE(elem->type == tesseract::scene_graph::JointType::PLANAR);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
     EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, -1), 1e-8));
-    EXPECT_TRUE(elem->parent_link_name == "link1");
-    EXPECT_TRUE(elem->child_link_name == "link2");
+    EXPECT_TRUE(elem->parent_link_id.name() == "link1");
+    EXPECT_TRUE(elem->child_link_id.name() == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
     EXPECT_TRUE(elem->dynamics == nullptr);
     EXPECT_TRUE(elem->limits == nullptr);

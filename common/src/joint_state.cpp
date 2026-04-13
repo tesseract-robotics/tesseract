@@ -28,14 +28,33 @@
 namespace tesseract::common
 {
 JointState::JointState(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
-  : joint_names(std::move(joint_names)), position(position)
+  : position(position)
+{
+  joint_ids.reserve(joint_names.size());
+  for (auto& name : joint_names)
+    joint_ids.push_back(JointId::fromName(name));
+}
+
+JointState::JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Eigen::VectorXd>& position)
+  : joint_ids(std::move(joint_ids)), position(position)
 {
 }
+
+std::vector<std::string> JointState::getJointNames() const
+{
+  std::vector<std::string> names;
+  names.reserve(joint_ids.size());
+  for (const auto& id : joint_ids)
+    names.push_back(id.name());
+  return names;
+}
+
+const std::vector<JointId>& JointState::getJointIds() const { return joint_ids; }
 
 bool JointState::operator==(const JointState& other) const
 {
   bool ret_val = true;
-  ret_val &= (joint_names == other.joint_names);
+  ret_val &= (joint_ids == other.joint_ids);
   ret_val &= ((position.size() == other.position.size()) && (position.isApprox(other.position, 1e-5)));
   ret_val &= ((velocity.size() == other.velocity.size()) && (velocity.isApprox(other.velocity, 1e-5)));
   ret_val &= ((acceleration.size() == other.acceleration.size()) && (acceleration.isApprox(other.acceleration, 1e-5)));

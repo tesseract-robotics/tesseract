@@ -140,8 +140,8 @@ TEST(EnvironmentCommandsSerializeUnit, AddLinkCommand)  // NOLINT
   Link link_2("link_2");
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = "link_1";
-  joint_1.child_link_name = "link_2";
+  joint_1.parent_link_id = LinkId::fromName("link_1");
+  joint_1.child_link_id = LinkId::fromName("link_2");
   joint_1.type = JointType::FIXED;
 
   auto object = std::make_shared<AddLinkCommand>(link_2, joint_1, false);
@@ -152,8 +152,10 @@ TEST(EnvironmentCommandsSerializeUnit, AddLinkCommand)  // NOLINT
 TEST(EnvironmentCommandsSerializeUnit, AddTrajectoryLinkCommand)  // NOLINT
 {
   tesseract::common::JointTrajectory trajectory;
-  trajectory.push_back(tesseract::common::JointState({ "j1", "j2" }, Eigen::VectorXd::Zero(2)));
-  trajectory.push_back(tesseract::common::JointState({ "j1", "j2" }, Eigen::VectorXd::Ones(2)));
+  trajectory.push_back(
+      tesseract::common::JointState(std::vector<std::string>{ "j1", "j2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(
+      tesseract::common::JointState(std::vector<std::string>{ "j1", "j2" }, Eigen::VectorXd::Ones(2)));
 
   AddTrajectoryLinkCommand::Method method = AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL;
   auto object = std::make_shared<AddTrajectoryLinkCommand>("link_name", "parent_link_name", trajectory, false, method);
@@ -167,8 +169,8 @@ TEST(EnvironmentCommandsSerializeUnit, AddSceneGraphCommand)  // NOLINT
   tesseract::scene_graph::Joint joint;
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = "world";
-  joint_1.child_link_name = "joint_a1";
+  joint_1.parent_link_id = LinkId::fromName("world");
+  joint_1.child_link_id = LinkId::fromName("joint_a1");
   joint_1.type = JointType::FIXED;
   auto object = std::make_shared<AddSceneGraphCommand>(*getSceneGraph(locator), joint, "prefix");
   testSerialization<AddSceneGraphCommand>(*object, "AddSceneGraphCommand");
@@ -251,8 +253,8 @@ TEST(EnvironmentCommandsSerializeUnit, MoveLinkCommand)  // NOLINT
 {
   auto joint_1 = std::make_shared<Joint>("name");
   joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = "l1";
-  joint_1->child_link_name = "l2";
+  joint_1->parent_link_id = LinkId::fromName("l1");
+  joint_1->child_link_id = LinkId::fromName("l2");
   joint_1->type = JointType::FIXED;
 
   auto object = std::make_shared<MoveLinkCommand>(*joint_1);
@@ -286,8 +288,8 @@ TEST(EnvironmentCommandsSerializeUnit, ReplaceJointCommand)  // NOLINT
 {
   auto joint_1 = std::make_shared<Joint>("name");
   joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = "l1";
-  joint_1->child_link_name = "l2";
+  joint_1->parent_link_id = LinkId::fromName("l1");
+  joint_1->child_link_id = LinkId::fromName("l2");
   joint_1->type = JointType::FIXED;
   auto object = std::make_shared<ReplaceJointCommand>(*joint_1);
   testSerialization<ReplaceJointCommand>(*object, "ReplaceJointCommand");
