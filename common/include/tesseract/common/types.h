@@ -57,9 +57,6 @@ struct NameId
 {
   NameId() = default;
 
-  uint64_t value{ 0 };
-  std::string name_;
-
   /** @brief Compute an ID from a name string. Empty name returns the invalid (default-constructed) sentinel. */
   static NameId fromName(const std::string& name)
   {
@@ -67,25 +64,32 @@ struct NameId
       return NameId{};
     auto h = static_cast<uint64_t>(std::hash<std::string>{}(name));
     NameId id;
-    id.value = (h == 0) ? uint64_t{ 1 } : h;
+    id.value_ = (h == 0) ? uint64_t{ 1 } : h;
     id.name_ = name;
     return id;
   }
 
+  /** @brief The numeric hash of the name. Zero means invalid/default-constructed. */
+  uint64_t value() const { return value_; }
+
   /** @brief Access the original name string. Empty for default-constructed (invalid) IDs. */
   const std::string& name() const { return name_; }
 
-  bool isValid() const { return value != 0; }
+  bool isValid() const { return value_ != 0; }
 
-  bool operator==(const NameId& other) const { return value == other.value; }
-  bool operator!=(const NameId& other) const { return value != other.value; }
-  bool operator<(const NameId& other) const { return value < other.value; }
+  bool operator==(const NameId& other) const { return value_ == other.value_; }
+  bool operator!=(const NameId& other) const { return value_ != other.value_; }
+  bool operator<(const NameId& other) const { return value_ < other.value_; }
 
   /** @brief Identity hash — returns the raw value. */
   struct Hash
   {
-    std::size_t operator()(const NameId& id) const noexcept { return static_cast<std::size_t>(id.value); }
+    std::size_t operator()(const NameId& id) const noexcept { return static_cast<std::size_t>(id.value_); }
   };
+
+private:
+  uint64_t value_{ 0 };
+  std::string name_;
 };
 
 using LinkId = NameId<LinkTag>;
@@ -97,7 +101,7 @@ inline const JointId INVALID_JOINT_ID{};
 /**
  * @brief Canonically ordered pair of LinkIds.
  *
- * Use LinkIdPair::make(a, b) to construct — guarantees first.value <= second.value
+ * Use LinkIdPair::make(a, b) to construct — guarantees first.value() <= second.value()
  * regardless of argument order, so make(a, b) == make(b, a).
  */
 struct LinkIdPair
@@ -107,7 +111,7 @@ struct LinkIdPair
 
   static LinkIdPair make(const LinkId& a, const LinkId& b)
   {
-    return (a.value <= b.value) ? LinkIdPair{ a, b } : LinkIdPair{ b, a };
+    return (a.value() <= b.value()) ? LinkIdPair{ a, b } : LinkIdPair{ b, a };
   }
 
   bool operator==(const LinkIdPair& other) const { return first == other.first && second == other.second; }
@@ -115,17 +119,17 @@ struct LinkIdPair
 
   bool operator<(const LinkIdPair& other) const
   {
-    if (first.value != other.first.value)
-      return first.value < other.first.value;
-    return second.value < other.second.value;
+    if (first.value() != other.first.value())
+      return first.value() < other.first.value();
+    return second.value() < other.second.value();
   }
 
   struct Hash
   {
     std::size_t operator()(const LinkIdPair& p) const noexcept
     {
-      auto h = static_cast<std::size_t>(p.first.value);
-      h ^= static_cast<std::size_t>(p.second.value) + std::size_t{ 0x9e3779b9 } + (h << 6) + (h >> 2);
+      auto h = static_cast<std::size_t>(p.first.value());
+      h ^= static_cast<std::size_t>(p.second.value()) + std::size_t{ 0x9e3779b9 } + (h << 6) + (h >> 2);
       return h;
     }
   };
@@ -143,7 +147,7 @@ struct hash<tesseract::common::NameId<Tag>>
 {
   std::size_t operator()(const tesseract::common::NameId<Tag>& id) const noexcept
   {
-    return static_cast<std::size_t>(id.value);
+    return static_cast<std::size_t>(id.value());
   }
 };
 

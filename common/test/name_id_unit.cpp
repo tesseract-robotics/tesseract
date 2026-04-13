@@ -27,7 +27,7 @@ TEST(NameIdTest, FromNameDeterministic)  // NOLINT
   const LinkId a1 = LinkId::fromName("link_a");
   const LinkId a2 = LinkId::fromName("link_a");
   EXPECT_EQ(a1, a2);
-  EXPECT_EQ(a1.value, a2.value);
+  EXPECT_EQ(a1.value(), a2.value());
 }
 
 TEST(NameIdTest, DifferentNamesDifferentIds)  // NOLINT
@@ -44,15 +44,15 @@ TEST(NameIdTest, IsValid)  // NOLINT
 
   const LinkId invalid{};
   EXPECT_FALSE(invalid.isValid());
-  EXPECT_EQ(invalid.value, 0U);
+  EXPECT_EQ(invalid.value(), 0U);
 }
 
 TEST(NameIdTest, SentinelIsInvalid)  // NOLINT
 {
   EXPECT_FALSE(INVALID_LINK_ID.isValid());
-  EXPECT_EQ(INVALID_LINK_ID.value, 0U);
+  EXPECT_EQ(INVALID_LINK_ID.value(), 0U);
   EXPECT_FALSE(INVALID_JOINT_ID.isValid());
-  EXPECT_EQ(INVALID_JOINT_ID.value, 0U);
+  EXPECT_EQ(INVALID_JOINT_ID.value(), 0U);
 }
 
 TEST(NameIdTest, ZeroGuard)  // NOLINT
@@ -60,13 +60,13 @@ TEST(NameIdTest, ZeroGuard)  // NOLINT
   // Empty name returns the invalid sentinel, not a hashed ID
   const LinkId empty_id = LinkId::fromName("");
   EXPECT_FALSE(empty_id.isValid());
-  EXPECT_EQ(empty_id.value, 0U);
+  EXPECT_EQ(empty_id.value(), 0U);
   EXPECT_TRUE(empty_id.name().empty());
 
   // Non-empty names always produce a valid (non-zero) ID even if hash happens to be 0
   const LinkId valid_id = LinkId::fromName("any_link");
   EXPECT_TRUE(valid_id.isValid());
-  EXPECT_NE(valid_id.value, 0U);
+  EXPECT_NE(valid_id.value(), 0U);
 }
 
 // ======================== Name accessor ========================
@@ -101,7 +101,7 @@ TEST(NameIdTest, LinkIdAndJointIdAreDistinctTypes)  // NOLINT
   // Same name produces same numeric value but different types
   const LinkId link = LinkId::fromName("foo");
   const JointId joint = JointId::fromName("foo");
-  EXPECT_EQ(link.value, joint.value);
+  EXPECT_EQ(link.value(), joint.value());
 }
 
 // ======================== Hash ========================
@@ -110,14 +110,14 @@ TEST(NameIdTest, IdentityHash)  // NOLINT
 {
   const LinkId id = LinkId::fromName("test_link");
   LinkId::Hash hasher;
-  EXPECT_EQ(hasher(id), id.value);
+  EXPECT_EQ(hasher(id), id.value());
 }
 
 TEST(NameIdTest, StdHashSpecialization)  // NOLINT
 {
   const LinkId id = LinkId::fromName("test_link");
   std::hash<LinkId> hasher;
-  EXPECT_EQ(hasher(id), id.value);
+  EXPECT_EQ(hasher(id), id.value());
 }
 
 TEST(NameIdTest, WorksInUnorderedSet)  // NOLINT
@@ -153,7 +153,7 @@ TEST(LinkIdPairTest, MakeCanonical)  // NOLINT
   const LinkIdPair ba = LinkIdPair::make(b, a);
   EXPECT_EQ(ab, ba);
   // Canonical ordering: first.value <= second.value
-  EXPECT_LE(ab.first.value, ab.second.value);
+  EXPECT_LE(ab.first.value(), ab.second.value());
 }
 
 TEST(LinkIdPairTest, Equality)  // NOLINT
