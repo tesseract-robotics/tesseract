@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/validate.h>
+#include <tesseract/common/types.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/kinematics/kinematic_group.h>
 
@@ -74,7 +75,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
       const auto wf_id = tesseract::common::LinkId::fromName(check.first);
       const auto tl_id = tesseract::common::LinkId::fromName(check.second);
       test1 = poses1.at(wf_id).inverse() * poses1.at(tl_id);
-      KinGroupIKInput ik_input(test1, check.first, check.second);
+      KinGroupIKInput ik_input(test1, tesseract::common::LinkId::fromName(check.first), tesseract::common::LinkId::fromName(check.second));
       IKSolutions sols = manip.calcInvKin({ ik_input }, seed_angles);
       for (const auto& sol : sols)
       {
