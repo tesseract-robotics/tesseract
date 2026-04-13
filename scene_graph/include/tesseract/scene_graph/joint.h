@@ -54,10 +54,7 @@ class Link;
 class Joint;
 
 template <class Archive>
-void save(Archive& ar, const Joint& obj);
-
-template <class Archive>
-void load(Archive& ar, Joint& obj);
+void serialize(Archive& ar, Joint& obj);
 
 class JointDynamics
 {
@@ -322,10 +319,7 @@ private:
   common::JointId id_{};
 
   template <class Archive>
-  friend void ::tesseract::scene_graph::save(Archive& ar, const Joint& obj);
-
-  template <class Archive>
-  friend void ::tesseract::scene_graph::load(Archive& ar, Joint& obj);
+  friend void ::tesseract::scene_graph::serialize(Archive& ar, Joint& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const JointType& type);
