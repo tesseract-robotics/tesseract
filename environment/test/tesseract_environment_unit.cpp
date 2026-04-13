@@ -45,8 +45,8 @@ using namespace tesseract::scene_graph;
 using namespace tesseract::srdf;
 using namespace tesseract::collision;
 using namespace tesseract::environment;
-using tesseract::common::LinkId;
 using tesseract::common::JointId;
+using tesseract::common::LinkId;
 
 Eigen::Isometry3d tcpCallback(const tesseract::common::ManipulatorInfo& mi)
 {
@@ -114,8 +114,8 @@ SceneGraph::Ptr getSubSceneGraph()
 
   Joint joint_1(joint_name1);
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = link_name1;
-  joint_1.child_link_name = link_name2;
+  joint_1.parent_link_id = LinkId::fromName(link_name1);
+  joint_1.child_link_id = LinkId::fromName(link_name2);
   joint_1.type = JointType::FIXED;
 
   subgraph->addLink(link_1);
@@ -162,9 +162,8 @@ void runGetLinkTransformsTest(Environment& env)
   {
     for (const auto& link2 : link_names)
     {
-      Eigen::Isometry3d t1 =
-          env_state.link_transforms.at(LinkId::fromName(link1)).inverse() *
-          env_state.link_transforms.at(LinkId::fromName(link2));
+      Eigen::Isometry3d t1 = env_state.link_transforms.at(LinkId::fromName(link1)).inverse() *
+                             env_state.link_transforms.at(LinkId::fromName(link2));
       Eigen::Isometry3d t2 = env.getRelativeLinkTransform(link1, link2);
       EXPECT_TRUE(t1.isApprox(t2, 1e-6));
     }
@@ -694,8 +693,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
 
   Joint joint_1(joint_name1);
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = link_name1;
-  joint_1.child_link_name = link_name2;
+  joint_1.parent_link_id = LinkId::fromName(link_name1);
+  joint_1.child_link_id = LinkId::fromName(link_name2);
   joint_1.type = JointType::FIXED;
 
   {
@@ -832,8 +831,8 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
 
     Joint joint_3(joint_name3);
     joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_3.parent_link_name = link_name1;
-    joint_3.child_link_name = "does_not_exist";
+    joint_3.parent_link_id = LinkId::fromName(link_name1);
+    joint_3.child_link_id = LinkId::fromName("does_not_exist");
     joint_3.type = JointType::FIXED;
 
     EXPECT_ANY_THROW(std::make_shared<AddLinkCommand>(link_3, joint_3));  // NOLINT
@@ -846,8 +845,10 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
   auto env = getEnvironment();
 
   tesseract::common::JointTrajectory trajectory;
-  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
-  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Ones(2)));
+  trajectory.push_back(
+      tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(
+      tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Ones(2)));
 
   std::string link_name = "traj_link";
   std::string parent_link_name = "base_link";
@@ -987,8 +988,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   EXPECT_EQ(env->getCommandHistory().size(), 3);
 
   Joint joint_1("provided_subgraph_joint");
-  joint_1.parent_link_name = "base_link";
-  joint_1.child_link_name = "prefix_subgraph_base_link";
+  joint_1.parent_link_id = LinkId::fromName("base_link");
+  joint_1.child_link_id = LinkId::fromName("prefix_subgraph_base_link");
   joint_1.type = JointType::FIXED;
 
   {  // Adding an empty scene graph which should fail with joint
@@ -1067,7 +1068,7 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   EXPECT_TRUE(state.joints.find(JointId::fromName("prefix_subgraph_joint")) == state.joints.end());
 
   // Add subgraph with prefix and joint
-  joint_1.child_link_name = "prefix2_subgraph_base_link";
+  joint_1.child_link_id = LinkId::fromName("prefix2_subgraph_base_link");
   {
     auto cmd = std::make_shared<AddSceneGraphCommand>(*subgraph, joint_1, "prefix2_");
     EXPECT_TRUE(cmd != nullptr);
@@ -1083,8 +1084,10 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   state = env->getState();
   EXPECT_TRUE(env->getJoint("provided_subgraph_joint") != nullptr);
   EXPECT_TRUE(env->getLink("prefix2_subgraph_base_link") != nullptr);
-  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName("prefix2_subgraph_base_link")) != state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("provided_subgraph_joint")) != state.joint_transforms.end());
+  EXPECT_TRUE(state.link_transforms.find(LinkId::fromName("prefix2_subgraph_base_link")) !=
+              state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(JointId::fromName("provided_subgraph_joint")) !=
+              state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(JointId::fromName("provided_subgraph_joint")) == state.joints.end());
 }
 
@@ -1235,8 +1238,8 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
   Link link_1(link_name1);
 
   Joint joint_1(joint_name1);
-  joint_1.parent_link_name = env->getRootLinkName();
-  joint_1.child_link_name = link_name1;
+  joint_1.parent_link_id = LinkId::fromName(env->getRootLinkName());
+  joint_1.child_link_id = LinkId::fromName(link_name1);
   joint_1.type = JointType::FIXED;
 
   EXPECT_TRUE(env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1)));
@@ -1623,14 +1626,14 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
   Link link_2(link_name2);
 
   Joint joint_1(joint_name1);
-  joint_1.parent_link_name = env->getRootLinkName();
-  joint_1.child_link_name = link_name1;
+  joint_1.parent_link_id = LinkId::fromName(env->getRootLinkName());
+  joint_1.child_link_id = LinkId::fromName(link_name1);
   joint_1.type = JointType::FIXED;
 
   Joint joint_2(joint_name2);
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = link_name1;
-  joint_2.child_link_name = link_name2;
+  joint_2.parent_link_id = LinkId::fromName(link_name1);
+  joint_2.child_link_id = LinkId::fromName(link_name2);
   joint_2.type = JointType::FIXED;
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1));
@@ -1675,7 +1678,7 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
   state = env->getState();
-  EXPECT_TRUE(env->getJoint(joint_name1)->parent_link_name == "tool0");
+  EXPECT_TRUE(env->getJoint(joint_name1)->parent_link_id.name() == "tool0");
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
@@ -1706,14 +1709,14 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
   Link link_2(link_name2);
 
   Joint joint_1(joint_name1);
-  joint_1.parent_link_name = env->getRootLinkName();
-  joint_1.child_link_name = link_name1;
+  joint_1.parent_link_id = LinkId::fromName(env->getRootLinkName());
+  joint_1.child_link_id = LinkId::fromName(link_name1);
   joint_1.type = JointType::FIXED;
 
   Joint joint_2(joint_name2);
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = link_name1;
-  joint_2.child_link_name = link_name2;
+  joint_2.parent_link_id = LinkId::fromName(link_name1);
+  joint_2.child_link_id = LinkId::fromName(link_name2);
   joint_2.type = JointType::FIXED;
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link_1, joint_1));
@@ -1749,7 +1752,7 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
 
   std::string moved_joint_name = joint_name1 + "_moved";
   Joint move_link_joint = joint_1.clone(moved_joint_name);
-  move_link_joint.parent_link_name = "tool0";
+  move_link_joint.parent_link_id = LinkId::fromName("tool0");
 
   auto cmd = std::make_shared<MoveLinkCommand>(move_link_joint);
   EXPECT_TRUE(cmd != nullptr);
@@ -1761,7 +1764,7 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
   state = env->getState();
-  EXPECT_TRUE(env->getJoint(moved_joint_name)->parent_link_name == "tool0");
+  EXPECT_TRUE(env->getJoint(moved_joint_name)->parent_link_id.name() == "tool0");
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
@@ -1840,8 +1843,8 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   Link link("link_n1");
 
   Joint joint("joint_n1");
-  joint.parent_link_name = env->getRootLinkName();
-  joint.child_link_name = "link_n1";
+  joint.parent_link_id = LinkId::fromName(env->getRootLinkName());
+  joint.child_link_id = LinkId::fromName("link_n1");
   joint.type = JointType::FIXED;
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link, joint));
@@ -1884,8 +1887,8 @@ TEST(TesseractEnvironmentUnit, EnvResetUnit)  // NOLINT
 
   Link link("link_n1");
   Joint joint("joint_n1");
-  joint.parent_link_name = env->getRootLinkName();
-  joint.child_link_name = "link_n1";
+  joint.parent_link_id = LinkId::fromName(env->getRootLinkName());
+  joint.child_link_id = LinkId::fromName("link_n1");
   joint.type = JointType::FIXED;
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link, joint));
@@ -2010,8 +2013,8 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     Link link_1("link_n1");
     Joint joint_1("joint_link_n1");
     joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_n1";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_n1");
     joint_1.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1) };
@@ -2044,8 +2047,8 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     Link link_1("link_1");
     Joint joint_1("joint_a1");
     joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_1";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_1");
     joint_1.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, true) };
@@ -2064,8 +2067,8 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     Link link_1("link_1");
     Joint joint_1("joint_a1");
     joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_1";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_1");
     joint_1.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, false) };
@@ -2084,8 +2087,8 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     Link link_1("link_2_does_not_exist");
     Joint joint_1("joint_a1");
     joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_2_does_not_exist";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_2_does_not_exist");
     joint_1.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, true) };
@@ -2104,8 +2107,8 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     Link link_1("link_2");
     Joint joint_1("joint_a1");
     joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-    joint_1.parent_link_name = "base_link";
-    joint_1.child_link_name = "link_2";
+    joint_1.parent_link_id = LinkId::fromName("base_link");
+    joint_1.child_link_id = LinkId::fromName("link_2");
     joint_1.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<AddLinkCommand>(link_1, joint_1, false) };
@@ -2187,7 +2190,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     auto compare_env = getEnvironment();
 
     Joint new_joint_a3 = compare_env->getJoint("joint_a3")->clone();
-    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.parent_link_id = LinkId::fromName("base_link");
 
     Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a3) };
     EXPECT_TRUE(compare_env->applyCommands(commands));
@@ -2203,7 +2206,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     auto compare_env = getEnvironment();
 
     Joint new_joint_a3 = compare_env->getJoint("joint_a3")->clone();
-    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.parent_link_id = LinkId::fromName("base_link");
     new_joint_a3.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a3) };
@@ -2220,7 +2223,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     auto compare_env = getEnvironment();
 
     Joint new_joint_a3 = compare_env->getJoint("joint_a3")->clone();
-    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.parent_link_id = LinkId::fromName("base_link");
     new_joint_a3.type = JointType::PRISMATIC;
 
     Commands commands{ std::make_shared<ReplaceJointCommand>(new_joint_a3) };
@@ -2236,7 +2239,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
     auto compare_env = getEnvironment();
 
     Joint new_joint_a3 = compare_env->getJoint("joint_a3")->clone();
-    new_joint_a3.parent_link_name = "base_link";
+    new_joint_a3.parent_link_id = LinkId::fromName("base_link");
     new_joint_a3.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<MoveLinkCommand>(new_joint_a3) };
@@ -2330,8 +2333,8 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommandsStateSolverCompareUnit)  // NOLIN
 
     auto subgraph = getSceneGraph(locator);
     Joint attach_joint("prefix_base_link_joint");
-    attach_joint.parent_link_name = "tool0";
-    attach_joint.child_link_name = "prefix_base_link";
+    attach_joint.parent_link_id = LinkId::fromName("tool0");
+    attach_joint.child_link_id = LinkId::fromName("prefix_base_link");
     attach_joint.type = JointType::FIXED;
 
     Commands commands{ std::make_shared<AddSceneGraphCommand>(*subgraph, attach_joint, "prefix_") };
@@ -2613,12 +2616,14 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
     // Check joints and links names
     for (const auto& joint_name : joint_names)
     {
-      EXPECT_TRUE(current_state.joint_transforms.find(JointId::fromName(joint_name)) != current_state.joint_transforms.end());
+      EXPECT_TRUE(current_state.joint_transforms.find(JointId::fromName(joint_name)) !=
+                  current_state.joint_transforms.end());
     }
 
     for (const auto& link_name : link_names)
     {
-      EXPECT_TRUE(current_state.link_transforms.find(LinkId::fromName(link_name)) != current_state.link_transforms.end());
+      EXPECT_TRUE(current_state.link_transforms.find(LinkId::fromName(link_name)) !=
+                  current_state.link_transforms.end());
     }
 
     for (const auto& joint_name : active_joint_names)
@@ -2626,7 +2631,8 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
       EXPECT_TRUE(current_state.joints.find(JointId::fromName(joint_name)) != current_state.joints.end());
     }
 
-    EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("base_link")).isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(
+        current_state.link_transforms.at(LinkId::fromName("base_link")).isApprox(Eigen::Isometry3d::Identity()));
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity();
@@ -2707,12 +2713,14 @@ TEST(TesseractEnvironmentUnit, EnvSetState2)  // NOLINT
     // Check joints and links names
     for (const auto& joint_name : joint_names)
     {
-      EXPECT_TRUE(current_state.joint_transforms.find(JointId::fromName(joint_name)) != current_state.joint_transforms.end());
+      EXPECT_TRUE(current_state.joint_transforms.find(JointId::fromName(joint_name)) !=
+                  current_state.joint_transforms.end());
     }
 
     for (const auto& link_name : link_names)
     {
-      EXPECT_TRUE(current_state.link_transforms.find(LinkId::fromName(link_name)) != current_state.link_transforms.end());
+      EXPECT_TRUE(current_state.link_transforms.find(LinkId::fromName(link_name)) !=
+                  current_state.link_transforms.end());
     }
 
     int cnt = 0;
@@ -2722,7 +2730,8 @@ TEST(TesseractEnvironmentUnit, EnvSetState2)  // NOLINT
       EXPECT_NEAR(current_state.joints.at(JointId::fromName(joint_name)), jvals(cnt++), 1e-5);
     }
 
-    EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("base_link")).isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(
+        current_state.link_transforms.at(LinkId::fromName("base_link")).isApprox(Eigen::Isometry3d::Identity()));
     EXPECT_TRUE(current_state.link_transforms.at(LinkId::fromName("base")).isApprox(Eigen::Isometry3d::Identity()));
 
     {
@@ -2952,8 +2961,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   link_sphere.collision.push_back(collision);
 
   Joint joint_sphere("joint_sphere_attached");
-  joint_sphere.parent_link_name = "base_link";
-  joint_sphere.child_link_name = link_sphere.getName();
+  joint_sphere.parent_link_id = LinkId::fromName("base_link");
+  joint_sphere.child_link_id = LinkId::fromName(link_sphere.getName());
   joint_sphere.type = JointType::FIXED;
 
   auto cmd = std::make_shared<tesseract::environment::AddLinkCommand>(link_sphere, joint_sphere);
@@ -6004,8 +6013,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     config.type = CollisionEvaluatorType::DISCRETE;
     std::vector<tesseract::collision::ContactResultMap> contacts;
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(checkTrajectory(
-        contacts, *discrete_manager, *state_solver, joint_ids, tesseract::common::TrajArray(), config));
+    EXPECT_ANY_THROW(
+        checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, tesseract::common::TrajArray(), config));
   }
   {
     tesseract::collision::CollisionCheckConfig config;

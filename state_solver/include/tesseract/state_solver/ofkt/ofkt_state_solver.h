@@ -115,23 +115,28 @@ public:
 
   SceneState getRandomState() const override final;
 
-  Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints_values,
-                              const std::string& link_name,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
-                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const tesseract::common::LinkId& link_id,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd getJacobian(const std::vector<tesseract::common::JointId>& joint_ids,
-                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const tesseract::common::LinkId& link_id,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const std::string& link_name,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const std::unordered_map<std::string, double>& joints_values,
+              const std::string& link_name,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const std::vector<std::string>& joint_names,
+              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const std::string& link_name,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const std::vector<tesseract::common::JointId>& joint_ids,
+              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
   std::vector<std::string> getJointNames() const override final;
   std::vector<tesseract::common::JointId> getJointIds() const override final;
@@ -211,19 +216,19 @@ public:
   StateSolver::UPtr clone() const override final;
 
 private:
-  SceneState current_state_;                                         /**< Current state of the scene */
-  std::vector<tesseract::common::JointId> joint_ids_;                /**< All joint IDs in insertion order */
-  std::vector<tesseract::common::JointId> active_joint_ids_;         /**< The active joint IDs */
-  std::vector<tesseract::common::JointId> floating_joint_ids_;       /**< The floating joint IDs */
-  std::vector<tesseract::common::LinkId> link_ids_;                  /**< All link IDs in insertion order */
+  SceneState current_state_;                                   /**< Current state of the scene */
+  std::vector<tesseract::common::JointId> joint_ids_;          /**< All joint IDs in insertion order */
+  std::vector<tesseract::common::JointId> active_joint_ids_;   /**< The active joint IDs */
+  std::vector<tesseract::common::JointId> floating_joint_ids_; /**< The floating joint IDs */
+  std::vector<tesseract::common::LinkId> link_ids_;            /**< All link IDs in insertion order */
 
   /** @brief The joint ID map to node */
   std::unordered_map<tesseract::common::JointId, std::unique_ptr<OFKTNode>, tesseract::common::JointId::Hash> nodes_;
   /** @brief The link ID map to node */
   std::unordered_map<tesseract::common::LinkId, OFKTNode*, tesseract::common::LinkId::Hash> link_map_;
-  tesseract::common::KinematicLimits limits_;                        /**< The kinematic limits */
-  std::unique_ptr<OFKTNode> root_;                                   /**< The root node of the tree */
-  int revision_{ 0 };                                                /**< The revision number */
+  tesseract::common::KinematicLimits limits_; /**< The kinematic limits */
+  std::unique_ptr<OFKTNode> root_;            /**< The root node of the tree */
+  int revision_{ 0 };                         /**< The revision number */
 
   /** @brief The state solver can be accessed from multiple threads, need use mutex throughout */
   mutable std::shared_mutex mutex_;
@@ -244,8 +249,7 @@ private:
                                   bool active) const;
 
   /** @brief load the static link IDs */
-  void loadStaticLinkIdsRecursive(std::vector<tesseract::common::LinkId>& static_link_ids,
-                                  const OFKTNode* node) const;
+  void loadStaticLinkIdsRecursive(std::vector<tesseract::common::LinkId>& static_link_ids, const OFKTNode* node) const;
 
   /**
    * @brief This update the local and world transforms
@@ -316,19 +320,19 @@ private:
   /**
    * @brief Add a node to the tree
    *
-   * The reason that joint_name, parent_link_name, child_link_name are required when joint is provided is to handle
+   * The reason that joint_id, parent_link_id, child_link_id are required when joint is provided is to handle
    * add a scene graph with a prefix.
    *
    * @param joint The joint being added to the tree
-   * @param joint_name The joints name
-   * @param parent_link_name The joints parent link name
-   * @param child_link_name The joints child link name
+   * @param joint_id The joint ID (possibly prefixed)
+   * @param parent_link_id The parent link ID (possibly prefixed)
+   * @param child_link_id The child link ID (possibly prefixed)
    * @param kinematic_joints The vector to store new kinematic joints added to the solver
    */
   void addNode(const Joint& joint,
-               const std::string& joint_name,
-               const std::string& parent_link_name,
-               const std::string& child_link_name,
+               const tesseract::common::JointId& joint_id,
+               const tesseract::common::LinkId& parent_link_id,
+               const tesseract::common::LinkId& child_link_id,
                std::vector<std::shared_ptr<const JointLimits>>& new_joint_limits);
 
   /**

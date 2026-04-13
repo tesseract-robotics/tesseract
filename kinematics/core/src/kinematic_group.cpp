@@ -69,7 +69,7 @@ std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& in
       {
         case tesseract::scene_graph::JointType::FIXED:
           // Add this joint's parent link to the list of links to traverse
-          links.push_back(joint->parent_link_name);
+          links.push_back(joint->parent_link_id.name());
           break;
         default:
         {
@@ -109,8 +109,7 @@ KinematicGroup::KinematicGroup(std::string name,
                                std::unique_ptr<InverseKinematics> inv_kin,
                                const tesseract::scene_graph::SceneGraph& scene_graph,
                                const tesseract::scene_graph::SceneState& scene_state)
-  : JointGroup(std::move(name), joint_names, scene_graph, scene_state)
-  , inv_kin_(std::move(inv_kin))
+  : JointGroup(std::move(name), joint_names, scene_graph, scene_state), inv_kin_(std::move(inv_kin))
 {
   // joint_names parameter is still valid (JointGroup's by-value param made a copy)
   std::vector<std::string> inv_kin_joint_names = inv_kin_->getJointNames();

@@ -480,7 +480,7 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
   Eigen::VectorXd positons = Eigen::VectorXd::Constant(3, 5);
   tesseract::common::JointState joint_state(joint_names, positons);
-  EXPECT_TRUE(joint_state.joint_names == joint_names);
+  EXPECT_TRUE(joint_state.getJointNames() == joint_names);
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
@@ -501,7 +501,9 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(any_null == any_type);
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.joint_ids = { tesseract::common::JointId::fromName("joint_1"),
+                            tesseract::common::JointId::fromName("joint_2"),
+                            tesseract::common::JointId::fromName("joint_3") };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -624,7 +626,9 @@ TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.joint_ids = { tesseract::common::JointId::fromName("joint_1"),
+                            tesseract::common::JointId::fromName("joint_2"),
+                            tesseract::common::JointId::fromName("joint_3") };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -4791,7 +4795,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
 
   // Tier 3 (string)
   EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_y"), 0.1, 1e-12);
-  EXPECT_NEAR(margin_data.getCollisionMargin("link_y", "link_x"), 0.1, 1e-12);  // order invariant
+  EXPECT_NEAR(margin_data.getCollisionMargin("link_y", "link_x"), 0.1, 1e-12);   // order invariant
   EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_z"), 0.05, 1e-12);  // default
 
   // Tier 1 (LinkId)
