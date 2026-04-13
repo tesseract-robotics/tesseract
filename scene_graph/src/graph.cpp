@@ -43,6 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::scene_graph
 {
+using tesseract::common::LinkId;
 struct cycle_detector : public boost::dfs_visitor<>
 {
   cycle_detector(bool& ascyclic) : ascyclic_(ascyclic) {}
@@ -399,22 +400,22 @@ bool SceneGraph::removeLink(const std::string& name, bool recursive)
 
 bool SceneGraph::moveLink(const Joint& joint)
 {
-  if (link_map_.find(joint.child_link_name) == link_map_.end())
+  if (link_map_.find(joint.child_link_id.name()) == link_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that does not exist.",
-                           joint.child_link_name.c_str());
+                           joint.child_link_id.name().c_str());
     return false;
   }
 
-  if (link_map_.find(joint.parent_link_name) == link_map_.end())
+  if (link_map_.find(joint.parent_link_id.name()) == link_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that parent link (%s) which does not exist.",
-                           joint.child_link_name.c_str(),
-                           joint.parent_link_name.c_str());
+                           joint.child_link_id.name().c_str(),
+                           joint.parent_link_id.name().c_str());
     return false;
   }
 
-  std::vector<tesseract::scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_name);
+  std::vector<tesseract::scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_id.name());
   for (const auto& joint : joints)
     removeJoint(joint->getName());
 
@@ -446,19 +447,19 @@ bool SceneGraph::addJoint(const Joint& joint)
 
 bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
 {
-  auto parent = link_map_.find(joint_ptr->parent_link_name);
-  auto child = link_map_.find(joint_ptr->child_link_name);
+  auto parent = link_map_.find(joint_ptr->parent_link_id.name());
+  auto child = link_map_.find(joint_ptr->child_link_id.name());
   auto found = joint_map_.find(joint_ptr->getName());
 
   if (parent == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Parent link (%s) does not exist in scene graph.", joint_ptr->parent_link_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Parent link (%s) does not exist in scene graph.", joint_ptr->parent_link_id.name().c_str());
     return false;
   }
 
   if (child == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Child link (%s) does not exist in scene graph.", joint_ptr->child_link_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Child link (%s) does not exist in scene graph.", joint_ptr->child_link_id.name().c_str());
     return false;
   }
 
@@ -532,9 +533,9 @@ bool SceneGraph::removeJoint(const std::string& name, bool recursive)
   }
   else
   {
-    if (getInboundJoints(found->second.first->child_link_name).size() == 1)
+    if (getInboundJoints(found->second.first->child_link_id.name()).size() == 1)
     {
-      std::string child_link_name = found->second.first->child_link_name;
+      std::string child_link_name = found->second.first->child_link_id.name();
       removeLink(child_link_name, true);
     }
   }
@@ -566,7 +567,7 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
   if (!removeJoint(name))
     return false;
 
-  joint->parent_link_name = parent_link;
+  joint->parent_link_id = LinkId::fromName(parent_link);
   return addJointHelper(joint);
 }
 
@@ -1130,8 +1131,8 @@ tesseract::scene_graph::Joint clone_prefix(const tesseract::scene_graph::Joint::
                                            const std::string& prefix)
 {
   auto ret = joint->clone(prefix + joint->getName());
-  ret.child_link_name = prefix + joint->child_link_name;
-  ret.parent_link_name = prefix + joint->parent_link_name;
+  ret.child_link_id = LinkId::fromName(prefix + joint->child_link_id.name());
+  ret.parent_link_id = LinkId::fromName(prefix + joint->parent_link_id.name());
   return ret;
 }
 
@@ -1214,8 +1215,8 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
                                   const Joint& joint,
                                   const std::string& prefix)
 {
-  std::string parent_link = joint.parent_link_name;
-  std::string child_link = joint.child_link_name;
+  std::string parent_link = joint.parent_link_id.name();
+  std::string child_link = joint.child_link_id.name();
 
   // Assumes the joint already contains the prefix in the parent and child link names
   if (!prefix.empty())
