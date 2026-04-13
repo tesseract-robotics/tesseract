@@ -75,7 +75,8 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   joint_qnr_ = other.joint_qnr_;
   kdl_jnt_array_ = other.kdl_jnt_array_;
   limits_ = other.limits_;
-  active_joint_ids_ = other.active_joint_ids_; // Direct copy is safe: IDs don't depend on pointer addresses (unlike segment_id_cache_)
+  // Direct copy is safe: IDs don't depend on pointer addresses (unlike segment_id_cache_).
+  active_joint_ids_ = other.active_joint_ids_;
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
