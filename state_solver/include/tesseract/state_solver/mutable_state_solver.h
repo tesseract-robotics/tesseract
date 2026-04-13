@@ -85,7 +85,7 @@ public:
   virtual bool removeLink(const std::string& name) = 0;
 
   /** @brief Removes a link from the graph (LinkId overload) */
-  virtual bool removeLink(const tesseract::common::LinkId& link_id);
+  virtual bool removeLink(const tesseract::common::LinkId& link_id) { return removeLink(link_id.name()); }
 
   /**
    * @brief Replace and existing joint with the provided one
@@ -102,7 +102,7 @@ public:
   virtual bool removeJoint(const std::string& name) = 0;
 
   /** @brief Removes a joint from the graph (JointId overload) */
-  virtual bool removeJoint(const tesseract::common::JointId& joint_id);
+  virtual bool removeJoint(const tesseract::common::JointId& joint_id) { return removeJoint(joint_id.name()); }
 
   /**
    * @brief Move joint to new parent link
@@ -113,7 +113,10 @@ public:
   virtual bool moveJoint(const std::string& name, const std::string& parent_link) = 0;
 
   /** @brief Move joint to new parent link (ID overload) */
-  virtual bool moveJoint(const tesseract::common::JointId& joint_id, const tesseract::common::LinkId& parent_link_id);
+  virtual bool moveJoint(const tesseract::common::JointId& joint_id, const tesseract::common::LinkId& parent_link_id)
+  {
+    return moveJoint(joint_id.name(), parent_link_id.name());
+  }
 
   /**
    * @brief Changes the "origin" transform of the joint and recomputes the associated edge
@@ -124,7 +127,10 @@ public:
   virtual bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin) = 0;
 
   /** @brief Changes the "origin" transform of the joint (JointId overload) */
-  virtual bool changeJointOrigin(const tesseract::common::JointId& joint_id, const Eigen::Isometry3d& new_origin);
+  virtual bool changeJointOrigin(const tesseract::common::JointId& joint_id, const Eigen::Isometry3d& new_origin)
+  {
+    return changeJointOrigin(joint_id.name(), new_origin);
+  }
 
   /**
    * @brief Changes the position limits associated with a joint
@@ -135,7 +141,10 @@ public:
   virtual bool changeJointPositionLimits(const std::string& name, double lower, double upper) = 0;
 
   /** @brief Changes position limits (JointId overload) */
-  virtual bool changeJointPositionLimits(const tesseract::common::JointId& joint_id, double lower, double upper);
+  virtual bool changeJointPositionLimits(const tesseract::common::JointId& joint_id, double lower, double upper)
+  {
+    return changeJointPositionLimits(joint_id.name(), lower, upper);
+  }
 
   /**
    * @brief Changes the velocity limits associated with a joint
@@ -146,7 +155,10 @@ public:
   virtual bool changeJointVelocityLimits(const std::string& name, double limit) = 0;
 
   /** @brief Changes velocity limits (JointId overload) */
-  virtual bool changeJointVelocityLimits(const tesseract::common::JointId& joint_id, double limit);
+  virtual bool changeJointVelocityLimits(const tesseract::common::JointId& joint_id, double limit)
+  {
+    return changeJointVelocityLimits(joint_id.name(), limit);
+  }
 
   /**
    * @brief Changes the acceleration limits associated with a joint
@@ -157,7 +169,10 @@ public:
   virtual bool changeJointAccelerationLimits(const std::string& name, double limit) = 0;
 
   /** @brief Changes acceleration limits (JointId overload) */
-  virtual bool changeJointAccelerationLimits(const tesseract::common::JointId& joint_id, double limit);
+  virtual bool changeJointAccelerationLimits(const tesseract::common::JointId& joint_id, double limit)
+  {
+    return changeJointAccelerationLimits(joint_id.name(), limit);
+  }
 
   /**
    * @brief Changes the jerk limits associated with a joint
@@ -168,7 +183,10 @@ public:
   virtual bool changeJointJerkLimits(const std::string& name, double limit) = 0;
 
   /** @brief Changes jerk limits (JointId overload) */
-  virtual bool changeJointJerkLimits(const tesseract::common::JointId& joint_id, double limit);
+  virtual bool changeJointJerkLimits(const tesseract::common::JointId& joint_id, double limit)
+  {
+    return changeJointJerkLimits(joint_id.name(), limit);
+  }
 
   /**
    * @brief Merge a scene into the current solver
