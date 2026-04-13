@@ -129,6 +129,7 @@ public:
 protected:
   std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
+  tesseract::common::LinkId tip_link_id_; /**< @brief Cached LinkId for tip_link_name_ */
   std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
   std::string solver_name_{ IKFAST_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
   /**< @brief combinations of free joints to sample when computing IK
