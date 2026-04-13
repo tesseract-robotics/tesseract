@@ -50,7 +50,7 @@ using tesseract::common::LinkId;
 
 Eigen::Isometry3d tcpCallback(const tesseract::common::ManipulatorInfo& mi)
 {
-  const std::string& tcp_offset_name = std::get<0>(mi.tcp_offset);
+  const std::string& tcp_offset_name = std::get<0>(mi.tcp_offset).name();
   if (tcp_offset_name == "laser_callback")
     return Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1);
 
@@ -146,7 +146,7 @@ void runGetLinkTransformsTest(Environment& env)
 
     for (std::size_t i = 0; i < link_names.size(); ++i)
     {
-      const std::string link_name = link_names.at(i);
+      const std::string& link_name = link_names.at(i);
       EXPECT_TRUE(env_state.link_transforms.at(LinkId::fromName(link_name)).isApprox(link_transforms.at(i), 1e-6));
       EXPECT_TRUE(env_state.link_transforms.at(LinkId::fromName(link_name))
                       .isApprox(link_transforms2.at(LinkId::fromName(link_name)), 1e-6));
@@ -2799,7 +2799,7 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
     tesseract::common::ManipulatorInfo manip_info("manipulator", LinkId{}, LinkId{});
-    manip_info.tcp_offset = "laser_callback";
+    manip_info.tcp_offset = LinkId::fromName("laser_callback");
     Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(found_tcp.isApprox(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1), 1e-6));
   }
@@ -2807,14 +2807,14 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
   {  // The tcp offset name is a link in the environment so it should throw an exception
     tesseract::common::ManipulatorInfo manip_info(
         "manipulator", LinkId::fromName("unknown"), LinkId::fromName("unknown"));
-    manip_info.tcp_offset = "tool0";
+    manip_info.tcp_offset = LinkId::fromName("tool0");
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 
   {  // If the tcp offset name does not exist it should throw an exception
     tesseract::common::ManipulatorInfo manip_info(
         "manipulator", LinkId::fromName("unknown"), LinkId::fromName("unknown"));
-    manip_info.tcp_offset = "unknown";
+    manip_info.tcp_offset = LinkId::fromName("unknown");
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 }
