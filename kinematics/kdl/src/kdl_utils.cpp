@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_utils.h>
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/scene_graph/kdl_parser.h>
@@ -109,6 +110,7 @@ bool parseSceneGraph(KDLChainData& results,
     results.robot_chain.addChain(sub_chain);
   }
   results.tip_link_name = chains.back().second;
+  results.tip_link_id = tesseract::common::LinkId::fromName(results.tip_link_name);
 
   results.joint_names.clear();
   results.joint_names.resize(results.robot_chain.getNrOfJoints());
