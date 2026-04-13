@@ -94,7 +94,7 @@ void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::LinkIdTransformMap& 
     fk_solver_->JntToCart(kdl_joints_cache, kdl_pose);
   }
 
-  Eigen::Isometry3d& pose = transforms[tesseract::common::LinkId::fromName(kdl_data_.tip_link_name)];
+  Eigen::Isometry3d& pose = transforms[kdl_data_.tip_link_id];
   KDLToEigen(kdl_pose, pose);
 }
 
