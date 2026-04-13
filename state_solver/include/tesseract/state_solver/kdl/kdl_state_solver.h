@@ -175,6 +175,12 @@ private:
   std::unordered_map<const KDL::TreeElementType*, SegmentIdCache> segment_id_cache_;
   const KDL::TreeElementType* root_element_{ nullptr }; /**< Cached root element pointer for fast comparison */
   std::vector<tesseract::common::JointId> active_joint_ids_; /**< Cached JointIds for active joints, aligned with data_.active_joint_names */
+  std::vector<tesseract::common::JointId> joint_ids_;          /**< Cached JointIds for all joints */
+  std::vector<tesseract::common::JointId> floating_joint_ids_; /**< Cached JointIds for floating joints */
+  std::vector<tesseract::common::LinkId> link_ids_;            /**< Cached LinkIds for all links */
+  std::vector<tesseract::common::LinkId> active_link_ids_;     /**< Cached LinkIds for active links */
+  std::vector<tesseract::common::LinkId> static_link_ids_;     /**< Cached LinkIds for static links */
+  tesseract::common::LinkId base_link_id_;                     /**< Cached LinkId for base link */
 
   static thread_local KDL::JntArray kdl_joints_cache;    // NOLINT
   static thread_local KDL::Jacobian kdl_jacobian_cache;  // NOLINT
