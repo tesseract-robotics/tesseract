@@ -98,9 +98,8 @@ namespace tesseract::kinematics
 {
 using tesseract::common::LinkId;
 
-// NOLINTNEXTLINE(modernize-pass-by-value)
-KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl)
-  : pose(p), working_frame(std::move(wf)), tip_link_name(std::move(tl))
+KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, tesseract::common::LinkId wf, tesseract::common::LinkId tl)
+  : pose(p), working_frame(std::move(wf)), tip_link_id(std::move(tl))
 {
 }
 
@@ -237,14 +236,12 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
   tesseract::common::LinkIdTransformMap ik_inputs;
   for (const auto& tip_link_pose : tip_link_poses)
   {
-    const auto wf_id = LinkId::fromName(tip_link_pose.working_frame);
-    const auto tl_id = LinkId::fromName(tip_link_pose.tip_link_name);
-
     // Check working frame
-    if (std::find(working_frame_ids_.begin(), working_frame_ids_.end(), wf_id) == working_frame_ids_.end())
+    if (std::find(working_frame_ids_.begin(), working_frame_ids_.end(), tip_link_pose.working_frame) ==
+        working_frame_ids_.end())
     {
       std::stringstream ss;
-      ss << "Specified working frame (" << tip_link_pose.working_frame
+      ss << "Specified working frame (" << tip_link_pose.working_frame.name()
          << ") is not in the list of identified working frames. Available working frames are: [";
       for (const auto& f : working_frame_ids_)
         ss << f.name() << ", ";
@@ -253,11 +250,12 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
     }
 
     // Check tip link
-    auto tip_it = inv_tip_links_map_.find(tl_id);
+    auto tip_it = inv_tip_links_map_.find(tip_link_pose.tip_link_id);
     if (tip_it == inv_tip_links_map_.end())
     {
       std::stringstream ss;
-      ss << "Failed to find specified tip link (" << tip_link_pose.tip_link_name << "). Available tip links are: [";
+      ss << "Failed to find specified tip link (" << tip_link_pose.tip_link_id.name()
+         << "). Available tip links are: [";
       for (const auto& pair : inv_tip_links_map_)
         ss << pair.first.name() << ", ";
       ss << "].";
@@ -270,11 +268,11 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
     const LinkId ik_solver_tip_link_id = tip_it->second;
     const auto ik_working_frame_id = LinkId::fromName(inv_kin_->getWorkingFrame());
 
-    const Eigen::Isometry3d& world_to_user_wf = state_.link_transforms.at(wf_id);
+    const Eigen::Isometry3d& world_to_user_wf = state_.link_transforms.at(tip_link_pose.working_frame);
     const Eigen::Isometry3d& world_to_wf = state_.link_transforms.at(ik_working_frame_id);
     const Eigen::Isometry3d wf_to_user_wf = world_to_wf.inverse() * world_to_user_wf;
 
-    const Eigen::Isometry3d& world_to_user_tl = state_.link_transforms.at(tl_id);
+    const Eigen::Isometry3d& world_to_user_tl = state_.link_transforms.at(tip_link_pose.tip_link_id);
     const Eigen::Isometry3d& world_to_tl = state_.link_transforms.at(ik_solver_tip_link_id);
     const Eigen::Isometry3d tl_to_user_tl = world_to_tl.inverse() * world_to_user_tl;
 
