@@ -38,16 +38,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::srdf
 {
-using GroupsJointState = std::unordered_map<std::string, double>;
+using GroupsJointState = std::unordered_map<tesseract::common::JointId, double, tesseract::common::JointId::Hash>;
 using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
 using GroupJointStates = std::unordered_map<std::string, GroupsJointStates>;
-using GroupsTCPs = tesseract::common::TransformMap;
+using GroupsTCPs = tesseract::common::LinkIdTransformMap;
 using GroupTCPs = tesseract::common::AlignedUnorderedMap<std::string, GroupsTCPs>;
 using ChainGroup = std::vector<std::pair<std::string, std::string>>;
 using ChainGroups = std::unordered_map<std::string, ChainGroup>;
-using JointGroup = std::vector<std::string>;
+using JointGroup = std::vector<tesseract::common::JointId>;
 using JointGroups = std::unordered_map<std::string, JointGroup>;
-using LinkGroup = std::vector<std::string>;
+using LinkGroup = std::vector<tesseract::common::LinkId>;
 using LinkGroups = std::unordered_map<std::string, LinkGroup>;
 using GroupNames = std::set<std::string>;
 
