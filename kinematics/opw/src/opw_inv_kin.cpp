@@ -46,6 +46,7 @@ OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
   , joint_names_(std::move(joint_names))
   , solver_name_(std::move(solver_name))
 {
+  tip_link_id_ = tesseract::common::LinkId::fromName(tip_link_name_);
   if (joint_names_.size() != 6)
     throw std::runtime_error("OPWInvKin, only support six joints!");
 }
@@ -61,6 +62,7 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
 
   base_link_name_ = other.base_link_name_;
   tip_link_name_ = other.tip_link_name_;
+  tip_link_id_ = other.tip_link_id_;
   joint_names_ = other.joint_names_;
   params_ = other.params_;
   solver_name_ = other.solver_name_;
@@ -71,7 +73,7 @@ void OPWInvKin::calcInvKin(IKSolutions& solutions,
                            const tesseract::common::LinkIdTransformMap& tip_link_poses,
                            const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  const auto tip_id = tesseract::common::LinkId::fromName(tip_link_name_);
+  const auto tip_id = tip_link_id_;
   assert(tip_link_poses.size() == 1);                                                    // NOLINT
   assert(tip_link_poses.find(tip_id) != tip_link_poses.end());                           // NOLINT
   assert(std::abs(1.0 - tip_link_poses.at(tip_id).matrix().determinant()) < 1e-6);  // NOLINT
