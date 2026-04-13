@@ -89,6 +89,7 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
                                                                 double elbow_offset)
 {
   using namespace tesseract::scene_graph;
+  using tesseract::common::LinkId;
 
   auto sg = std::make_unique<SceneGraph>("universal_robot");
   sg->addLink(Link("base_link"));
@@ -104,8 +105,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("shoulder_pan_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "base_link";
-    j.child_link_name = "shoulder_link";
+    j.parent_link_id = LinkId::fromName("base_link");
+    j.child_link_id = LinkId::fromName("shoulder_link");
     j.axis = Eigen::Vector3d::UnitZ();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d1);
     j.limits = std::make_shared<JointLimits>();
@@ -119,8 +120,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("shoulder_lift_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "shoulder_link";
-    j.child_link_name = "upper_arm_link";
+    j.parent_link_id = LinkId::fromName("shoulder_link");
+    j.child_link_id = LinkId::fromName("upper_arm_link");
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, shoulder_offset, 0);
     j.parent_to_joint_origin_transform =
@@ -136,8 +137,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("elbow_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "upper_arm_link";
-    j.child_link_name = "forearm_link";
+    j.parent_link_id = LinkId::fromName("upper_arm_link");
+    j.child_link_id = LinkId::fromName("forearm_link");
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, elbow_offset, -params.a2);
     j.limits = std::make_shared<JointLimits>();
@@ -151,8 +152,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_1_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "forearm_link";
-    j.child_link_name = "wrist_1_link";
+    j.parent_link_id = LinkId::fromName("forearm_link");
+    j.child_link_id = LinkId::fromName("wrist_1_link");
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, -params.a3);
     j.parent_to_joint_origin_transform =
@@ -168,8 +169,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_2_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "wrist_1_link";
-    j.child_link_name = "wrist_2_link";
+    j.parent_link_id = LinkId::fromName("wrist_1_link");
+    j.child_link_id = LinkId::fromName("wrist_2_link");
     j.axis = Eigen::Vector3d::UnitZ();
     j.parent_to_joint_origin_transform.translation() =
         Eigen::Vector3d(0, params.d4 - elbow_offset - shoulder_offset, 0);
@@ -184,8 +185,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_3_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "wrist_2_link";
-    j.child_link_name = "wrist_3_link";
+    j.parent_link_id = LinkId::fromName("wrist_2_link");
+    j.child_link_id = LinkId::fromName("wrist_3_link");
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d5);
     j.limits = std::make_shared<JointLimits>();
@@ -199,8 +200,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("ee_fixed_joint");
     j.type = JointType::FIXED;
-    j.parent_link_name = "wrist_3_link";
-    j.child_link_name = "ee_link";
+    j.parent_link_id = LinkId::fromName("wrist_3_link");
+    j.child_link_id = LinkId::fromName("ee_link");
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d6, 0);
     j.parent_to_joint_origin_transform =
         j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
@@ -210,8 +211,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_3_link-tool0_fixed_joint");
     j.type = JointType::FIXED;
-    j.parent_link_name = "wrist_3_link";
-    j.child_link_name = "tool0";
+    j.parent_link_id = LinkId::fromName("wrist_3_link");
+    j.child_link_id = LinkId::fromName("tool0");
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d6, 0);
     j.parent_to_joint_origin_transform =
         j.parent_to_joint_origin_transform * Eigen::AngleAxisd(-M_PI_2, Eigen::Vector3d::UnitX());
@@ -342,12 +343,8 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
       jacobian = kin_group.calcJacobian(jvals, static_link_name, link_name);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
-      tesseract::kinematics::numericalJacobian(numerical_jacobian,
-                                               poses.at(static_link_id).inverse(),
-                                               kin_group,
-                                               jvals,
-                                               link_name,
-                                               Eigen::Vector3d::Zero());
+      tesseract::kinematics::numericalJacobian(
+          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_name, Eigen::Vector3d::Zero());
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -503,9 +500,7 @@ inline void runInvKinTest(const tesseract::kinematics::InverseKinematics& inv_ki
   // Test Inverse kinematics
   ///////////////////////////
   EXPECT_TRUE(inv_kin.getBaseLinkName() == fwd_kin.getBaseLinkName());  // This only works if they are equal
-  tesseract::common::LinkIdTransformMap input{
-    { tesseract::common::LinkId::fromName(tip_link_name), target_pose }
-  };
+  tesseract::common::LinkIdTransformMap input{ { tesseract::common::LinkId::fromName(tip_link_name), target_pose } };
   IKSolutions solutions = inv_kin.calcInvKin(input, seed);
   EXPECT_TRUE(!solutions.empty());
 

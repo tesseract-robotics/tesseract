@@ -106,7 +106,7 @@ void TesseractIgnitionVisualization::plotTrajectory(const tesseract_common::Join
   std::chrono::duration<double> fp_s(5.0 / static_cast<double>(traj.size()));
   for (const auto& traj_state : traj)
   {
-    tesseract_scene_graph::SceneState state = state_solver.getState(traj_state.joint_names, traj_state.position);
+    tesseract_scene_graph::SceneState state = state_solver.getState(traj_state.joint_ids, traj_state.position);
     sendSceneState(state);
     std::this_thread::sleep_for(fp_s);
   }
