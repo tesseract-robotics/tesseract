@@ -11,9 +11,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <unordered_set>
 #include <unordered_map>
+#include <cereal/archives/xml.hpp>
+#include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/types.h>
+#include <tesseract/common/cereal_serialization.h>
 
 using namespace tesseract::common;
 
@@ -188,6 +191,61 @@ TEST(NameIdTest, LinkIdPairPreservesNames)  // NOLINT
   // After canonical ordering, names should be preserved
   EXPECT_FALSE(pair.first.name().empty());
   EXPECT_FALSE(pair.second.name().empty());
+}
+
+// ======================== Cereal serialization ========================
+
+TEST(NameIdTest, CerealRoundTripValid)  // NOLINT
+{
+  const LinkId original = LinkId::fromName("test_link");
+
+  std::string xml;
+  {
+    std::ostringstream oss;
+    {
+      cereal::XMLOutputArchive ar(oss);
+      ar(cereal::make_nvp("id", original));
+    }
+    xml = oss.str();
+  }
+
+  LinkId loaded{};
+  {
+    std::istringstream iss(xml);
+    cereal::XMLInputArchive ar(iss);
+    ar(cereal::make_nvp("id", loaded));
+  }
+
+  EXPECT_EQ(original, loaded);
+  EXPECT_EQ(original.name(), loaded.name());
+  EXPECT_TRUE(loaded.isValid());
+}
+
+TEST(NameIdTest, CerealRoundTripInvalidSentinel)  // NOLINT
+{
+  const LinkId original{};  // default-constructed = invalid
+  EXPECT_FALSE(original.isValid());
+
+  std::string xml;
+  {
+    std::ostringstream oss;
+    {
+      cereal::XMLOutputArchive ar(oss);
+      ar(cereal::make_nvp("id", original));
+    }
+    xml = oss.str();
+  }
+
+  LinkId loaded = LinkId::fromName("placeholder");  // start non-default to prove overwrite
+  {
+    std::istringstream iss(xml);
+    cereal::XMLInputArchive ar(iss);
+    ar(cereal::make_nvp("id", loaded));
+  }
+
+  EXPECT_FALSE(loaded.isValid());
+  EXPECT_EQ(original, loaded);
+  EXPECT_TRUE(loaded.name().empty());
 }
 
 int main(int argc, char** argv)
