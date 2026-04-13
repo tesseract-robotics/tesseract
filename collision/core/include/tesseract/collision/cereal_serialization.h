@@ -130,14 +130,33 @@ void serialize(Archive& ar, tesseract::collision::ContactRequest& g)
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract::collision::ContactManagerConfig& g)
+void save(Archive& ar, const tesseract::collision::ContactManagerConfig& g)
 {
   ar(cereal::make_nvp("default_margin", g.default_margin));
   ar(cereal::make_nvp("pair_margin_override_type", g.pair_margin_override_type));
   ar(cereal::make_nvp("pair_margin_data", g.pair_margin_data));
   ar(cereal::make_nvp("acm", g.acm));
   ar(cereal::make_nvp("acm_override_type", g.acm_override_type));
-  ar(cereal::make_nvp("modify_object_enabled", g.modify_object_enabled));
+  std::unordered_map<std::string, bool> moe;
+  moe.reserve(g.modify_object_enabled.size());
+  for (const auto& [id, val] : g.modify_object_enabled)
+    moe[id.name()] = val;
+  ar(cereal::make_nvp("modify_object_enabled", moe));
+}
+
+template <class Archive>
+void load(Archive& ar, tesseract::collision::ContactManagerConfig& g)
+{
+  ar(cereal::make_nvp("default_margin", g.default_margin));
+  ar(cereal::make_nvp("pair_margin_override_type", g.pair_margin_override_type));
+  ar(cereal::make_nvp("pair_margin_data", g.pair_margin_data));
+  ar(cereal::make_nvp("acm", g.acm));
+  ar(cereal::make_nvp("acm_override_type", g.acm_override_type));
+  std::unordered_map<std::string, bool> moe;
+  ar(cereal::make_nvp("modify_object_enabled", moe));
+  g.modify_object_enabled.clear();
+  for (const auto& [name, val] : moe)
+    g.modify_object_enabled[tesseract::common::LinkId::fromName(name)] = val;
 }
 
 template <class Archive>
