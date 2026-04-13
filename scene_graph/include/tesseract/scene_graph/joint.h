@@ -56,6 +56,12 @@ class Joint;
 template <class Archive>
 void serialize(Archive& ar, Joint& obj);
 
+template <class Archive>
+void save(Archive& ar, const Joint& obj);
+
+template <class Archive>
+void load(Archive& ar, Joint& obj);
+
 class JointDynamics
 {
 public:
@@ -275,11 +281,11 @@ public:
 
   /// child Link element
   ///   child link frame is the same as the Joint frame
-  std::string child_link_name;
+  common::LinkId child_link_id;
 
   /// parent Link element
   ///   origin specifies the transform from Parent Link to Joint Frame
-  std::string parent_link_name;
+  common::LinkId parent_link_id;
 
   /// transform from Parent Link frame to Joint frame
   Eigen::Isometry3d parent_to_joint_origin_transform{ Eigen::Isometry3d::Identity() };
@@ -320,6 +326,12 @@ private:
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, Joint& obj);
+
+  template <class Archive>
+  friend void ::tesseract::scene_graph::save(Archive& ar, const Joint& obj);
+
+  template <class Archive>
+  friend void ::tesseract::scene_graph::load(Archive& ar, Joint& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const JointType& type);

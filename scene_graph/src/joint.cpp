@@ -209,8 +209,8 @@ const common::JointId& Joint::getId() const { return id_; }
 void Joint::clear()
 {
   this->axis = Eigen::Vector3d(1, 0, 0);
-  this->child_link_name.clear();
-  this->parent_link_name.clear();
+  this->child_link_id = common::LinkId{};
+  this->parent_link_id = common::LinkId{};
   this->parent_to_joint_origin_transform.setIdentity();
   this->dynamics.reset();
   this->limits.reset();
@@ -226,8 +226,8 @@ Joint Joint::clone(const std::string& name) const
 {
   Joint ret(name);
   ret.axis = this->axis;
-  ret.child_link_name = this->child_link_name;
-  ret.parent_link_name = this->parent_link_name;
+  ret.child_link_id = this->child_link_id;
+  ret.parent_link_id = this->parent_link_id;
   ret.parent_to_joint_origin_transform = this->parent_to_joint_origin_transform;
   ret.type = this->type;
   if (this->dynamics)
@@ -258,8 +258,8 @@ bool Joint::operator==(const Joint& rhs) const
   bool equal = true;
   equal &= type == rhs.type;
   equal &= tesseract::common::almostEqualRelativeAndAbs(axis, rhs.axis);
-  equal &= child_link_name == rhs.child_link_name;
-  equal &= parent_link_name == rhs.parent_link_name;
+  equal &= child_link_id == rhs.child_link_id;
+  equal &= parent_link_id == rhs.parent_link_id;
   equal &= parent_to_joint_origin_transform.isApprox(rhs.parent_to_joint_origin_transform, 1e-5);
   equal &= tesseract::common::pointersEqual(dynamics, rhs.dynamics);
   equal &= tesseract::common::pointersEqual(limits, rhs.limits);

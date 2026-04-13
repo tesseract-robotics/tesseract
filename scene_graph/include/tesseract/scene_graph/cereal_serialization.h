@@ -166,12 +166,32 @@ void serialize(Archive& ar, JointMimic& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, Joint& obj)
+void save(Archive& ar, const Joint& obj)
 {
   ar(cereal::make_nvp("type", obj.type));
   ar(cereal::make_nvp("axis", obj.axis));
-  ar(cereal::make_nvp("child_link_name", obj.child_link_name));
-  ar(cereal::make_nvp("parent_link_name", obj.parent_link_name));
+  ar(cereal::make_nvp("child_link_name", obj.child_link_id.name_));
+  ar(cereal::make_nvp("parent_link_name", obj.parent_link_id.name_));
+  ar(cereal::make_nvp("parent_to_joint_origin_transform", obj.parent_to_joint_origin_transform));
+  ar(cereal::make_nvp("dynamics", obj.dynamics));
+  ar(cereal::make_nvp("limits", obj.limits));
+  ar(cereal::make_nvp("safety", obj.safety));
+  ar(cereal::make_nvp("calibration", obj.calibration));
+  ar(cereal::make_nvp("mimic", obj.mimic));
+  ar(cereal::make_nvp("name", obj.id_.name_));
+  ar(cereal::make_nvp("id", obj.id_.value));
+}
+
+template <class Archive>
+void load(Archive& ar, Joint& obj)
+{
+  ar(cereal::make_nvp("type", obj.type));
+  ar(cereal::make_nvp("axis", obj.axis));
+  std::string child_link_name, parent_link_name;
+  ar(cereal::make_nvp("child_link_name", child_link_name));
+  ar(cereal::make_nvp("parent_link_name", parent_link_name));
+  obj.child_link_id = tesseract::common::LinkId::fromName(child_link_name);
+  obj.parent_link_id = tesseract::common::LinkId::fromName(parent_link_name);
   ar(cereal::make_nvp("parent_to_joint_origin_transform", obj.parent_to_joint_origin_transform));
   ar(cereal::make_nvp("dynamics", obj.dynamics));
   ar(cereal::make_nvp("limits", obj.limits));
