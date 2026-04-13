@@ -152,7 +152,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // Not in collision if link disabled
     {
-      contact_manager_config.modify_object_enabled["boxbot_link"] = false;
+      contact_manager_config.modify_object_enabled[tesseract::common::LinkId::fromName("boxbot_link")] = false;
       manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
       checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
@@ -161,7 +161,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // Re-enable it. Now in collision again
     {
-      contact_manager_config.modify_object_enabled["boxbot_link"] = true;
+      contact_manager_config.modify_object_enabled[tesseract::common::LinkId::fromName("boxbot_link")] = true;
       manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
       checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
@@ -170,7 +170,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // Disable a link that doesn't exist. Still in collision
     {
-      contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
+      contact_manager_config.modify_object_enabled[tesseract::common::LinkId::fromName("nonexistant_link")] = false;
       manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
       checkTrajectoryState(contacts, *manager, tmap, default_collision_check_config.contact_request);
@@ -205,7 +205,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // Not in collision if link disabled
     {
-      contact_manager_config.modify_object_enabled["boxbot_link"] = false;
+      contact_manager_config.modify_object_enabled[tesseract::common::LinkId::fromName("boxbot_link")] = false;
       manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
       checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
@@ -214,7 +214,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // Re-enable it. Now in collision again
     {
-      contact_manager_config.modify_object_enabled["boxbot_link"] = true;
+      contact_manager_config.modify_object_enabled[tesseract::common::LinkId::fromName("boxbot_link")] = true;
       manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
       checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
@@ -223,7 +223,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
 
     // Disable a link that doesn't exist. Still in collision
     {
-      contact_manager_config.modify_object_enabled["nonexistant_link"] = false;
+      contact_manager_config.modify_object_enabled[tesseract::common::LinkId::fromName("nonexistant_link")] = false;
       manager->applyContactManagerConfig(contact_manager_config);
       contacts.clear();
       checkTrajectorySegment(contacts, *manager, tmap1, tmap2, default_collision_check_config.contact_request);
