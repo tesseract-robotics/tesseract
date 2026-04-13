@@ -67,15 +67,22 @@ public:
   BulletDiscreteBVHManager(BulletDiscreteBVHManager&&) = delete;
   BulletDiscreteBVHManager& operator=(BulletDiscreteBVHManager&&) = delete;
 
+  // Bring base class string overloads into scope (prevents name hiding by ID overloads)
+  using DiscreteContactManager::addCollisionObject;
+  using DiscreteContactManager::getCollisionObjectGeometries;
+  using DiscreteContactManager::getCollisionObjectGeometriesTransforms;
+  using DiscreteContactManager::hasCollisionObject;
+  using DiscreteContactManager::removeCollisionObject;
+  using DiscreteContactManager::enableCollisionObject;
+  using DiscreteContactManager::disableCollisionObject;
+  using DiscreteContactManager::isCollisionObjectEnabled;
+  using DiscreteContactManager::setCollisionObjectsTransform;
+  using DiscreteContactManager::setActiveCollisionObjects;
+  using DiscreteContactManager::getActiveCollisionObjects;
+
   std::string getName() const override final;
 
   DiscreteContactManager::UPtr clone() const override final;
-
-  bool addCollisionObject(const std::string& name,
-                          const int& mask_id,
-                          const CollisionShapesConst& shapes,
-                          const tesseract::common::VectorIsometry3d& shape_poses,
-                          bool enabled = true) override final;
 
   bool addCollisionObject(const tesseract::common::LinkId& id,
                           const int& mask_id,
@@ -83,53 +90,32 @@ public:
                           const tesseract::common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override final;
 
-  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override final;
-
   const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const override final;
-
-  const tesseract::common::VectorIsometry3d&
-  getCollisionObjectGeometriesTransforms(const std::string& name) const override final;
 
   const tesseract::common::VectorIsometry3d&
   getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const override final;
 
-  bool hasCollisionObject(const std::string& name) const override final;
-
   bool hasCollisionObject(const tesseract::common::LinkId& id) const override final;
-
-  bool removeCollisionObject(const std::string& name) override final;
 
   bool removeCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool enableCollisionObject(const std::string& name) override final;
-
   bool enableCollisionObject(const tesseract::common::LinkId& id) override final;
-
-  bool disableCollisionObject(const std::string& name) override final;
 
   bool disableCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool isCollisionObjectEnabled(const std::string& name) const override final;
-
   bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const override final;
-
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override final;
 
   void setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                     const Eigen::Isometry3d& pose) override final;
-
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const tesseract::common::VectorIsometry3d& poses) override final;
 
   void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
   const std::vector<tesseract::common::LinkId>& getCollisionObjects() const override final;
 
-  void setActiveCollisionObjects(const std::vector<std::string>& names) override final;
-
   void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids) override final;
 
-  std::vector<std::string> getActiveCollisionObjects() const override final;
+  const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+  getActiveCollisionObjectIds() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
 
