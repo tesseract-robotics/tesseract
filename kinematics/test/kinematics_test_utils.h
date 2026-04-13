@@ -532,7 +532,7 @@ inline void runInvKinTest(const tesseract::kinematics::KinematicGroup& kin_group
   // Test Inverse kinematics
   ///////////////////////////
   EXPECT_NO_THROW(kin_group.getInverseKinematics());
-  KinGroupIKInput input(target_pose, working_frame, tip_link_name);
+  KinGroupIKInput input(target_pose, tesseract::common::LinkId::fromName(working_frame), tesseract::common::LinkId::fromName(tip_link_name));
   IKSolutions solutions = kin_group.calcInvKin(input, seed);
   EXPECT_TRUE(!solutions.empty());
 
@@ -553,12 +553,12 @@ inline void runInvKinTest(const tesseract::kinematics::KinematicGroup& kin_group
 
   // Test failures
   {
-    KinGroupIKInput input(target_pose, "does_not_exist", tip_link_name);
+    KinGroupIKInput input(target_pose, tesseract::common::LinkId::fromName("does_not_exist"), tesseract::common::LinkId::fromName(tip_link_name));
     EXPECT_ANY_THROW(kin_group.calcInvKin(input, seed));  // NOLINT
   }
 
   {
-    KinGroupIKInput input(target_pose, working_frame, "does_not_exist");
+    KinGroupIKInput input(target_pose, tesseract::common::LinkId::fromName(working_frame), tesseract::common::LinkId::fromName("does_not_exist"));
     EXPECT_ANY_THROW(kin_group.calcInvKin(input, seed));  // NOLINT
   }
 }

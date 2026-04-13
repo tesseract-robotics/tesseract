@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/joint_group.h>
 #include <tesseract/kinematics/types.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::kinematics
 {
@@ -49,7 +50,7 @@ struct KinGroupIKInput
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl);
+  KinGroupIKInput(const Eigen::Isometry3d& p, tesseract::common::LinkId wf, tesseract::common::LinkId tl);
 
   KinGroupIKInput() = default;
 
@@ -60,13 +61,13 @@ struct KinGroupIKInput
    * @brief The link name the pose is relative to
    * @details The provided working frame must be listed in InverseKinematics::getWorkingFrames()
    */
-  std::string working_frame;
+  tesseract::common::LinkId working_frame;
 
   /**
    * @brief The tip link of the kinematic object to solve IK
    * @details The provided tip link name must be listed in InverseKinematics::getTipLinkNames()
    */
-  std::string tip_link_name;  // This defines the internal kinematic group the information belongs to
+  tesseract::common::LinkId tip_link_id;  // This defines the internal kinematic group the information belongs to
 };
 using KinGroupIKInputs = tesseract::common::AlignedVector<KinGroupIKInput>;
 
