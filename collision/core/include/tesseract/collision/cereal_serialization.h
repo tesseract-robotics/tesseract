@@ -49,35 +49,11 @@ namespace tesseract::collision
 /************************************************/
 
 template <class Archive>
-void save(Archive& ar, const tesseract::collision::ContactResult& g)
+void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
-  std::array<std::string, 2> link_names_compat{ g.link_ids[0].name(), g.link_ids[1].name() };
-  ar(cereal::make_nvp("link_names", link_names_compat));
-  ar(cereal::make_nvp("shape_id", g.shape_id));
-  ar(cereal::make_nvp("subshape_id", g.subshape_id));
-  ar(cereal::make_nvp("nearest_points", g.nearest_points));
-  ar(cereal::make_nvp("nearest_points_local", g.nearest_points_local));
-  ar(cereal::make_nvp("transform", g.transform));
-  ar(cereal::make_nvp("normal", g.normal));
-  ar(cereal::make_nvp("cc_time", g.cc_time));
-  ar(cereal::make_nvp("cc_type", g.cc_type));
-  ar(cereal::make_nvp("cc_transform", g.cc_transform));
-  ar(cereal::make_nvp("single_contact_point", g.single_contact_point));
-}
-
-template <class Archive>
-void load(Archive& ar, tesseract::collision::ContactResult& g)
-{
-  ar(cereal::make_nvp("distance", g.distance));
-  ar(cereal::make_nvp("type_id", g.type_id));
-  std::array<std::string, 2> link_names_compat;
-  ar(cereal::make_nvp("link_names", link_names_compat));
-  g.link_ids[0] = link_names_compat[0].empty() ? tesseract::common::LinkId{} :
-                   tesseract::common::LinkId::fromName(link_names_compat[0]);
-  g.link_ids[1] = link_names_compat[1].empty() ? tesseract::common::LinkId{} :
-                   tesseract::common::LinkId::fromName(link_names_compat[1]);
+  ar(cereal::make_nvp("link_names", g.link_ids));
   ar(cereal::make_nvp("shape_id", g.shape_id));
   ar(cereal::make_nvp("subshape_id", g.subshape_id));
   ar(cereal::make_nvp("nearest_points", g.nearest_points));
@@ -189,27 +165,10 @@ void serialize(Archive& ar, tesseract::collision::ContactTrajectoryStepResults& 
 }
 
 template <class Archive>
-void save(Archive& ar, const tesseract::collision::ContactTrajectoryResults& g)
+void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 {
   ar(cereal::make_nvp("steps", g.steps));
-  std::vector<std::string> joint_names;
-  joint_names.reserve(g.joint_ids.size());
-  for (const auto& jid : g.joint_ids)
-    joint_names.push_back(jid.name());
-  ar(cereal::make_nvp("joint_names", joint_names));
-  ar(cereal::make_nvp("total_steps", g.total_steps));
-}
-
-template <class Archive>
-void load(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
-{
-  ar(cereal::make_nvp("steps", g.steps));
-  std::vector<std::string> joint_names;
-  ar(cereal::make_nvp("joint_names", joint_names));
-  g.joint_ids.clear();
-  g.joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    g.joint_ids.push_back(tesseract::common::JointId::fromName(name));
+  ar(cereal::make_nvp("joint_names", g.joint_ids));
   ar(cereal::make_nvp("total_steps", g.total_steps));
 }
 }  // namespace tesseract::collision
