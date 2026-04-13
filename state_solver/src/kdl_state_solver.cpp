@@ -75,6 +75,7 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   joint_qnr_ = other.joint_qnr_;
   kdl_jnt_array_ = other.kdl_jnt_array_;
   limits_ = other.limits_;
+  active_joint_ids_ = other.active_joint_ids_;
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
@@ -94,10 +95,10 @@ void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_val
                               const tesseract::common::JointIdTransformMap& /*floating_joint_values*/)
 {
   assert(static_cast<Eigen::Index>(data_.active_joint_names.size()) == joint_values.size());
-  for (auto i = 0U; i < data_.active_joint_names.size(); ++i)
+  for (auto i = 0U; i < active_joint_ids_.size(); ++i)
   {
-    if (setJointValuesHelper(kdl_jnt_array_, data_.active_joint_names[i], joint_values[i]))
-      current_state_.joints[JointId::fromName(data_.active_joint_names[i])] = joint_values[i];
+    if (setJointValuesHelper(kdl_jnt_array_, active_joint_ids_[i], joint_values[i]))
+      current_state_.joints[active_joint_ids_[i]] = joint_values[i];
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -183,10 +184,10 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
 
   kdl_joints_cache = kdl_jnt_array_;
 
-  for (auto i = 0U; i < data_.active_joint_names.size(); ++i)
+  for (auto i = 0U; i < active_joint_ids_.size(); ++i)
   {
-    if (setJointValuesHelper(kdl_joints_cache, data_.active_joint_names[i], joint_values[i]))
-      state.joints[JointId::fromName(data_.active_joint_names[i])] = joint_values[i];
+    if (setJointValuesHelper(kdl_joints_cache, active_joint_ids_[i], joint_values[i]))
+      state.joints[active_joint_ids_[i]] = joint_values[i];
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -538,6 +539,12 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
 
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
+  // Pre-compute JointId cache for active joints
+  active_joint_ids_.clear();
+  active_joint_ids_.reserve(data_.active_joint_names.size());
+  for (const auto& name : data_.active_joint_names)
+    active_joint_ids_.push_back(JointId::fromName(name));
+
   // Cache LinkId/JointId per segment to avoid per-FK fromName() calls.
   // Keyed by pointer to KDL TreeElement (pointer-stable in std::map).
   segment_id_cache_.clear();
@@ -570,6 +577,19 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
   }
 
   CONSOLE_BRIDGE_logError("Tried to set joint name %s which does not exist!", joint_name.c_str());
+  return false;
+}
+
+bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
+                                          const tesseract::common::JointId& joint_id,
+                                          const double& joint_value) const
+{
+  auto qnr = joint_id_to_qnr_.find(joint_id);
+  if (qnr != joint_id_to_qnr_.end())
+  {
+    q(qnr->second) = joint_value;
+    return true;
+  }
   return false;
 }
 
