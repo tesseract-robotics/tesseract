@@ -174,6 +174,7 @@ private:
   };
   std::unordered_map<const KDL::TreeElementType*, SegmentIdCache> segment_id_cache_;
   const KDL::TreeElementType* root_element_{ nullptr }; /**< Cached root element pointer for fast comparison */
+  std::vector<tesseract::common::JointId> active_joint_ids_; /**< Cached JointIds for active joints, aligned with data_.active_joint_names */
 
   static thread_local KDL::JntArray kdl_joints_cache;    // NOLINT
   static thread_local KDL::Jacobian kdl_jacobian_cache;  // NOLINT
@@ -191,6 +192,7 @@ private:
                                  const Eigen::Isometry3d& parent_frame) const;
 
   bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
+  bool setJointValuesHelper(KDL::JntArray& q, const tesseract::common::JointId& joint_id, const double& joint_value) const;
 
   bool calcJacobianHelper(KDL::Jacobian& jacobian, const KDL::JntArray& kdl_joints, const std::string& link_name) const;
 
