@@ -68,7 +68,7 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
                                "') collides with ('" + it->second.name1 + "', '" + it->second.name2 + "')");
   }
 
-  if (link_id1.value <= link_id2.value)
+  if (link_id1.value() <= link_id2.value())
     lookup_table_[key] = ACMEntry{ link_id1.name(), link_id2.name(), reason };
   else
     lookup_table_[key] = ACMEntry{ link_id2.name(), link_id1.name(), reason };

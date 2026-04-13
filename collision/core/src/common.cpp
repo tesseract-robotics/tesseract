@@ -93,14 +93,14 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
     if (verbose)
     {
       CONSOLE_BRIDGE_logError("Collision between LinkId(%lu) and LinkId(%lu) is allowed. No contacts are computed.",
-                              id1.value, id2.value);
+                              id1.value(), id2.value());
     }
     return true;
   }
 
   if (verbose)
   {
-    CONSOLE_BRIDGE_logError("Actually checking collisions between LinkId(%lu) and LinkId(%lu)", id1.value, id2.value);
+    CONSOLE_BRIDGE_logError("Actually checking collisions between LinkId(%lu) and LinkId(%lu)", id1.value(), id2.value());
   }
 
   return false;
