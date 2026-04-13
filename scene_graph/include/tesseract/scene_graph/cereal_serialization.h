@@ -190,8 +190,10 @@ void load(Archive& ar, Joint& obj)
   std::string child_link_name, parent_link_name;
   ar(cereal::make_nvp("child_link_name", child_link_name));
   ar(cereal::make_nvp("parent_link_name", parent_link_name));
-  obj.child_link_id = tesseract::common::LinkId::fromName(child_link_name);
-  obj.parent_link_id = tesseract::common::LinkId::fromName(parent_link_name);
+  obj.child_link_id =
+      child_link_name.empty() ? tesseract::common::LinkId{} : tesseract::common::LinkId::fromName(child_link_name);
+  obj.parent_link_id =
+      parent_link_name.empty() ? tesseract::common::LinkId{} : tesseract::common::LinkId::fromName(parent_link_name);
   ar(cereal::make_nvp("parent_to_joint_origin_transform", obj.parent_to_joint_origin_transform));
   ar(cereal::make_nvp("dynamics", obj.dynamics));
   ar(cereal::make_nvp("limits", obj.limits));
