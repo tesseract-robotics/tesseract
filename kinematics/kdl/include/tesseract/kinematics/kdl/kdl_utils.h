@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/fwd.h>
 
 namespace tesseract::kinematics
@@ -93,6 +94,7 @@ struct KDLChainData
   std::vector<std::string> joint_names;     /**< @brief List of joint names */
   std::string base_link_name;               /**< @brief Link name of first link in the kinematic object */
   std::string tip_link_name;                /**< @brief Link name of last kink in the kinematic object */
+  tesseract::common::LinkId tip_link_id;    /**< @brief Cached LinkId for tip_link_name */
   std::map<std::string, int> segment_index; /**< @brief A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
   KDL::JntArray q_min;                                     /**< @brief Lower joint limits */
