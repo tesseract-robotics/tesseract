@@ -31,10 +31,15 @@
 namespace tesseract::common
 {
 template <class Archive, typename Tag>
-void serialize(Archive& ar, NameId<Tag>& id)
+std::string save_minimal(const Archive&, const NameId<Tag>& id)
 {
-  ar(cereal::make_nvp("value", id.value));
-  ar(cereal::make_nvp("name", id.name_));
+  return id.name();
+}
+
+template <class Archive, typename Tag>
+void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
+{
+  id = NameId<Tag>::fromName(value);
 }
 
 template <class Archive>
