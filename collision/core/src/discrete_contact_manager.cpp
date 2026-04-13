@@ -24,78 +24,85 @@
 
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/utils.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
-bool DiscreteContactManager::addCollisionObject(const tesseract::common::LinkId& id,
+bool DiscreteContactManager::addCollisionObject(const std::string& name,
                                                 const int& mask_id,
                                                 const CollisionShapesConst& shapes,
                                                 const tesseract::common::VectorIsometry3d& shape_poses,
                                                 bool enabled)
 {
-  return addCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+  return addCollisionObject(tesseract::common::LinkId::fromName(name), mask_id, shapes, shape_poses, enabled);
 }
 
-const CollisionShapesConst&
-DiscreteContactManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
+const CollisionShapesConst& DiscreteContactManager::getCollisionObjectGeometries(const std::string& name) const
 {
-  return getCollisionObjectGeometries(id.name());
+  return getCollisionObjectGeometries(tesseract::common::LinkId::fromName(name));
 }
 
 const tesseract::common::VectorIsometry3d&
-DiscreteContactManager::getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const
+DiscreteContactManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
 {
-  return getCollisionObjectGeometriesTransforms(id.name());
+  return getCollisionObjectGeometriesTransforms(tesseract::common::LinkId::fromName(name));
 }
 
-bool DiscreteContactManager::hasCollisionObject(const tesseract::common::LinkId& id) const
+bool DiscreteContactManager::hasCollisionObject(const std::string& name) const
 {
-  return hasCollisionObject(id.name());
+  return hasCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool DiscreteContactManager::removeCollisionObject(const tesseract::common::LinkId& id)
+bool DiscreteContactManager::removeCollisionObject(const std::string& name)
 {
-  return removeCollisionObject(id.name());
+  return removeCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool DiscreteContactManager::enableCollisionObject(const tesseract::common::LinkId& id)
+bool DiscreteContactManager::enableCollisionObject(const std::string& name)
 {
-  return enableCollisionObject(id.name());
+  return enableCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool DiscreteContactManager::disableCollisionObject(const tesseract::common::LinkId& id)
+bool DiscreteContactManager::disableCollisionObject(const std::string& name)
 {
-  return disableCollisionObject(id.name());
+  return disableCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
-bool DiscreteContactManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
+bool DiscreteContactManager::isCollisionObjectEnabled(const std::string& name) const
 {
-  return isCollisionObjectEnabled(id.name());
+  return isCollisionObjectEnabled(tesseract::common::LinkId::fromName(name));
 }
 
-void DiscreteContactManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
-                                                          const Eigen::Isometry3d& pose)
+void DiscreteContactManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
-  setCollisionObjectsTransform(id.name(), pose);
+  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose);
 }
 
-void DiscreteContactManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
+void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                          const tesseract::common::VectorIsometry3d& poses)
 {
-  for (const auto& id : getCollisionObjects())
-  {
-    auto it = transforms.find(id);
-    if (it != transforms.end())
-      setCollisionObjectsTransform(id.name(), it->second);
-  }
+  assert(names.size() == poses.size());
+  for (auto i = 0U; i < names.size(); ++i)
+    setCollisionObjectsTransform(tesseract::common::LinkId::fromName(names[i]), poses[i]);
 }
 
-void DiscreteContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+void DiscreteContactManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  std::vector<std::string> names;
-  names.reserve(ids.size());
+  std::vector<tesseract::common::LinkId> ids;
+  ids.reserve(names.size());
+  for (const auto& name : names)
+    ids.push_back(tesseract::common::LinkId::fromName(name));
+  setActiveCollisionObjects(ids);
+}
+
+std::vector<std::string> DiscreteContactManager::getActiveCollisionObjects() const
+{
+  const auto& ids = getActiveCollisionObjectIds();
+  std::vector<std::string> result;
+  result.reserve(ids.size());
   for (const auto& id : ids)
-    names.push_back(id.name());
-  setActiveCollisionObjects(names);
+    result.push_back(id.name());
+  return result;
 }
 
 void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfig& config)

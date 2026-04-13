@@ -93,15 +93,6 @@ ContinuousContactManager::UPtr BulletCastSimpleManager::clone() const
   return manager;
 }
 
-bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
-                                                 const int& mask_id,
-                                                 const CollisionShapesConst& shapes,
-                                                 const tesseract::common::VectorIsometry3d& shape_poses,
-                                                 bool enabled)
-{
-  return addCollisionObject(tesseract::common::LinkId::fromName(name), mask_id, shapes, shape_poses, enabled);
-}
-
 bool BulletCastSimpleManager::addCollisionObject(const tesseract::common::LinkId& id,
                                                  const int& mask_id,
                                                  const CollisionShapesConst& shapes,
@@ -124,22 +115,11 @@ bool BulletCastSimpleManager::addCollisionObject(const tesseract::common::LinkId
   return false;
 }
 
-const CollisionShapesConst& BulletCastSimpleManager::getCollisionObjectGeometries(const std::string& name) const
-{
-  return getCollisionObjectGeometries(tesseract::common::LinkId::fromName(name));
-}
-
 const CollisionShapesConst&
 BulletCastSimpleManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
 {
   auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
-}
-
-const tesseract::common::VectorIsometry3d&
-BulletCastSimpleManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
-{
-  return getCollisionObjectGeometriesTransforms(tesseract::common::LinkId::fromName(name));
 }
 
 const tesseract::common::VectorIsometry3d&
@@ -149,19 +129,9 @@ BulletCastSimpleManager::getCollisionObjectGeometriesTransforms(const tesseract:
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
-bool BulletCastSimpleManager::hasCollisionObject(const std::string& name) const
-{
-  return hasCollisionObject(tesseract::common::LinkId::fromName(name));
-}
-
 bool BulletCastSimpleManager::hasCollisionObject(const tesseract::common::LinkId& id) const
 {
   return (link2cow_.find(id) != link2cow_.end());
-}
-
-bool BulletCastSimpleManager::removeCollisionObject(const std::string& name)
-{
-  return removeCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
 bool BulletCastSimpleManager::removeCollisionObject(const tesseract::common::LinkId& id)
@@ -181,11 +151,6 @@ bool BulletCastSimpleManager::removeCollisionObject(const tesseract::common::Lin
   return false;
 }
 
-bool BulletCastSimpleManager::enableCollisionObject(const std::string& name)
-{
-  return enableCollisionObject(tesseract::common::LinkId::fromName(name));
-}
-
 bool BulletCastSimpleManager::enableCollisionObject(const tesseract::common::LinkId& id)
 {
   auto it = link2cow_.find(id);
@@ -197,11 +162,6 @@ bool BulletCastSimpleManager::enableCollisionObject(const tesseract::common::Lin
   }
 
   return false;
-}
-
-bool BulletCastSimpleManager::disableCollisionObject(const std::string& name)
-{
-  return disableCollisionObject(tesseract::common::LinkId::fromName(name));
 }
 
 bool BulletCastSimpleManager::disableCollisionObject(const tesseract::common::LinkId& id)
@@ -217,11 +177,6 @@ bool BulletCastSimpleManager::disableCollisionObject(const tesseract::common::Li
   return false;
 }
 
-bool BulletCastSimpleManager::isCollisionObjectEnabled(const std::string& name) const
-{
-  return isCollisionObjectEnabled(tesseract::common::LinkId::fromName(name));
-}
-
 bool BulletCastSimpleManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
 {
   auto it = link2cow_.find(id);
@@ -229,19 +184,6 @@ bool BulletCastSimpleManager::isCollisionObjectEnabled(const tesseract::common::
     return it->second->m_enabled;
 
   return false;
-}
-
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
-{
-  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose);
-}
-
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                           const tesseract::common::VectorIsometry3d& poses)
-{
-  assert(names.size() == poses.size());
-  for (auto i = 0U; i < names.size(); ++i)
-    setCollisionObjectsTransform(names[i], poses[i]);
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
@@ -268,23 +210,6 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::comm
     it->second->setWorldTransform(tf);
     link2castcow_[id]->setWorldTransform(tf);
   }
-}
-
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name,
-                                                           const Eigen::Isometry3d& pose1,
-                                                           const Eigen::Isometry3d& pose2)
-{
-  setCollisionObjectsTransform(tesseract::common::LinkId::fromName(name), pose1, pose2);
-}
-
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                           const tesseract::common::VectorIsometry3d& pose1,
-                                                           const tesseract::common::VectorIsometry3d& pose2)
-{
-  assert(names.size() == pose1.size());
-  assert(names.size() == pose2.size());
-  for (auto i = 0U; i < names.size(); ++i)
-    setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
@@ -356,41 +281,6 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::comm
 
 const std::vector<tesseract::common::LinkId>& BulletCastSimpleManager::getCollisionObjects() const { return collision_objects_; }
 
-void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
-{
-  active_ids_.clear();
-  for (const auto& name : names)
-    active_ids_.insert(tesseract::common::LinkId::fromName(name));
-
-  cows_.clear();
-  cows_.reserve(link2cow_.size());
-
-  // Now need to update the broadphase with correct aabb
-  for (auto& co : link2cow_)
-  {
-    COW::Ptr& cow = co.second;
-
-    // Update with request
-    updateCollisionObjectFilters(active_ids_, cow);
-
-    // Get the cast collision object
-    COW::Ptr cast_cow = link2castcow_[cow->getLinkId()];
-
-    // Update with request
-    updateCollisionObjectFilters(active_ids_, cast_cow);
-
-    // Add to collision object vector
-    if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
-    {
-      cows_.insert(cows_.begin(), cast_cow);
-    }
-    else
-    {
-      cows_.push_back(cow);
-    }
-  }
-}
-
 void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
   active_ids_.clear();
@@ -425,13 +315,22 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<tesser
   }
 }
 
-std::vector<std::string> BulletCastSimpleManager::getActiveCollisionObjects() const
+const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+BulletCastSimpleManager::getActiveCollisionObjectIds() const
 {
-  std::vector<std::string> result;
-  result.reserve(active_ids_.size());
-  for (const auto& id : active_ids_)
-    result.push_back(id.name());
-  return result;
+  return active_ids_;
+}
+
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
+                                                           const tesseract::common::LinkIdTransformMap& pose2)
+{
+  for (const auto& id : getCollisionObjects())
+  {
+    auto it1 = pose1.find(id);
+    auto it2 = pose2.find(id);
+    if (it1 != pose1.end() && it2 != pose2.end())
+      setCollisionObjectsTransform(id, it1->second, it2->second);
+  }
 }
 
 void BulletCastSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
