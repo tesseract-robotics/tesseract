@@ -2789,7 +2789,8 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
   {  // Should return the solution form the provided callback
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
-    tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown", tcp);
+    tesseract::common::ManipulatorInfo manip_info(
+        "manipulator", LinkId::fromName("unknown"), LinkId::fromName("unknown"), tcp);
     Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(std::get<Eigen::Isometry3d>(manip_info.tcp_offset).isApprox(found_tcp, 1e-6));
   }
@@ -2797,20 +2798,22 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
   {  // If the manipulator has a tcp transform then it should be returned
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
-    tesseract::common::ManipulatorInfo manip_info("manipulator", "", "");
+    tesseract::common::ManipulatorInfo manip_info("manipulator", LinkId{}, LinkId{});
     manip_info.tcp_offset = "laser_callback";
     Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(found_tcp.isApprox(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1), 1e-6));
   }
 
   {  // The tcp offset name is a link in the environment so it should throw an exception
-    tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
+    tesseract::common::ManipulatorInfo manip_info(
+        "manipulator", LinkId::fromName("unknown"), LinkId::fromName("unknown"));
     manip_info.tcp_offset = "tool0";
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 
   {  // If the tcp offset name does not exist it should throw an exception
-    tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
+    tesseract::common::ManipulatorInfo manip_info(
+        "manipulator", LinkId::fromName("unknown"), LinkId::fromName("unknown"));
     manip_info.tcp_offset = "unknown";
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
