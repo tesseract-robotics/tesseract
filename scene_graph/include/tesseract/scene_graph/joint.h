@@ -54,9 +54,6 @@ class Link;
 class Joint;
 
 template <class Archive>
-void serialize(Archive& ar, Joint& obj);
-
-template <class Archive>
 void save(Archive& ar, const Joint& obj);
 
 template <class Archive>
@@ -323,9 +320,6 @@ public:
 private:
   /** @brief The integer identity of this joint, also carries the name string */
   common::JointId id_{};
-
-  template <class Archive>
-  friend void ::tesseract::scene_graph::serialize(Archive& ar, Joint& obj);
 
   template <class Archive>
   friend void ::tesseract::scene_graph::save(Archive& ar, const Joint& obj);
