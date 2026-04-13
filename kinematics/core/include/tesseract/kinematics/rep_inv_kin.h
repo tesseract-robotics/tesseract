@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/fwd.h>
 #include <tesseract/kinematics/inverse_kinematics.h>
 
@@ -116,8 +117,8 @@ private:
   std::vector<std::string> joint_names_;
   InverseKinematics::UPtr manip_inv_kin_;
   std::unique_ptr<ForwardKinematics> positioner_fwd_kin_;
-  std::string working_frame_;
-  std::string manip_tip_link_;
+  tesseract::common::LinkId working_frame_id_;
+  tesseract::common::LinkId manip_tip_link_id_;
   double manip_reach_{ 0 };
   Eigen::Isometry3d manip_base_to_positioner_base_;
   Eigen::Index dof_{ -1 };
