@@ -446,9 +446,9 @@ struct ContactManagerConfig
   /** @brief Specifies how to combine the ContactAllowedValidator from acm with the one preset in the contact manager */
   ACMOverrideType acm_override_type{ ACMOverrideType::NONE };
 
-  /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the
+  /** @brief Each key is a link ID. Objects will be enabled/disabled based on the value. Objects that aren't in the
    * map are unmodified from the defaults*/
-  std::unordered_map<std::string, bool> modify_object_enabled;
+  std::unordered_map<tesseract::common::LinkId, bool, tesseract::common::LinkId::Hash> modify_object_enabled;
 
   /**
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins
