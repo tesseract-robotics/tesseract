@@ -75,8 +75,14 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   joint_qnr_ = other.joint_qnr_;
   kdl_jnt_array_ = other.kdl_jnt_array_;
   limits_ = other.limits_;
-  // Direct copy is safe: IDs don't depend on pointer addresses (unlike segment_id_cache_).
+  // Cached ID vectors — safe to copy directly; IDs are independent of pointer addresses.
   active_joint_ids_ = other.active_joint_ids_;
+  joint_ids_ = other.joint_ids_;
+  floating_joint_ids_ = other.floating_joint_ids_;
+  link_ids_ = other.link_ids_;
+  active_link_ids_ = other.active_link_ids_;
+  static_link_ids_ = other.static_link_ids_;
+  base_link_id_ = other.base_link_id_;
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
@@ -378,65 +384,23 @@ Eigen::Isometry3d KDLStateSolver::getRelativeLinkTransform(const std::string& fr
 
 // --- ID-based overloads ---
 
-std::vector<JointId> KDLStateSolver::getJointIds() const
-{
-  std::vector<JointId> ids;
-  ids.reserve(data_.joint_names.size());
-  for (const auto& n : data_.joint_names)
-    ids.push_back(JointId::fromName(n));
-  return ids;
-}
+std::vector<JointId> KDLStateSolver::getJointIds() const { return joint_ids_; }
 
-std::vector<JointId> KDLStateSolver::getFloatingJointIds() const
-{
-  std::vector<JointId> ids;
-  ids.reserve(data_.floating_joint_names.size());
-  for (const auto& n : data_.floating_joint_names)
-    ids.push_back(JointId::fromName(n));
-  return ids;
-}
+std::vector<JointId> KDLStateSolver::getFloatingJointIds() const { return floating_joint_ids_; }
 
-std::vector<JointId> KDLStateSolver::getActiveJointIds() const
-{
-  std::vector<JointId> ids;
-  ids.reserve(data_.active_joint_names.size());
-  for (const auto& n : data_.active_joint_names)
-    ids.push_back(JointId::fromName(n));
-  return ids;
-}
+std::vector<JointId> KDLStateSolver::getActiveJointIds() const { return active_joint_ids_; }
 
-LinkId KDLStateSolver::getBaseLinkId() const { return LinkId::fromName(data_.base_link_name); }
+LinkId KDLStateSolver::getBaseLinkId() const { return base_link_id_; }
 
-std::vector<LinkId> KDLStateSolver::getLinkIds() const
-{
-  std::vector<LinkId> ids;
-  ids.reserve(data_.link_names.size());
-  for (const auto& n : data_.link_names)
-    ids.push_back(LinkId::fromName(n));
-  return ids;
-}
+std::vector<LinkId> KDLStateSolver::getLinkIds() const { return link_ids_; }
 
-std::vector<LinkId> KDLStateSolver::getActiveLinkIds() const
-{
-  std::vector<LinkId> ids;
-  ids.reserve(data_.active_link_names.size());
-  for (const auto& n : data_.active_link_names)
-    ids.push_back(LinkId::fromName(n));
-  return ids;
-}
+std::vector<LinkId> KDLStateSolver::getActiveLinkIds() const { return active_link_ids_; }
 
-std::vector<LinkId> KDLStateSolver::getStaticLinkIds() const
-{
-  std::vector<LinkId> ids;
-  ids.reserve(data_.static_link_names.size());
-  for (const auto& n : data_.static_link_names)
-    ids.push_back(LinkId::fromName(n));
-  return ids;
-}
+std::vector<LinkId> KDLStateSolver::getStaticLinkIds() const { return static_link_ids_; }
 
 bool KDLStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
-  return isActiveLinkName(link_id.name());
+  return std::find(active_link_ids_.begin(), active_link_ids_.end(), link_id) != active_link_ids_.end();
 }
 
 bool KDLStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const
@@ -545,6 +509,34 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
   active_joint_ids_.reserve(data_.active_joint_names.size());
   for (const auto& name : data_.active_joint_names)
     active_joint_ids_.push_back(JointId::fromName(name));
+
+  // Pre-compute ID caches for getters
+  joint_ids_.clear();
+  joint_ids_.reserve(data_.joint_names.size());
+  for (const auto& name : data_.joint_names)
+    joint_ids_.push_back(JointId::fromName(name));
+
+  floating_joint_ids_.clear();
+  floating_joint_ids_.reserve(data_.floating_joint_names.size());
+  for (const auto& name : data_.floating_joint_names)
+    floating_joint_ids_.push_back(JointId::fromName(name));
+
+  link_ids_.clear();
+  link_ids_.reserve(data_.link_names.size());
+  for (const auto& name : data_.link_names)
+    link_ids_.push_back(LinkId::fromName(name));
+
+  active_link_ids_.clear();
+  active_link_ids_.reserve(data_.active_link_names.size());
+  for (const auto& name : data_.active_link_names)
+    active_link_ids_.push_back(LinkId::fromName(name));
+
+  static_link_ids_.clear();
+  static_link_ids_.reserve(data_.static_link_names.size());
+  for (const auto& name : data_.static_link_names)
+    static_link_ids_.push_back(LinkId::fromName(name));
+
+  base_link_id_ = LinkId::fromName(data_.base_link_name);
 
   // Cache LinkId/JointId per segment to avoid per-FK fromName() calls.
   // Keyed by pointer to KDL TreeElement (pointer-stable in std::map).
