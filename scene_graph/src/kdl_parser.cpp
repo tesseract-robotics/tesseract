@@ -48,6 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::scene_graph
 {
+using tesseract::common::LinkId;
 KDL::Frame convert(const Eigen::Isometry3d& transform)
 {
   KDL::Frame frame;
@@ -274,8 +275,8 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     }
     else
     {
-      auto it =
-          std::find(data_.active_link_names.begin(), data_.active_link_names.end(), parent_joint->parent_link_name);
+      auto it = std::find(
+          data_.active_link_names.begin(), data_.active_link_names.end(), parent_joint->parent_link_id.name());
       if (it != data_.active_link_names.end())
         data_.active_link_names.push_back(link->getName());
       else
@@ -286,7 +287,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     KDL::Segment sgm(link->getName(), kdl_jnt, convert(parent_joint->parent_to_joint_origin_transform), inert);
 
     // add segment to tree
-    data_.tree.addSegment(sgm, parent_joint->parent_link_name);
+    data_.tree.addSegment(sgm, parent_joint->parent_link_id.name());
   }
 
 protected:
@@ -350,12 +351,13 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
                                      convert(parent_joint->parent_to_joint_origin_transform);
 
     KDL::Segment kdl_sgm(link->getName(), kdl_jnt, parent_to_joint, inert);
-    std::string parent_link_name = parent_joint->parent_link_name;
+    std::string parent_link_name = parent_joint->parent_link_id.name();
 
     if (parent_joint->type == JointType::FIXED || parent_joint->type == JointType::FLOATING)
-      segment_transforms_[parent_joint->child_link_name] = segment_transforms_[parent_link_name] * kdl_sgm.pose(0.0);
+      segment_transforms_[parent_joint->child_link_id.name()] =
+          segment_transforms_[parent_link_name] * kdl_sgm.pose(0.0);
     else
-      segment_transforms_[parent_joint->child_link_name] =
+      segment_transforms_[parent_joint->child_link_id.name()] =
           segment_transforms_[parent_link_name] * kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
 
     if (!started_ && found)
@@ -399,8 +401,8 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
         link_names_.push_back(parent_link_name);
         data_.static_link_names.push_back(parent_link_name);
 
-        KDL::Frame new_tree_parent_to_joint =
-            segment_transforms_[data_.base_link_name].Inverse() * segment_transforms_[parent_joint->parent_link_name];
+        KDL::Frame new_tree_parent_to_joint = segment_transforms_[data_.base_link_name].Inverse() *
+                                              segment_transforms_[parent_joint->parent_link_id.name()];
 
         // construct the kdl segment
         std::string new_joint_name = data_.base_link_name + "_to_" + parent_link_name + "_joint";
