@@ -78,7 +78,7 @@ class TestProfile : public Profile
 public:
   TestProfile() = default;
   ~TestProfile() override = default;
-  TestProfile(std::size_t key) : Profile(key){};
+  TestProfile(std::size_t key) : Profile(key) {};
   TestProfile(const TestProfile&) = default;
   TestProfile& operator=(const TestProfile&) = default;
   TestProfile(TestProfile&&) = default;
@@ -154,7 +154,7 @@ TEST(TesseractCommonSerializeUnit, ManipulatorInfo)  // NOLINT
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
 
   ManipulatorInfo manip_info2("manipulator", LinkId::fromName("world"), LinkId::fromName("tool0"));
-  manip_info2.tcp_offset = "tool0";
+  manip_info2.tcp_offset = LinkId::fromName("tool0");
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info2, "ManipulatorInfo2");
 }
 

@@ -48,7 +48,7 @@ struct ManipulatorInfo
   ManipulatorInfo(std::string manipulator_,
                   LinkId working_frame_,
                   LinkId tcp_frame_,
-                  std::variant<std::string, Eigen::Isometry3d> tcp_offset_ = Eigen::Isometry3d::Identity());
+                  std::variant<LinkId, Eigen::Isometry3d> tcp_offset_ = Eigen::Isometry3d::Identity());
 
   /** @brief Name of the manipulator group */
   std::string manipulator;
@@ -67,7 +67,7 @@ struct ManipulatorInfo
   LinkId tcp_frame;
 
   /** @brief (Optional) Offset transform applied to the tcp_frame link to represent the manipulator TCP */
-  std::variant<std::string, Eigen::Isometry3d> tcp_offset{ Eigen::Isometry3d::Identity() };
+  std::variant<LinkId, Eigen::Isometry3d> tcp_offset{ Eigen::Isometry3d::Identity() };
 
   /** @brief (Optional) IK Solver to be used */
   std::string manipulator_ik_solver;

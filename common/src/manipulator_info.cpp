@@ -24,13 +24,14 @@
 
 #include <tesseract/common/manipulator_info.h>
 #include <tesseract/common/utils.h>
+#include "tesseract/common/types.h"
 
 namespace tesseract::common
 {
 ManipulatorInfo::ManipulatorInfo(std::string manipulator_,
                                  LinkId working_frame_,
                                  LinkId tcp_frame_,
-                                 std::variant<std::string, Eigen::Isometry3d> tcp_offset_)
+                                 std::variant<LinkId, Eigen::Isometry3d> tcp_offset_)
   : manipulator(std::move(manipulator_))
   , working_frame(std::move(working_frame_))
   , tcp_frame(std::move(tcp_frame_))
@@ -77,7 +78,7 @@ bool ManipulatorInfo::operator==(const ManipulatorInfo& rhs) const
   if (ret_val)
   {
     if (tcp_offset.index() == 0)
-      ret_val &= (std::get<std::string>(tcp_offset) == std::get<std::string>(rhs.tcp_offset));
+      ret_val &= (std::get<LinkId>(tcp_offset) == std::get<LinkId>(rhs.tcp_offset));
     else
       ret_val &= std::get<Eigen::Isometry3d>(tcp_offset).isApprox(std::get<Eigen::Isometry3d>(rhs.tcp_offset));
   }
