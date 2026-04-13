@@ -75,7 +75,7 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   joint_qnr_ = other.joint_qnr_;
   kdl_jnt_array_ = other.kdl_jnt_array_;
   limits_ = other.limits_;
-  active_joint_ids_ = other.active_joint_ids_;
+  active_joint_ids_ = other.active_joint_ids_; // Direct copy is safe: IDs don't depend on pointer addresses (unlike segment_id_cache_)
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
@@ -590,6 +590,8 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
     q(qnr->second) = joint_value;
     return true;
   }
+  // Note: no error log on miss (unlike the string overload) — callers use pre-validated IDs
+  // from active_joint_ids_, populated from data_.active_joint_names, so a miss is unreachable.
   return false;
 }
 
