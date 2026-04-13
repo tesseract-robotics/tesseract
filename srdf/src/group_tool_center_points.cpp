@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/srdf/group_tool_center_points.h>
 
@@ -183,7 +184,7 @@ GroupTCPs parseGroupTCPs(const tesseract::scene_graph::SceneGraph& /*scene_graph
         group_tcp = group_tcps.find(group_name_string);
       }
 
-      group_tcp->second[tcp_name_string] = tcp;
+      group_tcp->second[tesseract::common::LinkId::fromName(tcp_name_string)] = tcp;
     }
 
     if (group_tcps.count(group_name_string) == 0)

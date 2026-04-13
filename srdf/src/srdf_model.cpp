@@ -270,10 +270,10 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", joint.first.c_str());
-    for (const auto& joint_name : joint.second)  // <chain base_link="base_link" tip_link="tool0" />
+    for (const auto& joint_id : joint.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
       tinyxml2::XMLElement* xml_joint = doc.NewElement("joint");
-      xml_joint->SetAttribute("name", joint_name.c_str());
+      xml_joint->SetAttribute("name", joint_id.name().c_str());
       xml_group->InsertEndChild(xml_joint);
     }
     xml_root->InsertEndChild(xml_group);
@@ -283,10 +283,10 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", link.first.c_str());
-    for (const auto& link_name : link.second)  // <chain base_link="base_link" tip_link="tool0" />
+    for (const auto& link_id : link.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
       tinyxml2::XMLElement* xml_link = doc.NewElement("link");
-      xml_link->SetAttribute("name", link_name.c_str());
+      xml_link->SetAttribute("name", link_id.name().c_str());
       xml_group->InsertEndChild(xml_link);
     }
     xml_root->InsertEndChild(xml_group);
@@ -303,7 +303,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
       for (const auto& joint : joint_state.second)
       {
         tinyxml2::XMLElement* xml_joint = doc.NewElement("joint");
-        xml_joint->SetAttribute("name", joint.first.c_str());
+        xml_joint->SetAttribute("name", joint.first.name().c_str());
         xml_joint->SetAttribute("value", joint.second);
         xml_group_state->InsertEndChild(xml_joint);
       }
@@ -320,7 +320,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     for (const auto& tcp : group_tcp.second)
     {
       tinyxml2::XMLElement* xml_tcp = doc.NewElement("tcp");
-      xml_tcp->SetAttribute("name", tcp.first.c_str());
+      xml_tcp->SetAttribute("name", tcp.first.name().c_str());
 
       std::stringstream xyz_string;
       xyz_string << tcp.second.translation().format(eigen_format);
