@@ -95,7 +95,7 @@ void DiscreteContactManager::setActiveCollisionObjects(const std::vector<std::st
   setActiveCollisionObjects(ids);
 }
 
-std::vector<std::string> DiscreteContactManager::getActiveCollisionObjects() const
+std::vector<std::string> DiscreteContactManager::getActiveCollisionObjectNames() const
 {
   const auto& ids = getActiveCollisionObjectIds();
   std::vector<std::string> result;

@@ -150,15 +150,15 @@ void KDLInvKinChainNR::calcInvKin(IKSolutions& solutions,
   calcInvKinHelper(solutions, tip_link_poses.at(kdl_data_.tip_link_id), seed);
 }
 
-std::vector<std::string> KDLInvKinChainNR::getJointNames() const { return kdl_data_.joint_names; }
+std::vector<tesseract::common::JointId> KDLInvKinChainNR::getJointIds() const { return kdl_data_.joint_ids; }
 
 Eigen::Index KDLInvKinChainNR::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
 
-std::string KDLInvKinChainNR::getBaseLinkName() const { return kdl_data_.base_link_name; }
+tesseract::common::LinkId KDLInvKinChainNR::getBaseLinkId() const { return kdl_data_.base_link_id; }
 
-std::string KDLInvKinChainNR::getWorkingFrame() const { return kdl_data_.base_link_name; }
+tesseract::common::LinkId KDLInvKinChainNR::getWorkingFrameId() const { return kdl_data_.base_link_id; }
 
-std::vector<std::string> KDLInvKinChainNR::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
+std::vector<tesseract::common::LinkId> KDLInvKinChainNR::getTipLinkIds() const { return { kdl_data_.tip_link_id }; }
 
 std::string KDLInvKinChainNR::getSolverName() const { return solver_name_; }
 

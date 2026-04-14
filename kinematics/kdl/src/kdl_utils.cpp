@@ -97,7 +97,7 @@ bool parseSceneGraph(KDLChainData& results,
   }
 
   results.chains = chains;
-  results.base_link_name = chains.front().first;
+  results.base_link_id = tesseract::common::LinkId::fromName(chains.front().first);
   for (const auto& chain : chains)
   {
     KDL::Chain sub_chain;
@@ -109,17 +109,16 @@ bool parseSceneGraph(KDLChainData& results,
     }
     results.robot_chain.addChain(sub_chain);
   }
-  results.tip_link_name = chains.back().second;
-  results.tip_link_id = tesseract::common::LinkId::fromName(results.tip_link_name);
+  results.tip_link_id = tesseract::common::LinkId::fromName(chains.back().second);
 
-  results.joint_names.clear();
-  results.joint_names.resize(results.robot_chain.getNrOfJoints());
+  results.joint_ids.clear();
+  results.joint_ids.resize(results.robot_chain.getNrOfJoints());
   results.q_min.resize(results.robot_chain.getNrOfJoints());
   results.q_max.resize(results.robot_chain.getNrOfJoints());
 
   results.segment_index.clear();
-  results.segment_index[results.base_link_name] = 0;
-  results.segment_index[results.tip_link_name] = static_cast<int>(results.robot_chain.getNrOfSegments());
+  results.segment_index[results.base_link_id.name()] = 0;
+  results.segment_index[results.tip_link_id.name()] = static_cast<int>(results.robot_chain.getNrOfSegments());
 
   for (unsigned i = 0, j = 0; i < results.robot_chain.getNrOfSegments(); ++i)
   {
@@ -134,9 +133,9 @@ bool parseSceneGraph(KDLChainData& results,
     // index + 1. This was determined through testing which is captured in this packages unit tests.
     results.segment_index[seg.getName()] = static_cast<int>(i + 1);
 
-    results.joint_names[j] = jnt.getName();
+    results.joint_ids[j] = tesseract::common::JointId::fromName(jnt.getName());
 
-    auto joint = scene_graph.getJoint(results.joint_names[j]);
+    auto joint = scene_graph.getJoint(results.joint_ids[j].name());
     double lower = std::numeric_limits<float>::lowest();
     double upper = std::numeric_limits<float>::max();
     // Does the joint have limits?

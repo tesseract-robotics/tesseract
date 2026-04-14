@@ -49,13 +49,13 @@ REPInvKin::REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
 
-  std::vector<std::string> joint_names = positioner->getJointNames();
-  auto s = static_cast<Eigen::Index>(joint_names.size());
+  auto joint_ids = positioner->getJointIds();
+  auto s = static_cast<Eigen::Index>(joint_ids.size());
   Eigen::MatrixX2d positioner_limits;
   positioner_limits.resize(s, 2);
   for (Eigen::Index i = 0; i < s; ++i)
   {
-    auto joint = scene_graph.getJoint(joint_names[static_cast<std::size_t>(i)]);
+    auto joint = scene_graph.getJoint(joint_ids[static_cast<std::size_t>(i)].name());
     positioner_limits(i, 0) = joint->limits->lower;
     positioner_limits(i, 1) = joint->limits->upper;
   }
@@ -122,21 +122,20 @@ void REPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
       throw std::runtime_error("Positioner sample resolution is not greater than zero");
   }
 
-  manip_base_to_positioner_base_ =
-      scene_state.link_transforms.at(LinkId::fromName(manipulator->getBaseLinkName())).inverse() *
-      scene_state.link_transforms.at(LinkId::fromName(positioner->getBaseLinkName()));
+  manip_base_to_positioner_base_ = scene_state.link_transforms.at(manipulator->getBaseLinkId()).inverse() *
+                                   scene_state.link_transforms.at(positioner->getBaseLinkId());
 
   solver_name_ = std::move(solver_name);
   manip_inv_kin_ = manipulator->clone();
   manip_reach_ = manipulator_reach;
   positioner_fwd_kin_ = positioner->clone();
-  working_frame_id_ = LinkId::fromName(positioner_fwd_kin_->getTipLinkNames()[0]);
-  manip_tip_link_id_ = LinkId::fromName(manip_inv_kin_->getTipLinkNames()[0]);
+  working_frame_id_ = positioner_fwd_kin_->getTipLinkIds()[0];
+  manip_tip_link_id_ = manip_inv_kin_->getTipLinkIds()[0];
   dof_ = positioner_fwd_kin_->numJoints() + manip_inv_kin_->numJoints();
 
-  joint_names_ = positioner_fwd_kin_->getJointNames();
-  const auto& manip_joints = manip_inv_kin_->getJointNames();
-  joint_names_.insert(joint_names_.end(), manip_joints.begin(), manip_joints.end());
+  joint_ids_ = positioner_fwd_kin_->getJointIds();
+  const auto& manip_joints = manip_inv_kin_->getJointIds();
+  joint_ids_.insert(joint_ids_.end(), manip_joints.begin(), manip_joints.end());
 
   // For the kinematics object to be sampled we need to create the joint values at the sampling resolution
   // The sampled joints results are stored in dof_range[joint index] to be used by the nested_ik function
@@ -166,7 +165,7 @@ REPInvKin& REPInvKin::operator=(const REPInvKin& other)
   manip_inv_kin_ = other.manip_inv_kin_->clone();
   positioner_fwd_kin_ = other.positioner_fwd_kin_->clone();
   manip_reach_ = other.manip_reach_;
-  joint_names_ = other.joint_names_;
+  joint_ids_ = other.joint_ids_;
   manip_base_to_positioner_base_ = other.manip_base_to_positioner_base_;
   working_frame_id_ = other.working_frame_id_;
   manip_tip_link_id_ = other.manip_tip_link_id_;
@@ -253,15 +252,15 @@ void REPInvKin::calcInvKin(IKSolutions& solutions,
   calcInvKinHelper(solutions, tip_link_poses, seed);
 }
 
-std::vector<std::string> REPInvKin::getJointNames() const { return joint_names_; }
+std::vector<tesseract::common::JointId> REPInvKin::getJointIds() const { return joint_ids_; }
 
 Eigen::Index REPInvKin::numJoints() const { return dof_; }
 
-std::string REPInvKin::getBaseLinkName() const { return manip_inv_kin_->getBaseLinkName(); }
+tesseract::common::LinkId REPInvKin::getBaseLinkId() const { return manip_inv_kin_->getBaseLinkId(); }
 
-std::string REPInvKin::getWorkingFrame() const { return working_frame_id_.name(); }
+tesseract::common::LinkId REPInvKin::getWorkingFrameId() const { return working_frame_id_; }
 
-std::vector<std::string> REPInvKin::getTipLinkNames() const { return { manip_tip_link_id_.name() }; }
+std::vector<tesseract::common::LinkId> REPInvKin::getTipLinkIds() const { return { manip_tip_link_id_ }; }
 
 std::string REPInvKin::getSolverName() const { return solver_name_; }
 

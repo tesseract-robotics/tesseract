@@ -83,7 +83,7 @@ public:
   using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
 
   CollisionObjectWrapper() = default;
-  CollisionObjectWrapper(std::string name,
+  CollisionObjectWrapper(tesseract::common::LinkId id,
                          const int& type_id,
                          CollisionShapesConst shapes,
                          tesseract::common::VectorIsometry3d shape_poses);
@@ -92,13 +92,12 @@ public:
   short int m_collisionFilterMask{ CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter };
   bool m_enabled{ true };
 
-  const std::string& getName() const { return name_; }
   tesseract::common::LinkId getLinkId() const { return link_id_; }
   const int& getTypeID() const { return type_id_; }
   /** \brief Check if two objects point to the same source object */
   bool sameObject(const CollisionObjectWrapper& other) const
   {
-    return name_ == other.name_ && type_id_ == other.type_id_ && shapes_.size() == other.shapes_.size() &&
+    return link_id_ == other.link_id_ && type_id_ == other.type_id_ && shapes_.size() == other.shapes_.size() &&
            shape_poses_.size() == other.shape_poses_.size() &&
            std::equal(shapes_.begin(), shapes_.end(), other.shapes_.begin()) &&
            std::equal(shape_poses_.begin(),
@@ -137,7 +136,6 @@ public:
   std::shared_ptr<CollisionObjectWrapper> clone() const
   {
     auto clone_cow = std::make_shared<CollisionObjectWrapper>();
-    clone_cow->name_ = name_;
     clone_cow->link_id_ = link_id_;
     clone_cow->type_id_ = type_id_;
     clone_cow->shapes_ = shapes_;
@@ -172,7 +170,6 @@ public:
   static int getShapeIndex(const fcl::CollisionObjectd* co);
 
 protected:
-  std::string name_;                                              // name of the collision object
   tesseract::common::LinkId link_id_;                             // integer link ID (hash of name)
   int type_id_{ -1 };                                             // user defined type id
   Eigen::Isometry3d world_pose_{ Eigen::Isometry3d::Identity() }; /**< @brief Collision Object World Transformation */
@@ -192,12 +189,10 @@ protected:
 CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
 
 using COW = CollisionObjectWrapper;
-using Link2COW =
-    std::unordered_map<tesseract::common::LinkId, COW::Ptr, tesseract::common::LinkId::Hash>;
-using Link2ConstCOW =
-    std::unordered_map<tesseract::common::LinkId, COW::ConstPtr, tesseract::common::LinkId::Hash>;
+using Link2COW = std::unordered_map<tesseract::common::LinkId, COW::Ptr, tesseract::common::LinkId::Hash>;
+using Link2ConstCOW = std::unordered_map<tesseract::common::LinkId, COW::ConstPtr, tesseract::common::LinkId::Hash>;
 
-inline COW::Ptr createFCLCollisionObject(const std::string& name,
+inline COW::Ptr createFCLCollisionObject(const tesseract::common::LinkId& id,
                                          const int& type_id,
                                          const CollisionShapesConst& shapes,
                                          const tesseract::common::VectorIsometry3d& shape_poses,
@@ -206,14 +201,14 @@ inline COW::Ptr createFCLCollisionObject(const std::string& name,
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
-    CONSOLE_BRIDGE_logDebug("ignoring link %s", name.c_str());
+    CONSOLE_BRIDGE_logDebug("ignoring link %s", id.name().c_str());
     return nullptr;
   }
 
-  auto new_cow = std::make_shared<COW>(name, type_id, shapes, shape_poses);
+  auto new_cow = std::make_shared<COW>(id, type_id, shapes, shape_poses);
 
   new_cow->m_enabled = enabled;
-  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getName().c_str());
+  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getLinkId().name().c_str());
   return new_cow;
 }
 

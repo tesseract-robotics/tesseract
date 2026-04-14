@@ -1,4 +1,5 @@
 #include <tesseract/common/macros.h>
+#include "tesseract/scene_graph/link.h"
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
@@ -9,7 +10,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/urdf/urdf_parser.h>
 #include <tesseract/common/resource_locator.h>
-#include "tesseract_urdf_common_unit.h"
+
+using tesseract::common::JointId;
+using tesseract::common::LinkId;
 
 TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 {
@@ -460,14 +463,14 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 
   std::cout << path << "\n";
   EXPECT_TRUE(path.links.size() == 4);
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_2") != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_3") != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_1")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_2")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_3")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_4")) != path.links.end());
   EXPECT_TRUE(path.joints.size() == 3);
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a2") != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a3") != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a4") != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_a2")) != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_a3")) != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_a4")) != path.joints.end());
 }
 
 TEST(TesseractURDFUnit, write_urdf)  // NOLINT

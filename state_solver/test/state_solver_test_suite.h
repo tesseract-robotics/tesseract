@@ -89,7 +89,7 @@ inline void runCompareSceneStates(const SceneState& base_state, const SceneState
 
 inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_solver)
 {
-  EXPECT_EQ(base_solver.getBaseLinkName(), comp_solver.getBaseLinkName());
+  EXPECT_EQ(base_solver.getBaseLinkId(), comp_solver.getBaseLinkId());
   EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getJointNames(), comp_solver.getJointNames(), false));
   EXPECT_TRUE(
       tesseract::common::isIdentical(base_solver.getActiveJointNames(), comp_solver.getActiveJointNames(), false));
@@ -101,14 +101,14 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
   EXPECT_TRUE(
       tesseract::common::isIdentical(base_solver.getFloatingJointNames(), comp_solver.getFloatingJointNames(), false));
 
-  for (const auto& active_link_name : base_solver.getActiveLinkNames())
+  for (const auto& active_link_id : base_solver.getActiveLinkIds())
   {
-    EXPECT_TRUE(comp_solver.isActiveLinkName(active_link_name));
+    EXPECT_TRUE(comp_solver.isActiveLinkId(active_link_id));
   }
 
-  for (const auto& link_name : base_solver.getLinkNames())
+  for (const auto& link_id : base_solver.getLinkIds())
   {
-    EXPECT_TRUE(comp_solver.hasLinkName(link_name));
+    EXPECT_TRUE(comp_solver.hasLinkId(link_id));
   }
 
   for (int i = 0; i < 10; ++i)
@@ -170,28 +170,26 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
     }
 
     // Test differetn link transform methods
-    std::vector<std::string> all_link_names = comp_solver.getLinkNames();
-    for (const auto& ln : all_link_names)
+    auto all_link_ids = comp_solver.getLinkIds();
+    for (const auto& ln : all_link_ids)
     {
-      EXPECT_TRUE(
-          base_random_state.link_transforms.at(LinkId::fromName(ln)).isApprox(comp_solver.getLinkTransform(ln), 1e-6));
+      EXPECT_TRUE(base_random_state.link_transforms.at(ln).isApprox(comp_solver.getLinkTransform(ln), 1e-6));
     }
 
-    std::vector<std::string> comp_link_names = comp_solver.getLinkNames();
+    auto comp_link_ids = comp_solver.getLinkIds();
     tesseract::common::VectorIsometry3d comp_link_tf = comp_solver.getLinkTransforms();
-    for (std::size_t j = 0; j < comp_link_names.size(); ++j)
+    for (std::size_t j = 0; j < comp_link_ids.size(); ++j)
     {
-      EXPECT_TRUE(base_random_state.link_transforms[LinkId::fromName(comp_link_names.at(j))].isApprox(
-          comp_link_tf.at(j), 1e-6));
+      EXPECT_TRUE(base_random_state.link_transforms[comp_link_ids.at(j)].isApprox(comp_link_tf.at(j), 1e-6));
     }
 
-    for (const auto& from_link_name : comp_link_names)
+    for (const auto& from_link_name : comp_link_ids)
     {
-      for (const auto& to_link_name : comp_link_names)
+      for (const auto& to_link_name : comp_link_ids)
       {
         Eigen::Isometry3d comp_tf = comp_solver.getRelativeLinkTransform(from_link_name, to_link_name);
-        Eigen::Isometry3d base_tf = base_random_state.link_transforms[LinkId::fromName(from_link_name)].inverse() *
-                                    base_random_state.link_transforms[LinkId::fromName(to_link_name)];
+        Eigen::Isometry3d base_tf = base_random_state.link_transforms[from_link_name].inverse() *
+                                    base_random_state.link_transforms[to_link_name];
         EXPECT_TRUE(base_tf.isApprox(comp_tf, 1e-6));
       }
     }
@@ -268,9 +266,9 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
     double theta = r12.angle();
     theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
     if (theta < -M_PI)
-      theta = theta + 2. * M_PI;
+      theta = theta + (2. * M_PI);
     if (theta > M_PI)
-      theta = theta - 2. * M_PI;
+      theta = theta - (2. * M_PI);
     Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta) / delta;
     jacobian(3, i) = omega(0);
     jacobian(4, i) = omega(1);
