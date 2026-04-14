@@ -106,16 +106,16 @@ public:
                   const tesseract::common::LinkIdTransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
-  std::vector<std::string> getJointNames() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override final;
   Eigen::Index numJoints() const override final;
-  std::string getBaseLinkName() const override final;
-  std::string getWorkingFrame() const override final;
-  std::vector<std::string> getTipLinkNames() const override final;
+  tesseract::common::LinkId getBaseLinkId() const override final;
+  tesseract::common::LinkId getWorkingFrameId() const override final;
+  std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
 private:
-  std::vector<std::string> joint_names_;
+  std::vector<tesseract::common::JointId> joint_ids_;
   InverseKinematics::UPtr manip_inv_kin_;
   std::unique_ptr<ForwardKinematics> positioner_fwd_kin_;
   tesseract::common::LinkId manip_tip_link_id_;

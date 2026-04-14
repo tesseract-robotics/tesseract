@@ -23,6 +23,7 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <utility>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -37,39 +38,40 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/state_solver/state_solver.h>
 
 /**
- * @brief Returns the names of the links that comprise a fixed-joint kinematic tree with the input link
+ * @brief Returns the link IDs that comprise a fixed-joint kinematic tree with the input link
  * @details This method first traverses from the input link "up" the scene graph hierarchy, following the link's
  * in-bound joints, to find the input link's highest level parents that are connected to it by fixed joints. Next, it
  * identifies all the fixed-joint children of these highest level parent links. Together, the highest level parent links
  * and their fixed-joint children comprise a set of links (including the input link), between all of which exists a tree
- * of fixed joints. If the link does not have any fixed-joint parents, the name of the link itself will be returned.
+ * of fixed joints. If the link does not have any fixed-joint parents, the link itself will be returned.
  * @param links
  * @param scene_graph
  * @return
  */
-std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& input_link,
-                                                           const tesseract::scene_graph::SceneGraph& scene_graph)
+std::vector<tesseract::common::LinkId>
+getLinksInFixedJointKinematicTree(const tesseract::common::LinkId& input_link,
+                                  const tesseract::scene_graph::SceneGraph& scene_graph)
 {
-  // Create a set to contain the names of the links of the fixed-joint kinematic tree
-  std::set<std::string> fixed_joint_tree_links;
+  // Create a set to contain the links of the fixed-joint kinematic tree
+  std::set<tesseract::common::LinkId> fixed_joint_tree_links;
 
-  // Create a list of links to traverse, populated initially with only the name of the link in question
-  std::vector<std::string> links = { input_link };
+  // Create a list of links to traverse, populated initially with only the link in question
+  std::vector<tesseract::common::LinkId> links = { input_link };
 
   while (!links.empty())
   {
     // Pop the back entry
-    const std::string link = links.back();
+    const tesseract::common::LinkId link = links.back();
     links.pop_back();
 
     // Traverse through the inbound joints until we find a non-fixed joint
-    for (const std::shared_ptr<const tesseract::scene_graph::Joint>& joint : scene_graph.getInboundJoints(link))
+    for (const std::shared_ptr<const tesseract::scene_graph::Joint>& joint : scene_graph.getInboundJoints(link.name()))
     {
       switch (joint->type)
       {
         case tesseract::scene_graph::JointType::FIXED:
           // Add this joint's parent link to the list of links to traverse
-          links.push_back(joint->parent_link_id.name());
+          links.push_back(joint->parent_link_id);
           break;
         default:
         {
@@ -78,8 +80,9 @@ std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& in
           fixed_joint_tree_links.insert(link);
 
           //   2. Add the fixed-joint children of this link to the list of relatives
-          const std::vector<std::string> children = scene_graph.getLinkChildrenNames(link);
-          fixed_joint_tree_links.insert(children.begin(), children.end());
+          const std::vector<std::string> children = scene_graph.getLinkChildrenNames(link.name());
+          for (const auto& child : children)
+            fixed_joint_tree_links.insert(tesseract::common::LinkId::fromName(child));
         }
         break;
       }
@@ -87,7 +90,7 @@ std::vector<std::string> getLinksInFixedJointKinematicTree(const std::string& in
   }
 
   // Convert to vector
-  std::vector<std::string> output;
+  std::vector<tesseract::common::LinkId> output;
   output.reserve(fixed_joint_tree_links.size());
   std::copy(fixed_joint_tree_links.begin(), fixed_joint_tree_links.end(), std::back_inserter(output));
 
@@ -98,20 +101,24 @@ namespace tesseract::kinematics
 {
 using tesseract::common::LinkId;
 
-KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, tesseract::common::LinkId wf, tesseract::common::LinkId tl)
-  : pose(p), working_frame(std::move(wf)), tip_link_id(std::move(tl))
+KinGroupIKInput::KinGroupIKInput(Eigen::Isometry3d p, tesseract::common::LinkId wf, tesseract::common::LinkId tl)
+  : pose(std::move(p)), working_frame(std::move(wf)), tip_link_id(std::move(tl))
 {
 }
 
 KinematicGroup::KinematicGroup(std::string name,
-                               std::vector<std::string> joint_names,
+                               const std::vector<std::string>& joint_names,
                                std::unique_ptr<InverseKinematics> inv_kin,
                                const tesseract::scene_graph::SceneGraph& scene_graph,
                                const tesseract::scene_graph::SceneState& scene_state)
   : JointGroup(std::move(name), joint_names, scene_graph, scene_state), inv_kin_(std::move(inv_kin))
 {
   // joint_names parameter is still valid (JointGroup's by-value param made a copy)
-  std::vector<std::string> inv_kin_joint_names = inv_kin_->getJointNames();
+  const auto& inv_kin_joint_ids = inv_kin_->getJointIds();
+  std::vector<std::string> inv_kin_joint_names;
+  inv_kin_joint_names.reserve(inv_kin_joint_ids.size());
+  for (const auto& joint_id : inv_kin_joint_ids)
+    inv_kin_joint_names.push_back(joint_id.name());
 
   if (static_cast<Eigen::Index>(joint_names.size()) != inv_kin_->numJoints())
     throw std::runtime_error("KinematicGroup: joint_names is not the correct size");
@@ -130,16 +137,15 @@ KinematicGroup::KinematicGroup(std::string name,
   }
 
   // Get the IK solver working frame name, and check that it exists in the scene state
-  const std::string working_frame = inv_kin_->getWorkingFrame();
-  const auto working_frame_id = LinkId::fromName(working_frame);
+  const auto working_frame_id = inv_kin_->getWorkingFrameId();
   if (state_.link_transforms.find(working_frame_id) == state_.link_transforms.end())
-    throw std::runtime_error("Working frame '" + working_frame + "' is not a link in the scene state");
+    throw std::runtime_error("Working frame '" + working_frame_id.name() + "' is not a link in the scene state");
 
   // Get the IK solver tip link names, and make sure they exist in the scene state
-  const std::vector<std::string> tip_links = inv_kin_->getTipLinkNames();
-  for (const std::string& link : tip_links)
-    if (state_.link_transforms.find(LinkId::fromName(link)) == state_.link_transforms.end())
-      throw std::runtime_error("Tip link '" + link + "' is not a link in the scene state");
+  const auto tip_links = inv_kin_->getTipLinkIds();
+  for (const auto& link : tip_links)
+    if (state_.link_transforms.find(link) == state_.link_transforms.end())
+      throw std::runtime_error("Tip link '" + link.name() + "' is not a link in the scene state");
 
   // Configure working frames — use active_link_ids_ set (O(1)) instead of linear scan
   if (active_link_ids_.count(working_frame_id) == 0)
@@ -152,13 +158,12 @@ KinematicGroup::KinematicGroup(std::string name,
   {
     working_frame_ids_.push_back(working_frame_id);
 
-    const std::vector<std::string> working_frame_fixed_joint_kin_tree_links =
-        getLinksInFixedJointKinematicTree(working_frame, scene_graph);
-    for (const std::string& link : working_frame_fixed_joint_kin_tree_links)
+    const std::vector<LinkId> working_frame_fixed_joint_kin_tree_links =
+        getLinksInFixedJointKinematicTree(working_frame_id, scene_graph);
+    for (const LinkId& link_id : working_frame_fixed_joint_kin_tree_links)
     {
-      const auto link_id = LinkId::fromName(link);
       if (state_.link_transforms.find(link_id) == state_.link_transforms.end())
-        throw std::runtime_error("Working frame '" + link + "' is not a link in the scene state");
+        throw std::runtime_error("Working frame '" + link_id.name() + "' is not a link in the scene state");
 
       working_frame_ids_.push_back(link_id);
     }
@@ -167,20 +172,18 @@ KinematicGroup::KinematicGroup(std::string name,
   // Configure the tip link frames
   for (const auto& tip_link : tip_links)
   {
-    const auto tip_link_id = LinkId::fromName(tip_link);
-    const std::vector<std::string> tip_link_fixed_joint_kin_tree_links =
+    const std::vector<LinkId> tip_link_fixed_joint_kin_tree_links =
         getLinksInFixedJointKinematicTree(tip_link, scene_graph);
-    for (const std::string& link : tip_link_fixed_joint_kin_tree_links)
+    for (const LinkId& link_id : tip_link_fixed_joint_kin_tree_links)
     {
-      const auto link_id = LinkId::fromName(link);
       if (state_.link_transforms.find(link_id) == state_.link_transforms.end())
-        throw std::runtime_error("Tip link '" + link + "' is not a link in the scene state");
+        throw std::runtime_error("Tip link '" + link_id.name() + "' is not a link in the scene state");
 
-      inv_tip_links_map_[link_id] = tip_link_id;
+      inv_tip_links_map_[link_id] = tip_link;
     }
   }
 
-  inv_to_fwd_base_ = state_.link_transforms.at(LinkId::fromName(inv_kin_->getBaseLinkName())).inverse() *
+  inv_to_fwd_base_ = state_.link_transforms.at(inv_kin_->getBaseLinkId()).inverse() *
                      state_.link_transforms.at(state_solver_->getBaseLinkId());
 
   if (static_link_ids_.size() + active_link_ids_.size() != scene_graph.getLinks().size())
@@ -266,7 +269,7 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
 
     // The IK Solver's tip link (as LinkId) and working frame
     const LinkId ik_solver_tip_link_id = tip_it->second;
-    const auto ik_working_frame_id = LinkId::fromName(inv_kin_->getWorkingFrame());
+    const auto ik_working_frame_id = inv_kin_->getWorkingFrameId();
 
     const Eigen::Isometry3d& world_to_user_wf = state_.link_transforms.at(tip_link_pose.working_frame);
     const Eigen::Isometry3d& world_to_wf = state_.link_transforms.at(ik_working_frame_id);
@@ -318,6 +321,8 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
   calcInvKin(solutions, KinGroupIKInputs{ tip_link_pose }, seed);  // NOLINT
 }
 
+std::vector<tesseract::common::LinkId> KinematicGroup::getAllValidWorkingFrameIds() const { return working_frame_ids_; }
+
 std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const
 {
   std::vector<std::string> frames;
@@ -325,6 +330,15 @@ std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const
   for (const auto& id : working_frame_ids_)
     frames.push_back(id.name());
   return frames;
+}
+
+std::vector<tesseract::common::LinkId> KinematicGroup::getAllPossibleTipLinkIds() const
+{
+  std::vector<tesseract::common::LinkId> ik_tip_links;
+  ik_tip_links.reserve(inv_tip_links_map_.size());
+  for (const auto& pair : inv_tip_links_map_)
+    ik_tip_links.push_back(pair.first);
+  return ik_tip_links;
 }
 
 std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const

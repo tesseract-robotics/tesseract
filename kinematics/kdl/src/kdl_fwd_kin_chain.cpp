@@ -22,6 +22,7 @@
  * limitations under the License.
  */
 #include <tesseract/common/macros.h>
+#include "tesseract/common/types.h"
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <tesseract/scene_graph/graph.h>
@@ -146,13 +147,13 @@ void KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   KDLToEigen(kdl_jacobian, jacobian);
 }
 
-std::vector<std::string> KDLFwdKinChain::getJointNames() const { return kdl_data_.joint_names; }
+std::vector<tesseract::common::JointId> KDLFwdKinChain::getJointIds() const { return kdl_data_.joint_ids; }
 
-Eigen::Index KDLFwdKinChain::numJoints() const { return static_cast<Eigen::Index>(kdl_data_.joint_names.size()); }
+Eigen::Index KDLFwdKinChain::numJoints() const { return static_cast<Eigen::Index>(kdl_data_.joint_ids.size()); }
 
-std::string KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.base_link_name; }
+tesseract::common::LinkId KDLFwdKinChain::getBaseLinkId() const { return kdl_data_.base_link_id; }
 
-std::vector<std::string> KDLFwdKinChain::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
+std::vector<tesseract::common::LinkId> KDLFwdKinChain::getTipLinkIds() const { return { kdl_data_.tip_link_id }; }
 
 std::string KDLFwdKinChain::getSolverName() const { return solver_name_; }
 

@@ -67,6 +67,19 @@ public:
   BulletCastSimpleManager(BulletCastSimpleManager&&) = delete;
   BulletCastSimpleManager& operator=(BulletCastSimpleManager&&) = delete;
 
+  // Bring base class string overloads into scope (prevents name hiding by ID overloads)
+  using ContinuousContactManager::addCollisionObject;
+  using ContinuousContactManager::disableCollisionObject;
+  using ContinuousContactManager::enableCollisionObject;
+  using ContinuousContactManager::getActiveCollisionObjectNames;
+  using ContinuousContactManager::getCollisionObjectGeometries;
+  using ContinuousContactManager::getCollisionObjectGeometriesTransforms;
+  using ContinuousContactManager::hasCollisionObject;
+  using ContinuousContactManager::isCollisionObjectEnabled;
+  using ContinuousContactManager::removeCollisionObject;
+  using ContinuousContactManager::setActiveCollisionObjects;
+  using ContinuousContactManager::setCollisionObjectsTransform;
+
   std::string getName() const override final;
 
   ContinuousContactManager::UPtr clone() const override final;
@@ -92,8 +105,7 @@ public:
 
   bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::LinkId& id,
-                                    const Eigen::Isometry3d& pose) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) override final;
 
   void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
@@ -121,8 +133,8 @@ public:
 
   void setDefaultCollisionMargin(double default_collision_margin) override final;
 
-  void setCollisionMarginPair(const std::string& name1,
-                              const std::string& name2,
+  void setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                              const tesseract::common::LinkId& id2,
                               double collision_margin) override final;
 
   void incrementCollisionMargin(double increment) override final;

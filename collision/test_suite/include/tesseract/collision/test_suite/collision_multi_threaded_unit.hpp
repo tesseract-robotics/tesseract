@@ -72,7 +72,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   // Check if they are in collision
   checker.setActiveCollisionObjects(link_names);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(link_names, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
