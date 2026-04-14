@@ -459,11 +459,11 @@ void updateCollisionObjectFilters(
   }
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
+CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : m_link_id(tesseract::common::LinkId::fromName(name))
+  : m_link_id(std::move(id))
   , m_type_id(type_id)
   , m_shapes(std::move(shapes))
   , m_shape_poses(std::move(shape_poses))
@@ -508,8 +508,6 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   trans.setIdentity();
   setWorldTransform(trans);
 }
-
-const std::string& CollisionObjectWrapper::getName() const { return m_link_id.name(); }
 
 const int& CollisionObjectWrapper::getTypeID() const { return m_type_id; }
 
@@ -1168,7 +1166,7 @@ bool TesseractOverlapFilterCallback::needBroadphaseCollision(btBroadphaseProxy* 
                              verbose_);
 }
 
-COW::Ptr createCollisionObject(const std::string& name,
+COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
                                const int& type_id,
                                const CollisionShapesConst& shapes,
                                const tesseract::common::VectorIsometry3d& shape_poses,
@@ -1177,16 +1175,16 @@ COW::Ptr createCollisionObject(const std::string& name,
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
-    CONSOLE_BRIDGE_logDebug("ignoring link %s", name.c_str());
+    CONSOLE_BRIDGE_logDebug("ignoring link %s", id.name().c_str());
     return nullptr;
   }
 
-  auto new_cow = std::make_shared<COW>(name, type_id, shapes, shape_poses);
+  auto new_cow = std::make_shared<COW>(id, type_id, shapes, shape_poses);
 
   new_cow->m_enabled = enabled;
   new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
 
-  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getName().c_str());
+  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getLinkId().name().c_str());
   return new_cow;
 }
 

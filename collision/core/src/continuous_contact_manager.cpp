@@ -112,7 +112,7 @@ void ContinuousContactManager::setActiveCollisionObjects(const std::vector<std::
   setActiveCollisionObjects(ids);
 }
 
-std::vector<std::string> ContinuousContactManager::getActiveCollisionObjects() const
+std::vector<std::string> ContinuousContactManager::getActiveCollisionObjectNames() const
 {
   const auto& ids = getActiveCollisionObjectIds();
   std::vector<std::string> result;

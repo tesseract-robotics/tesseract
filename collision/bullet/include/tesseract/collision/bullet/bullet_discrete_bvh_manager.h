@@ -69,16 +69,16 @@ public:
 
   // Bring base class string overloads into scope (prevents name hiding by ID overloads)
   using DiscreteContactManager::addCollisionObject;
+  using DiscreteContactManager::disableCollisionObject;
+  using DiscreteContactManager::enableCollisionObject;
+  using DiscreteContactManager::getActiveCollisionObjectNames;
   using DiscreteContactManager::getCollisionObjectGeometries;
   using DiscreteContactManager::getCollisionObjectGeometriesTransforms;
   using DiscreteContactManager::hasCollisionObject;
-  using DiscreteContactManager::removeCollisionObject;
-  using DiscreteContactManager::enableCollisionObject;
-  using DiscreteContactManager::disableCollisionObject;
   using DiscreteContactManager::isCollisionObjectEnabled;
-  using DiscreteContactManager::setCollisionObjectsTransform;
+  using DiscreteContactManager::removeCollisionObject;
   using DiscreteContactManager::setActiveCollisionObjects;
-  using DiscreteContactManager::getActiveCollisionObjects;
+  using DiscreteContactManager::setCollisionObjectsTransform;
 
   std::string getName() const override final;
 
@@ -105,8 +105,7 @@ public:
 
   bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::LinkId& id,
-                                    const Eigen::Isometry3d& pose) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) override final;
 
   void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
@@ -127,8 +126,8 @@ public:
 
   void setDefaultCollisionMargin(double default_collision_margin) override final;
 
-  void setCollisionMarginPair(const std::string& name1,
-                              const std::string& name2,
+  void setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                              const tesseract::common::LinkId& id2,
                               double collision_margin) override final;
 
   void incrementCollisionMargin(double increment) override final;

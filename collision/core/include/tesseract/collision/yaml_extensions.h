@@ -249,7 +249,7 @@ struct convert<tesseract::collision::ContactManagerConfig>
     node["acm_override_type"] = rhs.acm_override_type;
     node["acm"] = rhs.acm;
     {
-      YAML::Node moe_node;
+      YAML::Node moe_node(YAML::NodeType::Map);
       for (const auto& [id, enabled] : rhs.modify_object_enabled)
         moe_node[id.name()] = enabled;
       node["modify_object_enabled"] = moe_node;

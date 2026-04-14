@@ -236,9 +236,10 @@ public:
    * @param joint_values The joint values
    * @param link_name The link name to calculate the jacobian
    */
-  virtual Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                      const std::string& link_name,
-                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
+  virtual Eigen::MatrixXd
+  getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const std::string& link_name,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the jacobian of the scene for a given set or subset of joint values.
@@ -252,13 +253,15 @@ public:
    * @param link_name The link name to calculate the jacobian
    * @return A the state of the environment
    */
-  virtual Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
-                                      const std::string& link_name,
-                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
-  virtual Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
-                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                      const std::string& link_name,
-                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
+  virtual Eigen::MatrixXd
+  getJacobian(const std::unordered_map<std::string, double>& joint_values,
+              const std::string& link_name,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
+  virtual Eigen::MatrixXd
+  getJacobian(const std::vector<std::string>& joint_names,
+              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const std::string& link_name,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the jacobian for a link identified by LinkId
@@ -267,9 +270,10 @@ public:
    * @param link_id The link ID to calculate the jacobian for
    * @param floating_joint_values The floating joint origin transform
    */
-  virtual Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                      const tesseract::common::LinkId& link_id,
-                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
+  virtual Eigen::MatrixXd
+  getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the jacobian for a given set or subset of joint IDs.
@@ -278,10 +282,11 @@ public:
    * @param link_id The link ID to calculate the jacobian for
    * @param floating_joint_values The floating joint origin transform
    */
-  virtual Eigen::MatrixXd getJacobian(const std::vector<tesseract::common::JointId>& joint_ids,
-                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                      const tesseract::common::LinkId& link_id,
-                                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
+  virtual Eigen::MatrixXd
+  getJacobian(const std::vector<tesseract::common::JointId>& joint_ids,
+              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
    * @brief Get the random state of the environment
@@ -317,12 +322,9 @@ public:
   virtual std::vector<tesseract::common::JointId> getActiveJointIds() const = 0;
 
   /**
-   * @brief Get the base link name
-   * @return The base link name
+   * @brief Get the base link ID
+   * @return The base link ID
    */
-  virtual std::string getBaseLinkName() const = 0;
-
-  /** @brief Get the base link ID */
   virtual tesseract::common::LinkId getBaseLinkId() const = 0;
 
   /**
@@ -354,22 +356,16 @@ public:
 
   /**
    * @brief Check if link is an active link
-   * @param link_name The link name to check
+   * @param link_name The link id to check
    * @return True if active, otherwise false
    */
-  virtual bool isActiveLinkName(const std::string& link_name) const = 0;
-
-  /** @brief Check if link ID is an active link */
   virtual bool isActiveLinkId(const tesseract::common::LinkId& link_id) const = 0;
 
   /**
-   * @brief Check if link name exists
-   * @param link_name The link name to check for
+   * @brief Check if link id exists
+   * @param link_name The link id to check for
    * @return True if it exists, otherwise false
    */
-  virtual bool hasLinkName(const std::string& link_name) const = 0;
-
-  /** @brief Check if link ID exists */
   virtual bool hasLinkId(const tesseract::common::LinkId& link_id) const = 0;
 
   /**
@@ -383,21 +379,14 @@ public:
    * @brief Get the transform corresponding to the link.
    * @return Transform and is identity when no transform is available.
    */
-  virtual Eigen::Isometry3d getLinkTransform(const std::string& link_name) const = 0;
-
-  /** @brief Get the transform for a link identified by LinkId */
   virtual Eigen::Isometry3d getLinkTransform(const tesseract::common::LinkId& link_id) const = 0;
 
   /**
    * @brief Get transform between two links using the current state
-   * @param from_link_name The link name the transform should be relative to
-   * @param to_link_name The link name to get transform
-   * @return The relative transform = inv(Transform(from_link_name)) * Transform(to_link_name)
+   * @param from_link_name The link id the transform should be relative to
+   * @param to_link_name The link id to get transform
+   * @return The relative transform = inv(Transform(from_link_id)) * Transform(to_link_id)
    */
-  virtual Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
-                                                     const std::string& to_link_name) const = 0;
-
-  /** @brief Get transform between two links identified by LinkId */
   virtual Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
                                                      const tesseract::common::LinkId& to_link_id) const = 0;
 

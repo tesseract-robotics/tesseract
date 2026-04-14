@@ -88,7 +88,6 @@ public:
   void calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
-
   /**
    * @brief Calculated jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
@@ -187,32 +186,22 @@ public:
   /** @brief Get the static link IDs */
   const std::vector<tesseract::common::LinkId>& getStaticLinkIds() const;
 
-  /** @brief Check if link ID exists (O(1)) */
-  bool hasLinkId(const tesseract::common::LinkId& link_id) const;
-
   /** @brief Get the base link ID */
   tesseract::common::LinkId getBaseLinkId() const;
 
-  /**
-   * @brief Check if link is an active link (by ID, O(1))
-   * @param link_id The link ID to check
-   * @return True if active, otherwise false
-   */
-  bool isActiveLinkId(const tesseract::common::LinkId& link_id) const;
-
-  /**
+   /**
    * @brief Check if link is an active link
-   * @param link_name The link name to check
+   * @param link_name The link id to check
    * @return True if active, otherwise false
    */
-  bool isActiveLinkName(const std::string& link_name) const;
+   bool isActiveLinkId(const tesseract::common::LinkId& link_id) const;
 
   /**
-   * @brief Check if link name exists
-   * @param link_name The link name to check for
+   * @brief Check if link id exists
+   * @param link_name The link id to check for
    * @return True if it exists, otherwise false
    */
-  bool hasLinkName(const std::string& link_name) const;
+  bool hasLinkId(const tesseract::common::LinkId& link_id) const;
 
   /** @brief Get the link IDs */
   const std::vector<tesseract::common::LinkId>& getLinkIds() const;
@@ -243,9 +232,6 @@ public:
    * @return Number of joints in robot
    */
   Eigen::Index numJoints() const;
-
-  /** @brief Get the robot base link name */
-  std::string getBaseLinkName() const;
 
   /** @brief Name of the manipulator */
   std::string getName() const;

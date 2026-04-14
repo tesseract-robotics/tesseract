@@ -3,7 +3,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 // #include <boost/graph/filtered_graph.hpp>
 #include <iostream>
-#include <fstream>
 #include <kdl/treefksolverpos_recursive.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -17,6 +16,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/common/types.h>
 
+using tesseract::common::JointId;
 using tesseract::common::LinkId;
 
 // getLinks and getJoint use an internal map so need to check against graph
@@ -236,15 +236,17 @@ void runTest(tesseract::scene_graph::SceneGraph& g)
 
     std::cout << path << "\n";
     EXPECT_TRUE(path.links.size() == 3);
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_1")) != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_5")) != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_4")) != path.links.end());
     EXPECT_TRUE(path.joints.size() == 2);
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_5") != path.joints.end());
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_6") != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_5")) != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_6")) != path.joints.end());
     EXPECT_TRUE(path.active_joints.size() == 2);
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") != path.active_joints.end());
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") != path.active_joints.end());
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId::fromName("joint_5")) !=
+                path.active_joints.end());
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId::fromName("joint_6")) !=
+                path.active_joints.end());
 
     std::cout << (g.getName().c_str()) << "\n";
   }
@@ -254,15 +256,17 @@ void runTest(tesseract::scene_graph::SceneGraph& g)
 
     std::cout << path << "\n";
     EXPECT_TRUE(path.links.size() == 3);
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_1")) != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_5")) != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_4")) != path.links.end());
     EXPECT_TRUE(path.joints.size() == 2);
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_5") != path.joints.end());
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_6") != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_5")) != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_6")) != path.joints.end());
     EXPECT_TRUE(path.active_joints.size() == 2);
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") != path.active_joints.end());
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") != path.active_joints.end());
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId::fromName("joint_5")) !=
+                path.active_joints.end());
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId::fromName("joint_6")) !=
+                path.active_joints.end());
 
     std::cout << (g.getName().c_str()) << "\n";
   }

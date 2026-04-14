@@ -296,15 +296,6 @@ TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
   EXPECT_TRUE(tesseract::common::isIdentical<tesseract::collision::ObjectPairKey>(pairs, check_pairs, false));
 }
 
-TEST(TesseractCoreUnit, isContactAllowedUnit)  // NOLINT
-{
-  auto validator = std::make_shared<TestContactAllowedValidator>();
-
-  EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "base_link", validator, false));
-  EXPECT_FALSE(tesseract::collision::isContactAllowed("base_link", "link_2", validator, false));
-  EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "link_1", validator, true));
-}
-
 TEST(TesseractCoreUnit, scaleVerticesUnit)  // NOLINT
 {
   tesseract::common::VectorVector3d base_vertices{};

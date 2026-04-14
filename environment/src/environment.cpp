@@ -569,24 +569,12 @@ void Environment::Implementation::setState(const std::vector<tesseract::common::
 
 Eigen::VectorXd Environment::Implementation::getCurrentJointValues() const
 {
-  Eigen::VectorXd jv;
-  std::vector<tesseract::common::JointId> active_joint_ids = state_solver->getActiveJointIds();
-  jv.resize(static_cast<long int>(active_joint_ids.size()));
-  for (auto j = 0U; j < active_joint_ids.size(); ++j)
-    jv(j) = current_state.joints.at(active_joint_ids[j]);
-
-  return jv;
+  return current_state.getJointValues(state_solver->getActiveJointIds());
 }
 
 Eigen::VectorXd Environment::Implementation::getCurrentJointValues(const std::vector<std::string>& joint_names) const
 {
-  using tesseract::common::JointId;
-  Eigen::VectorXd jv;
-  jv.resize(static_cast<long int>(joint_names.size()));
-  for (auto j = 0U; j < joint_names.size(); ++j)
-    jv(j) = current_state.joints.at(JointId::fromName(joint_names[j]));
-
-  return jv;
+  return current_state.getJointValues(joint_names);
 }
 
 Eigen::VectorXd
@@ -597,25 +585,13 @@ Environment::Implementation::getCurrentJointValues(const std::vector<tesseract::
 
 tesseract::common::JointIdTransformMap Environment::Implementation::getCurrentFloatingJointValues() const
 {
-  tesseract::common::JointIdTransformMap fjv;
-  for (const auto& id : state_solver->getFloatingJointIds())
-    fjv[id] = current_state.floating_joints.at(id);
-
-  return fjv;
+  return current_state.getFloatingJointValues(state_solver->getFloatingJointIds());
 }
 
 tesseract::common::JointIdTransformMap
 Environment::Implementation::getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const
 {
-  using tesseract::common::JointId;
-  tesseract::common::JointIdTransformMap fjv;
-  for (const auto& joint_name : joint_names)
-  {
-    auto id = JointId::fromName(joint_name);
-    fjv[id] = current_state.floating_joints.at(id);
-  }
-
-  return fjv;
+  return current_state.getFloatingJointValues(joint_names);
 }
 
 tesseract::common::JointIdTransformMap Environment::Implementation::getCurrentFloatingJointValues(
@@ -791,54 +767,12 @@ void Environment::Implementation::triggerCallbacks()
 
 std::vector<std::string> Environment::Implementation::getGroupJointNames(const std::string& group_name) const
 {
-  auto it = std::find(kinematics_information.group_names.begin(), kinematics_information.group_names.end(), group_name);
-  if (it == kinematics_information.group_names.end())
-    throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
-
-  std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex);
-  auto cache_it = group_joint_names_cache.find(group_name);
-  if (cache_it != group_joint_names_cache.end())
-  {
-    std::vector<std::string> names;
-    names.reserve(cache_it->second.size());
-    for (const auto& id : cache_it->second)
-      names.push_back(id.name());
-    return names;
-  }
-
-  auto chain_it = kinematics_information.chain_groups.find(group_name);
-  if (chain_it != kinematics_information.chain_groups.end())
-  {
-    if (chain_it->second.size() > 1)
-      throw std::runtime_error("Environment, Groups with multiple chains is not supported!");
-
-    tesseract::scene_graph::ShortestPath path =
-        scene_graph->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
-
-    std::vector<tesseract::common::JointId> joint_ids;
-    joint_ids.reserve(path.active_joints.size());
-    for (const auto& name : path.active_joints)
-      joint_ids.push_back(tesseract::common::JointId::fromName(name));
-    group_joint_names_cache[group_name] = joint_ids;
-    return path.active_joints;
-  }
-
-  auto joint_it = kinematics_information.joint_groups.find(group_name);
-  if (joint_it != kinematics_information.joint_groups.end())
-  {
-    group_joint_names_cache[group_name] = joint_it->second;
-    std::vector<std::string> names;
-    names.reserve(joint_it->second.size());
-    for (const auto& id : joint_it->second)
-      names.push_back(id.name());
-    return names;
-  }
-
-  auto link_it = kinematics_information.link_groups.find(group_name);
-  if (link_it != kinematics_information.link_groups.end())
-    throw std::runtime_error("Environment, Link groups are currently not supported!");
-
-  throw std::runtime_error("Environment, failed to get group '" + group_name + "' joint names!");
+  auto joint_ids = getGroupJointIds(group_name);
+  std::vector<std::string> joint_names;
+  joint_names.reserve(joint_ids.size());
+  for (const auto& id : joint_ids)
+    joint_names.push_back(id.name());
+  return joint_names;
 }
 
 std::vector<tesseract::common::JointId>
@@ -864,8 +798,8 @@ Environment::Implementation::getGroupJointIds(const std::string& group_name) con
 
     std::vector<tesseract::common::JointId> joint_ids;
     joint_ids.reserve(path.active_joints.size());
-    for (const auto& name : path.active_joints)
-      joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    for (const auto& id : path.active_joints)
+      joint_ids.push_back(id);
     group_joint_names_cache[group_name] = joint_ids;
     return joint_ids;
   }
@@ -2932,7 +2866,7 @@ tesseract::common::VectorIsometry3d Environment::getLinkTransforms() const
 Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(link_name);
+  return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(common::LinkId::fromName(link_name));
 }
 
 Eigen::Isometry3d Environment::getLinkTransform(const tesseract::common::LinkId& link_id) const
@@ -2941,11 +2875,19 @@ Eigen::Isometry3d Environment::getLinkTransform(const tesseract::common::LinkId&
   return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(link_id);
 }
 
+Eigen::Isometry3d Environment::getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
+                                                        const tesseract::common::LinkId& to_link_id) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getRelativeLinkTransform(from_link_id, to_link_id);
+}
+
 Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
                                                         const std::string& to_link_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).state_solver->getRelativeLinkTransform(from_link_name, to_link_name);
+  return std::as_const<Implementation>(*impl_).state_solver->getRelativeLinkTransform(
+      common::LinkId::fromName(from_link_name), common::LinkId::fromName(to_link_name));
 }
 
 std::unique_ptr<tesseract::scene_graph::StateSolver> Environment::getStateSolver() const

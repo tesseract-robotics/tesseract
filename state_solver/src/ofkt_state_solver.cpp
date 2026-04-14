@@ -628,12 +628,6 @@ std::vector<std::string> OFKTStateSolver::getActiveJointNames() const
   return names;
 }
 
-std::string OFKTStateSolver::getBaseLinkName() const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return root_->getLinkId().name();
-}
-
 std::vector<std::string> OFKTStateSolver::getLinkNames() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -670,20 +664,19 @@ std::vector<std::string> OFKTStateSolver::getStaticLinkNames() const
   return names;
 }
 
-bool OFKTStateSolver::isActiveLinkName(const std::string& link_name) const
+bool OFKTStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<LinkId> active_link_ids;
-  active_link_ids.reserve(nodes_.size());
-  loadActiveLinkIdsRecursive(active_link_ids, root_.get(), false);
-  const auto target = LinkId::fromName(link_name);
-  return std::find(active_link_ids.begin(), active_link_ids.end(), target) != active_link_ids.end();
+  std::vector<LinkId> ids;
+  ids.reserve(nodes_.size());
+  loadActiveLinkIdsRecursive(ids, root_.get(), false);
+  return std::find(ids.begin(), ids.end(), link_id) != ids.end();
 }
 
-bool OFKTStateSolver::hasLinkName(const std::string& link_name) const
+bool OFKTStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return link_map_.count(LinkId::fromName(link_name)) > 0;
+  return link_map_.count(link_id) > 0;
 }
 
 tesseract::common::VectorIsometry3d OFKTStateSolver::getLinkTransforms() const
@@ -696,16 +689,15 @@ tesseract::common::VectorIsometry3d OFKTStateSolver::getLinkTransforms() const
   return link_tfs;
 }
 
-Eigen::Isometry3d OFKTStateSolver::getLinkTransform(const std::string& link_name) const
+Eigen::Isometry3d OFKTStateSolver::getLinkTransform(const tesseract::common::LinkId& link_id) const
 {
-  return current_state_.link_transforms.at(LinkId::fromName(link_name));
+  return current_state_.link_transforms.at(link_id);
 }
 
-Eigen::Isometry3d OFKTStateSolver::getRelativeLinkTransform(const std::string& from_link_name,
-                                                            const std::string& to_link_name) const
+Eigen::Isometry3d OFKTStateSolver::getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
+                                                            const tesseract::common::LinkId& to_link_id) const
 {
-  return current_state_.link_transforms.at(LinkId::fromName(from_link_name)).inverse() *
-         current_state_.link_transforms.at(LinkId::fromName(to_link_name));
+  return current_state_.link_transforms.at(from_link_id).inverse() * current_state_.link_transforms.at(to_link_id);
 }
 
 // --- ID-based overloads ---
@@ -756,32 +748,6 @@ std::vector<LinkId> OFKTStateSolver::getStaticLinkIds() const
   ids.reserve(nodes_.size());
   loadStaticLinkIdsRecursive(ids, root_.get());
   return ids;
-}
-
-bool OFKTStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<LinkId> ids;
-  ids.reserve(nodes_.size());
-  loadActiveLinkIdsRecursive(ids, root_.get(), false);
-  return std::find(ids.begin(), ids.end(), link_id) != ids.end();
-}
-
-bool OFKTStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return link_map_.count(link_id) > 0;
-}
-
-Eigen::Isometry3d OFKTStateSolver::getLinkTransform(const tesseract::common::LinkId& link_id) const
-{
-  return current_state_.link_transforms.at(link_id);
-}
-
-Eigen::Isometry3d OFKTStateSolver::getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
-                                                            const tesseract::common::LinkId& to_link_id) const
-{
-  return current_state_.link_transforms.at(from_link_id).inverse() * current_state_.link_transforms.at(to_link_id);
 }
 
 tesseract::common::KinematicLimits OFKTStateSolver::getLimits() const
@@ -1104,7 +1070,7 @@ bool OFKTStateSolver::insertSceneGraph(const SceneGraph& scene_graph, const Join
   if (root_ == nullptr)
     return false;  // LCOV_EXCL_LINE
 
-  std::string parent_link = joint.parent_link_id.name();
+  // std::string parent_link = joint.parent_link_id.name();
   std::string child_link = joint.child_link_id.name();
 
   // Assumes the joint already contains the prefix in the parent and child link names

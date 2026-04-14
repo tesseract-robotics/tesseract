@@ -112,7 +112,7 @@ inline void runTest(DiscreteContactManager& checker)
   //////////////////////////////////////
   std::vector<std::string> active_links{ "box_link", "capsule_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);

@@ -1074,14 +1074,14 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
        s_tip = u, u = predicessor_map[s_tip])  // Set the current vertex to the current predecessor, and the predecessor
                                                // to one level up
   {
-    path.links.push_back(boost::get(boost::vertex_link, graph)[s_tip]->getName());
+    path.links.push_back(boost::get(boost::vertex_link, graph)[s_tip]->getId());
     const Joint::ConstPtr& joint = boost::get(boost::edge_joint, graph)[boost::edge(u, s_tip, graph).first];
 
-    path.joints.push_back(joint->getName());
+    path.joints.push_back(joint->getId());
     if (joint->type != JointType::FIXED && joint->type != JointType::FLOATING)
-      path.active_joints.push_back(joint->getName());
+      path.active_joints.push_back(joint->getId());
   }
-  path.links.push_back(root);
+  path.links.push_back(common::LinkId::fromName(root));
   std::reverse(path.links.begin(), path.links.end());
   std::reverse(path.joints.begin(), path.joints.end());
   std::reverse(path.active_joints.begin(), path.active_joints.end());
@@ -1317,15 +1317,15 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 {
   os << "Links:" << "\n";
   for (const auto& l : path.links)
-    os << "  " << l << "\n";
+    os << "  " << l.name() << "\n";
 
   os << "Joints:" << "\n";
   for (const auto& j : path.joints)
-    os << "  " << j << "\n";
+    os << "  " << j.name() << "\n";
 
   os << "Active Joints:" << "\n";
   for (const auto& j : path.active_joints)
-    os << "  " << j << "\n";
+    os << "  " << j.name() << "\n";
   return os;
 }
 
