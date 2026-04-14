@@ -79,7 +79,7 @@ inline void runTestCompound(DiscreteContactManager& checker)
   //////////////////////////////////////
   std::vector<std::string> active_links{ "octomap1_link", "octomap2_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
@@ -109,12 +109,15 @@ inline void runTestCompound(DiscreteContactManager& checker)
 
 inline void runTestCompound(ContinuousContactManager& checker)
 {
+  const auto octomap1_link = tesseract::common::LinkId::fromName("octomap1_link");
+  const auto octomap2_link = tesseract::common::LinkId::fromName("octomap2_link");
+
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
   std::vector<std::string> active_links{ "octomap1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
@@ -123,11 +126,11 @@ inline void runTestCompound(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
 
   // Set Pair
-  checker.setCollisionMarginPair("octomap1_link", "octomap2_link", 0.25);
+  checker.setCollisionMarginPair(octomap1_link, octomap2_link, 0.25);
 
   // Set the collision object transforms
   tesseract::common::LinkIdTransformMap location;
-  location[tesseract::common::LinkId::fromName("octomap2_link")] = Eigen::Isometry3d::Identity();
+  location[octomap2_link] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
 
   // Set the collision object transforms
@@ -136,7 +139,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   end_pos = Eigen::Isometry3d::Identity();
   start_pos.translation() = Eigen::Vector3d(0, -2.0, 0);
   end_pos.translation() = Eigen::Vector3d(0, 2.0, 0);
-  checker.setCollisionObjectsTransform("octomap1_link", start_pos, end_pos);
+  checker.setCollisionObjectsTransform(octomap1_link, start_pos, end_pos);
 
   // Perform collision check
   ContactResultMap result;

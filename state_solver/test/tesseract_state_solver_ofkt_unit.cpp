@@ -195,8 +195,9 @@ TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT
 {
   OFKTStateSolver solver("test");
   EXPECT_TRUE(solver.getLinkNames().size() == 1);
-  EXPECT_TRUE(solver.getLinkNames().at(0) == "test");
-  EXPECT_TRUE(solver.getLinkTransform("test").isApprox(Eigen::Isometry3d::Identity(), 1e-6));
+  auto ln = tesseract::common::LinkId::fromName("test");
+  EXPECT_TRUE(solver.getLinkNames().at(0) == ln.name());
+  EXPECT_TRUE(solver.getLinkTransform(ln).isApprox(Eigen::Isometry3d::Identity(), 1e-6));
   EXPECT_TRUE(solver.getRevision() == 0);
   solver.setRevision(100);
   EXPECT_TRUE(solver.getRevision() == 100);

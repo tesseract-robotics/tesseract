@@ -93,13 +93,13 @@ using Graph = boost::
 struct ShortestPath
 {
   /** @brief a list of links along the shortest path */
-  std::vector<std::string> links;
+  std::vector<common::LinkId> links;
 
   /** @brief A list of joints along the shortest path */
-  std::vector<std::string> joints;
+  std::vector<common::JointId> joints;
 
   /** @brief A list of active joints along the shortest path */
-  std::vector<std::string> active_joints;
+  std::vector<common::JointId> active_joints;
 };
 
 class SceneGraph;

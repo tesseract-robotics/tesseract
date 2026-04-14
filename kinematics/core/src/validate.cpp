@@ -26,6 +26,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
+#include <algorithm>
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -42,8 +43,8 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
   Eigen::Isometry3d test2;
   Eigen::VectorXd seed_angles(manip.numJoints());
   Eigen::VectorXd joint_angles2(manip.numJoints());
-  std::vector<std::string> tip_links = manip.getAllPossibleTipLinkNames();
-  std::vector<std::string> working_frames = manip.getAllValidWorkingFrames();
+  auto tip_links = manip.getAllPossibleTipLinkIds();
+  auto working_frames = manip.getAllValidWorkingFrameIds();
   const int nj = static_cast<int>(manip.numJoints());
 
   std::vector<std::vector<double>> passed_data;
@@ -53,7 +54,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
   double translation_max{ 0 };
   double angular_max{ 0 };
 
-  std::vector<std::pair<std::string, std::string>> checks;
+  std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>> checks;
   checks.reserve(tip_links.size() + working_frames.size());
 
   for (const auto& tip_link : tip_links)
@@ -72,10 +73,10 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
       joint_angles2[t] = M_PI_4;
 
       auto poses1 = manip.calcFwdKin(joint_angles2);
-      const auto wf_id = tesseract::common::LinkId::fromName(check.first);
-      const auto tl_id = tesseract::common::LinkId::fromName(check.second);
+      const auto wf_id = check.first;
+      const auto tl_id = check.second;
       test1 = poses1.at(wf_id).inverse() * poses1.at(tl_id);
-      KinGroupIKInput ik_input(test1, tesseract::common::LinkId::fromName(check.first), tesseract::common::LinkId::fromName(check.second));
+      KinGroupIKInput ik_input(test1, wf_id, tl_id);
       IKSolutions sols = manip.calcInvKin({ ik_input }, seed_angles);
       for (const auto& sol : sols)
       {
@@ -94,11 +95,8 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
           if (angular_distance > tol)
             ++angular_failures;
 
-          if (angular_distance > angular_max)
-            angular_max = angular_distance;
-
-          if (translation_distance > translation_max)
-            translation_max = translation_distance;
+          angular_max = std::max(angular_distance, angular_max);
+          translation_max = std::max(translation_distance, translation_max);
 
           std::vector<double> data{ translation_distance, tol, angular_distance, tol };
           for (Eigen::Index i = 0; i < sol.rows(); ++i)

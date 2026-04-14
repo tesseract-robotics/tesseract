@@ -73,12 +73,6 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose = false);
 
-/** @brief String convenience overload — hashes names to LinkIds */
-bool isContactAllowed(const std::string& name1,
-                      const std::string& name2,
-                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
-                      bool verbose = false);
-
 /**
  * @brief processResult Processes the ContactResult based on the information in the ContactTestData
  * @param cdata Information used to process the results

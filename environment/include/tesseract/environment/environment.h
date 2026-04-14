@@ -487,7 +487,8 @@ public:
    * @brief Get the current floating joint values
    * @return The joint origin transform for the floating joint
    */
-  tesseract::common::JointIdTransformMap getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
+  tesseract::common::JointIdTransformMap
+  getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
   /** @brief Get current floating joint values by JointId vector (avoids string-to-ID conversion) */
   tesseract::common::JointIdTransformMap
@@ -557,9 +558,15 @@ public:
 
   /**
    * @brief Get transform between two links using the current state
-   * @param from_link_name The link name the transform should be relative to
-   * @param to_link_name The link name to get transform
+   * @param from_link_name The link id the transform should be relative to
+   * @param to_link_name The link id to get transform
    * @return The relative transform = inv(Transform(from_link_name)) * Transform(to_link_name)
+   */
+  Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
+                                             const tesseract::common::LinkId& to_link_id) const;
+
+  /**
+   * @brief Get transform between two links using the current state (string-based overload)
    */
   Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name, const std::string& to_link_name) const;
 

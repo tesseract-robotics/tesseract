@@ -10,6 +10,12 @@ namespace detail
 {
 inline void addCollisionObjects(DiscreteContactManager& checker)
 {
+  const auto sphere_link = tesseract::common::LinkId::fromName("sphere_link");
+  const auto thin_box_link = tesseract::common::LinkId::fromName("thin_box_link");
+  const auto sphere1_link = tesseract::common::LinkId::fromName("sphere1_link");
+  const auto remove_box_link = tesseract::common::LinkId::fromName("remove_box_link");
+  const auto missing_link = tesseract::common::LinkId::fromName("link_does_not_exist");
+
   ////////////////////////
   // Add sphere to checker
   ////////////////////////
@@ -23,8 +29,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj1_shapes.push_back(sphere);
   obj1_poses.push_back(sphere_pose);
 
-  checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses);
-  EXPECT_TRUE(checker.isCollisionObjectEnabled("sphere_link"));
+  checker.addCollisionObject(sphere_link, 0, obj1_shapes, obj1_poses);
+  EXPECT_TRUE(checker.isCollisionObjectEnabled(sphere_link));
 
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
@@ -38,8 +44,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
-  checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses, false);
-  EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
+  checker.addCollisionObject(thin_box_link, 0, obj2_shapes, obj2_poses, false);
+  EXPECT_FALSE(checker.isCollisionObjectEnabled(thin_box_link));
 
   /////////////////////////////////////////////////////////////////
   // Add second sphere to checker. If use_convex_mesh = true
@@ -55,8 +61,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj3_shapes.push_back(sphere1);
   obj3_poses.push_back(sphere1_pose);
 
-  checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses);
-  EXPECT_TRUE(checker.isCollisionObjectEnabled("sphere1_link"));
+  checker.addCollisionObject(sphere1_link, 0, obj3_shapes, obj3_poses);
+  EXPECT_TRUE(checker.isCollisionObjectEnabled(sphere1_link));
 
   /////////////////////////////////////////////
   // Add box and remove
@@ -70,20 +76,20 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj4_shapes.push_back(remove_box);
   obj4_poses.push_back(remove_box_pose);
 
-  checker.addCollisionObject("remove_box_link", 0, obj4_shapes, obj4_poses);
+  checker.addCollisionObject(remove_box_link, 0, obj4_shapes, obj4_poses);
   EXPECT_TRUE(checker.getCollisionObjects().size() == 4);
-  EXPECT_TRUE(checker.hasCollisionObject("remove_box_link"));
-  EXPECT_TRUE(checker.isCollisionObjectEnabled("remove_box_link"));
-  checker.removeCollisionObject("remove_box_link");
-  EXPECT_FALSE(checker.hasCollisionObject("remove_box_link"));
+  EXPECT_TRUE(checker.hasCollisionObject(remove_box_link));
+  EXPECT_TRUE(checker.isCollisionObjectEnabled(remove_box_link));
+  checker.removeCollisionObject(remove_box_link);
+  EXPECT_FALSE(checker.hasCollisionObject(remove_box_link));
 
   /////////////////////////////////////////////
   // Try functions on a link that does not exist
   /////////////////////////////////////////////
-  EXPECT_FALSE(checker.removeCollisionObject("link_does_not_exist"));
-  EXPECT_FALSE(checker.enableCollisionObject("link_does_not_exist"));
-  EXPECT_FALSE(checker.disableCollisionObject("link_does_not_exist"));
-  EXPECT_FALSE(checker.isCollisionObjectEnabled("link_does_not_exist"));
+  EXPECT_FALSE(checker.removeCollisionObject(missing_link));
+  EXPECT_FALSE(checker.enableCollisionObject(missing_link));
+  EXPECT_FALSE(checker.disableCollisionObject(missing_link));
+  EXPECT_FALSE(checker.isCollisionObjectEnabled(missing_link));
 
   /////////////////////////////////////////////
   // Try to add empty Collision Object
@@ -97,9 +103,9 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   EXPECT_TRUE(checker.getCollisionObjects().size() == 3);
   for (const auto& co : checker.getCollisionObjects())
   {
-    EXPECT_TRUE(checker.getCollisionObjectGeometries(co.name()).size() == 1);
-    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co.name()).size() == 1);
-    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co.name()))
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co).size() == 1);
+    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co))
     {
       EXPECT_TRUE(cgt.isApprox(Eigen::Isometry3d::Identity(), 1e-5));
     }
@@ -110,6 +116,10 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
 inline void
 runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest_tol = 0.001, double normal_tol = 0.001)
 {
+  const auto sphere_link = tesseract::common::LinkId::fromName("sphere_link");
+  const auto sphere1_link = tesseract::common::LinkId::fromName("sphere1_link");
+  const auto thin_box_link = tesseract::common::LinkId::fromName("thin_box_link");
+
   // Check name which should not be empty
   EXPECT_FALSE(checker.getName().empty());
 
@@ -122,24 +132,26 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
-  checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  std::vector<tesseract::common::LinkId> active_link_ids{ sphere_link, sphere1_link };
+  checker.setActiveCollisionObjects(active_link_ids);
+  const auto& check_active_link_ids = checker.getActiveCollisionObjectIds();
+  EXPECT_EQ(check_active_link_ids.size(), active_link_ids.size());
+  EXPECT_EQ(check_active_link_ids.count(sphere_link), 1);
+  EXPECT_EQ(check_active_link_ids.count(sphere1_link), 1);
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
   checker.setCollisionMarginData(CollisionMarginData(0.5));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
-  EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
+  EXPECT_FALSE(checker.isCollisionObjectEnabled(thin_box_link));
 
-  checker.setCollisionMarginPair("sphere_link", "sphere1_link", 0.1);
+  checker.setCollisionMarginPair(sphere_link, sphere1_link, 0.1);
 
   // Test when object is inside another
   tesseract::common::LinkIdTransformMap location;
-  location[tesseract::common::LinkId::fromName("sphere_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId::fromName("sphere1_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId::fromName("sphere1_link")].translation()(0) = 0.2;
+  location[sphere_link] = Eigen::Isometry3d::Identity();
+  location[sphere1_link] = Eigen::Isometry3d::Identity();
+  location[sphere1_link].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -166,7 +178,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   if (cloned_result_vector[0].link_ids[0].name() != "sphere_link")
     cloned_idx = { 1, 0, -1 };
 
-  EXPECT_FALSE(cloned_checker->isCollisionObjectEnabled("thin_box_link"));
+  EXPECT_FALSE(cloned_checker->isCollisionObjectEnabled(thin_box_link));
   EXPECT_TRUE(!result_vector.empty() && !cloned_result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, cloned_result_vector[0].distance, dist_tol);
   EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0],
