@@ -164,24 +164,43 @@ void KDLStateSolver::setState(const tesseract::common::JointIdTransformMap& /*fl
 }
 
 void KDLStateSolver::setState(const SceneState::JointValues& joint_values,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values)
+                              const tesseract::common::JointIdTransformMap& /*floating_joint_values*/)
 {
-  std::unordered_map<std::string, double> str_map;
-  str_map.reserve(joint_values.size());
   for (const auto& [id, val] : joint_values)
-    str_map[id.name()] = val;
-  setState(str_map, floating_joint_values);
+  {
+    if (setJointValuesHelper(kdl_jnt_array_, id, val))
+      current_state_.joints[id] = val;
+  }
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(current_state_.link_transforms,
+                      current_state_.joint_transforms,
+                      kdl_jnt_array_,
+                      data_.tree.getRootSegment(),
+                      parent_frame);
 }
 
 void KDLStateSolver::setState(const std::vector<JointId>& joint_ids,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values)
+                              const tesseract::common::JointIdTransformMap& /*floating_joint_values*/)
 {
-  std::vector<std::string> names;
-  names.reserve(joint_ids.size());
-  for (const auto& id : joint_ids)
-    names.push_back(id.name());
-  setState(names, joint_values, floating_joint_values);
+  assert(static_cast<Eigen::Index>(joint_ids.size()) == joint_values.size());
+  for (auto i = 0U; i < joint_ids.size(); ++i)
+  {
+    if (setJointValuesHelper(kdl_jnt_array_, joint_ids[i], joint_values[i]))
+      current_state_.joints[joint_ids[i]] = joint_values[i];
+  }
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(current_state_.link_transforms,
+                      current_state_.joint_transforms,
+                      kdl_jnt_array_,
+                      data_.tree.getRootSegment(),
+                      parent_frame);
 }
 
 SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -272,24 +291,48 @@ SceneState KDLStateSolver::getState(const tesseract::common::JointIdTransformMap
 }
 
 SceneState KDLStateSolver::getState(const SceneState::JointValues& joint_values,
-                                    const tesseract::common::JointIdTransformMap& floating_joint_values) const
+                                    const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
 {
-  std::unordered_map<std::string, double> str_map;
-  str_map.reserve(joint_values.size());
+  SceneState state{ current_state_ };
+
+  kdl_joints_cache = kdl_jnt_array_;
+
   for (const auto& [id, val] : joint_values)
-    str_map[id.name()] = val;
-  return getState(str_map, floating_joint_values);
+  {
+    if (setJointValuesHelper(kdl_joints_cache, id, val))
+      state.joints[id] = val;
+  }
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(
+      state.link_transforms, state.joint_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
+
+  return state;
 }
 
 SceneState KDLStateSolver::getState(const std::vector<JointId>& joint_ids,
                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                    const tesseract::common::JointIdTransformMap& floating_joint_values) const
+                                    const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
 {
-  std::vector<std::string> names;
-  names.reserve(joint_ids.size());
-  for (const auto& id : joint_ids)
-    names.push_back(id.name());
-  return getState(names, joint_values, floating_joint_values);
+  SceneState state{ current_state_ };
+
+  kdl_joints_cache = kdl_jnt_array_;
+
+  for (auto i = 0U; i < joint_ids.size(); ++i)
+  {
+    if (setJointValuesHelper(kdl_joints_cache, joint_ids[i], joint_values[i]))
+      state.joints[joint_ids[i]] = joint_values[i];
+  }
+
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(
+      state.link_transforms, state.joint_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
+
+  return state;
 }
 
 SceneState KDLStateSolver::getState() const { return current_state_; }
@@ -364,8 +407,8 @@ tesseract::common::VectorIsometry3d KDLStateSolver::getLinkTransforms() const
 {
   tesseract::common::VectorIsometry3d link_tfs;
   link_tfs.reserve(current_state_.link_transforms.size());
-  for (const auto& link_name : data_.link_names)
-    link_tfs.push_back(current_state_.link_transforms.at(LinkId::fromName(link_name)));
+  for (const auto& link_id : link_ids_)
+    link_tfs.push_back(current_state_.link_transforms.at(link_id));
 
   return link_tfs;
 }
