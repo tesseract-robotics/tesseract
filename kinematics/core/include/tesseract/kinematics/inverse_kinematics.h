@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/eigen_types.h>
+#include <tesseract/common/types.h>
 #include <tesseract/kinematics/types.h>
 
 namespace tesseract::kinematics
@@ -92,10 +93,10 @@ public:
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const = 0;
 
   /**
-   * @brief Get list of joint names for kinematic object
-   * @return A vector of joint names, joint_list_
+   * @brief Get list of joint ids for kinematic object
+   * @return A vector of joint ids
    */
-  virtual std::vector<std::string> getJointNames() const = 0;
+  virtual std::vector<tesseract::common::JointId> getJointIds() const = 0;
 
   /**
    * @brief Number of joints in robot
@@ -103,21 +104,21 @@ public:
    */
   virtual Eigen::Index numJoints() const = 0;
 
-  /** @brief Get the robot base link name */
-  virtual std::string getBaseLinkName() const = 0;
+  /** @brief Get the robot base link id */
+  virtual tesseract::common::LinkId getBaseLinkId() const = 0;
 
   /**
    * @brief Get the inverse kinematics working frame
    * @details This is the frame of reference in which all poses given to the calcInvKin function should be defined
    */
-  virtual std::string getWorkingFrame() const = 0;
+  virtual tesseract::common::LinkId getWorkingFrameId() const = 0;
 
   /**
-   * @brief Get the names of the tip links of the kinematics group
+   * @brief Get the ids of the tip links of the kinematics group
    * @details In the case of a kinematic chain, this returns one tip link; in the case of a kinematic tree this returns
    * the tip link for each branch of the tree.
    */
-  virtual std::vector<std::string> getTipLinkNames() const = 0;
+  virtual std::vector<tesseract::common::LinkId> getTipLinkIds() const = 0;
 
   /** @brief Get the name of the solver. Recommend using the name of the class. */
   virtual std::string getSolverName() const = 0;

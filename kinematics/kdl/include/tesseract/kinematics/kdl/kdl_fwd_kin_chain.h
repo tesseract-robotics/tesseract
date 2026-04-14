@@ -93,9 +93,9 @@ public:
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                     const std::string& joint_link_name) const override final;
 
-  std::string getBaseLinkName() const override final;
-  std::vector<std::string> getJointNames() const override final;
-  std::vector<std::string> getTipLinkNames() const override final;
+  tesseract::common::LinkId getBaseLinkId() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override final;
+  std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   Eigen::Index numJoints() const override final;
   std::string getSolverName() const override final;
   ForwardKinematics::UPtr clone() const override final;

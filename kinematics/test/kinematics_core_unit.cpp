@@ -548,7 +548,6 @@ TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
   for (const auto& name : joint_group->getActiveLinkNames())
   {
     EXPECT_TRUE(joint_group->isActiveLinkId(LinkId::fromName(name)));
-    EXPECT_TRUE(joint_group->isActiveLinkName(name));
   }
 
   // base_link should not be active (it's the fixed base)

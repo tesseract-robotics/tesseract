@@ -104,7 +104,7 @@ bool BulletDiscreteSimpleManager::addCollisionObject(const tesseract::common::Li
   if (link2cow_.find(id) != link2cow_.end())
     removeCollisionObject(id);
 
-  COW::Ptr new_cow = createCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createCollisionObject(id, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     auto margin =
@@ -200,7 +200,10 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::
   }
 }
 
-const std::vector<tesseract::common::LinkId>& BulletDiscreteSimpleManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& BulletDiscreteSimpleManager::getCollisionObjects() const
+{
+  return collision_objects_;
+}
 
 void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
@@ -254,11 +257,11 @@ void BulletDiscreteSimpleManager::setDefaultCollisionMargin(double default_colli
   onCollisionMarginDataChanged();
 }
 
-void BulletDiscreteSimpleManager::setCollisionMarginPair(const std::string& name1,
-                                                         const std::string& name2,
+void BulletDiscreteSimpleManager::setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                                         const tesseract::common::LinkId& id2,
                                                          double collision_margin)
 {
-  contact_test_data_.collision_margin_data.setCollisionMargin(name1, name2, collision_margin);
+  contact_test_data_.collision_margin_data.setCollisionMargin(id1, id2, collision_margin);
   onCollisionMarginDataChanged();
 }
 

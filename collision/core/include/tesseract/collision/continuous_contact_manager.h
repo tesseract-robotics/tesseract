@@ -237,7 +237,7 @@ public:
    * @brief Get which collision objects can move as names
    * @return A list of collision object names (derived from getActiveCollisionObjectIds)
    */
-  virtual std::vector<std::string> getActiveCollisionObjects() const;
+  virtual std::vector<std::string> getActiveCollisionObjectNames() const;
 
   /**
    * @brief Set the contact distance threshold
@@ -276,7 +276,9 @@ public:
    * @param obj2 The Second object name. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  virtual void setCollisionMarginPair(const std::string& name1, const std::string& name2, double collision_margin) = 0;
+  virtual void setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                      const tesseract::common::LinkId& id2,
+                                      double collision_margin) = 0;
 
   /**
    * @brief Increment the collision margin data by some value

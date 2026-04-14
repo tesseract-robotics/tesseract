@@ -27,11 +27,11 @@
 
 namespace tesseract::common
 {
-JointState::JointState(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
+JointState::JointState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
   : position(position)
 {
   joint_ids.reserve(joint_names.size());
-  for (auto& name : joint_names)
+  for (const auto& name : joint_names)
     joint_ids.push_back(JointId::fromName(name));
 }
 

@@ -50,7 +50,7 @@ struct KinGroupIKInput
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  KinGroupIKInput(const Eigen::Isometry3d& p, tesseract::common::LinkId wf, tesseract::common::LinkId tl);
+  KinGroupIKInput(Eigen::Isometry3d p, tesseract::common::LinkId wf, tesseract::common::LinkId tl);
 
   KinGroupIKInput() = default;
 
@@ -65,7 +65,7 @@ struct KinGroupIKInput
 
   /**
    * @brief The tip link of the kinematic object to solve IK
-   * @details The provided tip link name must be listed in InverseKinematics::getTipLinkNames()
+   * @details The provided tip link name must be listed in InverseKinematics::getTipLinkIds()
    */
   tesseract::common::LinkId tip_link_id;  // This defines the internal kinematic group the information belongs to
 };
@@ -97,7 +97,7 @@ public:
    * @param scene_state The scene state
    */
   KinematicGroup(std::string name,
-                 std::vector<std::string> joint_names,
+                 const std::vector<std::string>& joint_names,
                  std::unique_ptr<InverseKinematics> inv_kin,
                  const tesseract::scene_graph::SceneGraph& scene_graph,
                  const tesseract::scene_graph::SceneState& scene_state);
@@ -156,6 +156,7 @@ public:
    * into the IK solver working frame. This function identifies all of these other possible working frames and performs
    * the appropriate transformations internally when solving IK.
    */
+  std::vector<tesseract::common::LinkId> getAllValidWorkingFrameIds() const;
   std::vector<std::string> getAllValidWorkingFrames() const;
 
   /** @brief Get the tip link name
@@ -166,6 +167,7 @@ public:
    * link. This function identifies all possible tip links that can be used for IK (i.e. static child links of the IK
    * solver tip link(s)) and internally performs the appropriate transformations when solving IK
    */
+  std::vector<tesseract::common::LinkId> getAllPossibleTipLinkIds() const;
   std::vector<std::string> getAllPossibleTipLinkNames() const;
 
   /**
@@ -180,7 +182,8 @@ private:
   std::unique_ptr<InverseKinematics> inv_kin_;
   Eigen::Isometry3d inv_to_fwd_base_{ Eigen::Isometry3d::Identity() };
   std::vector<tesseract::common::LinkId> working_frame_ids_;
-  std::unordered_map<tesseract::common::LinkId, tesseract::common::LinkId, tesseract::common::LinkId::Hash> inv_tip_links_map_;
+  std::unordered_map<tesseract::common::LinkId, tesseract::common::LinkId, tesseract::common::LinkId::Hash>
+      inv_tip_links_map_;
 };
 
 }  // namespace tesseract::kinematics

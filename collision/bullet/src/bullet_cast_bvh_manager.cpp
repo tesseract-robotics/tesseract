@@ -122,7 +122,7 @@ bool BulletCastBVHManager::addCollisionObject(const tesseract::common::LinkId& i
   if (link2cow_.find(id) != link2cow_.end())
     removeCollisionObject(id);
 
-  COW::Ptr new_cow = createCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createCollisionObject(id, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     auto margin =
@@ -352,7 +352,10 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common:
   }
 }
 
-const std::vector<tesseract::common::LinkId>& BulletCastBVHManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& BulletCastBVHManager::getCollisionObjects() const
+{
+  return collision_objects_;
+}
 
 void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
@@ -458,11 +461,11 @@ void BulletCastBVHManager::incrementCollisionMargin(double increment)
   onCollisionMarginDataChanged();
 }
 
-void BulletCastBVHManager::setCollisionMarginPair(const std::string& name1,
-                                                  const std::string& name2,
+void BulletCastBVHManager::setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                                  const tesseract::common::LinkId& id2,
                                                   double collision_margin)
 {
-  contact_test_data_.collision_margin_data.setCollisionMargin(name1, name2, collision_margin);
+  contact_test_data_.collision_margin_data.setCollisionMargin(id1, id2, collision_margin);
   onCollisionMarginDataChanged();
 }
 
@@ -529,7 +532,8 @@ void BulletCastBVHManager::onCollisionMarginDataChanged()
   for (auto& co : link2cow_)
   {
     COW::Ptr& cow = co.second;
-    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(cow->getLinkId()));
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(cow->getLinkId()));
     cow->setContactProcessingThreshold(margin);
     if (cow->getBroadphaseHandle() != nullptr)
       updateBroadphaseAABB(cow, broadphase_, dispatcher_);
@@ -538,7 +542,8 @@ void BulletCastBVHManager::onCollisionMarginDataChanged()
   for (auto& co : link2castcow_)
   {
     COW::Ptr& cow = co.second;
-    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(cow->getLinkId()));
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(cow->getLinkId()));
     cow->setContactProcessingThreshold(margin);
     if (cow->getBroadphaseHandle() != nullptr)
       updateBroadphaseAABB(cow, broadphase_, dispatcher_);

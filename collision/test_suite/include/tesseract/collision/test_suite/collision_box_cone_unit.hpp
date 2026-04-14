@@ -115,7 +115,7 @@ inline void runTest(DiscreteContactManager& checker)
   //////////////////////////////////////
   std::vector<std::string> active_links{ "box_link", "cone_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
@@ -123,11 +123,11 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.5));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
 
-  checker.setCollisionMarginPair("box_link", "cone_link", 0.1);
-
   // Set the collision object transforms
   const auto box_id = tesseract::common::LinkId::fromName("box_link");
   const auto cone_id = tesseract::common::LinkId::fromName("cone_link");
+
+  checker.setCollisionMarginPair(box_id, cone_id, 0.1);
 
   tesseract::common::LinkIdTransformMap location;
   location[box_id] = Eigen::Isometry3d::Identity();

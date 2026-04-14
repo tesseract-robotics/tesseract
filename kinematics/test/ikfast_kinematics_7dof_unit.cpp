@@ -24,7 +24,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "kinematics_test_utils.h"
@@ -56,16 +55,22 @@ TEST(TesseractKinematicsUnit, IKFastInvKin7DOF)  // NOLINT
 
   std::vector<std::vector<double>> free_joint_states = { { -2.0 }, { -1.0 }, { 0.0 }, { 1.0 }, { 2.0 } };
 
+  std::vector<tesseract::common::JointId> joint_ids;
+  joint_ids.reserve(joint_names.size());
+  for (const auto& name : joint_names)
+  {
+    joint_ids.push_back(tesseract::common::JointId::fromName(name));
+  }
   auto iiwa_inv_kin = std::make_shared<IKFastInvKin>(
-      base_link_name, tip_link_name, joint_names, IKFAST_INV_KIN_CHAIN_SOLVER_NAME, free_joint_states);
+      base_link_name, tip_link_name, joint_ids, IKFAST_INV_KIN_CHAIN_SOLVER_NAME, free_joint_states);
 
   EXPECT_EQ(iiwa_inv_kin->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(iiwa_inv_kin->numJoints(), 7);
-  EXPECT_EQ(iiwa_inv_kin->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(iiwa_inv_kin->getWorkingFrame(), base_link_name);
-  EXPECT_EQ(iiwa_inv_kin->getTipLinkNames().size(), 1);
-  EXPECT_EQ(iiwa_inv_kin->getTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(iiwa_inv_kin->getJointNames(), joint_names);
+  EXPECT_EQ(iiwa_inv_kin->getBaseLinkId(), tesseract::common::LinkId::fromName(base_link_name));
+  EXPECT_EQ(iiwa_inv_kin->getWorkingFrameId(), tesseract::common::LinkId::fromName(base_link_name));
+  EXPECT_EQ(iiwa_inv_kin->getTipLinkIds().size(), 1);
+  EXPECT_EQ(iiwa_inv_kin->getTipLinkIds()[0], tesseract::common::LinkId::fromName(tip_link_name));
+  EXPECT_EQ(iiwa_inv_kin->getJointIds(), joint_ids);
 
   runInvKinTest(*iiwa_inv_kin, fwd_kin, pose, tip_link_name, seed);
 
@@ -74,11 +79,11 @@ TEST(TesseractKinematicsUnit, IKFastInvKin7DOF)  // NOLINT
   EXPECT_TRUE(iiwa_inv_kin2 != nullptr);
   EXPECT_EQ(iiwa_inv_kin2->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(iiwa_inv_kin2->numJoints(), 7);
-  EXPECT_EQ(iiwa_inv_kin2->getBaseLinkName(), base_link_name);
-  EXPECT_EQ(iiwa_inv_kin2->getWorkingFrame(), base_link_name);
-  EXPECT_EQ(iiwa_inv_kin2->getTipLinkNames().size(), 1);
-  EXPECT_EQ(iiwa_inv_kin2->getTipLinkNames()[0], tip_link_name);
-  EXPECT_EQ(iiwa_inv_kin2->getJointNames(), joint_names);
+  EXPECT_EQ(iiwa_inv_kin2->getBaseLinkId(), tesseract::common::LinkId::fromName(base_link_name));
+  EXPECT_EQ(iiwa_inv_kin2->getWorkingFrameId(), tesseract::common::LinkId::fromName(base_link_name));
+  EXPECT_EQ(iiwa_inv_kin2->getTipLinkIds().size(), 1);
+  EXPECT_EQ(iiwa_inv_kin2->getTipLinkIds()[0], tesseract::common::LinkId::fromName(tip_link_name));
+  EXPECT_EQ(iiwa_inv_kin2->getJointIds(), joint_ids);
 
   runInvKinTest(*iiwa_inv_kin2, fwd_kin, pose, tip_link_name, seed);
 }

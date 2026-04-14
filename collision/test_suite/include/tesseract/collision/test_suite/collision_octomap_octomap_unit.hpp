@@ -79,7 +79,7 @@ inline void runTestOctomap(DiscreteContactManager& checker, ContactTestType test
   //////////////////////////////////////
   std::vector<std::string> active_links{ "octomap1_link", "octomap2_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
@@ -114,7 +114,7 @@ inline void runTestOctomap(ContinuousContactManager& checker, ContactTestType te
   //////////////////////////////////////
   std::vector<std::string> active_links{ "octomap1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);

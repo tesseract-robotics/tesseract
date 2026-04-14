@@ -22,6 +22,7 @@
  * limitations under the License.
  */
 
+#include <tesseract/common/types.h>
 #include <tesseract/kinematics/rop_factory.h>
 #include <tesseract/kinematics/rop_inv_kin.h>
 #include <tesseract/kinematics/forward_kinematics.h>
@@ -53,7 +54,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
       throw std::runtime_error("ROPInvKinFactory, missing 'manipulator_reach' entry!");
 
     // Get positioner sample resolution
-    std::map<std::string, std::array<double, 3>> sample_res_map;
+    std::map<common::JointId, std::array<double, 3>> sample_res_map;
     if (YAML::Node sample_res_node = config["positioner_sample_resolution"])
     {
       for (auto it = sample_res_node.begin(); it != sample_res_node.end(); ++it)
@@ -95,7 +96,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
         if (values[1] > values[2])
           throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
 
-        sample_res_map[joint_name] = values;
+        sample_res_map[common::JointId::fromName(joint_name)] = values;
       }
     }
     else
@@ -130,13 +131,13 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
     // Load Positioner Resolution and Range
     sample_range.resize(fwd_kin->numJoints(), 2);
     sample_res.resize(fwd_kin->numJoints());
-    std::vector<std::string> joint_names = fwd_kin->getJointNames();
-    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(joint_names.size()); ++i)
+    auto joint_ids = fwd_kin->getJointIds();
+    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(joint_ids.size()); ++i)
     {
-      const auto& jn = joint_names[static_cast<std::size_t>(i)];
+      const auto& jn = joint_ids[static_cast<std::size_t>(i)];
       auto it = sample_res_map.find(jn);
       if (it == sample_res_map.end())
-        throw std::runtime_error("ROPInvKinFactory, positioner sample resolution missing joint '" + jn + "'!");
+        throw std::runtime_error("ROPInvKinFactory, positioner sample resolution missing joint '" + jn.name() + "'!");
 
       sample_res(i) = it->second[0];
       sample_range(i, 0) = it->second[1];

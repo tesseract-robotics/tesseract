@@ -95,7 +95,7 @@ public:
   using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
 
   CollisionObjectWrapper() = default;
-  CollisionObjectWrapper(const std::string& name,
+  CollisionObjectWrapper(tesseract::common::LinkId id,
                          const int& type_id,
                          CollisionShapesConst shapes,
                          tesseract::common::VectorIsometry3d shape_poses);
@@ -104,8 +104,6 @@ public:
   short int m_collisionFilterMask{ btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter };
   bool m_enabled{ true };
 
-  /** @brief Get the collision object name */
-  const std::string& getName() const;
   /** @brief Get the integer link ID (hash of the name) */
   const tesseract::common::LinkId& getLinkId() const { return m_link_id; }
   /** @brief Get a user defined type */
@@ -366,7 +364,7 @@ void updateCollisionObjectFilters(
     const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
     const COW::Ptr& cow);
 
-COW::Ptr createCollisionObject(const std::string& name,
+COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
                                const int& type_id,
                                const CollisionShapesConst& shapes,
                                const tesseract::common::VectorIsometry3d& shape_poses,

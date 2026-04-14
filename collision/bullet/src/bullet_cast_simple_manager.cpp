@@ -102,7 +102,7 @@ bool BulletCastSimpleManager::addCollisionObject(const tesseract::common::LinkId
   if (link2cow_.find(id) != link2cow_.end())
     removeCollisionObject(id);
 
-  COW::Ptr new_cow = createCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createCollisionObject(id, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     auto margin =
@@ -139,8 +139,7 @@ bool BulletCastSimpleManager::removeCollisionObject(const tesseract::common::Lin
   auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
-    const auto& name = id.name();
-    cows_.erase(std::find_if(cows_.begin(), cows_.end(), [&name](const auto& p) { return p->getName() == name; }));
+    cows_.erase(std::find_if(cows_.begin(), cows_.end(), [&id](const auto& p) { return p->getLinkId() == id; }));
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
     link2cow_.erase(it);
     link2castcow_.erase(id);
@@ -279,7 +278,10 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::comm
   }
 }
 
-const std::vector<tesseract::common::LinkId>& BulletCastSimpleManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& BulletCastSimpleManager::getCollisionObjects() const
+{
+  return collision_objects_;
+}
 
 void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
@@ -357,11 +359,11 @@ void BulletCastSimpleManager::setDefaultCollisionMargin(double default_collision
   onCollisionMarginDataChanged();
 }
 
-void BulletCastSimpleManager::setCollisionMarginPair(const std::string& name1,
-                                                     const std::string& name2,
+void BulletCastSimpleManager::setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                                     const tesseract::common::LinkId& id2,
                                                      double collision_margin)
 {
-  contact_test_data_.collision_margin_data.setCollisionMargin(name1, name2, collision_margin);
+  contact_test_data_.collision_margin_data.setCollisionMargin(id1, id2, collision_margin);
   onCollisionMarginDataChanged();
 }
 
