@@ -79,7 +79,7 @@ bool FCLDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkId& 
   if (link2cow_.find(id) != link2cow_.end())
     removeCollisionObject(id);
 
-  COW::Ptr new_cow = createFCLCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createFCLCollisionObject(id, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);
@@ -210,8 +210,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
     {
       const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
       // Note: If the transform has not changed do not updated to prevent unnecessary re-balancing of the BVH tree
-      if (!cur_tf.translation().isApprox(tf.translation(), 1e-8) ||
-          !cur_tf.rotation().isApprox(tf.rotation(), 1e-8))
+      if (!cur_tf.translation().isApprox(tf.translation(), 1e-8) || !cur_tf.rotation().isApprox(tf.rotation(), 1e-8))
       {
         it->second->setCollisionObjectsTransform(tf);
         std::vector<CollisionObjectRawPtr>& co = it->second->getCollisionObjectsRaw();
@@ -235,7 +234,10 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
     dynamic_manager_->update(dynamic_update_);
 }
 
-const std::vector<tesseract::common::LinkId>& FCLDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& FCLDiscreteBVHManager::getCollisionObjects() const
+{
+  return collision_objects_;
+}
 
 void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
@@ -277,11 +279,11 @@ void FCLDiscreteBVHManager::setDefaultCollisionMargin(double default_collision_m
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::setCollisionMarginPair(const std::string& name1,
-                                                   const std::string& name2,
+void FCLDiscreteBVHManager::setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                                   const tesseract::common::LinkId& id2,
                                                    double collision_margin)
 {
-  collision_margin_data_.setCollisionMargin(name1, name2, collision_margin);
+  collision_margin_data_.setCollisionMargin(id1, id2, collision_margin);
   onCollisionMarginDataChanged();
 }
 

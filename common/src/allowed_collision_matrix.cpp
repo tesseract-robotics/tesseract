@@ -24,6 +24,8 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/common/allowed_collision_matrix.h>
 
+#include <utility>
+
 namespace tesseract::common
 {
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2)
@@ -42,7 +44,7 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
   return true;
 }
 
-AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& entries) : lookup_table_(entries) {}
+AllowedCollisionMatrix::AllowedCollisionMatrix(AllowedCollisionEntries entries) : lookup_table_(std::move(entries)) {}
 
 void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
                                                  const std::string& link_name2,

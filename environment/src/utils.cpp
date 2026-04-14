@@ -184,8 +184,8 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
 
   // Build active link ID set once for O(1) lookup in addInterpolatedCollisionResults
   std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_link_ids;
-  for (const auto& name : manager.getActiveCollisionObjects())
-    active_link_ids.insert(tesseract::common::LinkId::fromName(name));
+  for (const auto& id : manager.getActiveCollisionObjectIds())
+    active_link_ids.insert(id);
 
   if (config.check_program_mode == tesseract::collision::CollisionCheckProgramType::START_ONLY)
   {
@@ -478,8 +478,8 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
 
   // Build active link ID set once for O(1) lookup in addInterpolatedCollisionResults
   std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_link_ids;
-  for (const auto& name : manager.getActiveCollisionObjects())
-    active_link_ids.insert(tesseract::common::LinkId::fromName(name));
+  for (const auto& id : manager.getActiveCollisionObjectIds())
+    active_link_ids.insert(id);
 
   if (config.check_program_mode == tesseract::collision::CollisionCheckProgramType::START_ONLY)
   {
@@ -627,8 +627,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
             {
               traj_contacts.addContact(
                   iStep, 0, 1, traj.row(iStep), traj.row(iStep), traj.row(iStep), traj.row(iStep), sub_state_results);
-              state_results.addInterpolatedCollisionResults(
-                  sub_state_results, 0, 0, active_link_ids, 0, true);
+              state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, true);
               if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
               {
                 contacts.push_back(state_results);
@@ -659,8 +658,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                        traj.row(iStep + 1),
                                        traj.row(iStep + 1),
                                        sub_state_results);
-              state_results.addInterpolatedCollisionResults(
-                  sub_state_results, 0, 0, active_link_ids, 0, true);
+              state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, true);
               if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
               {
                 contacts.push_back(state_results);
@@ -689,8 +687,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
         {
           traj_contacts.addContact(
               iStep, 0, 1, traj.row(iStep), traj.row(iStep), traj.row(iStep), traj.row(iStep), sub_state_results);
-          state_results.addInterpolatedCollisionResults(
-              sub_state_results, 0, 0, active_link_ids, 0, true);
+          state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, true);
 
           // Exit behavior
           if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
@@ -725,8 +722,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                    traj.row(iStep + 1),
                                    traj.row(iStep + 1),
                                    sub_state_results);
-          state_results.addInterpolatedCollisionResults(
-              sub_state_results, 0, 0, active_link_ids, 0, true);
+          state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, true);
         }
         contacts.push_back(state_results);
       }
@@ -765,8 +761,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                  traj.row(iStep),
                                  traj.row(iStep),
                                  sub_state_results);
-        state_results.addInterpolatedCollisionResults(
-            sub_state_results, 0, 0, active_link_ids, 0, true);
+        state_results.addInterpolatedCollisionResults(sub_state_results, 0, 0, active_link_ids, 0, true);
       }
       contacts.push_back(state_results);
 

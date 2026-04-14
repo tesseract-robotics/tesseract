@@ -225,19 +225,18 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
 // LCOV_EXCL_STOP
 
 URInvKin::URInvKin(URParameters params,
-                   std::string base_link_name,
-                   std::string tip_link_name,
-                   std::vector<std::string> joint_names,
+                   const std::string& base_link_name,
+                   const std::string& tip_link_name,
+                   const std::vector<common::JointId>& joint_ids,
                    std::string solver_name)
   : params_(params)
-  , base_link_name_(std::move(base_link_name))
-  , tip_link_name_(std::move(tip_link_name))
-  , joint_names_(std::move(joint_names))
+  , base_link_id_(tesseract::common::LinkId::fromName(base_link_name))
+  , tip_link_id_(tesseract::common::LinkId::fromName(tip_link_name))
+  , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
 {
-  tip_link_id_ = tesseract::common::LinkId::fromName(tip_link_name_);
-  if (joint_names_.size() != 6)
-    throw std::runtime_error("OPWInvKin, only support six joints!");
+  if (joint_ids_.size() != 6)
+    throw std::runtime_error("URInvKin, only support six joints!");
 }
 
 InverseKinematics::UPtr URInvKin::clone() const { return std::make_unique<URInvKin>(*this); }
@@ -249,10 +248,9 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
   if (this == &other)
     return *this;
 
-  base_link_name_ = other.base_link_name_;
-  tip_link_name_ = other.tip_link_name_;
+  base_link_id_ = other.base_link_id_;
   tip_link_id_ = other.tip_link_id_;
-  joint_names_ = other.joint_names_;
+  joint_ids_ = other.joint_ids_;
   params_ = other.params_;
   solver_name_ = other.solver_name_;
 
@@ -293,10 +291,15 @@ void URInvKin::calcInvKin(IKSolutions& solutions,
 }
 
 Eigen::Index URInvKin::numJoints() const { return 6; }
-std::vector<std::string> URInvKin::getJointNames() const { return joint_names_; }
-std::string URInvKin::getBaseLinkName() const { return base_link_name_; }
-std::string URInvKin::getWorkingFrame() const { return base_link_name_; }
-std::vector<std::string> URInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
+
+std::vector<tesseract::common::JointId> URInvKin::getJointIds() const { return joint_ids_; }
+
+tesseract::common::LinkId URInvKin::getBaseLinkId() const { return base_link_id_; }
+
+tesseract::common::LinkId URInvKin::getWorkingFrameId() const { return base_link_id_; }
+
+std::vector<tesseract::common::LinkId> URInvKin::getTipLinkIds() const { return { tip_link_id_ }; }
+
 std::string URInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract::kinematics

@@ -123,7 +123,6 @@ public:
   std::vector<std::string> getActiveJointNames() const override final;
   std::vector<tesseract::common::JointId> getActiveJointIds() const override final;
 
-  std::string getBaseLinkName() const override final;
   tesseract::common::LinkId getBaseLinkId() const override final;
 
   std::vector<std::string> getLinkNames() const override final;
@@ -135,19 +134,14 @@ public:
   std::vector<std::string> getStaticLinkNames() const override final;
   std::vector<tesseract::common::LinkId> getStaticLinkIds() const override final;
 
-  bool isActiveLinkName(const std::string& link_name) const override final;
   bool isActiveLinkId(const tesseract::common::LinkId& link_id) const override final;
 
-  bool hasLinkName(const std::string& link_name) const override final;
   bool hasLinkId(const tesseract::common::LinkId& link_id) const override final;
 
   tesseract::common::VectorIsometry3d getLinkTransforms() const override final;
 
-  Eigen::Isometry3d getLinkTransform(const std::string& link_name) const override final;
   Eigen::Isometry3d getLinkTransform(const tesseract::common::LinkId& link_id) const override final;
 
-  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
-                                             const std::string& to_link_name) const override final;
   Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
                                              const tesseract::common::LinkId& to_link_id) const override final;
 

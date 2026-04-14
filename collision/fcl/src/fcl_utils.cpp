@@ -343,12 +343,11 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   return cdata->done;
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
+CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : name_(std::move(name))
-  , link_id_(tesseract::common::LinkId::fromName(name_))
+  : link_id_(std::move(id))
   , type_id_(type_id)
   , shapes_(std::move(shapes))
   , shape_poses_(std::move(shape_poses))

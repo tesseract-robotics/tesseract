@@ -106,15 +106,6 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
   return false;
 }
 
-bool isContactAllowed(const std::string& name1,
-                      const std::string& name2,
-                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
-                      bool verbose)
-{
-  return isContactAllowed(
-      tesseract::common::LinkId::fromName(name1), tesseract::common::LinkId::fromName(name2), validator, verbose);
-}
-
 ContactResult* processResult(ContactTestData& cdata,
                              ContactResult& contact,
                              const tesseract::common::LinkIdPair& key,

@@ -140,13 +140,14 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, const Mapp
   return cv.back();
 }
 
-void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
-                                                       long sub_segment_index,
-                                                       long sub_segment_last_index,
-                                                       const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
-                                                       double segment_dt,
-                                                       bool discrete,
-                                                       const tesseract::collision::ContactResultMap::FilterFn& filter)
+void ContactResultMap::addInterpolatedCollisionResults(
+    ContactResultMap& sub_segment_results,
+    long sub_segment_index,
+    long sub_segment_last_index,
+    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
+    double segment_dt,
+    bool discrete,
+    const tesseract::collision::ContactResultMap::FilterFn& filter)
 {
   for (auto& pair : sub_segment_results.data_)
   {
@@ -596,7 +597,8 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::mostCollisionsSubs
   return most_collisions_substep;
 }
 
-ContactTrajectoryResults::ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids) : joint_ids(std::move(j_ids))
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids)
+  : joint_ids(std::move(j_ids))
 {
 }
 

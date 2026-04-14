@@ -118,7 +118,7 @@ bool BulletDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkI
   if (link2cow_.find(id) != link2cow_.end())
     removeCollisionObject(id);
 
-  COW::Ptr new_cow = createCollisionObject(id.name(), mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createCollisionObject(id, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     auto margin =
@@ -234,7 +234,10 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::com
   }
 }
 
-const std::vector<tesseract::common::LinkId>& BulletDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
+const std::vector<tesseract::common::LinkId>& BulletDiscreteBVHManager::getCollisionObjects() const
+{
+  return collision_objects_;
+}
 
 void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
@@ -280,11 +283,11 @@ void BulletDiscreteBVHManager::setDefaultCollisionMargin(double default_collisio
   onCollisionMarginDataChanged();
 }
 
-void BulletDiscreteBVHManager::setCollisionMarginPair(const std::string& name1,
-                                                      const std::string& name2,
+void BulletDiscreteBVHManager::setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                                      const tesseract::common::LinkId& id2,
                                                       double collision_margin)
 {
-  contact_test_data_.collision_margin_data.setCollisionMargin(name1, name2, collision_margin);
+  contact_test_data_.collision_margin_data.setCollisionMargin(id1, id2, collision_margin);
   onCollisionMarginDataChanged();
 }
 
@@ -336,7 +339,8 @@ void BulletDiscreteBVHManager::onCollisionMarginDataChanged()
   for (auto& co : link2cow_)
   {
     COW::Ptr& cow = co.second;
-    auto margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(cow->getLinkId()));
+    auto margin =
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin(cow->getLinkId()));
     cow->setContactProcessingThreshold(margin);
     assert(cow->getBroadphaseHandle() != nullptr);
     updateBroadphaseAABB(cow, broadphase_, dispatcher_);
