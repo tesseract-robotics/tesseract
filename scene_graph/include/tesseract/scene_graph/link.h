@@ -184,6 +184,7 @@ public:
   using Ptr = std::shared_ptr<Link>;
   using ConstPtr = std::shared_ptr<const Link>;
 
+  Link(common::LinkId id);
   Link(const std::string& name);
   Link() = default;
   ~Link() = default;
@@ -225,11 +226,12 @@ public:
   Link clone() const;
 
   /** Perform a copy of link, changing its name **/
+  Link clone(common::LinkId id) const;
   Link clone(const std::string& name) const;
 
 private:
   /** @brief The integer identity of this link, also carries the name string */
-  common::LinkId id_{};
+  common::LinkId id_;
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, Link& obj);
