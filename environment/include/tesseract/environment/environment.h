@@ -545,6 +545,14 @@ public:
   std::vector<std::string> getStaticLinkNames(const std::vector<std::string>& joint_names) const;
 
   /**
+   * @brief Get a vector of static link names not affected by the provided joints in the environment
+   * @param joint_ids A list of joint ids
+   * @return A vector of static link ids
+   */
+  std::vector<tesseract::common::LinkId>
+  getStaticLinkIds(const std::vector<tesseract::common::JointId>& joint_ids) const;
+
+  /**
    * @brief Get all of the links transforms
    *
    * Order should be the same as getLinkNames()
