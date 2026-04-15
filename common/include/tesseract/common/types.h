@@ -140,6 +140,28 @@ struct LinkIdPair
   };
 };
 
+/** @brief Convert a vector of strings to a vector of NameId<Tag> */
+template <typename IdT>
+inline std::vector<IdT> toIds(const std::vector<std::string>& names)
+{
+  std::vector<IdT> ids;
+  ids.reserve(names.size());
+  for (const auto& n : names)
+    ids.emplace_back(n);
+  return ids;
+}
+
+/** @brief Convert any container of NameId<Tag> to a vector of name strings */
+template <typename Container>
+inline std::vector<std::string> toNames(const Container& ids)
+{
+  std::vector<std::string> names;
+  names.reserve(ids.size());
+  for (const auto& id : ids)
+    names.push_back(id.name());
+  return names;
+}
+
 }  // namespace tesseract::common
 
 // std::hash specializations

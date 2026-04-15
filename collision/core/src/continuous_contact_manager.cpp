@@ -48,21 +48,12 @@ void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<st
 
 void ContinuousContactManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  std::vector<tesseract::common::LinkId> ids;
-  ids.reserve(names.size());
-  for (const auto& name : names)
-    ids.push_back(tesseract::common::LinkId(name));
-  setActiveCollisionObjects(ids);
+  setActiveCollisionObjects(tesseract::common::toIds<tesseract::common::LinkId>(names));
 }
 
 std::vector<std::string> ContinuousContactManager::getActiveCollisionObjectNames() const
 {
-  const auto& ids = getActiveCollisionObjectIds();
-  std::vector<std::string> result;
-  result.reserve(ids.size());
-  for (const auto& id : ids)
-    result.push_back(id.name());
-  return result;
+  return tesseract::common::toNames(getActiveCollisionObjectIds());
 }
 
 void ContinuousContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
