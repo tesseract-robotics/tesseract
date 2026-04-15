@@ -78,9 +78,7 @@ JointGroup::JointGroup(std::string name,
   state_solver_ = std::make_unique<tesseract::scene_graph::KDLStateSolver>(scene_graph, data);
 
   // Build joint IDs from local joint_names parameter
-  joint_ids_.reserve(joint_names.size());
-  for (const auto& jn : joint_names)
-    joint_ids_.push_back(JointId(jn));
+  joint_ids_ = tesseract::common::toIds<JointId>(joint_names);
 
   // Build jacobian_map_
   jacobian_map_.reserve(joint_names.size());
@@ -325,22 +323,14 @@ const std::vector<tesseract::common::JointId>& JointGroup::getJointIds() const {
 
 std::vector<std::string> JointGroup::getJointNames() const
 {
-  std::vector<std::string> names;
-  names.reserve(joint_ids_.size());
-  for (const auto& id : joint_ids_)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(joint_ids_);
 }
 
 const std::vector<tesseract::common::LinkId>& JointGroup::getLinkIds() const { return link_ids_; }
 
 std::vector<std::string> JointGroup::getLinkNames() const
 {
-  std::vector<std::string> names;
-  names.reserve(link_ids_.size());
-  for (const auto& id : link_ids_)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(link_ids_);
 }
 
 std::vector<tesseract::common::LinkId> JointGroup::getActiveLinkIds() const
@@ -350,22 +340,15 @@ std::vector<tesseract::common::LinkId> JointGroup::getActiveLinkIds() const
 
 std::vector<std::string> JointGroup::getActiveLinkNames() const
 {
-  std::vector<std::string> names;
-  names.reserve(active_link_ids_.size());
-  for (const auto& id : active_link_ids_)
-    names.push_back(id.name());
-  return names;
+  std::vector<tesseract::common::LinkId> ids(active_link_ids_.begin(), active_link_ids_.end());
+  return tesseract::common::toNames(ids);
 }
 
 const std::vector<tesseract::common::LinkId>& JointGroup::getStaticLinkIds() const { return static_link_ids_; }
 
 std::vector<std::string> JointGroup::getStaticLinkNames() const
 {
-  std::vector<std::string> names;
-  names.reserve(static_link_ids_.size());
-  for (const auto& id : static_link_ids_)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(static_link_ids_);
 }
 
 tesseract::common::LinkId JointGroup::getBaseLinkId() const { return state_solver_->getBaseLinkId(); }

@@ -790,11 +790,7 @@ void Environment::Implementation::triggerCallbacks()
 std::vector<std::string> Environment::Implementation::getGroupJointNames(const std::string& group_name) const
 {
   auto joint_ids = getGroupJointIds(group_name);
-  std::vector<std::string> joint_names;
-  joint_names.reserve(joint_ids.size());
-  for (const auto& id : joint_ids)
-    joint_names.push_back(id.name());
-  return joint_names;
+  return tesseract::common::toNames(joint_ids);
 }
 
 std::vector<tesseract::common::JointId>
