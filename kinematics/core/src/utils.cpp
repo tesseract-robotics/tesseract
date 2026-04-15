@@ -37,12 +37,11 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Isometry3d& change_base,
                        const ForwardKinematics& kin,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                       const std::string& link_name,
+                       const tesseract::common::LinkId& link_id,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point)
 {
   Eigen::VectorXd njvals;
   double delta = 1e-8;
-  const auto link_id = tesseract::common::LinkId::fromName(link_name);
   TESSERACT_THREAD_LOCAL tesseract::common::LinkIdTransformMap poses;
   kin.calcFwdKin(poses, joint_values);
   Eigen::Isometry3d pose{ change_base * poses[link_id] };
@@ -73,12 +72,11 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Isometry3d& change_base,
                        const JointGroup& joint_group,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                       const std::string& link_name,
+                       const tesseract::common::LinkId& link_id,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point)
 {
   Eigen::VectorXd njvals;
   constexpr double delta = 1e-8;
-  const auto link_id = tesseract::common::LinkId::fromName(link_name);
   tesseract::common::LinkIdTransformMap poses = joint_group.calcFwdKin(joint_values);
   Eigen::Isometry3d pose = change_base * poses[link_id];
 
@@ -107,28 +105,27 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const JointGroup& joint_group,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                       const std::string& base_link_name,
+                       const tesseract::common::LinkId& base_link_id,
                        const Eigen::Isometry3d& base_link_offset,
-                       const std::string& link_name,
+                       const tesseract::common::LinkId& link_id,
                        const Eigen::Isometry3d& link_offset)
 {
   tesseract::common::LinkIdTransformMap poses;
 
   joint_group.calcFwdKin(poses, joint_values);
-  const Eigen::Isometry3d change_base =
-      (poses[tesseract::common::LinkId::fromName(base_link_name)] * base_link_offset).inverse();
+  const Eigen::Isometry3d change_base = (poses[base_link_id] * base_link_offset).inverse();
   Eigen::MatrixXd base_jacobian(6, joint_group.numJoints());
   numericalJacobian(base_jacobian,
                     Eigen::Isometry3d::Identity(),
                     joint_group,
                     joint_values,
-                    base_link_name,
+                    base_link_id,
                     base_link_offset.translation());
   tesseract::common::jacobianChangeBase(base_jacobian, change_base);
 
   Eigen::MatrixXd link_jacobian(6, joint_group.numJoints());
   numericalJacobian(
-      link_jacobian, Eigen::Isometry3d::Identity(), joint_group, joint_values, link_name, link_offset.translation());
+      link_jacobian, Eigen::Isometry3d::Identity(), joint_group, joint_values, link_id, link_offset.translation());
   tesseract::common::jacobianChangeBase(link_jacobian, change_base);
 
   jacobian.noalias() = link_jacobian - base_jacobian;

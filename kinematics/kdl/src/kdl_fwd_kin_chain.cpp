@@ -22,13 +22,13 @@
  * limitations under the License.
  */
 #include <tesseract/common/macros.h>
-#include "tesseract/common/types.h"
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/kdl_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract/kinematics/kdl/kdl_utils.h>
 
@@ -134,11 +134,11 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
 
 void KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                  const std::string& link_name) const
+                                  const tesseract::common::LinkId& link_id) const
 {
   assert(joint_angles.size() == numJoints());
 
-  int segment_nr = kdl_data_.segment_index.at(link_name);
+  int segment_nr = kdl_data_.segment_index.at(link_id.name());
   KDL::Jacobian kdl_jacobian;
 
   if (!calcJacobianHelper(kdl_jacobian, joint_angles, segment_nr))

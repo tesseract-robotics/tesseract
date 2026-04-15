@@ -73,11 +73,11 @@ public:
    * This should be able to return a jacobian given any link listed in getTipLinkIds()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Input vector of joint angles
-   * @param link_name The link name to calculate jacobian
+   * @param link_id The link id to calculate jacobian
    * @return The jacobian at the provided link
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const;
+                               const tesseract::common::LinkId& link_id) const;
 
   /**
    * @brief Calculates the transform for each tip link in the kinematic group
@@ -97,12 +97,12 @@ public:
    * Throws an exception on failures (including uninitialized)
    * @param jacobian[out] The object to populate (assumes already the correct size)
    * @param joint_angles Input vector of joint angles
-   * @param link_name The link name to calculate jacobian
+   * @param link_id The link id to calculate jacobian
    * @return The jacobian at the provided link
    */
   virtual void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                            const std::string& link_name) const = 0;
+                            const tesseract::common::LinkId& link_id) const = 0;
 
   /** @brief Get the robot base link id */
   virtual tesseract::common::LinkId getBaseLinkId() const = 0;
