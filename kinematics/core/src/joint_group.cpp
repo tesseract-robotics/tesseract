@@ -202,12 +202,6 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
 }
 
 Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                         const std::string& link_name) const
-{
-  return calcJacobian(joint_angles, LinkId::fromName(link_name));
-}
-
-Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                          const tesseract::common::LinkId& link_id,
                                          const Eigen::Vector3d& link_point) const
 {
@@ -222,19 +216,9 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
 }
 
 Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                         const std::string& link_name,
-                                         const Eigen::Vector3d& link_point) const
+                                         const tesseract::common::LinkId& base_link_id,
+                                         const tesseract::common::LinkId& link_id) const
 {
-  return calcJacobian(joint_angles, LinkId::fromName(link_name), link_point);
-}
-
-Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                         const std::string& base_link_name,
-                                         const std::string& link_name) const
-{
-  const auto base_link_id = LinkId::fromName(base_link_name);
-  const auto link_id = LinkId::fromName(link_name);
-
   if (base_link_id == getBaseLinkId())
     return calcJacobian(joint_angles, link_id);
 
@@ -269,13 +253,10 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
 }
 
 Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                         const std::string& base_link_name,
-                                         const std::string& link_name,
+                                         const tesseract::common::LinkId& base_link_id,
+                                         const tesseract::common::LinkId& link_id,
                                          const Eigen::Vector3d& link_point) const
 {
-  const auto base_link_id = LinkId::fromName(base_link_name);
-  const auto link_id = LinkId::fromName(link_name);
-
   if (base_link_id == getBaseLinkId())
     return calcJacobian(joint_angles, link_id, link_point);
 
@@ -340,6 +321,8 @@ bool JointGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
   return true;
 }
 
+const std::vector<tesseract::common::JointId>& JointGroup::getJointIds() const { return joint_ids_; }
+
 std::vector<std::string> JointGroup::getJointNames() const
 {
   std::vector<std::string> names;
@@ -349,6 +332,8 @@ std::vector<std::string> JointGroup::getJointNames() const
   return names;
 }
 
+const std::vector<tesseract::common::LinkId>& JointGroup::getLinkIds() const { return link_ids_; }
+
 std::vector<std::string> JointGroup::getLinkNames() const
 {
   std::vector<std::string> names;
@@ -356,6 +341,11 @@ std::vector<std::string> JointGroup::getLinkNames() const
   for (const auto& id : link_ids_)
     names.push_back(id.name());
   return names;
+}
+
+std::vector<tesseract::common::LinkId> JointGroup::getActiveLinkIds() const
+{
+  return { active_link_ids_.begin(), active_link_ids_.end() };
 }
 
 std::vector<std::string> JointGroup::getActiveLinkNames() const
@@ -367,6 +357,8 @@ std::vector<std::string> JointGroup::getActiveLinkNames() const
   return names;
 }
 
+const std::vector<tesseract::common::LinkId>& JointGroup::getStaticLinkIds() const { return static_link_ids_; }
+
 std::vector<std::string> JointGroup::getStaticLinkNames() const
 {
   std::vector<std::string> names;
@@ -376,10 +368,14 @@ std::vector<std::string> JointGroup::getStaticLinkNames() const
   return names;
 }
 
+tesseract::common::LinkId JointGroup::getBaseLinkId() const { return state_solver_->getBaseLinkId(); }
+
 bool JointGroup::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
   return active_link_ids_.count(link_id) != 0;
 }
+
+bool JointGroup::hasLinkId(const tesseract::common::LinkId& link_id) const { return link_id_set_.count(link_id) != 0; }
 
 tesseract::common::KinematicLimits JointGroup::getLimits() const { return limits_; }
 
@@ -398,20 +394,5 @@ std::vector<Eigen::Index> JointGroup::getRedundancyCapableJointIndices() const {
 Eigen::Index JointGroup::numJoints() const { return static_cast<Eigen::Index>(joint_ids_.size()); }
 
 std::string JointGroup::getName() const { return name_; }
-
-const std::vector<tesseract::common::LinkId>& JointGroup::getLinkIds() const { return link_ids_; }
-
-const std::vector<tesseract::common::JointId>& JointGroup::getJointIds() const { return joint_ids_; }
-
-bool JointGroup::hasLinkId(const tesseract::common::LinkId& link_id) const { return link_id_set_.count(link_id) != 0; }
-
-std::vector<tesseract::common::LinkId> JointGroup::getActiveLinkIds() const
-{
-  return { active_link_ids_.begin(), active_link_ids_.end() };
-}
-
-const std::vector<tesseract::common::LinkId>& JointGroup::getStaticLinkIds() const { return static_link_ids_; }
-
-tesseract::common::LinkId JointGroup::getBaseLinkId() const { return state_solver_->getBaseLinkId(); }
 
 }  // namespace tesseract::kinematics
