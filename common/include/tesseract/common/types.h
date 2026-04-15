@@ -70,21 +70,21 @@ struct NameId
   }
 
   /** @brief The numeric hash of the name. Zero means invalid/default-constructed. */
-  uint64_t value() const { return value_; }
+  constexpr uint64_t value() const noexcept { return value_; }
 
   /** @brief Access the original name string. Empty for default-constructed (invalid) IDs. */
-  const std::string& name() const { return name_; }
+  const std::string& name() const noexcept { return name_; }
 
-  bool isValid() const { return value_ != 0; }
+  constexpr bool isValid() const noexcept { return value_ != 0; }
 
-  bool operator==(const NameId& other) const { return value_ == other.value_; }
-  bool operator!=(const NameId& other) const { return value_ != other.value_; }
-  bool operator<(const NameId& other) const { return value_ < other.value_; }
+  constexpr bool operator==(const NameId& other) const noexcept { return value_ == other.value_; }
+  constexpr bool operator!=(const NameId& other) const noexcept { return value_ != other.value_; }
+  constexpr bool operator<(const NameId& other) const noexcept { return value_ < other.value_; }
 
   /** @brief Identity hash — returns the raw value. */
   struct Hash
   {
-    std::size_t operator()(const NameId& id) const noexcept { return static_cast<std::size_t>(id.value_); }
+    constexpr std::size_t operator()(const NameId& id) const noexcept { return static_cast<std::size_t>(id.value_); }
   };
 
 private:
@@ -114,10 +114,13 @@ struct LinkIdPair
     return (a.value() <= b.value()) ? LinkIdPair{ a, b } : LinkIdPair{ b, a };
   }
 
-  bool operator==(const LinkIdPair& other) const { return first == other.first && second == other.second; }
-  bool operator!=(const LinkIdPair& other) const { return !(*this == other); }
+  constexpr bool operator==(const LinkIdPair& other) const noexcept
+  {
+    return first == other.first && second == other.second;
+  }
+  constexpr bool operator!=(const LinkIdPair& other) const noexcept { return !(*this == other); }
 
-  bool operator<(const LinkIdPair& other) const
+  constexpr bool operator<(const LinkIdPair& other) const noexcept
   {
     if (first.value() != other.first.value())
       return first.value() < other.first.value();
@@ -126,7 +129,7 @@ struct LinkIdPair
 
   struct Hash
   {
-    std::size_t operator()(const LinkIdPair& p) const noexcept
+    constexpr std::size_t operator()(const LinkIdPair& p) const noexcept
     {
       auto h = static_cast<std::size_t>(p.first.value());
       h ^= static_cast<std::size_t>(p.second.value()) + std::size_t{ 0x9e3779b9 } + (h << 6) + (h >> 2);
@@ -134,7 +137,6 @@ struct LinkIdPair
     }
   };
 };
-
 
 }  // namespace tesseract::common
 
@@ -145,7 +147,7 @@ namespace std
 template <typename Tag>
 struct hash<tesseract::common::NameId<Tag>>
 {
-  std::size_t operator()(const tesseract::common::NameId<Tag>& id) const noexcept
+  constexpr std::size_t operator()(const tesseract::common::NameId<Tag>& id) const noexcept
   {
     return static_cast<std::size_t>(id.value());
   }
@@ -154,12 +156,11 @@ struct hash<tesseract::common::NameId<Tag>>
 template <>
 struct hash<tesseract::common::LinkIdPair>
 {
-  std::size_t operator()(const tesseract::common::LinkIdPair& p) const noexcept
+  constexpr std::size_t operator()(const tesseract::common::LinkIdPair& p) const noexcept
   {
     return tesseract::common::LinkIdPair::Hash{}(p);
   }
 };
-
 
 }  // namespace std
 
