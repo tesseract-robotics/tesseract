@@ -844,8 +844,6 @@ bool OFKTStateSolver::moveLink(const Joint& joint)
   return true;
 }
 
-bool OFKTStateSolver::removeLink(const std::string& name) { return removeLink(LinkId::fromName(name)); }
-
 bool OFKTStateSolver::removeLink(const LinkId& link_id)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
@@ -877,8 +875,6 @@ bool OFKTStateSolver::removeLink(const LinkId& link_id)
 
   return true;
 }
-
-bool OFKTStateSolver::removeJoint(const std::string& name) { return removeJoint(JointId::fromName(name)); }
 
 bool OFKTStateSolver::removeJoint(const JointId& joint_id)
 {
@@ -913,11 +909,6 @@ bool OFKTStateSolver::removeJoint(const JointId& joint_id)
   return true;
 }
 
-bool OFKTStateSolver::moveJoint(const std::string& name, const std::string& parent_link)
-{
-  return moveJoint(JointId::fromName(name), LinkId::fromName(parent_link));
-}
-
 bool OFKTStateSolver::moveJoint(const JointId& joint_id, const LinkId& parent_link_id)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
@@ -947,11 +938,6 @@ bool OFKTStateSolver::moveJoint(const JointId& joint_id, const LinkId& parent_li
   return true;
 }
 
-bool OFKTStateSolver::changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin)
-{
-  return changeJointOrigin(JointId::fromName(name), new_origin);
-}
-
 bool OFKTStateSolver::changeJointOrigin(const JointId& joint_id, const Eigen::Isometry3d& new_origin)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
@@ -972,11 +958,6 @@ bool OFKTStateSolver::changeJointOrigin(const JointId& joint_id, const Eigen::Is
   return true;
 }
 
-bool OFKTStateSolver::changeJointPositionLimits(const std::string& name, double lower, double upper)
-{
-  return changeJointPositionLimits(JointId::fromName(name), lower, upper);
-}
-
 bool OFKTStateSolver::changeJointPositionLimits(const JointId& joint_id, double lower, double upper)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
@@ -993,11 +974,6 @@ bool OFKTStateSolver::changeJointPositionLimits(const JointId& joint_id, double 
   limits_.joint_limits(idx, 0) = lower;
   limits_.joint_limits(idx, 1) = upper;
   return true;
-}
-
-bool OFKTStateSolver::changeJointVelocityLimits(const std::string& name, double limit)
-{
-  return changeJointVelocityLimits(JointId::fromName(name), limit);
 }
 
 bool OFKTStateSolver::changeJointVelocityLimits(const JointId& joint_id, double limit)
@@ -1018,11 +994,6 @@ bool OFKTStateSolver::changeJointVelocityLimits(const JointId& joint_id, double 
   return true;
 }
 
-bool OFKTStateSolver::changeJointAccelerationLimits(const std::string& name, double limit)
-{
-  return changeJointAccelerationLimits(JointId::fromName(name), limit);
-}
-
 bool OFKTStateSolver::changeJointAccelerationLimits(const JointId& joint_id, double limit)
 {
   std::unique_lock<std::shared_mutex> lock(mutex_);
@@ -1039,11 +1010,6 @@ bool OFKTStateSolver::changeJointAccelerationLimits(const JointId& joint_id, dou
   limits_.acceleration_limits(idx, 0) = -limit;
   limits_.acceleration_limits(idx, 1) = limit;
   return true;
-}
-
-bool OFKTStateSolver::changeJointJerkLimits(const std::string& name, double limit)
-{
-  return changeJointJerkLimits(JointId::fromName(name), limit);
 }
 
 bool OFKTStateSolver::changeJointJerkLimits(const JointId& joint_id, double limit)
