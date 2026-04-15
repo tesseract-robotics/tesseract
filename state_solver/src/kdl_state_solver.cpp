@@ -527,36 +527,14 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
   // Pre-compute JointId cache for active joints
-  active_joint_ids_.clear();
-  active_joint_ids_.reserve(data_.active_joint_names.size());
-  for (const auto& name : data_.active_joint_names)
-    active_joint_ids_.push_back(JointId(name));
+  active_joint_ids_ = tesseract::common::toIds<JointId>(data_.active_joint_names);
 
   // Pre-compute ID caches for getters
-  joint_ids_.clear();
-  joint_ids_.reserve(data_.joint_names.size());
-  for (const auto& name : data_.joint_names)
-    joint_ids_.push_back(JointId(name));
-
-  floating_joint_ids_.clear();
-  floating_joint_ids_.reserve(data_.floating_joint_names.size());
-  for (const auto& name : data_.floating_joint_names)
-    floating_joint_ids_.push_back(JointId(name));
-
-  link_ids_.clear();
-  link_ids_.reserve(data_.link_names.size());
-  for (const auto& name : data_.link_names)
-    link_ids_.push_back(LinkId(name));
-
-  active_link_ids_.clear();
-  active_link_ids_.reserve(data_.active_link_names.size());
-  for (const auto& name : data_.active_link_names)
-    active_link_ids_.push_back(LinkId(name));
-
-  static_link_ids_.clear();
-  static_link_ids_.reserve(data_.static_link_names.size());
-  for (const auto& name : data_.static_link_names)
-    static_link_ids_.push_back(LinkId(name));
+  joint_ids_ = tesseract::common::toIds<JointId>(data_.joint_names);
+  floating_joint_ids_ = tesseract::common::toIds<JointId>(data_.floating_joint_names);
+  link_ids_ = tesseract::common::toIds<LinkId>(data_.link_names);
+  active_link_ids_ = tesseract::common::toIds<LinkId>(data_.active_link_names);
+  static_link_ids_ = tesseract::common::toIds<LinkId>(data_.static_link_names);
 
   base_link_id_ = LinkId(data_.base_link_name);
 

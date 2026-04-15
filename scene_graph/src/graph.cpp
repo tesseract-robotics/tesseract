@@ -905,12 +905,7 @@ std::vector<LinkId> SceneGraph::getAdjacentLinkIds(const LinkId& id) const
 
 std::vector<std::string> SceneGraph::getAdjacentLinkNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getAdjacentLinkIds(LinkId(name));
-  std::vector<std::string> names;
-  names.reserve(ids.size());
-  for (const auto& id : ids)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(getAdjacentLinkIds(LinkId(name)));
 }
 
 std::vector<LinkId> SceneGraph::getInvAdjacentLinkIds(const LinkId& id) const
@@ -925,12 +920,7 @@ std::vector<LinkId> SceneGraph::getInvAdjacentLinkIds(const LinkId& id) const
 
 std::vector<std::string> SceneGraph::getInvAdjacentLinkNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getInvAdjacentLinkIds(LinkId(name));
-  std::vector<std::string> names;
-  names.reserve(ids.size());
-  for (const auto& id : ids)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(getInvAdjacentLinkIds(LinkId(name)));
 }
 
 std::vector<LinkId> SceneGraph::getLinkChildrenIds(const LinkId& id) const
@@ -945,12 +935,7 @@ std::vector<LinkId> SceneGraph::getLinkChildrenIds(const LinkId& id) const
 
 std::vector<std::string> SceneGraph::getLinkChildrenNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getLinkChildrenIds(LinkId(name));
-  std::vector<std::string> names;
-  names.reserve(ids.size());
-  for (const auto& id : ids)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(getLinkChildrenIds(LinkId(name)));
 }
 
 std::vector<LinkId> SceneGraph::getJointChildrenIds(const JointId& id) const
@@ -963,12 +948,7 @@ std::vector<LinkId> SceneGraph::getJointChildrenIds(const JointId& id) const
 
 std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getJointChildrenIds(JointId(name));
-  std::vector<std::string> names;
-  names.reserve(ids.size());
-  for (const auto& id : ids)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(getJointChildrenIds(JointId(name)));
 }
 
 std::vector<LinkId> SceneGraph::getJointChildrenIds(const std::vector<JointId>& ids) const
@@ -985,17 +965,7 @@ std::vector<LinkId> SceneGraph::getJointChildrenIds(const std::vector<JointId>& 
 
 std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std::string>& names) const
 {
-  std::vector<JointId> ids;
-  ids.reserve(names.size());
-  for (const auto& name : names)
-    ids.push_back(JointId(name));
-
-  std::vector<LinkId> result_ids = getJointChildrenIds(ids);
-  std::vector<std::string> result;
-  result.reserve(result_ids.size());
-  for (const auto& id : result_ids)
-    result.push_back(id.name());
-  return result;
+  return tesseract::common::toNames(getJointChildrenIds(tesseract::common::toIds<JointId>(names)));
 }
 
 std::unordered_map<LinkId, LinkId, LinkId::Hash>
@@ -1031,12 +1001,7 @@ SceneGraph::getAdjacencyMapIds(const std::vector<LinkId>& link_ids) const
 std::unordered_map<std::string, std::string>
 SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
 {
-  std::vector<LinkId> link_ids;
-  link_ids.reserve(link_names.size());
-  for (const auto& name : link_names)
-    link_ids.push_back(LinkId(name));
-
-  std::unordered_map<LinkId, LinkId, LinkId::Hash> id_map = getAdjacencyMapIds(link_ids);
+  std::unordered_map<LinkId, LinkId, LinkId::Hash> id_map = getAdjacencyMapIds(tesseract::common::toIds<LinkId>(link_names));
 
   std::unordered_map<std::string, std::string> result;
   result.reserve(id_map.size());
