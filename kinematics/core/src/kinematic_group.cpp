@@ -81,8 +81,8 @@ getLinksInFixedJointKinematicTree(const tesseract::common::LinkId& input_link,
 
           //   2. Add the fixed-joint children of this link to the list of relatives
           const std::vector<std::string> children = scene_graph.getLinkChildrenNames(link.name());
-          for (const auto& child : children)
-            fixed_joint_tree_links.insert(tesseract::common::LinkId(child));
+          for (const auto& child_id : tesseract::common::toIds<tesseract::common::LinkId>(children))
+            fixed_joint_tree_links.insert(child_id);
         }
         break;
       }
@@ -115,10 +115,7 @@ KinematicGroup::KinematicGroup(std::string name,
 {
   // joint_names parameter is still valid (JointGroup's by-value param made a copy)
   const auto& inv_kin_joint_ids = inv_kin_->getJointIds();
-  std::vector<std::string> inv_kin_joint_names;
-  inv_kin_joint_names.reserve(inv_kin_joint_ids.size());
-  for (const auto& joint_id : inv_kin_joint_ids)
-    inv_kin_joint_names.push_back(joint_id.name());
+  std::vector<std::string> inv_kin_joint_names = tesseract::common::toNames(inv_kin_joint_ids);
 
   if (static_cast<Eigen::Index>(joint_names.size()) != inv_kin_->numJoints())
     throw std::runtime_error("KinematicGroup: joint_names is not the correct size");
@@ -325,11 +322,7 @@ std::vector<tesseract::common::LinkId> KinematicGroup::getAllValidWorkingFrameId
 
 std::vector<std::string> KinematicGroup::getAllValidWorkingFrames() const
 {
-  std::vector<std::string> frames;
-  frames.reserve(working_frame_ids_.size());
-  for (const auto& id : working_frame_ids_)
-    frames.push_back(id.name());
-  return frames;
+  return tesseract::common::toNames(working_frame_ids_);
 }
 
 std::vector<tesseract::common::LinkId> KinematicGroup::getAllPossibleTipLinkIds() const
@@ -343,11 +336,8 @@ std::vector<tesseract::common::LinkId> KinematicGroup::getAllPossibleTipLinkIds(
 
 std::vector<std::string> KinematicGroup::getAllPossibleTipLinkNames() const
 {
-  std::vector<std::string> ik_tip_links;
-  ik_tip_links.reserve(inv_tip_links_map_.size());
-  for (const auto& pair : inv_tip_links_map_)
-    ik_tip_links.push_back(pair.first.name());
-  return ik_tip_links;
+  auto ids = getAllPossibleTipLinkIds();
+  return tesseract::common::toNames(ids);
 }
 
 const InverseKinematics& KinematicGroup::getInverseKinematics() const { return *inv_kin_; }
