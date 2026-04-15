@@ -376,6 +376,7 @@ public:
    * @param reason The reason for disabling collision
    */
   void addAllowedCollision(const std::string& link_name1, const std::string& link_name2, const std::string& reason);
+  void addAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2, const std::string& reason);
 
   /**
    * @brief Remove disabled collision pair from allowed collision matrix
@@ -383,12 +384,14 @@ public:
    * @param link_name2 Collision object name
    */
   void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
+  void removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2);
 
   /**
    * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
    * @param link_name Collision object name
    */
   void removeAllowedCollision(const std::string& link_name);
+  void removeAllowedCollision(const common::LinkId& link_id);
 
   /** @brief Remove all allowed collisions */
   void clearAllowedCollisions();
@@ -477,12 +480,18 @@ public:
    */
   std::vector<std::string> getAdjacentLinkNames(const std::string& name) const;
 
+  /** @brief Get adjacent link IDs for a given link */
+  std::vector<common::LinkId> getAdjacentLinkIds(const common::LinkId& id) const;
+
   /**
    * @brief Geta a vectpr pf inverse adjacent link names provided a link name
    * @param name
    * @return
    */
   std::vector<std::string> getInvAdjacentLinkNames(const std::string& name) const;
+
+  /** @brief Get inverse adjacent link IDs for a given link */
+  std::vector<common::LinkId> getInvAdjacentLinkIds(const common::LinkId& id) const;
 
   /**
    * @brief Get all children for a given link name
@@ -491,12 +500,18 @@ public:
    */
   std::vector<std::string> getLinkChildrenNames(const std::string& name) const;
 
+  /** @brief Get all children link IDs for a given link */
+  std::vector<common::LinkId> getLinkChildrenIds(const common::LinkId& id) const;
+
   /**
    * @brief Get all children link names for a given joint name
    * @param name Name of joint
    * @return A vector of child link names
    */
   std::vector<std::string> getJointChildrenNames(const std::string& name) const;
+
+  /** @brief Get all children link IDs for a given joint */
+  std::vector<common::LinkId> getJointChildrenIds(const common::JointId& id) const;
 
   /**
    * @brief Create mapping between links in the scene to the provided links if they are directly affected if the link
@@ -506,6 +521,10 @@ public:
    */
   std::unordered_map<std::string, std::string> getAdjacencyMap(const std::vector<std::string>& link_names) const;
 
+  /** @brief Create ID-based adjacency mapping between links */
+  std::unordered_map<common::LinkId, common::LinkId, common::LinkId::Hash>
+  getAdjacencyMapIds(const std::vector<common::LinkId>& link_ids) const;
+
   /**
    * @brief Get all children link names for the given joint names
    * @todo Need to create custom visitor so already process joint_names do not get processed again.
@@ -513,6 +532,9 @@ public:
    * @return A vector of child link names
    */
   std::vector<std::string> getJointChildrenNames(const std::vector<std::string>& names) const;
+
+  /** @brief Get all children link IDs for the given joint IDs */
+  std::vector<common::LinkId> getJointChildrenIds(const std::vector<common::JointId>& ids) const;
 
   /**
    * @brief Saves Graph as Graph Description Language (DOT)
@@ -610,7 +632,7 @@ private:
    * @param start_vertex The vertex to find childeren for.
    * @return A list of child link names including the start vertex
    */
-  std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const;
+  std::vector<common::LinkId> getLinkChildrenHelper(Vertex start_vertex) const;
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, SceneGraph& obj);
