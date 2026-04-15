@@ -272,9 +272,9 @@ void runTest(tesseract::scene_graph::SceneGraph& g)
   }
 
   // Should throw since this is a directory and not a file
-  EXPECT_ANY_THROW(g.saveDOT(tesseract::common::getTempPath()));  // NOLINT
-  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));         // NOLINT
-  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));             // NOLINT
+  EXPECT_ANY_THROW(g.saveDOT(tesseract::common::getTempPath()));                             // NOLINT
+  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));                                    // NOLINT
+  EXPECT_ANY_THROW(g.getEdge(tesseract::common::JointId::fromName("edge_does_not_exist")));  // NOLINT
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
@@ -1076,7 +1076,7 @@ TEST(TesseractSceneGraphUnit, GetSourceLinkUnit)  // NOLINT
   {
     std::string link_name = "link_" + std::to_string(i);
     std::string joint_name = "joint_" + std::to_string(i);
-    Link::ConstPtr l = g.getSourceLink(joint_name);
+    Link::ConstPtr l = g.getSourceLink(tesseract::common::JointId::fromName(joint_name));
     Joint::ConstPtr j = g.getJoint(joint_name);
     EXPECT_EQ(l->getName(), link_name);
     EXPECT_EQ(j->parent_link_id.name(), link_name);
@@ -1128,7 +1128,7 @@ TEST(TesseractSceneGraphUnit, GetOutboundJointsUnit)  // NOLINT
   {
     std::string link_name = "link_" + std::to_string(i);
     std::string joint_name = "joint_" + std::to_string(i);
-    std::vector<Joint::ConstPtr> j = g.getOutboundJoints(link_name);
+    std::vector<Joint::ConstPtr> j = g.getOutboundJoints(tesseract::common::LinkId::fromName(link_name));
     Link::ConstPtr l = g.getLink(link_name);
     if (i == 2)
     {
@@ -1320,7 +1320,7 @@ TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 
   // Check that the transform got updated and the edge was recalculated.
   EXPECT_TRUE(g.getJoint("joint_n1")->parent_to_joint_origin_transform.isApprox(new_origin));
-  tesseract::scene_graph::SceneGraph::edge_descriptor e = g.getEdge("joint_n1");
+  tesseract::scene_graph::SceneGraph::edge_descriptor e = g.getEdge(tesseract::common::JointId::fromName("joint_n1"));
   double d = boost::get(boost::edge_weight_t(), g)[e];
   EXPECT_EQ(d, g.getJoint("joint_n1")->parent_to_joint_origin_transform.translation().norm());
 }
