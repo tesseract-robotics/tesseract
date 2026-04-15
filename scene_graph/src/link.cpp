@@ -136,12 +136,12 @@ bool Collision::operator!=(const Collision& rhs) const { return !operator==(rhs)
 /*********************************************************/
 /******                     Link                     *****/
 /*********************************************************/
+Link::Link(common::LinkId id) : id_(std::move(id)) { this->clear(); }
 Link::Link(const std::string& name) : id_(common::LinkId::fromName(name)) { this->clear(); }
 
 const std::string& Link::getName() const { return id_.name(); }
 
 const common::LinkId& Link::getId() const { return id_; }
-
 
 void Link::clear()
 {
@@ -150,11 +150,13 @@ void Link::clear()
   this->visual.clear();
 }
 
-Link Link::clone() const { return clone(id_.name()); }
+Link Link::clone() const { return clone(id_); }
 
-Link Link::clone(const std::string& name) const
+Link Link::clone(const std::string& name) const { return clone(common::LinkId::fromName(name)); }
+
+Link Link::clone(common::LinkId id) const
 {
-  Link ret(name);
+  Link ret(std::move(id));
   ret.visible = visible;
   ret.collision_enabled = collision_enabled;
   if (this->inertial)
