@@ -167,7 +167,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
     // the same one. It might be worth it to manually time these as well if it's really important
     selected_link.clear();  // Need to clear or this grows and is not releastic to compare to vector version
-    selected_link[tesseract::common::LinkId::fromName(active_obj[static_cast<std::size_t>(rand()) % num_obj])] =
+    selected_link[tesseract::common::LinkId(active_obj[static_cast<std::size_t>(rand()) % num_obj])] =
         info.obj2_poses[0];
     info.contact_manager_->setCollisionObjectsTransform(selected_link);
   }

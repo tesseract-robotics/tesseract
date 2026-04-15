@@ -93,8 +93,8 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   for (const auto& seg : data_.tree.getSegments())
   {
     SegmentIdCache entry;
-    entry.link_id = LinkId::fromName(seg.first);
-    entry.joint_id = JointId::fromName(seg.second.segment.getJoint().getName());
+    entry.link_id = LinkId(seg.first);
+    entry.joint_id = JointId(seg.second.segment.getJoint().getName());
     segment_id_cache_[&seg.second] = entry;
   }
   root_element_ = &data_.tree.getRootSegment()->second;
@@ -127,7 +127,7 @@ void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joi
   for (const auto& joint : joint_values)
   {
     if (setJointValuesHelper(kdl_jnt_array_, joint.first, joint.second))
-      current_state_.joints[JointId::fromName(joint.first)] = joint.second;
+      current_state_.joints[JointId(joint.first)] = joint.second;
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -148,7 +148,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
   for (auto i = 0U; i < joint_names.size(); ++i)
   {
     if (setJointValuesHelper(kdl_jnt_array_, joint_names[i], joint_values[i]))
-      current_state_.joints[JointId::fromName(joint_names[i])] = joint_values[i];
+      current_state_.joints[JointId(joint_names[i])] = joint_values[i];
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -237,7 +237,7 @@ SceneState KDLStateSolver::getState(const std::unordered_map<std::string, double
   for (const auto& joint : joint_values)
   {
     if (setJointValuesHelper(kdl_joints_cache, joint.first, joint.second))
-      state.joints[JointId::fromName(joint.first)] = joint.second;
+      state.joints[JointId(joint.first)] = joint.second;
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -276,7 +276,7 @@ SceneState KDLStateSolver::getState(const std::vector<std::string>& joint_names,
   for (auto i = 0U; i < joint_names.size(); ++i)
   {
     if (setJointValuesHelper(kdl_joints_cache, joint_names[i], joint_values[i]))
-      state.joints[JointId::fromName(joint_names[i])] = joint_values[i];
+      state.joints[JointId(joint_names[i])] = joint_values[i];
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -486,7 +486,7 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
 {
   current_state_ = SceneState();
   for (const auto& [name, tf] : data_.floating_joint_values)
-    current_state_.floating_joints[JointId::fromName(name)] = tf;
+    current_state_.floating_joints[JointId(name)] = tf;
   kdl_jnt_array_.resize(data_.tree.getNrOfJoints());
   limits_.joint_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
   limits_.velocity_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
@@ -504,9 +504,9 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
       continue;
 
     joint_to_qnr_.insert(std::make_pair(jnt.getName(), seg.second.q_nr));
-    joint_id_to_qnr_.insert(std::make_pair(JointId::fromName(jnt.getName()), seg.second.q_nr));
+    joint_id_to_qnr_.insert(std::make_pair(JointId(jnt.getName()), seg.second.q_nr));
     kdl_jnt_array_(seg.second.q_nr) = 0.0;
-    current_state_.joints.insert(std::make_pair(JointId::fromName(jnt.getName()), 0.0));
+    current_state_.joints.insert(std::make_pair(JointId(jnt.getName()), 0.0));
     data_.active_joint_names[j] = jnt.getName();
     joint_qnr_[j] = static_cast<int>(seg.second.q_nr);
 
@@ -530,44 +530,44 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
   active_joint_ids_.clear();
   active_joint_ids_.reserve(data_.active_joint_names.size());
   for (const auto& name : data_.active_joint_names)
-    active_joint_ids_.push_back(JointId::fromName(name));
+    active_joint_ids_.push_back(JointId(name));
 
   // Pre-compute ID caches for getters
   joint_ids_.clear();
   joint_ids_.reserve(data_.joint_names.size());
   for (const auto& name : data_.joint_names)
-    joint_ids_.push_back(JointId::fromName(name));
+    joint_ids_.push_back(JointId(name));
 
   floating_joint_ids_.clear();
   floating_joint_ids_.reserve(data_.floating_joint_names.size());
   for (const auto& name : data_.floating_joint_names)
-    floating_joint_ids_.push_back(JointId::fromName(name));
+    floating_joint_ids_.push_back(JointId(name));
 
   link_ids_.clear();
   link_ids_.reserve(data_.link_names.size());
   for (const auto& name : data_.link_names)
-    link_ids_.push_back(LinkId::fromName(name));
+    link_ids_.push_back(LinkId(name));
 
   active_link_ids_.clear();
   active_link_ids_.reserve(data_.active_link_names.size());
   for (const auto& name : data_.active_link_names)
-    active_link_ids_.push_back(LinkId::fromName(name));
+    active_link_ids_.push_back(LinkId(name));
 
   static_link_ids_.clear();
   static_link_ids_.reserve(data_.static_link_names.size());
   for (const auto& name : data_.static_link_names)
-    static_link_ids_.push_back(LinkId::fromName(name));
+    static_link_ids_.push_back(LinkId(name));
 
-  base_link_id_ = LinkId::fromName(data_.base_link_name);
+  base_link_id_ = LinkId(data_.base_link_name);
 
-  // Cache LinkId/JointId per segment to avoid per-FK fromName() calls.
+  // Cache LinkId/JointId per segment to avoid per-FK constructor calls.
   // Keyed by pointer to KDL TreeElement (pointer-stable in std::map).
   segment_id_cache_.clear();
   for (const auto& seg : data_.tree.getSegments())
   {
     SegmentIdCache entry;
-    entry.link_id = LinkId::fromName(seg.first);
-    entry.joint_id = JointId::fromName(seg.second.segment.getJoint().getName());
+    entry.link_id = LinkId(seg.first);
+    entry.joint_id = JointId(seg.second.segment.getJoint().getName());
     segment_id_cache_[&seg.second] = entry;
   }
   root_element_ = &data_.tree.getRootSegment()->second;

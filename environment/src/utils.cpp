@@ -409,7 +409,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   std::vector<tesseract::common::JointId> joint_ids;
   joint_ids.reserve(joint_names.size());
   for (const auto& name : joint_names)
-    joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    joint_ids.push_back(tesseract::common::JointId(name));
 
   return checkTrajectory(contacts, manager, state_solver, joint_ids, traj, config);
 }
@@ -787,7 +787,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   std::vector<tesseract::common::JointId> joint_ids;
   joint_ids.reserve(joint_names.size());
   for (const auto& name : joint_names)
-    joint_ids.push_back(tesseract::common::JointId::fromName(name));
+    joint_ids.push_back(tesseract::common::JointId(name));
 
   return checkTrajectory(contacts, manager, state_solver, joint_ids, traj, config);
 }

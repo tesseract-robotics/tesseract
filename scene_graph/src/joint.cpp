@@ -201,7 +201,6 @@ std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
 /******                     Joint                    *****/
 /*********************************************************/
 Joint::Joint(common::JointId id) : id_(std::move(id)) { this->clear(); }
-Joint::Joint(const std::string& name) : id_(common::JointId::fromName(name)) { this->clear(); }
 
 const std::string& Joint::getName() const { return id_.name(); }
 
@@ -222,8 +221,6 @@ void Joint::clear()
 }
 
 Joint Joint::clone() const { return clone(id_); }
-
-Joint Joint::clone(const std::string& name) const { return clone(common::JointId::fromName(name)); }
 
 Joint Joint::clone(common::JointId id) const
 {

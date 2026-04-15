@@ -95,7 +95,7 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                group_name.c_str(),
                                                                                joint_name.c_str())));
 
-      joint_state[tesseract::common::JointId::fromName(joint_name)] = joint_value;
+      joint_state[tesseract::common::JointId(joint_name)] = joint_value;
     }
 
     if (joint_state.empty())

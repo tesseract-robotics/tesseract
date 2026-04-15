@@ -80,7 +80,7 @@ JointGroup::JointGroup(std::string name,
   // Build joint IDs from local joint_names parameter
   joint_ids_.reserve(joint_names.size());
   for (const auto& jn : joint_names)
-    joint_ids_.push_back(JointId::fromName(jn));
+    joint_ids_.push_back(JointId(jn));
 
   // Build jacobian_map_
   jacobian_map_.reserve(joint_names.size());
