@@ -247,7 +247,6 @@ public:
   using ConstPtr = std::shared_ptr<const Joint>;
 
   Joint(common::JointId id);
-  Joint(const std::string& name);
   Joint() = default;
   ~Joint() = default;
   // Joints are non-copyable as their name must be unique
@@ -311,7 +310,6 @@ public:
   /* Create a clone of current joint, with a new name. Child link name and parent link name are unchanged.
    * All underlying properties, such as dynamics, limits... are copied as well.*/
   Joint clone(common::JointId id) const;
-  Joint clone(const std::string& name) const;
 
   bool operator==(const Joint& rhs) const;
   bool operator!=(const Joint& rhs) const;

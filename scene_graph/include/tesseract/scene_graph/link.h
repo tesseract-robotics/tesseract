@@ -185,7 +185,6 @@ public:
   using ConstPtr = std::shared_ptr<const Link>;
 
   Link(common::LinkId id);
-  Link(const std::string& name);
   Link() = default;
   ~Link() = default;
   // Links are non-copyable as their name must be unique
@@ -227,7 +226,6 @@ public:
 
   /** Perform a copy of link, changing its name **/
   Link clone(common::LinkId id) const;
-  Link clone(const std::string& name) const;
 
 private:
   /** @brief The integer identity of this link, also carries the name string */

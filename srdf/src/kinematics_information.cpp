@@ -150,13 +150,13 @@ void KinematicsInformation::addGroupTCP(const std::string& group_name,
                                         const std::string& tcp_name,
                                         const Eigen::Isometry3d& tcp)
 {
-  group_tcps[group_name][tesseract::common::LinkId::fromName(tcp_name)] = tcp;
+  group_tcps[group_name][tesseract::common::LinkId(tcp_name)] = tcp;
 }
 
 void KinematicsInformation::removeGroupTCP(const std::string& group_name, const std::string& tcp_name)
 {
   auto& inner = group_tcps.at(group_name);
-  inner.erase(tesseract::common::LinkId::fromName(tcp_name));
+  inner.erase(tesseract::common::LinkId(tcp_name));
   if (inner.empty())
     group_tcps.erase(group_name);
 }
@@ -167,7 +167,7 @@ bool KinematicsInformation::hasGroupTCP(const std::string& group_name, const std
   if (it == group_tcps.end())
     return false;
 
-  return (it->second.find(tesseract::common::LinkId::fromName(tcp_name)) != it->second.end());
+  return (it->second.find(tesseract::common::LinkId(tcp_name)) != it->second.end());
 }
 
 bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const

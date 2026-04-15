@@ -150,18 +150,18 @@ TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT
 
 TEST(TesseractCommonSerializeUnit, ManipulatorInfo)  // NOLINT
 {
-  ManipulatorInfo manip_info("manipulator", LinkId::fromName("world"), LinkId::fromName("tool0"));
+  ManipulatorInfo manip_info("manipulator", LinkId("world"), LinkId("tool0"));
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
 
-  ManipulatorInfo manip_info2("manipulator", LinkId::fromName("world"), LinkId::fromName("tool0"));
-  manip_info2.tcp_offset = LinkId::fromName("tool0");
+  ManipulatorInfo manip_info2("manipulator", LinkId("world"), LinkId("tool0"));
+  manip_info2.tcp_offset = LinkId("tool0");
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info2, "ManipulatorInfo2");
 }
 
 TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
 {
   JointState joint_state;
-  joint_state.joint_ids = { JointId::fromName("joint_1"), JointId::fromName("joint_2"), JointId::fromName("joint_3") };
+  joint_state.joint_ids = { JointId("joint_1"), JointId("joint_2"), JointId("joint_3") };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -174,7 +174,7 @@ TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
 TEST(TesseractCommonSerializeUnit, JointTrajectory)  // NOLINT
 {
   JointState joint_state;
-  joint_state.joint_ids = { JointId::fromName("joint_1"), JointId::fromName("joint_2"), JointId::fromName("joint_3") };
+  joint_state.joint_ids = { JointId("joint_1"), JointId("joint_2"), JointId("joint_3") };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);

@@ -73,7 +73,7 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
         std::throw_with_nested(std::runtime_error(strFormat(
             "Group: '%s' link '%s' is not known to the Scene Graph!", group_name.c_str(), link_name.c_str())));
 
-      links.push_back(tesseract::common::LinkId::fromName(link_name));
+      links.push_back(tesseract::common::LinkId(link_name));
     }
 
     // get the joints in the groups
@@ -91,7 +91,7 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
         std::throw_with_nested(std::runtime_error(strFormat(
             "Group: '%s' joint '%s' is not known to the Scene Graph!", group_name.c_str(), joint_name.c_str())));
 
-      joints.push_back(tesseract::common::JointId::fromName(joint_name));
+      joints.push_back(tesseract::common::JointId(joint_name));
     }
 
     // get the chains in the groups

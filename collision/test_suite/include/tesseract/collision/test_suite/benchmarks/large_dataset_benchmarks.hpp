@@ -80,7 +80,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 
         link_names.push_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
 
-        auto link_id = tesseract::common::LinkId::fromName(link_names.back());
+        auto link_id = tesseract::common::LinkId(link_names.back());
         location[link_id] = sphere_pose;
         location[link_id].translation() = Eigen::Vector3d(
             static_cast<double>(x) * delta, static_cast<double>(y) * delta, static_cast<double>(z) * delta);

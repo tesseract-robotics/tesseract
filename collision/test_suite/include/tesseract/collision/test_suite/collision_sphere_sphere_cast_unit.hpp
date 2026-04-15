@@ -158,8 +158,8 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the start location
-  const auto sphere_id = tesseract::common::LinkId::fromName("sphere_link");
-  const auto sphere1_id = tesseract::common::LinkId::fromName("sphere1_link");
+  const auto sphere_id = tesseract::common::LinkId("sphere_link");
+  const auto sphere1_id = tesseract::common::LinkId("sphere1_link");
 
   tesseract::common::LinkIdTransformMap location_start;
   location_start[sphere_id] = Eigen::Isometry3d::Identity();
@@ -317,8 +317,8 @@ inline void runTestConvex(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the start location
-  const auto sphere_id = tesseract::common::LinkId::fromName("sphere_link");
-  const auto sphere1_id = tesseract::common::LinkId::fromName("sphere1_link");
+  const auto sphere_id = tesseract::common::LinkId("sphere_link");
+  const auto sphere1_id = tesseract::common::LinkId("sphere1_link");
 
   tesseract::common::LinkIdTransformMap location_start;
   location_start[sphere_id] = Eigen::Isometry3d::Identity();

@@ -89,8 +89,8 @@ inline void runTestCompound(DiscreteContactManager& checker)
 
   // Set the collision object transforms
   tesseract::common::LinkIdTransformMap location;
-  location[tesseract::common::LinkId::fromName("octomap1_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId::fromName("octomap2_link")] = Eigen::Isometry3d::Identity();
+  location[tesseract::common::LinkId("octomap1_link")] = Eigen::Isometry3d::Identity();
+  location[tesseract::common::LinkId("octomap2_link")] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -109,8 +109,8 @@ inline void runTestCompound(DiscreteContactManager& checker)
 
 inline void runTestCompound(ContinuousContactManager& checker)
 {
-  const auto octomap1_link = tesseract::common::LinkId::fromName("octomap1_link");
-  const auto octomap2_link = tesseract::common::LinkId::fromName("octomap2_link");
+  const auto octomap1_link = tesseract::common::LinkId("octomap1_link");
+  const auto octomap2_link = tesseract::common::LinkId("octomap2_link");
 
   //////////////////////////////////////
   // Test when object is in collision

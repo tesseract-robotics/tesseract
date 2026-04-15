@@ -243,8 +243,6 @@ const std::string& SceneGraph::getName() const
   return boost::get_property(static_cast<const Graph&>(*this), boost::graph_name);
 }
 
-bool SceneGraph::setRoot(const std::string& name) { return setRoot(LinkId::fromName(name)); }
-
 bool SceneGraph::setRoot(const common::LinkId& id)
 {
   auto found = link_map_.find(id);
@@ -324,11 +322,6 @@ bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool repla
   return true;
 }
 
-std::shared_ptr<const Link> SceneGraph::getLink(const std::string& name) const
-{
-  return getLink(LinkId::fromName(name));
-}
-
 std::shared_ptr<const Link> SceneGraph::getLink(const common::LinkId& id) const
 {
   auto found = link_map_.find(id);
@@ -359,11 +352,6 @@ std::vector<std::shared_ptr<const Link>> SceneGraph::getLeafLinks() const
   }
 
   return links;
-}
-
-bool SceneGraph::removeLink(const std::string& name, bool recursive)
-{
-  return removeLink(LinkId::fromName(name), recursive);
 }
 
 bool SceneGraph::removeLink(const common::LinkId& id, bool recursive)
@@ -441,33 +429,16 @@ bool SceneGraph::moveLink(const Joint& joint)
   return addJoint(joint);
 }
 
-void SceneGraph::setLinkVisibility(const std::string& name, bool visibility)
-{
-  setLinkVisibility(LinkId::fromName(name), visibility);
-}
-
 void SceneGraph::setLinkVisibility(const common::LinkId& id, bool visibility)
 {
   link_map_.at(id).first->visible = visibility;
 }
 
-bool SceneGraph::getLinkVisibility(const std::string& name) const { return getLinkVisibility(LinkId::fromName(name)); }
-
 bool SceneGraph::getLinkVisibility(const common::LinkId& id) const { return link_map_.at(id).first->visible; }
-
-void SceneGraph::setLinkCollisionEnabled(const std::string& name, bool enabled)
-{
-  setLinkCollisionEnabled(LinkId::fromName(name), enabled);
-}
 
 void SceneGraph::setLinkCollisionEnabled(const common::LinkId& id, bool enabled)
 {
   link_map_.at(id).first->collision_enabled = enabled;
-}
-
-bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
-{
-  return getLinkCollisionEnabled(LinkId::fromName(name));
 }
 
 bool SceneGraph::getLinkCollisionEnabled(const common::LinkId& id) const
@@ -545,11 +516,6 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
   return true;
 }
 
-std::shared_ptr<const Joint> SceneGraph::getJoint(const std::string& name) const
-{
-  return getJoint(JointId::fromName(name));
-}
-
 std::shared_ptr<const Joint> SceneGraph::getJoint(const common::JointId& id) const
 {
   auto found = joint_map_.find(id);
@@ -557,11 +523,6 @@ std::shared_ptr<const Joint> SceneGraph::getJoint(const common::JointId& id) con
     return nullptr;
 
   return found->second.first;
-}
-
-bool SceneGraph::removeJoint(const std::string& name, bool recursive)
-{
-  return removeJoint(JointId::fromName(name), recursive);
 }
 
 bool SceneGraph::removeJoint(const common::JointId& id, bool recursive)
@@ -585,11 +546,6 @@ bool SceneGraph::removeJoint(const common::JointId& id, bool recursive)
   }
 
   return true;
-}
-
-bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_link)
-{
-  return moveJoint(JointId::fromName(name), LinkId::fromName(parent_link));
 }
 
 bool SceneGraph::moveJoint(const common::JointId& id, const common::LinkId& parent_link_id)
@@ -644,11 +600,6 @@ std::vector<std::shared_ptr<const Joint>> SceneGraph::getActiveJoints() const
   return joints;
 }
 
-bool SceneGraph::changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin)
-{
-  return changeJointOrigin(JointId::fromName(name), new_origin);
-}
-
 bool SceneGraph::changeJointOrigin(const common::JointId& id, const Eigen::Isometry3d& new_origin)
 {
   auto found = joint_map_.find(id);
@@ -669,11 +620,6 @@ bool SceneGraph::changeJointOrigin(const common::JointId& id, const Eigen::Isome
   boost::put(boost::edge_weight_t(), *this, found->second.second, d);
 
   return true;
-}
-
-bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& limits)
-{
-  return changeJointLimits(JointId::fromName(name), limits);
 }
 
 bool SceneGraph::changeJointLimits(const common::JointId& id, const JointLimits& limits)
@@ -706,11 +652,6 @@ bool SceneGraph::changeJointLimits(const common::JointId& id, const JointLimits&
   return true;
 }
 
-bool SceneGraph::changeJointPositionLimits(const std::string& name, double lower, double upper)
-{
-  return changeJointPositionLimits(JointId::fromName(name), lower, upper);
-}
-
 bool SceneGraph::changeJointPositionLimits(const common::JointId& id, double lower, double upper)
 {
   auto found = joint_map_.find(id);
@@ -735,11 +676,6 @@ bool SceneGraph::changeJointPositionLimits(const common::JointId& id, double low
   return true;
 }
 
-bool SceneGraph::changeJointVelocityLimits(const std::string& name, double limit)
-{
-  return changeJointVelocityLimits(JointId::fromName(name), limit);
-}
-
 bool SceneGraph::changeJointVelocityLimits(const common::JointId& id, double limit)
 {
   auto found = joint_map_.find(id);
@@ -760,11 +696,6 @@ bool SceneGraph::changeJointVelocityLimits(const common::JointId& id, double lim
 
   found->second.first->limits->velocity = limit;
   return true;
-}
-
-bool SceneGraph::changeJointAccelerationLimits(const std::string& name, double limit)
-{
-  return changeJointAccelerationLimits(JointId::fromName(name), limit);
 }
 
 bool SceneGraph::changeJointAccelerationLimits(const common::JointId& id, double limit)
@@ -794,10 +725,6 @@ bool SceneGraph::changeJointAccelerationLimits(const common::JointId& id, double
   return true;
 }
 
-bool SceneGraph::changeJointJerkLimits(const std::string& name, double limit)
-{
-  return changeJointJerkLimits(JointId::fromName(name), limit);
-}
 
 bool SceneGraph::changeJointJerkLimits(const common::JointId& id, double limit)
 {
@@ -823,11 +750,6 @@ bool SceneGraph::changeJointJerkLimits(const common::JointId& id, double limit)
   found->second.first->limits->jerk = limit;
 
   return true;
-}
-
-std::shared_ptr<const JointLimits> SceneGraph::getJointLimits(const std::string& name)
-{
-  return getJointLimits(JointId::fromName(name));
 }
 
 std::shared_ptr<const JointLimits> SceneGraph::getJointLimits(const common::JointId& id)
@@ -856,36 +778,14 @@ void SceneGraph::addAllowedCollision(const common::LinkId& link_id1,
   acm_->addAllowedCollision(link_id1, link_id2, reason);
 }
 
-void SceneGraph::addAllowedCollision(const std::string& link_name1,
-                                     const std::string& link_name2,
-                                     const std::string& reason)
-{
-  addAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2), reason);
-}
-
 void SceneGraph::removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2)
 {
   acm_->removeAllowedCollision(link_id1, link_id2);
 }
 
-void SceneGraph::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
-{
-  removeAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
-}
-
 void SceneGraph::removeAllowedCollision(const common::LinkId& link_id) { acm_->removeAllowedCollision(link_id); }
 
-void SceneGraph::removeAllowedCollision(const std::string& link_name)
-{
-  removeAllowedCollision(LinkId::fromName(link_name));
-}
-
 void SceneGraph::clearAllowedCollisions() { acm_->clearAllowedCollisions(); }
-
-bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
-{
-  return isCollisionAllowed(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
-}
 
 bool SceneGraph::isCollisionAllowed(const tesseract::common::LinkId& link_id1,
                                     const tesseract::common::LinkId& link_id2) const
@@ -907,21 +807,12 @@ std::shared_ptr<const Link> SceneGraph::getSourceLink(const common::JointId& id)
   return boost::get(boost::vertex_link, *this)[v];
 }
 
-std::shared_ptr<const Link> SceneGraph::getTargetLink(const std::string& joint_name) const
-{
-  return getTargetLink(JointId::fromName(joint_name));
-}
 
 std::shared_ptr<const Link> SceneGraph::getTargetLink(const common::JointId& id) const
 {
   Edge e = getEdge(id);
   Vertex v = boost::target(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
-}
-
-std::vector<std::shared_ptr<const Joint>> SceneGraph::getInboundJoints(const std::string& link_name) const
-{
-  return getInboundJoints(LinkId::fromName(link_name));
 }
 
 std::vector<std::shared_ptr<const Joint>> SceneGraph::getInboundJoints(const common::LinkId& id) const
@@ -1014,7 +905,7 @@ std::vector<LinkId> SceneGraph::getAdjacentLinkIds(const LinkId& id) const
 
 std::vector<std::string> SceneGraph::getAdjacentLinkNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getAdjacentLinkIds(LinkId::fromName(name));
+  std::vector<LinkId> ids = getAdjacentLinkIds(LinkId(name));
   std::vector<std::string> names;
   names.reserve(ids.size());
   for (const auto& id : ids)
@@ -1034,7 +925,7 @@ std::vector<LinkId> SceneGraph::getInvAdjacentLinkIds(const LinkId& id) const
 
 std::vector<std::string> SceneGraph::getInvAdjacentLinkNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getInvAdjacentLinkIds(LinkId::fromName(name));
+  std::vector<LinkId> ids = getInvAdjacentLinkIds(LinkId(name));
   std::vector<std::string> names;
   names.reserve(ids.size());
   for (const auto& id : ids)
@@ -1054,7 +945,7 @@ std::vector<LinkId> SceneGraph::getLinkChildrenIds(const LinkId& id) const
 
 std::vector<std::string> SceneGraph::getLinkChildrenNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getLinkChildrenIds(LinkId::fromName(name));
+  std::vector<LinkId> ids = getLinkChildrenIds(LinkId(name));
   std::vector<std::string> names;
   names.reserve(ids.size());
   for (const auto& id : ids)
@@ -1072,7 +963,7 @@ std::vector<LinkId> SceneGraph::getJointChildrenIds(const JointId& id) const
 
 std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& name) const
 {
-  std::vector<LinkId> ids = getJointChildrenIds(JointId::fromName(name));
+  std::vector<LinkId> ids = getJointChildrenIds(JointId(name));
   std::vector<std::string> names;
   names.reserve(ids.size());
   for (const auto& id : ids)
@@ -1097,7 +988,7 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std
   std::vector<JointId> ids;
   ids.reserve(names.size());
   for (const auto& name : names)
-    ids.push_back(JointId::fromName(name));
+    ids.push_back(JointId(name));
 
   std::vector<LinkId> result_ids = getJointChildrenIds(ids);
   std::vector<std::string> result;
@@ -1143,7 +1034,7 @@ SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
   std::vector<LinkId> link_ids;
   link_ids.reserve(link_names.size());
   for (const auto& name : link_names)
-    link_ids.push_back(LinkId::fromName(name));
+    link_ids.push_back(LinkId(name));
 
   std::unordered_map<LinkId, LinkId, LinkId::Hash> id_map = getAdjacencyMapIds(link_ids);
 
@@ -1183,11 +1074,6 @@ void SceneGraph::saveDOT(const std::string& path) const
              << joint->type << ")\", color=\"black\"]";
   }
   dot_file << "}";
-}
-
-ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::string& tip) const
-{
-  return getShortestPath(LinkId::fromName(root), LinkId::fromName(tip));
 }
 
 ShortestPath SceneGraph::getShortestPath(const common::LinkId& root_id, const common::LinkId& tip_id) const
@@ -1291,8 +1177,6 @@ ShortestPath SceneGraph::getShortestPath(const common::LinkId& root_id, const co
   return path;
 }
 
-SceneGraph::Vertex SceneGraph::getVertex(const std::string& name) const { return getVertex(LinkId::fromName(name)); }
-
 SceneGraph::Vertex SceneGraph::getVertex(const common::LinkId& id) const
 {
   auto found = link_map_.find(id);
@@ -1323,8 +1207,8 @@ tesseract::scene_graph::Joint clone_prefix(const tesseract::scene_graph::Joint::
                                            const std::string& prefix)
 {
   auto ret = joint->clone(prefix + joint->getName());
-  ret.child_link_id = LinkId::fromName(prefix + joint->child_link_id.name());
-  ret.parent_link_id = LinkId::fromName(prefix + joint->parent_link_id.name());
+  ret.child_link_id = LinkId(prefix + joint->child_link_id.name());
+  ret.parent_link_id = LinkId(prefix + joint->parent_link_id.name());
   return ret;
 }
 
@@ -1349,7 +1233,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
   // Verify that link names are unique
   for (const auto& link : scene_graph.getLinks())
   {
-    if (link_map_.find(LinkId::fromName(prefix + link->getName())) != link_map_.end())
+    if (link_map_.find(LinkId(prefix + link->getName())) != link_map_.end())
     {
       CONSOLE_BRIDGE_logError("Failed to add inserted graph, link names are not unique: %s",
                               (prefix + link->getName()).c_str());
@@ -1360,7 +1244,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
   // Verify that joint names are unique
   for (const auto& joint : scene_graph.getJoints())
   {
-    if (joint_map_.find(JointId::fromName(prefix + joint->getName())) != joint_map_.end())
+    if (joint_map_.find(JointId(prefix + joint->getName())) != joint_map_.end())
     {
       CONSOLE_BRIDGE_logError("Failed to add inserted graph, joint names are not unique: %s",
                               (prefix + joint->getName()).c_str());

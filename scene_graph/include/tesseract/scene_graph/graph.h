@@ -157,7 +157,6 @@ public:
    * @param name The name of the link
    * @return Return False if a link does not exists, otherwise true
    */
-  bool setRoot(const std::string& name);
   bool setRoot(const common::LinkId& id);
 
   /**
@@ -193,7 +192,6 @@ public:
    * @param name The name of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  std::shared_ptr<const Link> getLink(const std::string& name) const;
   std::shared_ptr<const Link> getLink(const common::LinkId& id) const;
 
   /**
@@ -217,7 +215,6 @@ public:
    * @param recursive If true all children are removed if it only has a single joint
    * @return Return False if a link does not exists, otherwise true
    */
-  bool removeLink(const std::string& name, bool recursive = false);
   bool removeLink(const common::LinkId& id, bool recursive = false);
 
   /**
@@ -232,28 +229,24 @@ public:
    * @brief Set a links visibility
    * @param visibility True if should be visible, otherwise false
    */
-  void setLinkVisibility(const std::string& name, bool visibility);
   void setLinkVisibility(const common::LinkId& id, bool visibility);
 
   /**
    * @brief Get a given links visibility setting
    * @return True if should be visible, otherwise false
    */
-  bool getLinkVisibility(const std::string& name) const;
   bool getLinkVisibility(const common::LinkId& id) const;
 
   /**
    * @brief Set whether a link should be considered during collision checking
    * @param enabled True if should be considered during collision checking, otherwise false
    */
-  void setLinkCollisionEnabled(const std::string& name, bool enabled);
   void setLinkCollisionEnabled(const common::LinkId& id, bool enabled);
 
   /**
    * @brief Get whether a link should be considered during collision checking
    * @return True if should be considered during collision checking, otherwise false
    */
-  bool getLinkCollisionEnabled(const std::string& name) const;
   bool getLinkCollisionEnabled(const common::LinkId& id) const;
 
   /**
@@ -269,7 +262,6 @@ public:
    * @param name The name of the joint
    * @return Return nullptr if joint name does not exists, otherwise a pointer to the joint
    */
-  std::shared_ptr<const Joint> getJoint(const std::string& name) const;
   std::shared_ptr<const Joint> getJoint(const common::JointId& id) const;
 
   /**
@@ -278,7 +270,6 @@ public:
    * @param recursive If true all children are removed if this this is the only joint of the child link
    * @return Return False if a joint does not exists, otherwise true
    */
-  bool removeJoint(const std::string& name, bool recursive = false);
   bool removeJoint(const common::JointId& id, bool recursive = false);
 
   /**
@@ -287,7 +278,6 @@ public:
    * @param parent_link Name of parent link to move to
    * @return Returns true if successful, otherwise false.
    */
-  bool moveJoint(const std::string& name, const std::string& parent_link);
   bool moveJoint(const common::JointId& id, const common::LinkId& parent_link_id);
 
   /**
@@ -307,7 +297,6 @@ public:
    * @param new_origin The new transform associated with the joint
    * @return True if successful.
    */
-  bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin);
   bool changeJointOrigin(const common::JointId& id, const Eigen::Isometry3d& new_origin);
 
   /**
@@ -316,7 +305,6 @@ public:
    * @param limits The new limits associated with the joint
    * @return True if successful.
    */
-  bool changeJointLimits(const std::string& name, const JointLimits& limits);
   bool changeJointLimits(const common::JointId& id, const JointLimits& limits);
 
   /**
@@ -325,7 +313,6 @@ public:
    * @param limits New position limits to be set as the joint limits
    * @returnTrue if successful.
    */
-  bool changeJointPositionLimits(const std::string& name, double lower, double upper);
   bool changeJointPositionLimits(const common::JointId& id, double lower, double upper);
 
   /**
@@ -334,7 +321,6 @@ public:
    * @param limits New velocity limits to be set as the joint limits
    * @return
    */
-  bool changeJointVelocityLimits(const std::string& name, double limit);
   bool changeJointVelocityLimits(const common::JointId& id, double limit);
 
   /**
@@ -343,7 +329,6 @@ public:
    * @param limits New acceleration limits to be set as the joint limits
    * @return
    */
-  bool changeJointAccelerationLimits(const std::string& name, double limit);
   bool changeJointAccelerationLimits(const common::JointId& id, double limit);
 
   /**
@@ -352,7 +337,6 @@ public:
    * @param limits New jerk limits to be set as the joint limits
    * @return
    */
-  bool changeJointJerkLimits(const std::string& name, double limit);
   bool changeJointJerkLimits(const common::JointId& id, double limit);
 
   /**
@@ -360,7 +344,6 @@ public:
    * @param name Name of the joint which limits will be retrieved
    * @return Limits of the joint. Returns nullptr is joint is not found.
    */
-  std::shared_ptr<const JointLimits> getJointLimits(const std::string& name);
   std::shared_ptr<const JointLimits> getJointLimits(const common::JointId& id);
 
   /**
@@ -375,7 +358,6 @@ public:
    * @param link_name2 Collision object name
    * @param reason The reason for disabling collision
    */
-  void addAllowedCollision(const std::string& link_name1, const std::string& link_name2, const std::string& reason);
   void addAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2, const std::string& reason);
 
   /**
@@ -383,14 +365,12 @@ public:
    * @param link_name1 Collision object name
    * @param link_name2 Collision object name
    */
-  void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
   void removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2);
 
   /**
    * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
    * @param link_name Collision object name
    */
-  void removeAllowedCollision(const std::string& link_name);
   void removeAllowedCollision(const common::LinkId& link_id);
 
   /** @brief Remove all allowed collisions */
@@ -402,7 +382,6 @@ public:
    * @param link_name2 link name
    * @return True if the two links are allowed to be in collision, otherwise false
    */
-  bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
   bool isCollisionAllowed(const tesseract::common::LinkId& link_id1, const tesseract::common::LinkId& link_id2) const;
 
   /**
@@ -429,7 +408,6 @@ public:
    * @param joint_name The name of the joint
    * @return The target link
    */
-  std::shared_ptr<const Link> getTargetLink(const std::string& joint_name) const;
   std::shared_ptr<const Link> getTargetLink(const common::JointId& id) const;
 
   /**
@@ -441,7 +419,6 @@ public:
    * @param link_name The name of the link
    * @return Vector of joints
    */
-  std::vector<std::shared_ptr<const Joint>> getInboundJoints(const std::string& link_name) const;
   std::vector<std::shared_ptr<const Joint>> getInboundJoints(const common::LinkId& id) const;
 
   /**
@@ -548,7 +525,6 @@ public:
    * @param tip The tip link
    * @return The shortest path between the two links
    */
-  ShortestPath getShortestPath(const std::string& root, const std::string& tip) const;
   ShortestPath getShortestPath(const common::LinkId& root, const common::LinkId& tip) const;
 
 #ifndef SWIG
@@ -557,7 +533,6 @@ public:
    * @param name The vertex/link name
    * @return Graph Vertex
    */
-  Vertex getVertex(const std::string& name) const;
   Vertex getVertex(const common::LinkId& id) const;
 
   /**

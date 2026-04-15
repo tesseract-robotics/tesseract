@@ -262,8 +262,8 @@ int main(int /*argc*/, char** /*argv*/)
   //! [collision_example_set_margin_data]
 
   //! [collision_example_set_transforms_initial]
-  const auto box_id = tesseract::common::LinkId::fromName("box_link");
-  const auto second_box_id = tesseract::common::LinkId::fromName("second_box_link");
+  const auto box_id = tesseract::common::LinkId("box_link");
+  const auto second_box_id = tesseract::common::LinkId("second_box_link");
 
   tesseract::common::LinkIdTransformMap location;
   location[box_id] = Eigen::Isometry3d::Identity();

@@ -97,7 +97,7 @@ bool parseSceneGraph(KDLChainData& results,
   }
 
   results.chains = chains;
-  results.base_link_id = tesseract::common::LinkId::fromName(chains.front().first);
+  results.base_link_id = tesseract::common::LinkId(chains.front().first);
   for (const auto& chain : chains)
   {
     KDL::Chain sub_chain;
@@ -109,7 +109,7 @@ bool parseSceneGraph(KDLChainData& results,
     }
     results.robot_chain.addChain(sub_chain);
   }
-  results.tip_link_id = tesseract::common::LinkId::fromName(chains.back().second);
+  results.tip_link_id = tesseract::common::LinkId(chains.back().second);
 
   results.joint_ids.clear();
   results.joint_ids.resize(results.robot_chain.getNrOfJoints());
@@ -133,7 +133,7 @@ bool parseSceneGraph(KDLChainData& results,
     // index + 1. This was determined through testing which is captured in this packages unit tests.
     results.segment_index[seg.getName()] = static_cast<int>(i + 1);
 
-    results.joint_ids[j] = tesseract::common::JointId::fromName(jnt.getName());
+    results.joint_ids[j] = tesseract::common::JointId(jnt.getName());
 
     auto joint = scene_graph.getJoint(results.joint_ids[j].name());
     double lower = std::numeric_limits<float>::lowest();

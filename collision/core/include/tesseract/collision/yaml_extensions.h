@@ -285,7 +285,7 @@ struct convert<tesseract::collision::ContactManagerConfig>
       for (const auto& entry : n)
       {
         const std::string name = entry.first.as<std::string>();
-        rhs.modify_object_enabled[tesseract::common::LinkId::fromName(name)] = entry.second.as<bool>();
+        rhs.modify_object_enabled[tesseract::common::LinkId(name)] = entry.second.as<bool>();
       }
     }
 

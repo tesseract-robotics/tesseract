@@ -55,12 +55,12 @@ public:
   {
     auto pair = tesseract::common::LinkIdPair::make(id1, id2);
 
-    if (pair == tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link_1"),
-                                                    tesseract::common::LinkId::fromName("link_2")))
+    if (pair == tesseract::common::LinkIdPair::make(tesseract::common::LinkId("link_1"),
+                                                    tesseract::common::LinkId("link_2")))
       return true;
 
-    if (pair == tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link_1"),
-                                                    tesseract::common::LinkId::fromName("link_3")))
+    if (pair == tesseract::common::LinkIdPair::make(tesseract::common::LinkId("link_1"),
+                                                    tesseract::common::LinkId("link_3")))
       return true;
 
     return false;
@@ -73,8 +73,8 @@ public:
   bool operator()(const tesseract::common::LinkId& id1, const tesseract::common::LinkId& id2) const override
   {
     return tesseract::common::LinkIdPair::make(id1, id2) ==
-           tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName("link_1"),
-                                               tesseract::common::LinkId::fromName("link_2"));
+           tesseract::common::LinkIdPair::make(tesseract::common::LinkId("link_1"),
+                                               tesseract::common::LinkId("link_2"));
   }
 };
 
@@ -117,7 +117,7 @@ TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
     auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::NONE);
-    EXPECT_TRUE((*comb)(LinkId::fromName(""), LinkId::fromName("")));
+    EXPECT_TRUE((*comb)(LinkId(""), LinkId("")));
   }
 
   {  // tesseract::collision::ACMOverrideType::ASSIGN
@@ -125,7 +125,7 @@ TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
     auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::ASSIGN);
-    EXPECT_FALSE((*comb)(LinkId::fromName(""), LinkId::fromName("")));
+    EXPECT_FALSE((*comb)(LinkId(""), LinkId("")));
   }
 
   {  // tesseract::collision::ACMOverrideType::AND
@@ -133,9 +133,9 @@ TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
     auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::AND);
-    EXPECT_TRUE((*comb)(LinkId::fromName("link_1"), LinkId::fromName("link_2")));
-    EXPECT_FALSE((*comb)(LinkId::fromName("link_1"), LinkId::fromName("link_3")));
-    EXPECT_FALSE((*comb)(LinkId::fromName("abc"), LinkId::fromName("def")));
+    EXPECT_TRUE((*comb)(LinkId("link_1"), LinkId("link_2")));
+    EXPECT_FALSE((*comb)(LinkId("link_1"), LinkId("link_3")));
+    EXPECT_FALSE((*comb)(LinkId("abc"), LinkId("def")));
 
     auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract::collision::ACMOverrideType::AND);
     EXPECT_TRUE(comb1 == nullptr);
@@ -146,14 +146,14 @@ TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
     auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::OR);
-    EXPECT_TRUE((*comb)(LinkId::fromName("link_1"), LinkId::fromName("link_2")));
-    EXPECT_TRUE((*comb)(LinkId::fromName("link_1"), LinkId::fromName("link_3")));
-    EXPECT_FALSE((*comb)(LinkId::fromName("abc"), LinkId::fromName("def")));
+    EXPECT_TRUE((*comb)(LinkId("link_1"), LinkId("link_2")));
+    EXPECT_TRUE((*comb)(LinkId("link_1"), LinkId("link_3")));
+    EXPECT_FALSE((*comb)(LinkId("abc"), LinkId("def")));
 
     auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract::collision::ACMOverrideType::OR);
-    EXPECT_TRUE((*comb1)(LinkId::fromName("link_1"), LinkId::fromName("link_2")));
-    EXPECT_FALSE((*comb1)(LinkId::fromName("link_1"), LinkId::fromName("link_3")));
-    EXPECT_FALSE((*comb1)(LinkId::fromName("abc"), LinkId::fromName("def")));
+    EXPECT_TRUE((*comb1)(LinkId("link_1"), LinkId("link_2")));
+    EXPECT_FALSE((*comb1)(LinkId("link_1"), LinkId("link_3")));
+    EXPECT_FALSE((*comb1)(LinkId("abc"), LinkId("def")));
   }
 }
 
