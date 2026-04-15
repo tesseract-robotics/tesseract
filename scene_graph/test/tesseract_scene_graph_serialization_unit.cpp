@@ -80,8 +80,8 @@ TEST(TesseractSceneGraphSerializationUnit, Joint)  // NOLINT
   auto object = std::make_shared<Joint>("serialized_joint");
   object->type = JointType::PLANAR;
   object->axis = Eigen::Vector3d(1.1, 2.2, 3.3);
-  object->child_link_id = LinkId::fromName("child_name");
-  object->parent_link_id = LinkId::fromName("parent_name");
+  object->child_link_id = LinkId("child_name");
+  object->parent_link_id = LinkId("parent_name");
   object->parent_to_joint_origin_transform.translate(Eigen::Vector3d(5.5, 6.6, 7.7));
   object->dynamics = std::make_shared<JointDynamics>(1.1, 2.2);
   object->limits = std::make_shared<JointLimits>(1.1, 2.2, 3.3, 4.4, 5.5, 6.5);
@@ -183,30 +183,30 @@ tesseract::scene_graph::SceneGraph createTestSceneGraph()
 
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_id = LinkId::fromName("link_1");
-  joint_1.child_link_id = LinkId::fromName("link_2");
+  joint_1.parent_link_id = LinkId("link_1");
+  joint_1.child_link_id = LinkId("link_2");
   joint_1.type = JointType::FIXED;
   EXPECT_TRUE(g.addJoint(joint_1));
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_id = LinkId::fromName("link_2");
-  joint_2.child_link_id = LinkId::fromName("link_3");
+  joint_2.parent_link_id = LinkId("link_2");
+  joint_2.child_link_id = LinkId("link_3");
   joint_2.type = JointType::PLANAR;
   joint_2.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_id = LinkId::fromName("link_3");
-  joint_3.child_link_id = LinkId::fromName("link_4");
+  joint_3.parent_link_id = LinkId("link_3");
+  joint_3.child_link_id = LinkId("link_4");
   joint_3.type = JointType::FLOATING;
   EXPECT_TRUE(g.addJoint(joint_3));
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_4.parent_link_id = LinkId::fromName("link_2");
-  joint_4.child_link_id = LinkId::fromName("link_5");
+  joint_4.parent_link_id = LinkId("link_2");
+  joint_4.child_link_id = LinkId("link_5");
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-1, 1, 0, 2, 3, 4);
   EXPECT_TRUE(g.addJoint(joint_4));
@@ -228,13 +228,13 @@ TEST(TesseractSceneGraphSerializationUnit, SceneGraph)  // NOLINT
 TEST(TesseractSceneGraphSerializationUnit, SceneState)  // NOLINT
 {
   auto object = std::make_shared<SceneState>();
-  object->joints[JointId::fromName("j_1")] = 12.3;
-  object->joints[JointId::fromName("j_2")] = -12.3;
-  object->joints[JointId::fromName("j_3")] = 1.23;
-  object->link_transforms[LinkId::fromName("link_transforms_key")].setIdentity();
-  object->link_transforms[LinkId::fromName("link_transforms_key")].translate(Eigen::Vector3d(1, 2, 3));
-  object->joint_transforms[JointId::fromName("joint_transforms_key")].setIdentity();
-  object->joint_transforms[JointId::fromName("joint_transforms_key")].translate(Eigen::Vector3d(5, 6, 7));
+  object->joints[JointId("j_1")] = 12.3;
+  object->joints[JointId("j_2")] = -12.3;
+  object->joints[JointId("j_3")] = 1.23;
+  object->link_transforms[LinkId("link_transforms_key")].setIdentity();
+  object->link_transforms[LinkId("link_transforms_key")].translate(Eigen::Vector3d(1, 2, 3));
+  object->joint_transforms[JointId("joint_transforms_key")].setIdentity();
+  object->joint_transforms[JointId("joint_transforms_key")].translate(Eigen::Vector3d(5, 6, 7));
   tesseract::common::testSerialization<SceneState>(*object, "SceneState");
 }
 

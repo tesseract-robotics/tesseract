@@ -71,8 +71,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
 
 inline void runTest(DiscreteContactManager& checker, const std::string& file_path)
 {
-  const auto octomap_link = tesseract::common::LinkId::fromName("octomap_link");
-  const auto plane_link = tesseract::common::LinkId::fromName("plane_link");
+  const auto octomap_link = tesseract::common::LinkId("octomap_link");
+  const auto plane_link = tesseract::common::LinkId("plane_link");
 
   // Add collision object
   detail::addCollisionObjects(checker);

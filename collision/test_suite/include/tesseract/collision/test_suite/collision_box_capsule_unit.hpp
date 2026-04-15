@@ -121,8 +121,8 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  const auto box_id = tesseract::common::LinkId::fromName("box_link");
-  const auto capsule_id = tesseract::common::LinkId::fromName("capsule_link");
+  const auto box_id = tesseract::common::LinkId("box_link");
+  const auto capsule_id = tesseract::common::LinkId("capsule_link");
 
   tesseract::common::LinkIdTransformMap location;
   location[box_id] = Eigen::Isometry3d::Identity();

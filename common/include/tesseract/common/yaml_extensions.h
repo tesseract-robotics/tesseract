@@ -874,8 +874,8 @@ struct convert<tesseract::common::PairsCollisionMarginData>
       auto name2 = key_node[1].as<std::string>();
       auto margin = it->second.as<double>();
 
-      auto id1 = tesseract::common::LinkId::fromName(name1);
-      auto id2 = tesseract::common::LinkId::fromName(name2);
+      auto id1 = tesseract::common::LinkId(name1);
+      auto id2 = tesseract::common::LinkId(name2);
       auto pair_key = tesseract::common::LinkIdPair::make(id1, id2);
       rhs.emplace(pair_key, margin);
     }
@@ -942,8 +942,8 @@ struct convert<tesseract::common::AllowedCollisionEntries>
       auto name2 = key_node[1].as<std::string>();
       auto reason = it->second.as<std::string>();
 
-      auto id1 = tesseract::common::LinkId::fromName(name1);
-      auto id2 = tesseract::common::LinkId::fromName(name2);
+      auto id1 = tesseract::common::LinkId(name1);
+      auto id2 = tesseract::common::LinkId(name2);
       auto pair_key = tesseract::common::LinkIdPair::make(id1, id2);
       if (id1.value() <= id2.value())
         rhs.emplace(pair_key, tesseract::common::ACMEntry{ std::move(name1), std::move(name2), std::move(reason) });

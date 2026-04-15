@@ -37,7 +37,7 @@ Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint
   std::vector<JointId> ids;
   ids.reserve(joint_names.size());
   for (const auto& name : joint_names)
-    ids.push_back(JointId::fromName(name));
+    ids.push_back(JointId(name));
   return getJointValues(ids);
 }
 
@@ -58,7 +58,7 @@ SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) 
   std::vector<JointId> ids;
   ids.reserve(joint_names.size());
   for (const auto& name : joint_names)
-    ids.push_back(JointId::fromName(name));
+    ids.push_back(JointId(name));
   return getFloatingJointValues(ids);
 }
 

@@ -1449,11 +1449,11 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
     using tesseract::common::LinkId;
     std::vector<tesseract::scene_graph::Collision::Ptr> state_collision_geom;
     Eigen::Isometry3d parent_link_tf_inv =
-        scene_state.link_transforms.at(LinkId::fromName(cmd->getParentLinkName())).inverse();
+        scene_state.link_transforms.at(LinkId(cmd->getParentLinkName())).inverse();
     for (const auto& link_name : active_link_names)
     {
       Eigen::Isometry3d link_transform =
-          parent_link_tf_inv * scene_state.link_transforms.at(LinkId::fromName(link_name));
+          parent_link_tf_inv * scene_state.link_transforms.at(LinkId(link_name));
       auto link = scene_graph->getLink(link_name);
       assert(link != nullptr);
 
@@ -1560,8 +1560,8 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
 
   auto traj_joint = std::make_shared<tesseract::scene_graph::Joint>("joint_" + cmd->getLinkName());
   traj_joint->type = tesseract::scene_graph::JointType::FIXED;
-  traj_joint->parent_link_id = tesseract::common::LinkId::fromName(cmd->getParentLinkName());
-  traj_joint->child_link_id = tesseract::common::LinkId::fromName(cmd->getLinkName());
+  traj_joint->parent_link_id = tesseract::common::LinkId(cmd->getParentLinkName());
+  traj_joint->child_link_id = tesseract::common::LinkId(cmd->getLinkName());
   traj_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
   if (!applyAddLinkCommandHelper(traj_link, traj_joint, cmd->replaceAllowed()))
@@ -1680,8 +1680,8 @@ bool Environment::Implementation::applyAddLinkCommandHelper(
     std::string joint_name = "joint_" + link_name;
     tesseract::scene_graph::Joint joint(joint_name);
     joint.type = tesseract::scene_graph::JointType::FIXED;
-    joint.child_link_id = tesseract::common::LinkId::fromName(link_name);
-    joint.parent_link_id = tesseract::common::LinkId::fromName(scene_graph->getRoot());
+    joint.child_link_id = tesseract::common::LinkId(link_name);
+    joint.parent_link_id = tesseract::common::LinkId(scene_graph->getRoot());
 
     if (!scene_graph->addLink(*link, joint))
       return false;
@@ -1959,8 +1959,8 @@ bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<cons
     // Connect root of subgraph to graph
     tesseract::scene_graph::Joint root_joint(cmd->getPrefix() + cmd->getSceneGraph()->getName() + "_joint");
     root_joint.type = tesseract::scene_graph::JointType::FIXED;
-    root_joint.parent_link_id = tesseract::common::LinkId::fromName(scene_graph->getRoot());
-    root_joint.child_link_id = tesseract::common::LinkId::fromName(cmd->getPrefix() + cmd->getSceneGraph()->getRoot());
+    root_joint.parent_link_id = tesseract::common::LinkId(scene_graph->getRoot());
+    root_joint.child_link_id = tesseract::common::LinkId(cmd->getPrefix() + cmd->getSceneGraph()->getRoot());
     root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
     tesseract::scene_graph::SceneGraph::ConstPtr sg = cmd->getSceneGraph();
@@ -2898,12 +2898,6 @@ tesseract::common::VectorIsometry3d Environment::getLinkTransforms() const
   return std::as_const<Implementation>(*impl_).state_solver->getLinkTransforms();
 }
 
-Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).state_solver->getLinkTransform(common::LinkId::fromName(link_name));
-}
-
 Eigen::Isometry3d Environment::getLinkTransform(const tesseract::common::LinkId& link_id) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -2915,14 +2909,6 @@ Eigen::Isometry3d Environment::getRelativeLinkTransform(const tesseract::common:
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getRelativeLinkTransform(from_link_id, to_link_id);
-}
-
-Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
-                                                        const std::string& to_link_name) const
-{
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).state_solver->getRelativeLinkTransform(
-      common::LinkId::fromName(from_link_name), common::LinkId::fromName(to_link_name));
 }
 
 std::unique_ptr<tesseract::scene_graph::StateSolver> Environment::getStateSolver() const

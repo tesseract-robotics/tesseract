@@ -77,7 +77,7 @@ tesseract::scene_graph::Joint::Ptr parseJoint(const tinyxml2::XMLElement* xml_el
   if (tesseract::common::QueryStringAttribute(parent, "link", parent_link_str) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(
         std::runtime_error("Joint: Failed parsing element 'parent' attribute 'link' for joint '" + joint_name + "'!"));
-  j->parent_link_id = tesseract::common::LinkId::fromName(parent_link_str);
+  j->parent_link_id = tesseract::common::LinkId(parent_link_str);
 
   // get child link
   const tinyxml2::XMLElement* child = xml_element->FirstChildElement("child");
@@ -88,7 +88,7 @@ tesseract::scene_graph::Joint::Ptr parseJoint(const tinyxml2::XMLElement* xml_el
   if (tesseract::common::QueryStringAttribute(child, "link", child_link_str) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(
         std::runtime_error("Joint: Failed parsing element 'child' attribute 'link' for joint '" + joint_name + "'!"));
-  j->child_link_id = tesseract::common::LinkId::fromName(child_link_str);
+  j->child_link_id = tesseract::common::LinkId(child_link_str);
 
   // get joint type
   std::string joint_type;

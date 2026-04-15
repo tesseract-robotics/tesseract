@@ -96,7 +96,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
         if (values[1] > values[2])
           throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
 
-        sample_res_map[common::JointId::fromName(joint_name)] = values;
+        sample_res_map[common::JointId(joint_name)] = values;
       }
     }
     else
