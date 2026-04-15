@@ -56,17 +56,7 @@ public:
   AllowedCollisionMatrix& operator=(AllowedCollisionMatrix&&) = default;
 
   /**
-   * @brief Disable collision between two collision objects (Tier 3 — string overload)
-   * @param link_name1 Collision object name
-   * @param link_name2 Collision object name
-   * @param reason The reason for disabling collision
-   */
-  virtual void addAllowedCollision(const std::string& link_name1,
-                                   const std::string& link_name2,
-                                   const std::string& reason);
-
-  /**
-   * @brief Disable collision between two collision objects (LinkId overload)
+   * @brief Disable collision between two collision objects
    * @param link_id1 Collision object LinkId
    * @param link_id2 Collision object LinkId
    * @param reason The reason for disabling collision
@@ -80,24 +70,11 @@ public:
   const AllowedCollisionEntries& getAllAllowedCollisions() const;
 
   /**
-   * @brief Remove disabled collision pair from allowed collision matrix (Tier 3 — string)
-   * @param link_name1 Collision object name
-   * @param link_name2 Collision object name
-   */
-  virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
-
-  /**
-   * @brief Remove disabled collision pair from allowed collision matrix (LinkId overload)
+   * @brief Remove disabled collision pair from allowed collision matrix
    * @param link_id1 Collision object LinkId
    * @param link_id2 Collision object LinkId
    */
   virtual void removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2);
-
-  /**
-   * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
-   * @param link_name Collision object name
-   */
-  virtual void removeAllowedCollision(const std::string& link_name);
 
   /**
    * @brief Remove disabled collision for any pair with link_id from allowed collision matrix
@@ -112,14 +89,6 @@ public:
    * @return True if allowed to be in collision, otherwise false
    */
   virtual bool isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const;
-
-  /**
-   * @brief This checks if two links are allowed to be in collision (Tier 3 — string)
-   * @param link_name1 First link name
-   * @param link_name2 Second link name
-   * @return True if allowed to be in collision, otherwise false
-   */
-  virtual bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
 
   /**
    * @brief Clears the list of allowed collisions, so that no collision will be

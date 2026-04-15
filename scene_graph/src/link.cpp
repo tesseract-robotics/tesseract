@@ -137,7 +137,6 @@ bool Collision::operator!=(const Collision& rhs) const { return !operator==(rhs)
 /******                     Link                     *****/
 /*********************************************************/
 Link::Link(common::LinkId id) : id_(std::move(id)) { this->clear(); }
-Link::Link(const std::string& name) : id_(common::LinkId::fromName(name)) { this->clear(); }
 
 const std::string& Link::getName() const { return id_.name(); }
 
@@ -151,8 +150,6 @@ void Link::clear()
 }
 
 Link Link::clone() const { return clone(id_); }
-
-Link Link::clone(const std::string& name) const { return clone(common::LinkId::fromName(name)); }
 
 Link Link::clone(common::LinkId id) const
 {

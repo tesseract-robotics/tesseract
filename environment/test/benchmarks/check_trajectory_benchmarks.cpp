@@ -144,8 +144,8 @@ int main(int argc, char** argv)
   link_sphere.collision.push_back(collision);
 
   Joint joint_sphere("joint_sphere_attached");
-  joint_sphere.parent_link_id = LinkId::fromName("base_link");
-  joint_sphere.child_link_id = LinkId::fromName(link_sphere.getName());
+  joint_sphere.parent_link_id = LinkId("base_link");
+  joint_sphere.child_link_id = LinkId(link_sphere.getName());
   joint_sphere.type = JointType::FIXED;
 
   auto cmd = std::make_shared<tesseract::environment::AddLinkCommand>(link_sphere, joint_sphere);

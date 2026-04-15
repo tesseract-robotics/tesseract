@@ -132,7 +132,7 @@ void load(Archive& ar, tesseract::collision::ContactManagerConfig& g)
   ar(cereal::make_nvp("modify_object_enabled", moe));
   g.modify_object_enabled.clear();
   for (const auto& [name, val] : moe)
-    g.modify_object_enabled[tesseract::common::LinkId::fromName(name)] = val;
+    g.modify_object_enabled[tesseract::common::LinkId(name)] = val;
 }
 
 template <class Archive>

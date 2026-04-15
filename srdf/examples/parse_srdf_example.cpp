@@ -224,55 +224,55 @@ int main(int /*argc*/, char** /*argv*/)
   g.addLink(tool0);
 
   Joint base_joint("base_joint");
-  base_joint.parent_link_id = LinkId::fromName("base_link");
-  base_joint.child_link_id = LinkId::fromName("link_1");
+  base_joint.parent_link_id = LinkId("base_link");
+  base_joint.child_link_id = LinkId("link_1");
   base_joint.type = JointType::FIXED;
   g.addJoint(base_joint);
 
   Joint joint_1("joint_1");
-  joint_1.parent_link_id = LinkId::fromName("link_1");
-  joint_1.child_link_id = LinkId::fromName("link_2");
+  joint_1.parent_link_id = LinkId("link_1");
+  joint_1.child_link_id = LinkId("link_2");
   joint_1.type = JointType::REVOLUTE;
   g.addJoint(joint_1);
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_id = LinkId::fromName("link_2");
-  joint_2.child_link_id = LinkId::fromName("link_3");
+  joint_2.parent_link_id = LinkId("link_2");
+  joint_2.child_link_id = LinkId("link_3");
   joint_2.type = JointType::REVOLUTE;
   g.addJoint(joint_2);
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_id = LinkId::fromName("link_3");
-  joint_3.child_link_id = LinkId::fromName("link_4");
+  joint_3.parent_link_id = LinkId("link_3");
+  joint_3.child_link_id = LinkId("link_4");
   joint_3.type = JointType::REVOLUTE;
   g.addJoint(joint_3);
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_4.parent_link_id = LinkId::fromName("link_4");
-  joint_4.child_link_id = LinkId::fromName("link_5");
+  joint_4.parent_link_id = LinkId("link_4");
+  joint_4.child_link_id = LinkId("link_5");
   joint_4.type = JointType::REVOLUTE;
   g.addJoint(joint_4);
 
   Joint joint_5("joint_5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5.parent_link_id = LinkId::fromName("link_5");
-  joint_5.child_link_id = LinkId::fromName("link_6");
+  joint_5.parent_link_id = LinkId("link_5");
+  joint_5.child_link_id = LinkId("link_6");
   joint_5.type = JointType::REVOLUTE;
   g.addJoint(joint_5);
 
   Joint joint_6("joint_6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_6.parent_link_id = LinkId::fromName("link_6");
-  joint_6.child_link_id = LinkId::fromName("link_7");
+  joint_6.parent_link_id = LinkId("link_6");
+  joint_6.child_link_id = LinkId("link_7");
   joint_6.type = JointType::REVOLUTE;
   g.addJoint(joint_6);
 
   Joint joint_tool0("joint_tool0");
-  joint_tool0.parent_link_id = LinkId::fromName("link_7");
-  joint_tool0.child_link_id = LinkId::fromName("tool0");
+  joint_tool0.parent_link_id = LinkId("link_7");
+  joint_tool0.child_link_id = LinkId("tool0");
   joint_tool0.type = JointType::FIXED;
   g.addJoint(joint_tool0);
   //! [parse_srdf_create_graph]

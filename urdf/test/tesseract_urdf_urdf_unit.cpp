@@ -463,14 +463,14 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 
   std::cout << path << "\n";
   EXPECT_TRUE(path.links.size() == 4);
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_1")) != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_2")) != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_3")) != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId::fromName("link_4")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_1")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_2")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_3")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_4")) != path.links.end());
   EXPECT_TRUE(path.joints.size() == 3);
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_a2")) != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_a3")) != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId::fromName("joint_a4")) != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_a2")) != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_a3")) != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_a4")) != path.joints.end());
 }
 
 TEST(TesseractURDFUnit, write_urdf)  // NOLINT
@@ -502,8 +502,8 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
     // Add joint
     tesseract::scene_graph::Joint::Ptr joint_0 = std::make_shared<tesseract::scene_graph::Joint>("joint_0");
     joint_0->type = tesseract::scene_graph::JointType::FIXED;
-    joint_0->parent_link_id = tesseract::common::LinkId::fromName(link_0->getName());
-    joint_0->child_link_id = tesseract::common::LinkId::fromName(link_1->getName());
+    joint_0->parent_link_id = tesseract::common::LinkId(link_0->getName());
+    joint_0->child_link_id = tesseract::common::LinkId(link_1->getName());
     sg->addJoint(*joint_0);
 
     bool success = true;
@@ -536,8 +536,8 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
     // Add joint
     tesseract::scene_graph::Joint::Ptrros-industrial joint_0 =
   std::make_shared<tesseract::scene_graph::Joint>("joint_0"); joint_0->type = tesseract::scene_graph::JointType::FIXED;
-    joint_0->parent_link_id = tesseract::common::LinkId::fromName(link_0->getName());
-    joint_0->child_link_id = tesseract::common::LinkId::fromName(link_1->getName());
+    joint_0->parent_link_id = tesseract::common::LinkId(link_0->getName());
+    joint_0->child_link_id = tesseract::common::LinkId(link_1->getName());
     sg->addJoint(*joint_0);
 
     bool success = true;

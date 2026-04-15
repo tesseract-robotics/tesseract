@@ -41,8 +41,8 @@ inline IKFastInvKin::IKFastInvKin(const std::string& base_link_name,
                                   const std::vector<common::JointId>& joint_ids,
                                   std::string solver_name,
                                   std::vector<std::vector<double>> free_joint_states)
-  : base_link_id_(tesseract::common::LinkId::fromName(base_link_name))
-  , tip_link_id_(tesseract::common::LinkId::fromName(tip_link_name))
+  : base_link_id_(tesseract::common::LinkId(base_link_name))
+  , tip_link_id_(tesseract::common::LinkId(tip_link_name))
   , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
   , free_joint_states_(std::move(free_joint_states))

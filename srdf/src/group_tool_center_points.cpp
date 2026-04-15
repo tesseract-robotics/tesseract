@@ -184,7 +184,7 @@ GroupTCPs parseGroupTCPs(const tesseract::scene_graph::SceneGraph& /*scene_graph
         group_tcp = group_tcps.find(group_name_string);
       }
 
-      group_tcp->second[tesseract::common::LinkId::fromName(tcp_name_string)] = tcp;
+      group_tcp->second[tesseract::common::LinkId(tcp_name_string)] = tcp;
     }
 
     if (group_tcps.count(group_name_string) == 0)

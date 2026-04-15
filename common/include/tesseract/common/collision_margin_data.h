@@ -85,10 +85,8 @@ public:
    * @param obj2 The Second object name. Order doesn't matter
    * @param margin contacts with distance < collision_margin are considered in collision
    */
-  void setCollisionMargin(const std::string& obj1, const std::string& obj2, double margin);
-
   /**
-   * @brief Set the margin for a given contact pair (LinkId overload)
+   * @brief Set the margin for a given contact pair
    * @param id1 The first object LinkId. Order doesn't matter
    * @param id2 The second object LinkId. Order doesn't matter
    * @param margin contacts with distance < collision_margin are considered in collision
@@ -117,9 +115,6 @@ public:
   /** @brief Tier 1 — LinkId overload (hot-path) */
   std::optional<double> getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
-  /** @brief Tier 3 — string overload */
-  std::optional<double> getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
-
   /**
    * @brief Get the largest pair collision margin
    * @return Max pair contact distance threshold if objects exist
@@ -131,7 +126,6 @@ public:
    * @return Max contact distance threshold if object exists
    */
   std::optional<double> getMaxCollisionMargin(const LinkId& obj_id) const;
-  std::optional<double> getMaxCollisionMargin(const std::string& obj) const;
 
   /**
    * @brief Get Collision Margin Data for stored pairs
@@ -183,9 +177,6 @@ private:
   std::unordered_map<LinkId, double, LinkId::Hash> object_max_margins_;
 
   /** @brief Set the margin for a given contact pair without updating the max margins */
-  void setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin);
-
-  /** @brief Set the margin for a given contact pair without updating the max margins (LinkId overload) */
   void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);
 
   /** @brief Set the margin for a given contact pair without updating the max margins (LinkIdPair primary overload) */
@@ -235,14 +226,6 @@ public:
    * @param obj2 The Second object name. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  void setCollisionMargin(const std::string& obj1, const std::string& obj2, double collision_margin);
-
-  /**
-   * @brief Set the margin for a given contact pair (LinkId overload)
-   * @param id1 The first object LinkId. Order doesn't matter
-   * @param id2 The second object LinkId. Order doesn't matter
-   * @param collision_margin contacts with distance < collision_margin are considered in collision
-   */
   void setCollisionMargin(const LinkId& id1, const LinkId& id2, double collision_margin);
 
   /**
@@ -267,9 +250,6 @@ public:
   /** @brief Tier 1 — LinkId overload (hot-path) */
   double getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
-  /** @brief Tier 3 — string overload */
-  double getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
-
   /**
    * @brief Get Collision Margin Data for stored pairs
    * @return A map of link pairs collision margin data
@@ -293,7 +273,6 @@ public:
    * @return Max contact distance threshold
    */
   double getMaxCollisionMargin(const LinkId& obj_id) const;
-  double getMaxCollisionMargin(const std::string& obj) const;
 
   /**
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins
