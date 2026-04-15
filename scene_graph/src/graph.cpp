@@ -105,27 +105,27 @@ protected:
 
 struct children_detector : public boost::default_bfs_visitor
 {
-  children_detector(std::vector<std::string>& children) : children_(children) {}
+  children_detector(std::vector<LinkId>& children) : children_(children) {}
 
   template <class u, class g>
   void discover_vertex(u vertex, const g& graph)
   {
-    children_.push_back(boost::get(boost::vertex_link, graph)[vertex]->getName());
+    children_.push_back(boost::get(boost::vertex_link, graph)[vertex]->getId());
   }
 
 protected:
-  std::vector<std::string>& children_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  std::vector<LinkId>& children_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 struct adjacency_detector : public boost::default_bfs_visitor
 {
-  adjacency_detector(std::unordered_map<std::string, std::string>& adjacency_map,
+  adjacency_detector(std::unordered_map<LinkId, LinkId, LinkId::Hash>& adjacency_map,
                      std::map<SceneGraph::Vertex, boost::default_color_type>& color_map,
-                     const std::string& base_link_name,
-                     const std::vector<std::string>& terminate_on_links)
+                     const LinkId& base_link_id,
+                     const std::vector<LinkId>& terminate_on_links)
     : adjacency_map_(adjacency_map)
     , color_map_(color_map)
-    , base_link_name_(base_link_name)
+    , base_link_id_(base_link_id)
     , terminate_on_links_(terminate_on_links)
   {
   }
@@ -135,8 +135,8 @@ struct adjacency_detector : public boost::default_bfs_visitor
   {
     for (auto vd : boost::make_iterator_range(adjacent_vertices(vertex, graph)))
     {
-      std::string adj_link = boost::get(boost::vertex_link, graph)[vd]->getName();
-      if (std::find(terminate_on_links_.begin(), terminate_on_links_.end(), adj_link) != terminate_on_links_.end())
+      LinkId adj_link_id = boost::get(boost::vertex_link, graph)[vd]->getId();
+      if (std::find(terminate_on_links_.begin(), terminate_on_links_.end(), adj_link_id) != terminate_on_links_.end())
         color_map_[vd] = boost::default_color_type::black_color;
     }
   }
@@ -144,17 +144,17 @@ struct adjacency_detector : public boost::default_bfs_visitor
   template <class u, class g>
   void discover_vertex(u vertex, const g& graph)
   {
-    std::string adj_link = boost::get(boost::vertex_link, graph)[vertex]->getName();
-    adjacency_map_[adj_link] = base_link_name_;
+    LinkId adj_link_id = boost::get(boost::vertex_link, graph)[vertex]->getId();
+    adjacency_map_[adj_link_id] = base_link_id_;
   }
 
 protected:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  std::unordered_map<std::string, std::string>& adjacency_map_;
+  std::unordered_map<LinkId, LinkId, LinkId::Hash>& adjacency_map_;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   std::map<SceneGraph::Vertex, boost::default_color_type>& color_map_;
-  const std::string& base_link_name_;                   // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-  const std::vector<std::string>& terminate_on_links_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const LinkId& base_link_id_;                     // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const std::vector<LinkId>& terminate_on_links_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 using UGraph =
@@ -403,7 +403,7 @@ bool SceneGraph::removeLink(const common::LinkId& id, bool recursive)
   link_map_.erase(id);
 
   // Need to remove any reference to link in allowed collision matrix
-  removeAllowedCollision(id.name());
+  removeAllowedCollision(id);
 
   if (recursive)
   {
@@ -849,25 +849,42 @@ void SceneGraph::setAllowedCollisionMatrix(std::shared_ptr<tesseract::common::Al
   acm_ = std::move(acm);
 }
 
+void SceneGraph::addAllowedCollision(const common::LinkId& link_id1,
+                                     const common::LinkId& link_id2,
+                                     const std::string& reason)
+{
+  acm_->addAllowedCollision(link_id1, link_id2, reason);
+}
+
 void SceneGraph::addAllowedCollision(const std::string& link_name1,
                                      const std::string& link_name2,
                                      const std::string& reason)
 {
-  acm_->addAllowedCollision(link_name1, link_name2, reason);
+  addAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2), reason);
+}
+
+void SceneGraph::removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2)
+{
+  acm_->removeAllowedCollision(link_id1, link_id2);
 }
 
 void SceneGraph::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
 {
-  acm_->removeAllowedCollision(link_name1, link_name2);
+  removeAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
 }
 
-void SceneGraph::removeAllowedCollision(const std::string& link_name) { acm_->removeAllowedCollision(link_name); }
+void SceneGraph::removeAllowedCollision(const common::LinkId& link_id) { acm_->removeAllowedCollision(link_id); }
+
+void SceneGraph::removeAllowedCollision(const std::string& link_name)
+{
+  removeAllowedCollision(LinkId::fromName(link_name));
+}
 
 void SceneGraph::clearAllowedCollisions() { acm_->clearAllowedCollisions(); }
 
 bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
 {
-  return acm_->isCollisionAllowed(link_name1, link_name2);
+  return isCollisionAllowed(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
 }
 
 bool SceneGraph::isCollisionAllowed(const tesseract::common::LinkId& link_id1,
@@ -985,58 +1002,113 @@ bool SceneGraph::isTree() const
   return tree;
 }
 
+std::vector<LinkId> SceneGraph::getAdjacentLinkIds(const LinkId& id) const
+{
+  std::vector<LinkId> link_ids;
+  Vertex v = getVertex(id);
+  for (auto* vd : boost::make_iterator_range(adjacent_vertices(v, *this)))
+    link_ids.push_back(boost::get(boost::vertex_link, *this)[vd]->getId());
+
+  return link_ids;
+}
+
 std::vector<std::string> SceneGraph::getAdjacentLinkNames(const std::string& name) const
 {
-  std::vector<std::string> link_names;
-  Vertex v = getVertex(name);
-  for (auto* vd : boost::make_iterator_range(adjacent_vertices(v, *this)))
-    link_names.push_back(boost::get(boost::vertex_link, *this)[vd]->getName());
+  std::vector<LinkId> ids = getAdjacentLinkIds(LinkId::fromName(name));
+  std::vector<std::string> names;
+  names.reserve(ids.size());
+  for (const auto& id : ids)
+    names.push_back(id.name());
+  return names;
+}
 
-  return link_names;
+std::vector<LinkId> SceneGraph::getInvAdjacentLinkIds(const LinkId& id) const
+{
+  std::vector<LinkId> link_ids;
+  Vertex v = getVertex(id);
+  for (auto* vd : boost::make_iterator_range(inv_adjacent_vertices(v, *this)))
+    link_ids.push_back(boost::get(boost::vertex_link, *this)[vd]->getId());
+
+  return link_ids;
 }
 
 std::vector<std::string> SceneGraph::getInvAdjacentLinkNames(const std::string& name) const
 {
-  std::vector<std::string> link_names;
-  Vertex v = getVertex(name);
-  for (auto* vd : boost::make_iterator_range(inv_adjacent_vertices(v, *this)))
-    link_names.push_back(boost::get(boost::vertex_link, *this)[vd]->getName());
+  std::vector<LinkId> ids = getInvAdjacentLinkIds(LinkId::fromName(name));
+  std::vector<std::string> names;
+  names.reserve(ids.size());
+  for (const auto& id : ids)
+    names.push_back(id.name());
+  return names;
+}
 
-  return link_names;
+std::vector<LinkId> SceneGraph::getLinkChildrenIds(const LinkId& id) const
+{
+  Vertex v = getVertex(id);
+  std::vector<LinkId> child_link_ids = getLinkChildrenHelper(v);
+
+  // This always includes the start vertex, so must remove
+  child_link_ids.erase(child_link_ids.begin());
+  return child_link_ids;
 }
 
 std::vector<std::string> SceneGraph::getLinkChildrenNames(const std::string& name) const
 {
-  Vertex v = getVertex(name);
-  std::vector<std::string> child_link_names = getLinkChildrenHelper(v);
-
-  // This always includes the start vertex, so must remove
-  child_link_names.erase(child_link_names.begin());
-  return child_link_names;
+  std::vector<LinkId> ids = getLinkChildrenIds(LinkId::fromName(name));
+  std::vector<std::string> names;
+  names.reserve(ids.size());
+  for (const auto& id : ids)
+    names.push_back(id.name());
+  return names;
 }
 
-std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& name) const
+std::vector<LinkId> SceneGraph::getJointChildrenIds(const JointId& id) const
 {
   const auto& graph = static_cast<const Graph&>(*this);
-  Edge e = getEdge(JointId::fromName(name));
+  Edge e = getEdge(id);
   Vertex v = boost::target(e, graph);
   return getLinkChildrenHelper(v);  // NOLINT
 }
 
-std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std::string>& names) const
+std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& name) const
 {
-  std::set<std::string> link_names;
-  for (const auto& name : names)
-  {
-    std::vector<std::string> joint_children = getJointChildrenNames(name);
-    link_names.insert(joint_children.begin(), joint_children.end());
-  }
-
-  return std::vector<std::string>{ link_names.begin(), link_names.end() };
+  std::vector<LinkId> ids = getJointChildrenIds(JointId::fromName(name));
+  std::vector<std::string> names;
+  names.reserve(ids.size());
+  for (const auto& id : ids)
+    names.push_back(id.name());
+  return names;
 }
 
-std::unordered_map<std::string, std::string>
-SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
+std::vector<LinkId> SceneGraph::getJointChildrenIds(const std::vector<JointId>& ids) const
+{
+  std::set<LinkId> link_ids;
+  for (const auto& id : ids)
+  {
+    std::vector<LinkId> joint_children = getJointChildrenIds(id);
+    link_ids.insert(joint_children.begin(), joint_children.end());
+  }
+
+  return std::vector<LinkId>{ link_ids.begin(), link_ids.end() };
+}
+
+std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std::string>& names) const
+{
+  std::vector<JointId> ids;
+  ids.reserve(names.size());
+  for (const auto& name : names)
+    ids.push_back(JointId::fromName(name));
+
+  std::vector<LinkId> result_ids = getJointChildrenIds(ids);
+  std::vector<std::string> result;
+  result.reserve(result_ids.size());
+  for (const auto& id : result_ids)
+    result.push_back(id.name());
+  return result;
+}
+
+std::unordered_map<LinkId, LinkId, LinkId::Hash>
+SceneGraph::getAdjacencyMapIds(const std::vector<LinkId>& link_ids) const
 {
   std::map<Vertex, size_t> index_map;
   boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
@@ -1049,11 +1121,11 @@ SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
   for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i, ++c)
     boost::put(prop_index_map, *i, c);
 
-  std::unordered_map<std::string, std::string> adjacency_map;
-  for (const auto& link_name : link_names)
+  std::unordered_map<LinkId, LinkId, LinkId::Hash> adjacency_map;
+  for (const auto& link_id : link_ids)
   {
-    Vertex start_vertex = getVertex(link_name);
-    adjacency_detector vis(adjacency_map, color_map, link_name, link_names);
+    Vertex start_vertex = getVertex(link_id);
+    adjacency_detector vis(adjacency_map, color_map, link_id, link_ids);
 
     // NOLINTNEXTLINE
     boost::breadth_first_search(
@@ -1063,6 +1135,23 @@ SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
   }
 
   return adjacency_map;
+}
+
+std::unordered_map<std::string, std::string>
+SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
+{
+  std::vector<LinkId> link_ids;
+  link_ids.reserve(link_names.size());
+  for (const auto& name : link_names)
+    link_ids.push_back(LinkId::fromName(name));
+
+  std::unordered_map<LinkId, LinkId, LinkId::Hash> id_map = getAdjacencyMapIds(link_ids);
+
+  std::unordered_map<std::string, std::string> result;
+  result.reserve(id_map.size());
+  for (const auto& entry : id_map)
+    result[entry.first.name()] = entry.second.name();
+  return result;
 }
 
 void SceneGraph::saveDOT(const std::string& path) const
@@ -1368,10 +1457,10 @@ void SceneGraph::rebuildLinkAndJointMaps()
   }
 }
 
-std::vector<std::string> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) const
+std::vector<LinkId> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) const
 {
   const auto& graph = static_cast<const Graph&>(*this);
-  std::vector<std::string> child_link_names;
+  std::vector<LinkId> child_link_ids;
 
   std::map<Vertex, size_t> index_map;
   boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
@@ -1384,14 +1473,14 @@ std::vector<std::string> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) 
   for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
     boost::put(prop_index_map, *i, c);
 
-  children_detector vis(child_link_names);
+  children_detector vis(child_link_ids);
   // NOLINTNEXTLINE
   boost::breadth_first_search(
       graph,
       start_vertex,
       boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map).color_map(prop_color_map));
 
-  return child_link_names;
+  return child_link_ids;
 }
 
 bool SceneGraph::operator==(const SceneGraph& rhs) const
