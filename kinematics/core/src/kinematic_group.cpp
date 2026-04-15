@@ -65,7 +65,7 @@ getLinksInFixedJointKinematicTree(const tesseract::common::LinkId& input_link,
     links.pop_back();
 
     // Traverse through the inbound joints until we find a non-fixed joint
-    for (const std::shared_ptr<const tesseract::scene_graph::Joint>& joint : scene_graph.getInboundJoints(link.name()))
+    for (const std::shared_ptr<const tesseract::scene_graph::Joint>& joint : scene_graph.getInboundJoints(link))
     {
       switch (joint->type)
       {
