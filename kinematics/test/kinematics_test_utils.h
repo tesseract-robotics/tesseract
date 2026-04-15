@@ -257,7 +257,7 @@ inline tesseract::common::KinematicLimits getTargetLimits(const tesseract::scene
  */
 inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
                             const Eigen::VectorXd& jvals,
-                            const std::string& link_name,
+                            const tesseract::common::LinkId& link_id,
                             const Eigen::Vector3d& link_point,
                             const Eigen::Isometry3d& change_base)
 {
@@ -267,13 +267,12 @@ inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
   jacobian.resize(6, kin.numJoints());
 
   poses = kin.calcFwdKin(jvals);
-  const auto link_id = tesseract::common::LinkId::fromName(link_name);
-  jacobian = kin.calcJacobian(jvals, link_name);
+  jacobian = kin.calcJacobian(jvals, link_id);
   tesseract::common::jacobianChangeBase(jacobian, change_base);
   tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_id]).linear() * link_point);
 
   numerical_jacobian.resize(6, kin.numJoints());
-  tesseract::kinematics::numericalJacobian(numerical_jacobian, change_base, kin, jvals, link_name, link_point);
+  tesseract::kinematics::numericalJacobian(numerical_jacobian, change_base, kin, jvals, link_id, link_point);
 
   for (int i = 0; i < 6; ++i)
     for (int j = 0; j < static_cast<int>(kin.numJoints()); ++j)
@@ -284,25 +283,24 @@ inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
  * @brief Run a kinematic jacobian test
  * @param kin The kinematics object
  * @param jvals The joint values to calculate the jacobian about
- * @param link_name Name of link to calculate jacobian. If empty it will use the function that does not require link
- * name
+ * @param link_id Id of link to calculate jacobian. If empty it will use the function that does not require link id
  * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
  * point.
  */
 inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
                             const Eigen::VectorXd& jvals,
-                            const std::string& link_name,
+                            const tesseract::common::LinkId& link_id,
                             const Eigen::Vector3d& link_point)
 {
   Eigen::MatrixXd jacobian, numerical_jacobian;
   jacobian.resize(6, kin_group.numJoints());
 
   {  // Test with all information
-    jacobian = kin_group.calcJacobian(jvals, link_name, link_point);
+    jacobian = kin_group.calcJacobian(jvals, link_id, link_point);
 
     numerical_jacobian.resize(6, kin_group.numJoints());
     tesseract::kinematics::numericalJacobian(
-        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_name, link_point);
+        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_id, link_point);
 
     for (int i = 0; i < 6; ++i)
       for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -310,28 +308,27 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
   }
 
   {  // Test don't use link_point
-    jacobian = kin_group.calcJacobian(jvals, link_name);
+    jacobian = kin_group.calcJacobian(jvals, link_id);
 
     numerical_jacobian.resize(6, kin_group.numJoints());
     tesseract::kinematics::numericalJacobian(
-        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_name, Eigen::Vector3d::Zero());
+        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_id, Eigen::Vector3d::Zero());
 
     for (int i = 0; i < 6; ++i)
       for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
         EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
   }
 
-  std::vector<std::string> static_link_names = kin_group.getStaticLinkNames();
+  auto static_link_ids = kin_group.getStaticLinkIds();
   tesseract::common::LinkIdTransformMap poses = kin_group.calcFwdKin(jvals);
-  for (const auto& static_link_name : static_link_names)
+  for (const auto& static_link_id : static_link_ids)
   {
-    const auto static_link_id = tesseract::common::LinkId::fromName(static_link_name);
     {  // Test with all information
-      jacobian = kin_group.calcJacobian(jvals, static_link_name, link_name, link_point);
+      jacobian = kin_group.calcJacobian(jvals, static_link_id, link_id, link_point);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(
-          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_name, link_point);
+          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_id, link_point);
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -339,11 +336,11 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
     }
 
     {  // Test don't use link_point
-      jacobian = kin_group.calcJacobian(jvals, static_link_name, link_name);
+      jacobian = kin_group.calcJacobian(jvals, static_link_id, link_id);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(
-          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_name, Eigen::Vector3d::Zero());
+          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_id, Eigen::Vector3d::Zero());
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -351,19 +348,19 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
     }
   }
 
-  std::vector<std::string> active_link_names = kin_group.getActiveLinkNames();
-  for (const auto& active_link_name : active_link_names)
+  auto active_link_ids = kin_group.getActiveLinkIds();
+  for (const auto& active_link_id : active_link_ids)
   {
     {  // Test with all information
-      jacobian = kin_group.calcJacobian(jvals, active_link_name, link_name, link_point);
+      jacobian = kin_group.calcJacobian(jvals, active_link_id, link_id, link_point);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(numerical_jacobian,
                                                kin_group,
                                                jvals,
-                                               active_link_name,
+                                               active_link_id,
                                                Eigen::Isometry3d::Identity(),
-                                               link_name,
+                                               link_id,
                                                Eigen::Isometry3d(Eigen::Translation3d(link_point)));
 
       for (int i = 0; i < 6; ++i)
@@ -372,15 +369,15 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
     }
 
     {  // Test don't use link_point
-      jacobian = kin_group.calcJacobian(jvals, active_link_name, link_name);
+      jacobian = kin_group.calcJacobian(jvals, active_link_id, link_id);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(numerical_jacobian,
                                                kin_group,
                                                jvals,
-                                               active_link_name,
+                                               active_link_id,
                                                Eigen::Isometry3d::Identity(),
-                                               link_name,
+                                               link_id,
                                                Eigen::Isometry3d::Identity());
 
       for (int i = 0; i < 6; ++i)
@@ -593,7 +590,8 @@ inline void runFwdKinIIWATest(tesseract::kinematics::ForwardKinematics& kin)
 inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, bool is_kin_tree = false)
 {
   UNUSED(is_kin_tree);
-  std::string tip_link = "tool0";
+  const auto tip_link_id = tesseract::common::LinkId::fromName("tool0");
+  const auto invalid_link_id = tesseract::common::LinkId::fromName("does_not_exist");
 
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
@@ -613,9 +611,9 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
   // Test Jacobian
   ///////////////////////////
   Eigen::Vector3d link_point(0, 0, 0);
-  runJacobianTest(kin, jvals, tip_link, link_point, Eigen::Isometry3d::Identity());
+  runJacobianTest(kin, jvals, tip_link_id, link_point, Eigen::Isometry3d::Identity());
 
-  EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+  EXPECT_ANY_THROW(runJacobianTest(kin, jvals, invalid_link_id, link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
   ///////////////////////////
   // Test Jacobian at Point
@@ -625,9 +623,9 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    runJacobianTest(kin, jvals, tip_link, link_point, Eigen::Isometry3d::Identity());
+    runJacobianTest(kin, jvals, tip_link_id, link_point, Eigen::Isometry3d::Identity());
 
-    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, invalid_link_id, link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -645,9 +643,9 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     change_base.translation() = Eigen::Vector3d(0, 0, 0);
     change_base.translation()[k] = 1;
 
-    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
+    runJacobianTest(kin, jvals, tip_link_id, link_point, change_base);
 
-    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, invalid_link_id, link_point, change_base));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -666,14 +664,15 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     change_base(1, 1) = 0;
     change_base.translation() = link_point;
 
-    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
+    runJacobianTest(kin, jvals, tip_link_id, link_point, change_base);
 
-    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, invalid_link_id, link_point, change_base));  // NOLINT
   }
 }
 
 inline void runKinGroupJacobianIIWATest(tesseract::kinematics::KinematicGroup& kin_group)
 {
+  const auto invalid_link_id = tesseract::common::LinkId::fromName("does_not_exist");
   std::vector<std::string> link_names = { "base_link", "link_1", "link_2", "link_3", "link_4",
                                           "link_5",    "link_6", "link_7", "tool0" };
 
@@ -701,10 +700,10 @@ inline void runKinGroupJacobianIIWATest(tesseract::kinematics::KinematicGroup& k
     link_point[k] = 1;
 
     for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point);
+      runJacobianTest(kin_group, jvals, tesseract::common::LinkId::fromName(link_name), link_point);
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point));
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, invalid_link_id, link_point));
   }
 }
 
@@ -834,6 +833,7 @@ inline void runActiveLinkNamesURTest(const tesseract::kinematics::KinematicGroup
 
 inline void runKinGroupJacobianABBOnPositionerTest(tesseract::kinematics::KinematicGroup& kin_group)
 {
+  const auto invalid_link_id = tesseract::common::LinkId::fromName("does_not_exist");
   std::vector<std::string> link_names{ "positioner_base_link",
                                        "positioner_tool0",
                                        "base",
@@ -871,10 +871,10 @@ inline void runKinGroupJacobianABBOnPositionerTest(tesseract::kinematics::Kinema
     link_point[k] = 1;
 
     for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point);
+      runJacobianTest(kin_group, jvals, tesseract::common::LinkId::fromName(link_name), link_point);
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point));
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, invalid_link_id, link_point));
   }
 }
 
@@ -921,6 +921,7 @@ inline void runActiveLinkNamesABBOnPositionerTest(const tesseract::kinematics::K
 
 inline void runKinGroupJacobianABBExternalPositionerTest(tesseract::kinematics::KinematicGroup& kin_group)
 {
+  const auto invalid_link_id = tesseract::common::LinkId::fromName("does_not_exist");
   std::vector<std::string> link_names{ "positioner_base_link",
                                        "positioner_tool0",
                                        "positioner_link_1",
@@ -959,10 +960,10 @@ inline void runKinGroupJacobianABBExternalPositionerTest(tesseract::kinematics::
     link_point[k] = 1;
 
     for (const auto& link_name : link_names)
-      runJacobianTest(kin_group, jvals, link_name, link_point);
+      runJacobianTest(kin_group, jvals, tesseract::common::LinkId::fromName(link_name), link_point);
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, "", link_point));
+    EXPECT_ANY_THROW(runJacobianTest(kin_group, jvals, invalid_link_id, link_point));
   }
 }
 

@@ -40,10 +40,10 @@ ForwardKinematics::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_ang
 }  // LCOV_EXCL_LINE
 
 Eigen::MatrixXd ForwardKinematics::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                                const std::string& link_name) const
+                                                const tesseract::common::LinkId& link_id) const
 {
   Eigen::MatrixXd jacobian(6, numJoints());
-  calcJacobian(jacobian, joint_angles, link_name);
+  calcJacobian(jacobian, joint_angles, link_id);
   return jacobian;
 }
 }  // namespace tesseract::kinematics

@@ -89,7 +89,7 @@ public:
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
-   * @brief Calculated jacobian of robot given joint angles
+   * @brief Calculates jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
    * @param link_id The LinkId of the frame that the jacobian is calculated for
    * @return The jacobian at the provided link relative to the joint group base link
@@ -98,16 +98,7 @@ public:
                                const tesseract::common::LinkId& link_id) const;
 
   /**
-   * @brief Calculated jacobian of robot given joint angles
-   * @param joint_angles Input vector of joint angles
-   * @param link_name The frame that the jacobian is calculated for
-   * @return The jacobian at the provided link_name relative to the joint group base link
-   */
-  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const;
-
-  /**
-   * @brief Calculated jacobian of robot given joint angles
+   * @brief Calculates jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
    * @param link_id The LinkId of the frame that the jacobian is calculated for
    * @param link_point A point on the link that the jacobian is calculated for
@@ -118,39 +109,34 @@ public:
                                const Eigen::Vector3d& link_point) const;
 
   /**
-   * @brief Calculated jacobian of robot given joint angles
+   * @brief Calculates jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
-   * @param link_name The frame that the jacobian is calculated for
-   * @param link_point A point on the link that the jacobian is calculated for
-   * @return The jacobian at the provided link_name relative to the joint group base link
-   */
-  Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name,
-                               const Eigen::Vector3d& link_point) const;
-
-  /**
-   * @brief Calculated jacobian of robot given joint angles
-   * @param joint_angles Input vector of joint angles
-   * @param base_link_name The frame that the jacobian is calculated in
-   * @param link_name The frame that the jacobian is calculated for
+   * @param base_link_id The frame that the jacobian is calculated in
+   * @param link_id The frame that the jacobian is calculated for
    * @return The jacobian at the provided link_name relative to the provided base_link_name
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& base_link_name,
-                               const std::string& link_name) const;
+                               const tesseract::common::LinkId& base_link_id,
+                               const tesseract::common::LinkId& link_id) const;
 
   /**
-   * @brief Calculated jacobian of robot given joint angles
+   * @brief Calculates jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
-   * @param base_link_name The frame that the jacobian is calculated in
-   * @param link_name The frame that the jacobian is calculated for
+   * @param base_link_id The frame that the jacobian is calculated in
+   * @param link_id The frame that the jacobian is calculated for
    * @param link_point A point on the link that the jacobian is calculated for
    * @return The jacobian at the provided link_name relative to the provided base_link_name
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& base_link_name,
-                               const std::string& link_name,
+                               const tesseract::common::LinkId& base_link_id,
+                               const tesseract::common::LinkId& link_id,
                                const Eigen::Vector3d& link_point) const;
+
+  /**
+   * @brief Get list of joint ids for kinematic object
+   * @return A vector of joint ids
+   */
+  const std::vector<tesseract::common::JointId>& getJointIds() const;
 
   /**
    * @brief Get list of joint names for kinematic object
@@ -159,10 +145,25 @@ public:
   std::vector<std::string> getJointNames() const;
 
   /**
+   * @brief Get list of all link ids (with and without geometry) for kinematic object
+   * @return A vector of link ids
+   */
+  const std::vector<tesseract::common::LinkId>& getLinkIds() const;
+
+  /**
    * @brief Get list of all link names (with and without geometry) for kinematic object
    * @return A vector of link names
    */
   std::vector<std::string> getLinkNames() const;
+
+  /**
+   * @brief Get list of active link ids (with and without geometry) for kinematic object
+   *
+   * Note: This only includes links that are children of the active joints
+   *
+   * @return A vector of active link ids
+   */
+  std::vector<tesseract::common::LinkId> getActiveLinkIds() const;
 
   /**
    * @brief Get list of active link names (with and without geometry) for kinematic object
@@ -174,27 +175,28 @@ public:
   std::vector<std::string> getActiveLinkNames() const;
 
   /**
+   * @brief Get list of static link ids (with and without geometry) for kinematic object
+   *
+   * @return A vector of static link ids
+   */
+  const std::vector<tesseract::common::LinkId>& getStaticLinkIds() const;
+
+  /**
    * @brief Get list of static link names (with and without geometry) for kinematic object
    *
    * @return A vector of static link names
    */
   std::vector<std::string> getStaticLinkNames() const;
 
-  /** @brief Get the active link IDs as a vector */
-  std::vector<tesseract::common::LinkId> getActiveLinkIds() const;
-
-  /** @brief Get the static link IDs */
-  const std::vector<tesseract::common::LinkId>& getStaticLinkIds() const;
-
   /** @brief Get the base link ID */
   tesseract::common::LinkId getBaseLinkId() const;
 
-   /**
+  /**
    * @brief Check if link is an active link
    * @param link_name The link id to check
    * @return True if active, otherwise false
    */
-   bool isActiveLinkId(const tesseract::common::LinkId& link_id) const;
+  bool isActiveLinkId(const tesseract::common::LinkId& link_id) const;
 
   /**
    * @brief Check if link id exists
@@ -202,12 +204,6 @@ public:
    * @return True if it exists, otherwise false
    */
   bool hasLinkId(const tesseract::common::LinkId& link_id) const;
-
-  /** @brief Get the link IDs */
-  const std::vector<tesseract::common::LinkId>& getLinkIds() const;
-
-  /** @brief Get the joint IDs */
-  const std::vector<tesseract::common::JointId>& getJointIds() const;
 
   /**
    * @brief Get the kinematic limits (joint, velocity, acceleration, etc.)

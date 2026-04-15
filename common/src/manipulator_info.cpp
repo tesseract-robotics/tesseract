@@ -24,7 +24,7 @@
 
 #include <tesseract/common/manipulator_info.h>
 #include <tesseract/common/utils.h>
-#include "tesseract/common/types.h"
+#include <tesseract/common/types.h>
 
 namespace tesseract::common
 {

@@ -292,25 +292,28 @@ TEST(TesseractKinematicsUnit, RedundantSolutionsUnit)  // NOLINT
 
 TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
 {
+  using tesseract::common::LinkId;
+
   tesseract::common::GeneralResourceLocator locator;
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
+  const LinkId tool0 = LinkId::fromName("tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
   Eigen::MatrixXd jacobian(6, fwd_kin.numJoints());
-  fwd_kin.calcJacobian(jacobian, jv, "tool0");
+  fwd_kin.calcJacobian(jacobian, jv, tool0);
   EXPECT_TRUE(tesseract::kinematics::isNearSingularity(jacobian, 0.001));
 
   // Set joint 5 angle to 1 deg and it with the default threshold it should still be in singularity
   jv[4] = 1 * M_PI / 180.0;
-  fwd_kin.calcJacobian(jacobian, jv, "tool0");
+  fwd_kin.calcJacobian(jacobian, jv, tool0);
   EXPECT_TRUE(tesseract::kinematics::isNearSingularity(jacobian));
 
   // Set joint 5 angle to 2 deg and it should no longer be in a singularity
   jv[4] = 2 * M_PI / 180.0;
-  fwd_kin.calcJacobian(jacobian, jv, "tool0");
+  fwd_kin.calcJacobian(jacobian, jv, tool0);
   EXPECT_FALSE(tesseract::kinematics::isNearSingularity(jacobian));
 
   // Increase threshold and now with joint 5 at 2 deg it will now be considered in a singularity
@@ -319,15 +322,18 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
 
 TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
 {
+  using tesseract::common::LinkId;
+
   tesseract::common::GeneralResourceLocator locator;
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
+  const LinkId tool0 = LinkId::fromName("tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
   Eigen::MatrixXd jacobian(6, fwd_kin.numJoints());
-  fwd_kin.calcJacobian(jacobian, jv, "tool0");
+  fwd_kin.calcJacobian(jacobian, jv, tool0);
   tesseract::kinematics::Manipulability m = tesseract::kinematics::calcManipulability(jacobian);
   EXPECT_EQ(m.m.eigen_values.size(), 6);
   EXPECT_NEAR(m.m.volume, 0, 1e-6);
@@ -555,31 +561,6 @@ TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
 
   // Non-existent link should not be active
   EXPECT_FALSE(joint_group->isActiveLinkId(LinkId::fromName("nonexistent_link")));
-}
-
-TEST(TesseractKinematicsUnit, JointGroupCalcJacobianLinkIdUnit)  // NOLINT
-{
-  using tesseract::common::LinkId;
-
-  tesseract::common::GeneralResourceLocator locator;
-  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
-
-  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
-  auto joint_group = std::make_unique<tesseract::kinematics::JointGroup>(
-      "manipulator", std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                                "joint_a5", "joint_a6", "joint_a7" },
-      *scene_graph, ss.getState());
-
-  Eigen::VectorXd jvals = Eigen::VectorXd::Zero(7);
-  jvals[1] = 0.5;
-  jvals[3] = -0.3;
-
-  // calcJacobian(dofvals, LinkId) should match calcJacobian(dofvals, string)
-  const std::string link_name = "tool0";
-  Eigen::MatrixXd jac_by_name = joint_group->calcJacobian(jvals, link_name);
-  Eigen::MatrixXd jac_by_id = joint_group->calcJacobian(jvals, LinkId::fromName(link_name));
-
-  EXPECT_TRUE(jac_by_name.isApprox(jac_by_id, 1e-10));
 }
 
 int main(int argc, char** argv)
