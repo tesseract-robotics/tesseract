@@ -246,7 +246,8 @@ public:
   using Ptr = std::shared_ptr<Joint>;
   using ConstPtr = std::shared_ptr<const Joint>;
 
-  Joint(std::string name);
+  Joint(common::JointId id);
+  Joint(const std::string& name);
   Joint() = default;
   ~Joint() = default;
   // Joints are non-copyable as their name must be unique
@@ -309,6 +310,7 @@ public:
 
   /* Create a clone of current joint, with a new name. Child link name and parent link name are unchanged.
    * All underlying properties, such as dynamics, limits... are copied as well.*/
+  Joint clone(common::JointId id) const;
   Joint clone(const std::string& name) const;
 
   bool operator==(const Joint& rhs) const;
@@ -316,7 +318,7 @@ public:
 
 private:
   /** @brief The integer identity of this joint, also carries the name string */
-  common::JointId id_{};
+  common::JointId id_;
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, Joint& obj);
