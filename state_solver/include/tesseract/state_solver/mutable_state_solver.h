@@ -82,10 +82,17 @@ public:
    * @param name Name of the link to be removed
    * @return Return False if a link does not exists, otherwise true
    */
-  virtual bool removeLink(const std::string& name) = 0;
+  virtual bool removeLink(const std::string& name) { return removeLink(tesseract::common::LinkId::fromName(name)); }
 
-  /** @brief Removes a link from the graph (LinkId overload) */
-  virtual bool removeLink(const tesseract::common::LinkId& link_id) { return removeLink(link_id.name()); }
+  /**
+   * @brief Removes a link from the graph
+   *
+   * Note: this will remove all inbound and outbound edges
+   *
+   * @param link_id Id of the link to be removed
+   * @return Return False if a link does not exists, otherwise true
+   */
+  virtual bool removeLink(const tesseract::common::LinkId& link_id) = 0;
 
   /**
    * @brief Replace and existing joint with the provided one
@@ -99,10 +106,14 @@ public:
    * @param name Name of the joint to be removed
    * @return Return False if a joint does not exists, otherwise true
    */
-  virtual bool removeJoint(const std::string& name) = 0;
+  virtual bool removeJoint(const std::string& name) { return removeJoint(tesseract::common::JointId::fromName(name)); }
 
-  /** @brief Removes a joint from the graph (JointId overload) */
-  virtual bool removeJoint(const tesseract::common::JointId& joint_id) { return removeJoint(joint_id.name()); }
+  /**
+   * @brief Removes a joint from the graph
+   * @param joint_id Id of the joint to be removed
+   * @return Return False if a joint does not exists, otherwise true
+   */
+  virtual bool removeJoint(const tesseract::common::JointId& joint_id) = 0;
 
   /**
    * @brief Move joint to new parent link
@@ -110,13 +121,14 @@ public:
    * @param parent_link Name of parent link to move to
    * @return Returns true if successful, otherwise false.
    */
-  virtual bool moveJoint(const std::string& name, const std::string& parent_link) = 0;
+  virtual bool moveJoint(const std::string& name, const std::string& parent_link)
+  {
+    return moveJoint(tesseract::common::JointId::fromName(name), tesseract::common::LinkId::fromName(parent_link));
+  }
 
   /** @brief Move joint to new parent link (ID overload) */
-  virtual bool moveJoint(const tesseract::common::JointId& joint_id, const tesseract::common::LinkId& parent_link_id)
-  {
-    return moveJoint(joint_id.name(), parent_link_id.name());
-  }
+  virtual bool moveJoint(const tesseract::common::JointId& joint_id,
+                         const tesseract::common::LinkId& parent_link_id) = 0;
 
   /**
    * @brief Changes the "origin" transform of the joint and recomputes the associated edge
@@ -124,13 +136,18 @@ public:
    * @param new_origin The new transform associated with the joint
    * @return True if successful.
    */
-  virtual bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin) = 0;
-
-  /** @brief Changes the "origin" transform of the joint (JointId overload) */
-  virtual bool changeJointOrigin(const tesseract::common::JointId& joint_id, const Eigen::Isometry3d& new_origin)
+  virtual bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin)
   {
-    return changeJointOrigin(joint_id.name(), new_origin);
+    return changeJointOrigin(tesseract::common::JointId::fromName(name), new_origin);
   }
+
+  /**
+   * @brief Changes the "origin" transform of the joint and recomputes the associated edge
+   * @param joint_id d of the joint to be changed
+   * @param new_origin The new transform associated with the joint
+   * @return True if successful.
+   */
+  virtual bool changeJointOrigin(const tesseract::common::JointId& joint_id, const Eigen::Isometry3d& new_origin) = 0;
 
   /**
    * @brief Changes the position limits associated with a joint
@@ -138,13 +155,13 @@ public:
    * @param limits New position limits to be set as the joint limits
    * @returnTrue if successful.
    */
-  virtual bool changeJointPositionLimits(const std::string& name, double lower, double upper) = 0;
+  virtual bool changeJointPositionLimits(const std::string& name, double lower, double upper)
+  {
+    return changeJointPositionLimits(tesseract::common::JointId::fromName(name), lower, upper);
+  }
 
   /** @brief Changes position limits (JointId overload) */
-  virtual bool changeJointPositionLimits(const tesseract::common::JointId& joint_id, double lower, double upper)
-  {
-    return changeJointPositionLimits(joint_id.name(), lower, upper);
-  }
+  virtual bool changeJointPositionLimits(const tesseract::common::JointId& joint_id, double lower, double upper) = 0;
 
   /**
    * @brief Changes the velocity limits associated with a joint
@@ -152,13 +169,18 @@ public:
    * @param limits New velocity limits to be set as the joint limits
    * @return
    */
-  virtual bool changeJointVelocityLimits(const std::string& name, double limit) = 0;
-
-  /** @brief Changes velocity limits (JointId overload) */
-  virtual bool changeJointVelocityLimits(const tesseract::common::JointId& joint_id, double limit)
+  virtual bool changeJointVelocityLimits(const std::string& name, double limit)
   {
-    return changeJointVelocityLimits(joint_id.name(), limit);
+    return changeJointVelocityLimits(tesseract::common::JointId::fromName(name), limit);
   }
+
+  /**
+   * @brief Changes the velocity limits associated with a joint
+   * @param joint_id Id of the joint to be updated
+   * @param limits New velocity limits to be set as the joint limits
+   * @return
+   */
+  virtual bool changeJointVelocityLimits(const tesseract::common::JointId& joint_id, double limit) = 0;
 
   /**
    * @brief Changes the acceleration limits associated with a joint
@@ -166,13 +188,18 @@ public:
    * @param limits New acceleration limits to be set as the joint limits
    * @return
    */
-  virtual bool changeJointAccelerationLimits(const std::string& name, double limit) = 0;
-
-  /** @brief Changes acceleration limits (JointId overload) */
-  virtual bool changeJointAccelerationLimits(const tesseract::common::JointId& joint_id, double limit)
+  virtual bool changeJointAccelerationLimits(const std::string& name, double limit)
   {
-    return changeJointAccelerationLimits(joint_id.name(), limit);
+    return changeJointAccelerationLimits(tesseract::common::JointId::fromName(name), limit);
   }
+
+  /**
+   * @brief Changes the acceleration limits associated with a joint
+   * @param joint_id Id of the joint to be updated
+   * @param limits New acceleration limits to be set as the joint limits
+   * @return
+   */
+  virtual bool changeJointAccelerationLimits(const tesseract::common::JointId& joint_id, double limit) = 0;
 
   /**
    * @brief Changes the jerk limits associated with a joint
@@ -180,13 +207,18 @@ public:
    * @param limits New jerk limits to be set as the joint limits
    * @return
    */
-  virtual bool changeJointJerkLimits(const std::string& name, double limit) = 0;
-
-  /** @brief Changes jerk limits (JointId overload) */
-  virtual bool changeJointJerkLimits(const tesseract::common::JointId& joint_id, double limit)
+  virtual bool changeJointJerkLimits(const std::string& name, double limit)
   {
-    return changeJointJerkLimits(joint_id.name(), limit);
+    return changeJointJerkLimits(tesseract::common::JointId::fromName(name), limit);
   }
+
+  /**
+   * @brief Changes the jerk limits associated with a joint
+   * @param joint_id Id of the joint to be updated
+   * @param limits New jerk limits to be set as the joint limits
+   * @return
+   */
+  virtual bool changeJointJerkLimits(const tesseract::common::JointId& joint_id, double limit) = 0;
 
   /**
    * @brief Merge a scene into the current solver
