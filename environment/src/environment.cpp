@@ -1032,7 +1032,7 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
         tesseract::collision::CollisionShapesConst shapes;
         tesseract::common::VectorIsometry3d shape_poses;
         getCollisionObject(shapes, shape_poses, *link);
-        manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+        manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
       }
     }
 
@@ -1065,7 +1065,7 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
         tesseract::collision::CollisionShapesConst shapes;
         tesseract::common::VectorIsometry3d shape_poses;
         getCollisionObject(shapes, shape_poses, *link);
-        manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+        manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
       }
     }
 
@@ -1616,7 +1616,7 @@ bool Environment::Implementation::applyAddLinkCommandHelper(
     tesseract::scene_graph::Link::ConstPtr orig_link = scene_graph->getLink(link_name);
     tesseract::scene_graph::Joint::ConstPtr orig_joint = scene_graph->getJoint(joint_name);
 
-    if (orig_joint->child_link_id.name() != orig_link->getName())
+    if (orig_joint->child_link_id != orig_link->getId())
     {
       CONSOLE_BRIDGE_logWarn("Tried to replace link (%s) and joint (%s) which are currently not linked. This is not "
                              "supported.",
@@ -1982,9 +1982,9 @@ bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<cons
       getCollisionObject(shapes, shape_poses, *link);
 
       if (discrete_manager != nullptr)
-        discrete_manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+        discrete_manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
       if (continuous_manager != nullptr)
-        continuous_manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+        continuous_manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
     }
   }
 
