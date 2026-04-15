@@ -441,10 +441,10 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
   EXPECT_FALSE(manip_info.working_frame.isValid());
 
   tesseract::common::ManipulatorInfo manip_info_override(
-      "manipulator", tesseract::common::LinkId::fromName("world"), tesseract::common::LinkId::fromName("tool0"));
+      "manipulator", tesseract::common::LinkId("world"), tesseract::common::LinkId("tool0"));
   manip_info_override.tcp_offset = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.0, 0.0, 0.25);
   manip_info_override.manipulator_ik_solver = "OPWInvKin";
-  manip_info_override.working_frame = tesseract::common::LinkId::fromName("base_link");
+  manip_info_override.working_frame = tesseract::common::LinkId("base_link");
 
   manip_info = manip_info.getCombined(manip_info_override);
   EXPECT_FALSE(manip_info.empty());
@@ -456,19 +456,19 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
   // Test empty method
   {
     tesseract::common::ManipulatorInfo manip_info(
-        "manip", tesseract::common::LinkId::fromName("world"), tesseract::common::LinkId{});
+        "manip", tesseract::common::LinkId("world"), tesseract::common::LinkId{});
     EXPECT_TRUE(manip_info.empty());
   }
 
   {
     tesseract::common::ManipulatorInfo manip_info(
-        "manip", tesseract::common::LinkId{}, tesseract::common::LinkId::fromName("tool0"));
+        "manip", tesseract::common::LinkId{}, tesseract::common::LinkId("tool0"));
     EXPECT_TRUE(manip_info.empty());
   }
 
   {
     tesseract::common::ManipulatorInfo manip_info(
-        "", tesseract::common::LinkId::fromName("world"), tesseract::common::LinkId::fromName("tool0"));
+        "", tesseract::common::LinkId("world"), tesseract::common::LinkId("tool0"));
     EXPECT_TRUE(manip_info.empty());
   }
 
@@ -505,9 +505,9 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(any_null == any_type);
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_ids = { tesseract::common::JointId::fromName("joint_1"),
-                            tesseract::common::JointId::fromName("joint_2"),
-                            tesseract::common::JointId::fromName("joint_3") };
+  joint_state.joint_ids = { tesseract::common::JointId("joint_1"),
+                            tesseract::common::JointId("joint_2"),
+                            tesseract::common::JointId("joint_3") };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -630,9 +630,9 @@ TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_ids = { tesseract::common::JointId::fromName("joint_1"),
-                            tesseract::common::JointId::fromName("joint_2"),
-                            tesseract::common::JointId::fromName("joint_3") };
+  joint_state.joint_ids = { tesseract::common::JointId("joint_1"),
+                            tesseract::common::JointId("joint_2"),
+                            tesseract::common::JointId("joint_3") };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -3957,8 +3957,8 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
   const auto& data_original = cmd_original.getCollisionMargins();
 
   auto make_key = [](const std::string& n1, const std::string& n2) {
-    return tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(n1),
-                                               tesseract::common::LinkId::fromName(n2));
+    return tesseract::common::LinkIdPair::make(tesseract::common::LinkId(n1),
+                                               tesseract::common::LinkId(n2));
   };
 
   {
@@ -4041,8 +4041,8 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
   const auto& data_original = acm_original.getAllAllowedCollisions();
 
   auto make_key = [](const std::string& n1, const std::string& n2) {
-    return tesseract::common::LinkIdPair::make(tesseract::common::LinkId::fromName(n1),
-                                               tesseract::common::LinkId::fromName(n2));
+    return tesseract::common::LinkIdPair::make(tesseract::common::LinkId(n1),
+                                               tesseract::common::LinkId(n2));
   };
 
   {
@@ -4769,13 +4769,13 @@ TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
   EXPECT_TRUE(acm.isCollisionAllowed("link_b", "link_a"));  // order invariant
 
   // Tier 1 (LinkId) — same result via integer lookup
-  const LinkId id_a = LinkId::fromName("link_a");
-  const LinkId id_b = LinkId::fromName("link_b");
+  const LinkId id_a = LinkId("link_a");
+  const LinkId id_b = LinkId("link_b");
   EXPECT_TRUE(acm.isCollisionAllowed(id_a, id_b));
   EXPECT_TRUE(acm.isCollisionAllowed(id_b, id_a));
 
   // Non-existent pair
-  const LinkId id_c = LinkId::fromName("link_c");
+  const LinkId id_c = LinkId("link_c");
   EXPECT_FALSE(acm.isCollisionAllowed(id_a, id_c));
   EXPECT_FALSE(acm.isCollisionAllowed("link_a", "link_c"));
 
@@ -4803,9 +4803,9 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_z"), 0.05, 1e-12);  // default
 
   // Tier 1 (LinkId)
-  const LinkId id_x = LinkId::fromName("link_x");
-  const LinkId id_y = LinkId::fromName("link_y");
-  const LinkId id_z = LinkId::fromName("link_z");
+  const LinkId id_x = LinkId("link_x");
+  const LinkId id_y = LinkId("link_y");
+  const LinkId id_z = LinkId("link_z");
   EXPECT_NEAR(margin_data.getCollisionMargin(id_x, id_y), 0.1, 1e-12);
   EXPECT_NEAR(margin_data.getCollisionMargin(id_y, id_x), 0.1, 1e-12);
   EXPECT_NEAR(margin_data.getCollisionMargin(id_x, id_z), 0.05, 1e-12);

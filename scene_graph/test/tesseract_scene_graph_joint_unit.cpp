@@ -146,8 +146,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
   EXPECT_TRUE(joint_1.type == JointType::UNKNOWN);
 
   joint_1.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 2, 3);
-  joint_1.parent_link_id = LinkId::fromName("link_n1");
-  joint_1.child_link_id = LinkId::fromName("link_n2");
+  joint_1.parent_link_id = LinkId("link_n1");
+  joint_1.child_link_id = LinkId("link_n2");
   joint_1.axis = Eigen::Vector3d::UnitZ();
   joint_1.type = JointType::PRISMATIC;
   joint_1.dynamics = std::make_shared<JointDynamics>();
@@ -241,8 +241,8 @@ TEST(TesseractSceneGraphUnit, JointGetIdUnit)  // NOLINT
   using namespace tesseract::scene_graph;
   Joint joint("my_joint");
 
-  // getId() should match JointId::fromName
-  EXPECT_EQ(joint.getId(), tesseract::common::JointId::fromName("my_joint"));
+  // getId() should match JointId constructed from name
+  EXPECT_EQ(joint.getId(), tesseract::common::JointId("my_joint"));
   EXPECT_TRUE(joint.getId().isValid());
 }
 

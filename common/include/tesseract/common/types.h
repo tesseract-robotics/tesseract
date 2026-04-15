@@ -57,17 +57,19 @@ struct NameId
 {
   NameId() = default;
 
-  /** @brief Compute an ID from a name string. Empty name returns the invalid (default-constructed) sentinel. */
-  static NameId fromName(const std::string& name)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  NameId(const std::string& name)
   {
-    if (name.empty())
-      return NameId{};
-    auto h = static_cast<uint64_t>(std::hash<std::string>{}(name));
-    NameId id;
-    id.value_ = (h == 0) ? uint64_t{ 1 } : h;
-    id.name_ = name;
-    return id;
+    if (!name.empty())
+    {
+      auto h = static_cast<uint64_t>(std::hash<std::string>{}(name));
+      value_ = (h == 0) ? uint64_t{ 1 } : h;
+      name_ = name;
+    }
   }
+
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  NameId(const char* name) : NameId(std::string(name)) {}
 
   /** @brief The numeric hash of the name. Zero means invalid/default-constructed. */
   constexpr uint64_t value() const noexcept { return value_; }

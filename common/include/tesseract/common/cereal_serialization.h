@@ -39,7 +39,7 @@ std::string save_minimal(const Archive&, const NameId<Tag>& id)
 template <class Archive, typename Tag>
 void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
 {
-  id = NameId<Tag>::fromName(value);
+  id = NameId<Tag>(value);
 }
 
 template <class Archive>
@@ -184,7 +184,7 @@ void load(Archive& ar, ManipulatorInfo& obj)
   std::variant<std::string, Eigen::Isometry3d> tcp_offset_compat;
   ar(cereal::make_nvp("tcp_offset", tcp_offset_compat));
   if (tcp_offset_compat.index() == 0)
-    obj.tcp_offset = LinkId::fromName(std::get<std::string>(tcp_offset_compat));
+    obj.tcp_offset = LinkId(std::get<std::string>(tcp_offset_compat));
   else
     obj.tcp_offset = std::get<Eigen::Isometry3d>(tcp_offset_compat);
 }

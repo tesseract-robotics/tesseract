@@ -41,8 +41,8 @@ OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
                      const std::vector<common::JointId>& joint_ids,
                      std::string solver_name)
   : params_(params)
-  , base_link_id_(tesseract::common::LinkId::fromName(base_link_name))
-  , tip_link_id_(tesseract::common::LinkId::fromName(tip_link_name))
+  , base_link_id_(tesseract::common::LinkId(base_link_name))
+  , tip_link_id_(tesseract::common::LinkId(tip_link_name))
   , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
 {

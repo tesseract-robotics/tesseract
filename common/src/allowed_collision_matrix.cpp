@@ -46,13 +46,6 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
 
 AllowedCollisionMatrix::AllowedCollisionMatrix(AllowedCollisionEntries entries) : lookup_table_(std::move(entries)) {}
 
-void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
-                                                 const std::string& link_name2,
-                                                 const std::string& reason)
-{
-  addAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2), reason);
-}
-
 void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
                                                  const LinkId& link_id2,
                                                  const std::string& reason)
@@ -78,19 +71,9 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
 
-void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
-{
-  removeAllowedCollision(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
-}
-
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2)
 {
   lookup_table_.erase(LinkIdPair::make(link_id1, link_id2));
-}
-
-void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name)
-{
-  removeAllowedCollision(LinkId::fromName(link_name));
 }
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
@@ -107,11 +90,6 @@ void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 bool AllowedCollisionMatrix::isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const
 {
   return lookup_table_.find(LinkIdPair::make(link_id1, link_id2)) != lookup_table_.end();
-}
-
-bool AllowedCollisionMatrix::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
-{
-  return isCollisionAllowed(LinkId::fromName(link_name1), LinkId::fromName(link_name2));
 }
 
 void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }

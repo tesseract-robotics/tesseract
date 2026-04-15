@@ -10,11 +10,11 @@ namespace detail
 {
 inline void addCollisionObjects(DiscreteContactManager& checker)
 {
-  const auto sphere_link = tesseract::common::LinkId::fromName("sphere_link");
-  const auto thin_box_link = tesseract::common::LinkId::fromName("thin_box_link");
-  const auto sphere1_link = tesseract::common::LinkId::fromName("sphere1_link");
-  const auto remove_box_link = tesseract::common::LinkId::fromName("remove_box_link");
-  const auto missing_link = tesseract::common::LinkId::fromName("link_does_not_exist");
+  const auto sphere_link = tesseract::common::LinkId("sphere_link");
+  const auto thin_box_link = tesseract::common::LinkId("thin_box_link");
+  const auto sphere1_link = tesseract::common::LinkId("sphere1_link");
+  const auto remove_box_link = tesseract::common::LinkId("remove_box_link");
+  const auto missing_link = tesseract::common::LinkId("link_does_not_exist");
 
   ////////////////////////
   // Add sphere to checker
@@ -116,9 +116,9 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
 inline void
 runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest_tol = 0.001, double normal_tol = 0.001)
 {
-  const auto sphere_link = tesseract::common::LinkId::fromName("sphere_link");
-  const auto sphere1_link = tesseract::common::LinkId::fromName("sphere1_link");
-  const auto thin_box_link = tesseract::common::LinkId::fromName("thin_box_link");
+  const auto sphere_link = tesseract::common::LinkId("sphere_link");
+  const auto sphere1_link = tesseract::common::LinkId("sphere1_link");
+  const auto thin_box_link = tesseract::common::LinkId("thin_box_link");
 
   // Check name which should not be empty
   EXPECT_FALSE(checker.getName().empty());
