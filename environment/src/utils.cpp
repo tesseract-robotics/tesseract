@@ -170,10 +170,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   tesseract::collision::ContactTrajectoryResults traj_contacts(joint_ids, static_cast<int>(traj.rows()));
 
   // Build joint_names from joint_ids for debug logging
-  std::vector<std::string> joint_names;
-  joint_names.reserve(joint_ids.size());
-  for (const auto& jid : joint_ids)
-    joint_names.push_back(jid.name());
+  std::vector<std::string> joint_names = tesseract::common::toNames(joint_ids);
 
   contacts.clear();
   contacts.reserve(static_cast<std::size_t>(traj.rows()));
@@ -406,10 +403,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                 const tesseract::common::TrajArray& traj,
                 const tesseract::collision::CollisionCheckConfig& config)
 {
-  std::vector<tesseract::common::JointId> joint_ids;
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    joint_ids.push_back(tesseract::common::JointId(name));
+  auto joint_ids = tesseract::common::toIds<tesseract::common::JointId>(joint_names);
 
   return checkTrajectory(contacts, manager, state_solver, joint_ids, traj, config);
 }
@@ -464,10 +458,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   tesseract::collision::ContactTrajectoryResults traj_contacts(joint_ids, static_cast<int>(traj.rows()));
 
   // Build joint_names from joint_ids for debug logging
-  std::vector<std::string> joint_names;
-  joint_names.reserve(joint_ids.size());
-  for (const auto& jid : joint_ids)
-    joint_names.push_back(jid.name());
+  std::vector<std::string> joint_names = tesseract::common::toNames(joint_ids);
 
   contacts.clear();
   contacts.reserve(static_cast<std::size_t>(traj.rows()));
@@ -784,10 +775,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                 const tesseract::common::TrajArray& traj,
                 const tesseract::collision::CollisionCheckConfig& config)
 {
-  std::vector<tesseract::common::JointId> joint_ids;
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    joint_ids.push_back(tesseract::common::JointId(name));
+  auto joint_ids = tesseract::common::toIds<tesseract::common::JointId>(joint_names);
 
   return checkTrajectory(contacts, manager, state_solver, joint_ids, traj, config);
 }

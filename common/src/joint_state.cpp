@@ -28,11 +28,8 @@
 namespace tesseract::common
 {
 JointState::JointState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
-  : position(position)
+  : joint_ids(toIds<JointId>(joint_names)), position(position)
 {
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    joint_ids.push_back(JointId(name));
 }
 
 JointState::JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Eigen::VectorXd>& position)
@@ -40,14 +37,7 @@ JointState::JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Ei
 {
 }
 
-std::vector<std::string> JointState::getJointNames() const
-{
-  std::vector<std::string> names;
-  names.reserve(joint_ids.size());
-  for (const auto& id : joint_ids)
-    names.push_back(id.name());
-  return names;
-}
+std::vector<std::string> JointState::getJointNames() const { return toNames(joint_ids); }
 
 const std::vector<JointId>& JointState::getJointIds() const { return joint_ids; }
 

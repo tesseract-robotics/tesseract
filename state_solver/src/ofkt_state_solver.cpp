@@ -260,10 +260,7 @@ void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                const tesseract::common::JointIdTransformMap& floating_joint_values)
 {
-  std::vector<JointId> ids;
-  ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    ids.push_back(JointId(name));
+  auto ids = tesseract::common::toIds<JointId>(joint_names);
   setState(ids, joint_values, floating_joint_values);
 }
 
@@ -373,10 +370,7 @@ SceneState OFKTStateSolver::getState(const std::vector<std::string>& joint_names
                                      const tesseract::common::JointIdTransformMap& floating_joint_values) const
 {
   assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
-  std::vector<JointId> ids;
-  ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    ids.push_back(JointId(name));
+  auto ids = tesseract::common::toIds<JointId>(joint_names);
   return getState(ids, joint_values, floating_joint_values);
 }
 
@@ -601,41 +595,25 @@ OFKTStateSolver::calcJacobianHelper(const SceneState::JointValues& joints,
 std::vector<std::string> OFKTStateSolver::getJointNames() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> names;
-  names.reserve(joint_ids_.size());
-  for (const auto& id : joint_ids_)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(joint_ids_);
 }
 
 std::vector<std::string> OFKTStateSolver::getFloatingJointNames() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> names;
-  names.reserve(floating_joint_ids_.size());
-  for (const auto& id : floating_joint_ids_)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(floating_joint_ids_);
 }
 
 std::vector<std::string> OFKTStateSolver::getActiveJointNames() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> names;
-  names.reserve(active_joint_ids_.size());
-  for (const auto& id : active_joint_ids_)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(active_joint_ids_);
 }
 
 std::vector<std::string> OFKTStateSolver::getLinkNames() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<std::string> names;
-  names.reserve(link_ids_.size());
-  for (const auto& id : link_ids_)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(link_ids_);
 }
 
 std::vector<std::string> OFKTStateSolver::getActiveLinkNames() const
@@ -644,11 +622,7 @@ std::vector<std::string> OFKTStateSolver::getActiveLinkNames() const
   std::vector<LinkId> active_link_ids;
   active_link_ids.reserve(nodes_.size());
   loadActiveLinkIdsRecursive(active_link_ids, root_.get(), false);
-  std::vector<std::string> names;
-  names.reserve(active_link_ids.size());
-  for (const auto& id : active_link_ids)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(active_link_ids);
 }
 
 std::vector<std::string> OFKTStateSolver::getStaticLinkNames() const
@@ -657,11 +631,7 @@ std::vector<std::string> OFKTStateSolver::getStaticLinkNames() const
   std::vector<LinkId> static_link_ids;
   static_link_ids.reserve(nodes_.size());
   loadStaticLinkIdsRecursive(static_link_ids, root_.get());
-  std::vector<std::string> names;
-  names.reserve(static_link_ids.size());
-  for (const auto& id : static_link_ids)
-    names.push_back(id.name());
-  return names;
+  return tesseract::common::toNames(static_link_ids);
 }
 
 bool OFKTStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
