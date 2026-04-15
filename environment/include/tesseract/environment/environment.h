@@ -532,6 +532,12 @@ public:
   std::vector<std::string> getStaticLinkNames() const;
 
   /**
+   * @brief Get a vector of static link ids in the environment
+   * @return A vector of static link ids
+   */
+  std::vector<tesseract::common::LinkId> getStaticLinkIds() const;
+
+  /**
    * @brief Get a vector of static link names not affected by the provided joints in the environment
    * @param joint_names A list of joint names
    * @return A vector of static link names
@@ -553,7 +559,10 @@ public:
    */
   Eigen::Isometry3d getLinkTransform(const std::string& link_name) const;
 
-  /** @brief Get the transform for a link identified by LinkId */
+  /**
+   * @brief Get the transform corresponding to the link.
+   * @return Transform and is identity when no transform is available.
+   */
   Eigen::Isometry3d getLinkTransform(const tesseract::common::LinkId& link_id) const;
 
   /**

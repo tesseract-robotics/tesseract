@@ -25,12 +25,12 @@
 #define TESSERACT_KINEMATICS_IMPL_IKFAST_INV_KIN_HPP
 
 #include <tesseract/common/macros.h>
-#include "tesseract/common/types.h"
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <tesseract/kinematics/ikfast/external/ikfast.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/kinematics/ikfast/ikfast_inv_kin.h>
 #include <tesseract/kinematics/utils.h>
 

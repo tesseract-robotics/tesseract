@@ -2851,6 +2851,12 @@ std::vector<std::string> Environment::getStaticLinkNames() const
   return std::as_const<Implementation>(*impl_).state_solver->getStaticLinkNames();
 }
 
+std::vector<tesseract::common::LinkId> Environment::getStaticLinkIds() const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getStaticLinkIds();
+}
+
 std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
