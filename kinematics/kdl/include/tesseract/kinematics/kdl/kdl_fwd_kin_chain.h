@@ -91,7 +91,7 @@ public:
 
   void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                    const std::string& joint_link_name) const override final;
+                    const tesseract::common::LinkId& link_id) const override final;
 
   tesseract::common::LinkId getBaseLinkId() const override final;
   std::vector<tesseract::common::JointId> getJointIds() const override final;

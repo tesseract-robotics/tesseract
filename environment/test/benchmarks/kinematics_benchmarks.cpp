@@ -2,6 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract/common/types.h>
 #include <tesseract/urdf/urdf_parser.h>
 #include <tesseract/srdf/srdf_model.h>
 #include <tesseract/common/resource_locator.h>
@@ -99,14 +100,14 @@ static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state,
 static void BM_GET_JACOBIAN_MANIP(benchmark::State& state,
                                   const tesseract::kinematics::JointGroup::ConstPtr& manip,
                                   const tesseract::common::TrajArray& traj,
-                                  const std::string& link_name)
+                                  const tesseract::common::LinkId& link_id)
 {
   Eigen::MatrixXd jacobian;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
-      benchmark::DoNotOptimize(jacobian = manip->calcJacobian(traj.row(i), link_name));
+      benchmark::DoNotOptimize(jacobian = manip->calcJacobian(traj.row(i), link_id));
     }
   }
 }
@@ -171,9 +172,8 @@ int main(int argc, char** argv)
 
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn =
-        [local_ss,
-         joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
+    CalcStateFn fn = [local_ss, joint_names](
+                         const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
       return local_ss->getState(joint_names, state).link_transforms;
     };
 
@@ -187,9 +187,8 @@ int main(int argc, char** argv)
   }
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn =
-        [local_ss,
-         joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
+    CalcStateFn fn = [local_ss, joint_names](
+                         const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
       local_ss->setState(joint_names, state);
       return local_ss->getState().link_transforms;
     };
@@ -233,11 +232,12 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&,
                        tesseract::kinematics::JointGroup::ConstPtr,
                        const tesseract::common::TrajArray&,
-                       std::string)>
+                       tesseract::common::LinkId)>
         BM_CJ_MANIP = BM_GET_JACOBIAN_MANIP;
     std::string name = "BM_GET_JACOBIAN_MANIP";
     // NOLINTNEXTLINE
-    benchmark::RegisterBenchmark(name.c_str(), BM_CJ_MANIP, joint_group, traj, tip_link)
+    benchmark::RegisterBenchmark(
+        name.c_str(), BM_CJ_MANIP, joint_group, traj, tesseract::common::LinkId::fromName(tip_link))
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
