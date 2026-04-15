@@ -307,6 +307,8 @@ struct Environment::Implementation
 
   std::vector<std::string> getStaticLinkNames(const std::vector<std::string>& joint_names) const;
 
+  std::vector<common::LinkId> getStaticLinkIds(const std::vector<common::JointId>& joint_ids) const;
+
   void clear();
 
   bool reset();
@@ -618,6 +620,26 @@ Environment::Implementation::getStaticLinkNames(const std::vector<std::string>& 
                       std::inserter(static_link_names, static_link_names.begin()));
 
   return static_link_names;
+}
+
+std::vector<common::LinkId>
+Environment::Implementation::getStaticLinkIds(const std::vector<common::JointId>& joint_ids) const
+{
+  auto active_link_ids = scene_graph->getJointChildrenIds(joint_ids);
+  auto full_link_ids = state_solver->getLinkIds();
+  std::vector<common::LinkId> static_link_ids;
+  static_link_ids.reserve(full_link_ids.size());
+
+  std::sort(active_link_ids.begin(), active_link_ids.end());
+  std::sort(full_link_ids.begin(), full_link_ids.end());
+
+  std::set_difference(full_link_ids.begin(),
+                      full_link_ids.end(),
+                      active_link_ids.begin(),
+                      active_link_ids.end(),
+                      std::inserter(static_link_ids, static_link_ids.begin()));
+
+  return static_link_ids;
 }
 
 void Environment::Implementation::clear()
@@ -2861,6 +2883,13 @@ std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).getStaticLinkNames(joint_names);
+}
+
+std::vector<tesseract::common::LinkId>
+Environment::getStaticLinkIds(const std::vector<tesseract::common::JointId>& joint_ids) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).getStaticLinkIds(joint_ids);
 }
 
 tesseract::common::VectorIsometry3d Environment::getLinkTransforms() const
