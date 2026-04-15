@@ -521,6 +521,112 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveAllowedCollisionUnit)  //
   EXPECT_TRUE(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().empty());
 }
 
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphIdCollectionMethodsUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  SceneGraph g = createTestSceneGraph();
+
+  // --- getAdjacentLinkIds ---
+  {
+    std::vector<LinkId> adjacent = g.getAdjacentLinkIds(LinkId::fromName("link_3"));
+    EXPECT_EQ(adjacent.size(), 1);
+    EXPECT_EQ(adjacent[0], LinkId::fromName("link_4"));
+  }
+
+  // --- getInvAdjacentLinkIds ---
+  {
+    std::vector<LinkId> inv_adjacent = g.getInvAdjacentLinkIds(LinkId::fromName("link_3"));
+    EXPECT_EQ(inv_adjacent.size(), 1);
+    EXPECT_EQ(inv_adjacent[0], LinkId::fromName("link_2"));
+  }
+
+  // --- getLinkChildrenIds ---
+  {
+    std::vector<LinkId> children = g.getLinkChildrenIds(LinkId::fromName("link_5"));
+    EXPECT_TRUE(children.empty());
+  }
+  {
+    std::vector<LinkId> children = g.getLinkChildrenIds(LinkId::fromName("link_3"));
+    EXPECT_EQ(children.size(), 1);
+    EXPECT_EQ(children[0], LinkId::fromName("link_4"));
+  }
+  {
+    std::vector<LinkId> children = g.getLinkChildrenIds(LinkId::fromName("link_2"));
+    EXPECT_EQ(children.size(), 3);
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_3")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_4")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_5")), children.end());
+  }
+
+  // --- getJointChildrenIds (single) ---
+  {
+    std::vector<LinkId> children = g.getJointChildrenIds(JointId::fromName("joint_4"));
+    EXPECT_EQ(children.size(), 1);
+    EXPECT_EQ(children[0], LinkId::fromName("link_5"));
+  }
+  {
+    std::vector<LinkId> children = g.getJointChildrenIds(JointId::fromName("joint_1"));
+    EXPECT_EQ(children.size(), 4);
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_2")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_3")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_4")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_5")), children.end());
+  }
+
+  // --- getJointChildrenIds (multi) ---
+  {
+    std::vector<LinkId> children =
+        g.getJointChildrenIds(std::vector<JointId>({ JointId::fromName("joint_4") }));
+    EXPECT_EQ(children.size(), 1);
+    EXPECT_EQ(children[0], LinkId::fromName("link_5"));
+  }
+  {
+    std::vector<LinkId> children =
+        g.getJointChildrenIds(std::vector<JointId>({ JointId::fromName("joint_1") }));
+    EXPECT_EQ(children.size(), 4);
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_2")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_3")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_4")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), LinkId::fromName("link_5")), children.end());
+  }
+
+  // --- getAdjacencyMapIds ---
+  {
+    std::unordered_map<LinkId, LinkId, LinkId::Hash> adj_map =
+        g.getAdjacencyMapIds({ LinkId::fromName("link_2"), LinkId::fromName("link_3") });
+    EXPECT_EQ(adj_map.size(), 4);
+    EXPECT_EQ(adj_map.at(LinkId::fromName("link_3")), LinkId::fromName("link_3"));
+    EXPECT_EQ(adj_map.at(LinkId::fromName("link_4")), LinkId::fromName("link_3"));
+    EXPECT_EQ(adj_map.at(LinkId::fromName("link_5")), LinkId::fromName("link_2"));
+    EXPECT_EQ(adj_map.at(LinkId::fromName("link_2")), LinkId::fromName("link_2"));
+  }
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphAcmIdOverloadsUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  SceneGraph g = createTestSceneGraph();
+
+  // Test addAllowedCollision with LinkId
+  g.addAllowedCollision(LinkId::fromName("link_1"), LinkId::fromName("link_4"), "TestReason");
+  EXPECT_TRUE(g.isCollisionAllowed(LinkId::fromName("link_1"), LinkId::fromName("link_4")));
+  EXPECT_TRUE(g.isCollisionAllowed("link_1", "link_4"));
+
+  // Test removeAllowedCollision(LinkId, LinkId)
+  g.removeAllowedCollision(LinkId::fromName("link_1"), LinkId::fromName("link_4"));
+  EXPECT_FALSE(g.isCollisionAllowed(LinkId::fromName("link_1"), LinkId::fromName("link_4")));
+  EXPECT_FALSE(g.isCollisionAllowed("link_1", "link_4"));
+
+  // Test removeAllowedCollision(LinkId) — removes all pairs involving this link
+  EXPECT_TRUE(g.isCollisionAllowed("link_1", "link_2"));
+  g.removeAllowedCollision(LinkId::fromName("link_1"));
+  EXPECT_FALSE(g.isCollisionAllowed("link_1", "link_2"));
+
+  // Verify other collisions still exist
+  EXPECT_TRUE(g.isCollisionAllowed("link_2", "link_3"));
+  EXPECT_TRUE(g.isCollisionAllowed("link_2", "link_5"));
+}
+
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointOriginUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
