@@ -141,8 +141,8 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.0, 1e-5);
 
   // Test when object is inside another
-  const auto sphere_id = tesseract::common::LinkId::fromName("sphere_link");
-  const auto sphere1_id = tesseract::common::LinkId::fromName("sphere1_link");
+  const auto sphere_id = tesseract::common::LinkId("sphere_link");
+  const auto sphere1_id = tesseract::common::LinkId("sphere1_link");
 
   tesseract::common::LinkIdTransformMap location;
   location[sphere_id] = Eigen::Isometry3d::Identity();

@@ -565,12 +565,6 @@ public:
    * @brief Get the transform corresponding to the link.
    * @return Transform and is identity when no transform is available.
    */
-  Eigen::Isometry3d getLinkTransform(const std::string& link_name) const;
-
-  /**
-   * @brief Get the transform corresponding to the link.
-   * @return Transform and is identity when no transform is available.
-   */
   Eigen::Isometry3d getLinkTransform(const tesseract::common::LinkId& link_id) const;
 
   /**
@@ -581,11 +575,6 @@ public:
    */
   Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
                                              const tesseract::common::LinkId& to_link_id) const;
-
-  /**
-   * @brief Get transform between two links using the current state (string-based overload)
-   */
-  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name, const std::string& to_link_name) const;
 
   /**
    * @brief Returns a clone of the environments state solver

@@ -298,7 +298,7 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
-  const LinkId tool0 = LinkId::fromName("tool0");
+  const LinkId tool0 = LinkId("tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
@@ -328,7 +328,7 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
-  const LinkId tool0 = LinkId::fromName("tool0");
+  const LinkId tool0 = LinkId("tool0");
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
@@ -529,9 +529,9 @@ TEST(TesseractKinematicsUnit, JointGroupCalcFwdKinLinkIdUnit)  // NOLINT
   tesseract::common::LinkIdTransformMap result = joint_group->calcFwdKin(jvals);
 
   // Verify specific LinkId keys are present
-  EXPECT_TRUE(result.count(LinkId::fromName("base_link")) > 0);
-  EXPECT_TRUE(result.count(LinkId::fromName("tool0")) > 0);
-  EXPECT_TRUE(result.count(LinkId::fromName("link_7")) > 0);
+  EXPECT_TRUE(result.count(LinkId("base_link")) > 0);
+  EXPECT_TRUE(result.count(LinkId("tool0")) > 0);
+  EXPECT_TRUE(result.count(LinkId("link_7")) > 0);
 
   // Verify the result is non-empty and contains expected links
   EXPECT_FALSE(result.empty());
@@ -553,14 +553,14 @@ TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
   // Active links are those moved by the active joints
   for (const auto& name : joint_group->getActiveLinkNames())
   {
-    EXPECT_TRUE(joint_group->isActiveLinkId(LinkId::fromName(name)));
+    EXPECT_TRUE(joint_group->isActiveLinkId(LinkId(name)));
   }
 
   // base_link should not be active (it's the fixed base)
-  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId::fromName("base_link")));
+  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId("base_link")));
 
   // Non-existent link should not be active
-  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId::fromName("nonexistent_link")));
+  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId("nonexistent_link")));
 }
 
 int main(int argc, char** argv)

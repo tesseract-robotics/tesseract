@@ -237,7 +237,7 @@ int main(int argc, char** argv)
     std::string name = "BM_GET_JACOBIAN_MANIP";
     // NOLINTNEXTLINE
     benchmark::RegisterBenchmark(
-        name.c_str(), BM_CJ_MANIP, joint_group, traj, tesseract::common::LinkId::fromName(tip_link))
+        name.c_str(), BM_CJ_MANIP, joint_group, traj, tesseract::common::LinkId(tip_link))
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
