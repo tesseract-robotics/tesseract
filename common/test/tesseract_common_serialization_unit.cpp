@@ -150,10 +150,10 @@ TEST(TesseractCommonSerializeUnit, KinematicLimits)  // NOLINT
 
 TEST(TesseractCommonSerializeUnit, ManipulatorInfo)  // NOLINT
 {
-  ManipulatorInfo manip_info("manipulator", LinkId("world"), LinkId("tool0"));
+  ManipulatorInfo manip_info("manipulator", "world", "tool0");
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
 
-  ManipulatorInfo manip_info2("manipulator", LinkId("world"), LinkId("tool0"));
+  ManipulatorInfo manip_info2("manipulator", "world", "tool0");
   manip_info2.tcp_offset = LinkId("tool0");
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info2, "ManipulatorInfo2");
 }

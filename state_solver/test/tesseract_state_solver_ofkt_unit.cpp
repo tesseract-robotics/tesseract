@@ -15,7 +15,7 @@ using tesseract::common::LinkId;
 TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 {
   {  // OFKTRootNode
-    OFKTRootNode node(LinkId("base_link"));
+    OFKTRootNode node("base_link");
     EXPECT_ANY_THROW(node.setParent(nullptr));                                      // NOLINT
     EXPECT_ANY_THROW(node.storeJointValue(0));                                      // NOLINT
     EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));  // NOLINT
@@ -28,7 +28,7 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   }
 
   {  // OFKTRootNode
-    OFKTRootNode node(LinkId("base_link"));
+    OFKTRootNode node("base_link");
     EXPECT_ANY_THROW(node.setParent(nullptr));                                      // NOLINT
     EXPECT_ANY_THROW(node.storeJointValue(0));                                      // NOLINT
     EXPECT_ANY_THROW(node.setStaticTransformation(Eigen::Isometry3d::Identity()));  // NOLINT
@@ -37,9 +37,9 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   }
 
   {  // OFKTFixedNode
-    OFKTRootNode root_node(LinkId("base_link"));
+    OFKTRootNode root_node("base_link");
     OFKTFixedNode node(
-        &root_node, LinkId("base_link"), JointId("joint_a1"), Eigen::Isometry3d::Identity());
+        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
     const OFKTFixedNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_ANY_THROW(node.storeJointValue(M_PI_2));  // NOLINT
@@ -57,9 +57,9 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   }
 
   {  // OFKTFloatingNode
-    OFKTRootNode root_node(LinkId("base_link"));
+    OFKTRootNode root_node("base_link");
     OFKTFloatingNode node(
-        &root_node, LinkId("base_link"), JointId("joint_a1"), Eigen::Isometry3d::Identity());
+        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
     const OFKTFloatingNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_ANY_THROW(node.storeJointValue(M_PI_2));  // NOLINT
@@ -78,10 +78,10 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTRevoluteNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d(0, 0, 1));
-    OFKTRootNode root_node(LinkId("base_link"));
+    OFKTRootNode root_node("base_link");
     OFKTRevoluteNode node(&root_node,
-                          LinkId("base_link"),
-                          JointId("joint_a1"),
+                          "base_link",
+                          "joint_a1",
                           Eigen::Isometry3d::Identity(),
                           Eigen::Vector3d(0, 0, 1));
     EXPECT_TRUE(node.getParent() == &root_node);
@@ -99,10 +99,10 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTContinuousNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d(0, 0, 1));
-    OFKTRootNode root_node(LinkId("base_link"));
+    OFKTRootNode root_node("base_link");
     OFKTContinuousNode node(&root_node,
-                            LinkId("base_link"),
-                            JointId("joint_a1"),
+                            "base_link",
+                            "joint_a1",
                             Eigen::Isometry3d::Identity(),
                             Eigen::Vector3d(0, 0, 1));
     const OFKTContinuousNode& const_node = node;
@@ -121,10 +121,10 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTPrismaticNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::Translation3d(1.45, 0, 0);
-    OFKTRootNode root_node(LinkId("base_link"));
+    OFKTRootNode root_node("base_link");
     OFKTPrismaticNode node(&root_node,
-                           LinkId("base_link"),
-                           JointId("joint_a1"),
+                           "base_link",
+                           "joint_a1",
                            Eigen::Isometry3d::Identity(),
                            Eigen::Vector3d(1, 0, 0));
     EXPECT_TRUE(node.getParent() == &root_node);
@@ -221,7 +221,7 @@ TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
   const auto& state = solver.getState();
 
   // link_transforms is keyed by LinkId
-  EXPECT_TRUE(state.link_transforms.count(LinkId("base_link")) > 0);
+  EXPECT_TRUE(state.link_transforms.count("base_link") > 0);
 
   // All link names should map to a LinkId entry in link_transforms
   for (const auto& link_name : solver.getLinkNames())
