@@ -258,8 +258,8 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     for (const auto& pair : chain.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
       tinyxml2::XMLElement* xml_pair = doc.NewElement("chain");
-      xml_pair->SetAttribute("base_link", pair.first.c_str());
-      xml_pair->SetAttribute("tip_link", pair.second.c_str());
+      xml_pair->SetAttribute("base_link", pair.first.name().c_str());
+      xml_pair->SetAttribute("tip_link", pair.second.name().c_str());
       xml_group->InsertEndChild(xml_pair);
     }
     xml_root->InsertEndChild(xml_group);
