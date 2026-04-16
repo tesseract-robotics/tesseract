@@ -78,11 +78,6 @@ public:
 
   void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
-  void setState(const std::unordered_map<std::string, double>& joint_values,
-                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
-  void setState(const std::vector<std::string>& joint_names,
-                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
   void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
   void setState(const SceneState::JointValues& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
@@ -92,11 +87,6 @@ public:
 
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const std::unordered_map<std::string, double>& joint_values,
-                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
   SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
   SceneState getState(const SceneState::JointValues& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
@@ -104,9 +94,6 @@ public:
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
-  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
-                         const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
   void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                          const std::vector<tesseract::common::JointId>& joint_ids,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
@@ -117,19 +104,6 @@ public:
 
   Eigen::MatrixXd
   getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-              const std::string& link_name,
-              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd
-  getJacobian(const std::unordered_map<std::string, double>& joints_values,
-              const std::string& link_name,
-              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd
-  getJacobian(const std::vector<std::string>& joint_names,
-              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-              const std::string& link_name,
-              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd
-  getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
               const tesseract::common::LinkId& link_id,
               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
   Eigen::MatrixXd
@@ -138,24 +112,18 @@ public:
               const tesseract::common::LinkId& link_id,
               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
-  std::vector<std::string> getJointNames() const override final;
   std::vector<tesseract::common::JointId> getJointIds() const override final;
 
-  std::vector<std::string> getFloatingJointNames() const override final;
   std::vector<tesseract::common::JointId> getFloatingJointIds() const override final;
 
-  std::vector<std::string> getActiveJointNames() const override final;
   std::vector<tesseract::common::JointId> getActiveJointIds() const override final;
 
   tesseract::common::LinkId getBaseLinkId() const override final;
 
-  std::vector<std::string> getLinkNames() const override final;
   std::vector<tesseract::common::LinkId> getLinkIds() const override final;
 
-  std::vector<std::string> getActiveLinkNames() const override final;
   std::vector<tesseract::common::LinkId> getActiveLinkIds() const override final;
 
-  std::vector<std::string> getStaticLinkNames() const override final;
   std::vector<tesseract::common::LinkId> getStaticLinkIds() const override final;
 
   bool isActiveLinkId(const tesseract::common::LinkId& link_id) const override final;
