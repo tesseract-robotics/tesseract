@@ -6,7 +6,7 @@ contact_manager_plugins:
     - tesseract_collision_fcl_factories
     - tesseract_collision_coal_coal_factories
   discrete_plugins:
-    default: CoalDiscreteBVHManager
+    default: BulletDiscreteBVHManager
     plugins:
       BulletDiscreteBVHManager:
         class: BulletDiscreteBVHManagerFactory
@@ -17,7 +17,7 @@ contact_manager_plugins:
       CoalDiscreteBVHManager:
         class: CoalDiscreteBVHManagerFactory
   continuous_plugins:
-    default: CoalCastBVHManager
+    default: BulletCastBVHManager
     plugins:
       BulletCastBVHManager:
         class: BulletCastBVHManagerFactory
