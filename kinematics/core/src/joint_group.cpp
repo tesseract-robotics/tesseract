@@ -53,28 +53,13 @@ JointGroup::JointGroup(std::string name,
       throw std::runtime_error("Joint name '" + joint_name + "' does not exist in the provided scene graph!");
   }
 
-  // Build string-keyed maps from integer-keyed SceneState for parseSceneGraph
-  std::unordered_map<std::string, double> joint_values_str;
-  for (const auto& joint : scene_graph.getJoints())
-  {
-    auto it = scene_state.joints.find(joint->getId());
-    if (it != scene_state.joints.end())
-      joint_values_str[joint->getName()] = it->second;
-  }
-  tesseract::common::TransformMap floating_joints_str;
-  for (const auto& [id, tf] : scene_state.floating_joints)
-  {
-    for (const auto& joint : scene_graph.getJoints())
-    {
-      if (joint->getId() == id)
-      {
-        floating_joints_str[joint->getName()] = tf;
-        break;
-      }
-    }
-  }
+  std::unordered_map<JointId, double> joint_values_id;
+  for (const auto& [id, val] : scene_state.joints)
+    joint_values_id[id] = val;
+
+  auto joint_ids = tesseract::common::toIds<JointId>(joint_names);
   tesseract::scene_graph::KDLTreeData data =
-      tesseract::scene_graph::parseSceneGraph(scene_graph, joint_names, joint_values_str, floating_joints_str);
+      tesseract::scene_graph::parseSceneGraph(scene_graph, joint_ids, joint_values_id, scene_state.floating_joints);
   state_solver_ = std::make_unique<tesseract::scene_graph::KDLStateSolver>(scene_graph, data);
 
   // Build joint IDs from local joint_names parameter
