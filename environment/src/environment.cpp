@@ -124,7 +124,7 @@ getInitCommands(const tesseract::scene_graph::SceneGraph& scene_graph,
 
     // Apply calibration information
     for (const auto& cal : srdf_model->calibration_info.joints)
-      commands.push_back(std::make_shared<ChangeJointOriginCommand>(cal.first, cal.second));
+      commands.push_back(std::make_shared<ChangeJointOriginCommand>(cal.first.name(), cal.second));
 
     // Check srdf for collision margin data
     if (srdf_model->collision_margin_data)

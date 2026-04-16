@@ -44,7 +44,7 @@ bool CalibrationInfo::operator==(const CalibrationInfo& rhs) const
   };
 
   bool equal = true;
-  equal &= tesseract::common::isIdenticalMap<TransformMap, Eigen::Isometry3d>(joints, rhs.joints, isometry_equal);
+  equal &= tesseract::common::isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(joints, rhs.joints, isometry_equal);
 
   return equal;
 }

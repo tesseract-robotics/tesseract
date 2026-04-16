@@ -2275,7 +2275,7 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
   }
 }
 
-TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
+TEST(TesseractCommonUnit, JointIdTransformMapYamlUnit)  // NOLINT
 {
   std::string yaml_string =
       R"(joints:
@@ -2303,7 +2303,7 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
   {  // valid string
     tesseract::common::GeneralResourceLocator locator;
     YAML::Node node = tesseract::common::loadYamlString(yaml_string, locator);
-    auto trans_map = node["joints"].as<tesseract::common::TransformMap>();
+    auto trans_map = node["joints"].as<tesseract::common::JointIdTransformMap>();
     EXPECT_EQ(trans_map.size(), 2);
     EXPECT_FALSE(trans_map.empty());
     EXPECT_TRUE(trans_map.find("joint_1") != trans_map.end());
@@ -2335,7 +2335,7 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
   {  // invalid string
     tesseract::common::GeneralResourceLocator locator;
     YAML::Node node = tesseract::common::loadYamlString(bad_yaml_string, locator);
-    EXPECT_ANY_THROW(node["joints"].as<tesseract::common::TransformMap>());  // NOLINT
+    EXPECT_ANY_THROW(node["joints"].as<tesseract::common::JointIdTransformMap>());  // NOLINT
   }
 }
 
