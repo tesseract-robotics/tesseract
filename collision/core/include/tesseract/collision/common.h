@@ -37,8 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::collision
 {
-using ObjectPairKey = std::pair<std::string, std::string>;
-
 /**
  * @brief Get a vector of possible collision object pairs
  * @todo Should this also filter out links without geometry?
@@ -47,9 +45,9 @@ using ObjectPairKey = std::pair<std::string, std::string>;
  * @param validator The is contact allowed validator
  * @return A vector of collision object pairs
  */
-std::vector<ObjectPairKey>
-getCollisionObjectPairs(const std::vector<std::string>& active_links,
-                        const std::vector<std::string>& static_links,
+std::vector<tesseract::common::LinkIdPair>
+getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_links,
+                        const std::vector<tesseract::common::LinkId>& static_links,
                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator = nullptr);
 
 /**

@@ -258,41 +258,41 @@ TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
 {
-  std::vector<std::string> active_links{ "link_1", "link_2", "link_3" };
-  std::vector<std::string> static_links{ "base_link", "part_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "link_1", "link_2", "link_3" };
+  std::vector<tesseract::common::LinkId> static_links{ "base_link", "part_link" };
 
-  std::vector<tesseract::collision::ObjectPairKey> check_pairs;
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_1", "link_2"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_1", "link_3"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_2", "link_3"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("base_link", "link_1"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("base_link", "link_2"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("base_link", "link_3"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_1", "part_link"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_2", "part_link"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_3", "part_link"));
+  std::vector<tesseract::common::LinkIdPair> check_pairs;
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_1", "link_2"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_1", "link_3"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_2", "link_3"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("base_link", "link_1"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("base_link", "link_2"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("base_link", "link_3"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_1", "part_link"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_2", "part_link"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_3", "part_link"));
 
-  std::vector<tesseract::collision::ObjectPairKey> pairs =
+  std::vector<tesseract::common::LinkIdPair> pairs =
       tesseract::collision::getCollisionObjectPairs(active_links, static_links);
 
-  EXPECT_TRUE(tesseract::common::isIdentical<tesseract::collision::ObjectPairKey>(pairs, check_pairs, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<tesseract::common::LinkIdPair>(pairs, check_pairs, false));
 
   // Now check provided a is contact allowed function
   auto validator = std::make_shared<TestContactAllowedValidator>();
 
   check_pairs.clear();
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_1", "link_2"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_1", "link_3"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_2", "link_3"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("base_link", "link_2"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("base_link", "link_3"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_1", "part_link"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_2", "part_link"));
-  check_pairs.push_back(tesseract::collision::ObjectPairKey("link_3", "part_link"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_1", "link_2"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_1", "link_3"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_2", "link_3"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("base_link", "link_2"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("base_link", "link_3"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_1", "part_link"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_2", "part_link"));
+  check_pairs.push_back(tesseract::common::LinkIdPair::make("link_3", "part_link"));
 
   pairs = tesseract::collision::getCollisionObjectPairs(active_links, static_links, validator);
 
-  EXPECT_TRUE(tesseract::common::isIdentical<tesseract::collision::ObjectPairKey>(pairs, check_pairs, false));
+  EXPECT_TRUE(tesseract::common::isIdentical<tesseract::common::LinkIdPair>(pairs, check_pairs, false));
 }
 
 TEST(TesseractCoreUnit, scaleVerticesUnit)  // NOLINT

@@ -1047,7 +1047,7 @@ bool OFKTStateSolver::initHelper(const tesseract::scene_graph::SceneGraph& scene
 
   assert(scene_graph.isTree());
 
-  const std::string& root_name = prefix + scene_graph.getRoot();
+  const std::string root_name = prefix + scene_graph.getRoot().name();
 
   root_ = std::make_unique<OFKTRootNode>(LinkId(root_name));
   link_map_[root_->getLinkId()] = root_.get();
