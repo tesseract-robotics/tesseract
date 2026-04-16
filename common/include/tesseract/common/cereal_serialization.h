@@ -42,20 +42,20 @@ void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
   id = NameId<Tag>(value);
 }
 
-template <class Archive>
-void save(Archive& ar, const LinkIdPair& pair)
+template <class Archive, typename Tag>
+void save(Archive& ar, const OrderedIdPair<Tag>& pair)
 {
   ar(cereal::make_nvp("first", pair.first()));
   ar(cereal::make_nvp("second", pair.second()));
 }
 
-template <class Archive>
-void load(Archive& ar, LinkIdPair& pair)
+template <class Archive, typename Tag>
+void load(Archive& ar, OrderedIdPair<Tag>& pair)
 {
-  LinkId first, second;
+  NameId<Tag> first, second;
   ar(cereal::make_nvp("first", first));
   ar(cereal::make_nvp("second", second));
-  pair = LinkIdPair(first, second);
+  pair = OrderedIdPair<Tag>(first, second);
 }
 
 template <class Archive, class T>

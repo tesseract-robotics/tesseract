@@ -101,32 +101,33 @@ inline const LinkId INVALID_LINK_ID{};
 inline const JointId INVALID_JOINT_ID{};
 
 /**
- * @brief Canonically ordered pair of LinkIds with cached hash.
+ * @brief Canonically ordered pair of NameIds with cached hash.
  *
  * The constructor guarantees first().value() <= second().value()
- * regardless of argument order, so LinkIdPair(a, b) == LinkIdPair(b, a).
+ * regardless of argument order, so OrderedIdPair(a, b) == OrderedIdPair(b, a).
  */
-struct LinkIdPair
+template <typename Tag>
+struct OrderedIdPair
 {
-  LinkIdPair() = default;
-  LinkIdPair(const LinkId& a, const LinkId& b)
+  OrderedIdPair() = default;
+  OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b)
     : first_(a.value() <= b.value() ? a : b)
     , second_(a.value() <= b.value() ? b : a)
     , hash_(combineHash(first_, second_))
   {
   }
 
-  const LinkId& first() const noexcept { return first_; }
-  const LinkId& second() const noexcept { return second_; }
+  const NameId<Tag>& first() const noexcept { return first_; }
+  const NameId<Tag>& second() const noexcept { return second_; }
   constexpr std::size_t hash() const noexcept { return hash_; }
 
-  constexpr bool operator==(const LinkIdPair& other) const noexcept
+  constexpr bool operator==(const OrderedIdPair& other) const noexcept
   {
     return first_ == other.first_ && second_ == other.second_;
   }
-  constexpr bool operator!=(const LinkIdPair& other) const noexcept { return !(*this == other); }
+  constexpr bool operator!=(const OrderedIdPair& other) const noexcept { return !(*this == other); }
 
-  constexpr bool operator<(const LinkIdPair& other) const noexcept
+  constexpr bool operator<(const OrderedIdPair& other) const noexcept
   {
     if (first_.value() != other.first_.value())
       return first_.value() < other.first_.value();
@@ -135,21 +136,23 @@ struct LinkIdPair
 
   struct Hash
   {
-    constexpr std::size_t operator()(const LinkIdPair& p) const noexcept { return p.hash(); }
+    constexpr std::size_t operator()(const OrderedIdPair& p) const noexcept { return p.hash(); }
   };
 
 private:
-  LinkId first_;
-  LinkId second_;
+  NameId<Tag> first_;
+  NameId<Tag> second_;
   std::size_t hash_{ 0 };
 
-  static constexpr std::size_t combineHash(const LinkId& f, const LinkId& s) noexcept
+  static constexpr std::size_t combineHash(const NameId<Tag>& f, const NameId<Tag>& s) noexcept
   {
     auto h = static_cast<std::size_t>(f.value());
     h ^= static_cast<std::size_t>(s.value()) + std::size_t{ 0x9e3779b9 } + (h << 6) + (h >> 2);
     return h;
   }
 };
+
+using LinkIdPair = OrderedIdPair<LinkTag>;
 
 /** @brief Convert a vector of strings to a vector of NameId<Tag> */
 template <typename IdT>
@@ -188,10 +191,10 @@ struct hash<tesseract::common::NameId<Tag>>
   }
 };
 
-template <>
-struct hash<tesseract::common::LinkIdPair>
+template <typename Tag>
+struct hash<tesseract::common::OrderedIdPair<Tag>>
 {
-  constexpr std::size_t operator()(const tesseract::common::LinkIdPair& p) const noexcept { return p.hash(); }
+  constexpr std::size_t operator()(const tesseract::common::OrderedIdPair<Tag>& p) const noexcept { return p.hash(); }
 };
 
 }  // namespace std
