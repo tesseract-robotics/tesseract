@@ -464,7 +464,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
   if (!scene_graph.isTree())
     throw std::runtime_error("parseSubSceneGraph: currently only works if the scene graph is a tree.");
 
-  const std::string& root_name = scene_graph.getRoot();
+  const std::string& root_name = scene_graph.getRoot().name();
   const Link::ConstPtr& root_link = scene_graph.getLink(root_name);
 
   KDLTreeData data;
@@ -508,7 +508,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
     throw std::runtime_error("parseSubSceneGraph: currently only works if the scene graph is a tree.");
 
   KDLTreeData data;
-  data.tree = KDL::Tree(scene_graph.getRoot());
+  data.tree = KDL::Tree(scene_graph.getRoot().name());
 
   kdl_sub_tree_builder builder(data, joint_ids, joint_values, floating_joint_values);
 

@@ -250,12 +250,12 @@ bool SceneGraph::setRoot(const common::LinkId& id)
   if (found == link_map_.end())
     return false;
 
-  boost::set_property(static_cast<Graph&>(*this), boost::graph_root, id.name());
+  boost::set_property(static_cast<Graph&>(*this), boost::graph_root, id);
 
   return true;
 }
 
-const std::string& SceneGraph::getRoot() const
+const common::LinkId& SceneGraph::getRoot() const
 {
   return boost::get_property(static_cast<const Graph&>(*this), boost::graph_root);
 }
