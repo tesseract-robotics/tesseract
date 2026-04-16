@@ -40,7 +40,7 @@ using Eigen::VectorXd;
 thread_local KDL::JntArray KDLFwdKinChain::kdl_joints_cache;  // NOLINT
 
 KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                               const std::vector<std::pair<std::string, std::string>>& chains,
+                               const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
                                std::string solver_name)
   : solver_name_(std::move(solver_name))
 {
@@ -55,8 +55,8 @@ KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_g
 }
 
 KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                               const std::string& base_link,
-                               const std::string& tip_link,
+                               tesseract::common::LinkId base_link,
+                               tesseract::common::LinkId tip_link,
                                std::string solver_name)
   : KDLFwdKinChain(scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
 {
@@ -138,7 +138,7 @@ void KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 {
   assert(joint_angles.size() == numJoints());
 
-  int segment_nr = kdl_data_.segment_index.at(link_id.name());
+  int segment_nr = kdl_data_.segment_index.at(link_id);
   KDL::Jacobian kdl_jacobian;
 
   if (!calcJacobianHelper(kdl_jacobian, joint_angles, segment_nr))

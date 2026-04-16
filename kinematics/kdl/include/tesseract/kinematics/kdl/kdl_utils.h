@@ -94,8 +94,8 @@ struct KDLChainData
   std::vector<tesseract::common::JointId> joint_ids; /**< @brief List of joint ids */
   tesseract::common::LinkId base_link_id;            /**< @brief Link id of first link in the kinematic object */
   tesseract::common::LinkId tip_link_id;             /**< @brief Link id of last link in the kinematic object */
-  std::map<std::string, int> segment_index; /**< @brief A map from chain link name to kdl chain segment number */
-  std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
+  std::map<tesseract::common::LinkId, int> segment_index; /**< @brief A map from link id to kdl chain segment number */
+  std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>> chains; /**< The chains used to create the object */
   KDL::JntArray q_min;                                     /**< @brief Lower joint limits */
   KDL::JntArray q_max;                                     /**< @brief Upper joint limits */
 };
@@ -110,19 +110,19 @@ struct KDLChainData
  */
 bool parseSceneGraph(KDLChainData& results,
                      const tesseract::scene_graph::SceneGraph& scene_graph,
-                     const std::vector<std::pair<std::string, std::string>>& chains);
+                     const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains);
 
 /**
  * @brief Parse KDL chain data from the scene graph
  * @param results KDL Chain data
  * @param scene_graph The Scene Graph
- * @param base_name The base link name of chain
- * @param tip_name The tip link name of chain
+ * @param base_link The base link of chain
+ * @param tip_link The tip link of chain
  * @return True if successful otherwise false
  */
 bool parseSceneGraph(KDLChainData& results,
                      const tesseract::scene_graph::SceneGraph& scene_graph,
-                     const std::string& base_name,
-                     const std::string& tip_name);
+                     const tesseract::common::LinkId& base_link,
+                     const tesseract::common::LinkId& tip_link);
 }  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H
