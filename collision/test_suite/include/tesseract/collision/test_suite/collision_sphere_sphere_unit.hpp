@@ -165,13 +165,10 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Test when object is inside another
-  const auto sphere_id = tesseract::common::LinkId("sphere_link");
-  const auto sphere1_id = tesseract::common::LinkId("sphere1_link");
-
   tesseract::common::LinkIdTransformMap location;
-  location[sphere_id] = Eigen::Isometry3d::Identity();
-  location[sphere1_id] = Eigen::Isometry3d::Identity();
-  location[sphere1_id].translation()(0) = 0.2;
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -217,10 +214,10 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location[sphere1_id].translation() = Eigen::Vector3d(1, 0, 0);
+  location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
   result.clear();
   result_vector.clear();
-  checker.setCollisionObjectsTransform("sphere1_link", location[sphere1_id]);
+  checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
 
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenCopyResults(result_vector);
@@ -286,13 +283,10 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Test when object is inside another
-  const auto sphere_id = tesseract::common::LinkId("sphere_link");
-  const auto sphere1_id = tesseract::common::LinkId("sphere1_link");
-
   tesseract::common::LinkIdTransformMap location;
-  location[sphere_id] = Eigen::Isometry3d::Identity();
-  location[sphere1_id] = Eigen::Isometry3d::Identity();
-  location[sphere1_id].translation()(0) = 0.2;
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -340,10 +334,10 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location[sphere1_id].translation() = Eigen::Vector3d(1, 0, 0);
+  location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
   result.clear();
   result_vector.clear();
-  checker.setCollisionObjectsTransform("sphere1_link", location[sphere1_id]);
+  checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
 
   checker.contactTest(result, contact_request);
   result.flattenCopyResults(result_vector);
@@ -409,13 +403,10 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Test when object is inside another
-  const auto sphere_id = tesseract::common::LinkId("sphere_link");
-  const auto sphere1_id = tesseract::common::LinkId("sphere1_link");
-
   tesseract::common::LinkIdTransformMap location;
-  location[sphere_id] = Eigen::Isometry3d::Identity();
-  location[sphere1_id] = Eigen::Isometry3d::Identity();
-  location[sphere1_id].translation()(0) = 0.2;
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -460,7 +451,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   ///////////////////////////////////////////////
   // Test object is out side the contact distance
   ///////////////////////////////////////////////
-  location[sphere1_id].translation() = Eigen::Vector3d(1, 0, 0);
+  location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -487,9 +478,9 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
   tesseract::common::LinkIdTransformMap location;
-  location[tesseract::common::LinkId("sphere_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId("sphere1_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId("sphere1_link")].translation() = Eigen::Vector3d(1, 0, 0);
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
   checker.setCollisionObjectsTransform(location);
 
   checker.setCollisionMarginData(CollisionMarginData(0.55));
@@ -540,8 +531,8 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   tesseract::common::LinkIdTransformMap location;
-  location[tesseract::common::LinkId("sphere1_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId("sphere1_link")].translation()(1) = 0.2;
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"].translation()(1) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
