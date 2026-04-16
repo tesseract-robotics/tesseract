@@ -88,7 +88,8 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
   for (const auto& cal_joint : info.joints)
   {
     if (scene_graph.getJoint(cal_joint.first) == nullptr)
-      std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first + "' does not exist!"));
+      std::throw_with_nested(
+          std::runtime_error("calibration_config: joint '" + cal_joint.first.name() + "' does not exist!"));
   }
 
   return info;

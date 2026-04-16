@@ -31,7 +31,6 @@ using VectorIsometry3d = AlignedVector<Eigen::Isometry3d>;
 using VectorVector4d = AlignedVector<Eigen::Vector4d>;
 using VectorVector3d = std::vector<Eigen::Vector3d>;
 using VectorVector2d = AlignedVector<Eigen::Vector2d>;
-using TransformMap = AlignedUnorderedMap<std::string, Eigen::Isometry3d>;
 using LinkIdTransformMap = AlignedUnorderedMap<LinkId, Eigen::Isometry3d>;
 using JointIdTransformMap = AlignedUnorderedMap<JointId, Eigen::Isometry3d>;
 using Toolpath = AlignedVector<VectorIsometry3d>;
