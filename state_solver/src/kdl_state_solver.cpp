@@ -104,7 +104,7 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
 void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const tesseract::common::JointIdTransformMap& /*floating_joint_values*/)
 {
-  assert(static_cast<Eigen::Index>(data_.active_joint_names.size()) == joint_values.size());
+  assert(static_cast<Eigen::Index>(data_.active_joint_ids.size()) == joint_values.size());
   for (auto i = 0U; i < active_joint_ids_.size(); ++i)
   {
     if (setJointValuesHelper(kdl_jnt_array_, active_joint_ids_[i], joint_values[i]))
@@ -343,7 +343,7 @@ SceneState KDLStateSolver::getState() const { return current_state_; }
 SceneState KDLStateSolver::getRandomState() const
 {
   Eigen::VectorXd rs = tesseract::common::generateRandomNumber(limits_.joint_limits);
-  return getState(data_.active_joint_names, rs);  // NOLINT
+  return getState(active_joint_ids_, rs);  // NOLINT
 }
 
 Eigen::MatrixXd
@@ -352,7 +352,7 @@ KDLStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_value
                             const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
 {
   assert(joint_values.size() == data_.tree.getNrOfJoints());
-  getKDLJntArray(kdl_joints_cache, data_.active_joint_names, joint_values);
+  getKDLJntArray(kdl_joints_cache, tesseract::common::toNames(data_.active_joint_ids), joint_values);
   if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_name))
     return convert(kdl_jacobian_cache, joint_qnr_);
 
@@ -384,17 +384,29 @@ KDLStateSolver::getJacobian(const std::vector<std::string>& joint_names,
   throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
 }
 
-std::vector<std::string> KDLStateSolver::getJointNames() const { return data_.joint_names; }
+std::vector<std::string> KDLStateSolver::getJointNames() const { return tesseract::common::toNames(data_.joint_ids); }
 
-std::vector<std::string> KDLStateSolver::getFloatingJointNames() const { return data_.floating_joint_names; }
+std::vector<std::string> KDLStateSolver::getFloatingJointNames() const
+{
+  return tesseract::common::toNames(data_.floating_joint_ids);
+}
 
-std::vector<std::string> KDLStateSolver::getActiveJointNames() const { return data_.active_joint_names; }
+std::vector<std::string> KDLStateSolver::getActiveJointNames() const
+{
+  return tesseract::common::toNames(data_.active_joint_ids);
+}
 
-std::vector<std::string> KDLStateSolver::getLinkNames() const { return data_.link_names; }
+std::vector<std::string> KDLStateSolver::getLinkNames() const { return tesseract::common::toNames(data_.link_ids); }
 
-std::vector<std::string> KDLStateSolver::getActiveLinkNames() const { return data_.active_link_names; }
+std::vector<std::string> KDLStateSolver::getActiveLinkNames() const
+{
+  return tesseract::common::toNames(data_.active_link_ids);
+}
 
-std::vector<std::string> KDLStateSolver::getStaticLinkNames() const { return data_.static_link_names; }
+std::vector<std::string> KDLStateSolver::getStaticLinkNames() const
+{
+  return tesseract::common::toNames(data_.static_link_ids);
+}
 
 bool KDLStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
@@ -485,8 +497,8 @@ tesseract::common::KinematicLimits KDLStateSolver::getLimits() const { return li
 bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   current_state_ = SceneState();
-  for (const auto& [name, tf] : data_.floating_joint_values)
-    current_state_.floating_joints[JointId(name)] = tf;
+  for (const auto& [id, tf] : data_.floating_joint_values)
+    current_state_.floating_joints[id] = tf;
   kdl_jnt_array_.resize(data_.tree.getNrOfJoints());
   limits_.joint_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
   limits_.velocity_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
@@ -507,7 +519,7 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
     joint_id_to_qnr_.insert(std::make_pair(JointId(jnt.getName()), seg.second.q_nr));
     kdl_jnt_array_(seg.second.q_nr) = 0.0;
     current_state_.joints.insert(std::make_pair(JointId(jnt.getName()), 0.0));
-    data_.active_joint_names[j] = jnt.getName();
+    data_.active_joint_ids[j] = JointId(jnt.getName());
     joint_qnr_[j] = static_cast<int>(seg.second.q_nr);
 
     // Store joint limits.
@@ -526,17 +538,14 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
 
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
-  // Pre-compute JointId cache for active joints
-  active_joint_ids_ = tesseract::common::toIds<JointId>(data_.active_joint_names);
-
-  // Pre-compute ID caches for getters
-  joint_ids_ = tesseract::common::toIds<JointId>(data_.joint_names);
-  floating_joint_ids_ = tesseract::common::toIds<JointId>(data_.floating_joint_names);
-  link_ids_ = tesseract::common::toIds<LinkId>(data_.link_names);
-  active_link_ids_ = tesseract::common::toIds<LinkId>(data_.active_link_names);
-  static_link_ids_ = tesseract::common::toIds<LinkId>(data_.static_link_names);
-
-  base_link_id_ = LinkId(data_.base_link_name);
+  // Copy ID caches from parsed data
+  active_joint_ids_ = data_.active_joint_ids;
+  joint_ids_ = data_.joint_ids;
+  floating_joint_ids_ = data_.floating_joint_ids;
+  link_ids_ = data_.link_ids;
+  active_link_ids_ = data_.active_link_ids;
+  static_link_ids_ = data_.static_link_ids;
+  base_link_id_ = data_.base_link_id;
 
   // Cache LinkId/JointId per segment to avoid per-FK constructor calls.
   // Keyed by pointer to KDL TreeElement (pointer-stable in std::map).
@@ -653,7 +662,7 @@ void KDLStateSolver::getKDLJntArray(KDL::JntArray& kdl_joints,
 void KDLStateSolver::getKDLJntArray(KDL::JntArray& kdl_joints,
                                     const std::unordered_map<std::string, double>& joint_values) const
 {
-  assert(data_.active_joint_names.size() == static_cast<unsigned>(joint_values.size()));
+  assert(data_.active_joint_ids.size() == static_cast<unsigned>(joint_values.size()));
 
   kdl_joints = kdl_jnt_array_;
   for (const auto& joint : joint_values)

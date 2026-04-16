@@ -127,14 +127,14 @@ struct KDLTreeData
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   KDL::Tree tree;
-  std::string base_link_name;
-  std::vector<std::string> joint_names;
-  std::vector<std::string> active_joint_names;
-  std::vector<std::string> floating_joint_names;
-  std::vector<std::string> link_names;
-  std::vector<std::string> active_link_names;
-  std::vector<std::string> static_link_names;
-  tesseract::common::TransformMap floating_joint_values;
+  tesseract::common::LinkId base_link_id;
+  std::vector<tesseract::common::JointId> joint_ids;
+  std::vector<tesseract::common::JointId> active_joint_ids;
+  std::vector<tesseract::common::JointId> floating_joint_ids;
+  std::vector<tesseract::common::LinkId> link_ids;
+  std::vector<tesseract::common::LinkId> active_link_ids;
+  std::vector<tesseract::common::LinkId> static_link_ids;
+  tesseract::common::JointIdTransformMap floating_joint_values;
 
   bool operator==(const KDLTreeData& rhs) const;
   bool operator!=(const KDLTreeData& rhs) const;
@@ -162,9 +162,9 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph);
  * @return Returns KDL tree representation of the sub scene graph
  */
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
-                            const std::vector<std::string>& joint_names,
-                            const std::unordered_map<std::string, double>& joint_values,
-                            const tesseract::common::TransformMap& floating_joint_values = {});
+                            const std::vector<tesseract::common::JointId>& joint_ids,
+                            const std::unordered_map<tesseract::common::JointId, double>& joint_values,
+                            const tesseract::common::JointIdTransformMap& floating_joint_values = {});
 
 }  // namespace tesseract::scene_graph
 
