@@ -96,11 +96,6 @@ public:
    */
   virtual void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) = 0;
 
-  /**
-   * @brief Set the current state using a JointId-keyed map (avoids string-to-ID conversion)
-   * @param joint_values A map of JointId to joint values to change
-   * @param floating_joint_values The floating joint origin transform
-   */
   /** @brief Set the current state using a JointId-keyed map */
   virtual void setState(const SceneState::JointValues& joint_values,
                         const tesseract::common::JointIdTransformMap& floating_joint_values = {}) = 0;
@@ -119,15 +114,6 @@ public:
   virtual SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
-  /**
-   * @brief Get the state of the scene for a given set or subset of joint values.
-   *
-   * This does not change the internal state of the solver.
-   *
-   * @param joints A map of joint names to joint values to change.
-   * @param floating_joint_values The floating joint origin transform
-   * @return A the state of the environment
-   */
   /** @brief Get the state from a string-keyed map (delegates to JointValues overload) */
   virtual SceneState getState(const std::unordered_map<std::string, double>& joint_values,
                               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const
@@ -153,12 +139,6 @@ public:
    */
   virtual SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const = 0;
 
-  /**
-   * @brief Get the state using a JointId-keyed map (avoids string-to-ID conversion)
-   * @param joint_values A map of JointId to joint values to change
-   * @param floating_joint_values The floating joint origin transform
-   * @return The state of the environment
-   */
   /** @brief Get the state using a JointId-keyed map */
   virtual SceneState getState(const SceneState::JointValues& joint_values,
                               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
