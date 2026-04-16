@@ -847,8 +847,8 @@ struct convert<tesseract::common::PairsCollisionMarginData>
     for (const auto& [key, margin] : rhs)
     {
       Node key_node(NodeType::Sequence);
-      key_node.push_back(key.first.name());
-      key_node.push_back(key.second.name());
+      key_node.push_back(key.first().name());
+      key_node.push_back(key.second().name());
 
       // tell yaml-cpp “emit this sequence in [a, b] inline style”
       key_node.SetStyle(YAML::EmitterStyle::Flow);
@@ -876,7 +876,7 @@ struct convert<tesseract::common::PairsCollisionMarginData>
 
       auto id1 = tesseract::common::LinkId(name1);
       auto id2 = tesseract::common::LinkId(name2);
-      auto pair_key = tesseract::common::LinkIdPair::make(id1, id2);
+      auto pair_key = tesseract::common::LinkIdPair(id1, id2);
       rhs.emplace(pair_key, margin);
     }
     return true;
@@ -944,7 +944,7 @@ struct convert<tesseract::common::AllowedCollisionEntries>
 
       auto id1 = tesseract::common::LinkId(name1);
       auto id2 = tesseract::common::LinkId(name2);
-      auto pair_key = tesseract::common::LinkIdPair::make(id1, id2);
+      auto pair_key = tesseract::common::LinkIdPair(id1, id2);
       if (id1.value() <= id2.value())
         rhs.emplace(pair_key, tesseract::common::ACMEntry{ std::move(name1), std::move(name2), std::move(reason) });
       else
