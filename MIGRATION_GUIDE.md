@@ -487,25 +487,31 @@ for (const auto& [id, tf] : cal_info.joints)
     some_function(id.name(), tf);  // id.name() to get string
 ```
 
-### Rule 24: `EnvironmentMonitorInterface` floating joints parameter changed
+### Rule 24: `EnvironmentMonitorInterface` — ID-keyed overloads now primary
 
-All 8 `setEnvironmentState` methods changed their `floating_joints` parameter
-from `TransformMap` to `JointIdTransformMap`.
+The `setEnvironmentState` methods follow the same pattern as `StateSolver`:
+ID-keyed overloads are now the pure virtuals, string-keyed overloads are
+delegating defaults.
 
+**New pure virtual overloads** (must be implemented by subclasses):
 ```cpp
-// BEFORE
-bool setEnvironmentState(const std::string& ns,
-    const std::unordered_map<std::string, double>& joints,
-    const TransformMap& floating_joints = {}) const = 0;
+// ID-keyed map
+virtual bool setEnvironmentState(const std::string& ns,
+    const SceneState::JointValues& joints,
+    const JointIdTransformMap& floating_joints = {}) const = 0;
 
-// AFTER
-bool setEnvironmentState(const std::string& ns,
-    const std::unordered_map<std::string, double>& joints,
+// ID vector
+virtual bool setEnvironmentState(const std::string& ns,
+    const std::vector<JointId>& joint_ids,
+    const Eigen::Ref<const Eigen::VectorXd>& joint_values,
     const JointIdTransformMap& floating_joints = {}) const = 0;
 ```
 
-**Downstream impact:** All implementations of `EnvironmentMonitorInterface`
-(e.g., in `tesseract_ros`) must update their method signatures.
+**String overloads are now non-pure defaults** — they delegate to the ID versions.
+Existing downstream implementations that override the string overloads will still
+compile, but must also implement the new ID-keyed pure virtuals.
+
+Same pattern applies to the all-namespaces variants (returning `vector<string>`).
 
 ---
 
