@@ -43,10 +43,19 @@ void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
 }
 
 template <class Archive>
-void serialize(Archive& ar, LinkIdPair& pair)
+void save(Archive& ar, const LinkIdPair& pair)
 {
-  ar(cereal::make_nvp("first", pair.first));
-  ar(cereal::make_nvp("second", pair.second));
+  ar(cereal::make_nvp("first", pair.first()));
+  ar(cereal::make_nvp("second", pair.second()));
+}
+
+template <class Archive>
+void load(Archive& ar, LinkIdPair& pair)
+{
+  LinkId first, second;
+  ar(cereal::make_nvp("first", first));
+  ar(cereal::make_nvp("second", second));
+  pair = LinkIdPair(first, second);
 }
 
 template <class Archive, class T>
@@ -92,7 +101,7 @@ void save(Archive& ar, const CollisionMarginPairData& obj)
   // Serialize as string-based format for backwards compatibility
   std::map<std::pair<std::string, std::string>, double> compat;
   for (const auto& [key, margin] : obj.lookup_table_)
-    compat[{ key.first.name(), key.second.name() }] = margin;
+    compat[{ key.first().name(), key.second().name() }] = margin;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 

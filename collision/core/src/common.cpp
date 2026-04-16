@@ -55,7 +55,7 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
     {
       const auto& l2 = active_links[j];
       if (validator == nullptr || !(*validator)(l1, l2))
-        clp.push_back(tesseract::common::LinkIdPair::make(l1, l2));
+        clp.push_back(tesseract::common::LinkIdPair(l1, l2));
     }
   }
 
@@ -65,7 +65,7 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
     for (const auto& l2 : static_links)
     {
       if (validator == nullptr || !(*validator)(l1, l2))
-        clp.push_back(tesseract::common::LinkIdPair::make(l1, l2));
+        clp.push_back(tesseract::common::LinkIdPair(l1, l2));
     }
   }
 
@@ -114,7 +114,7 @@ ContactResult* processResult(ContactTestData& cdata,
     return nullptr;
 
   if ((cdata.req.calculate_distance || cdata.req.calculate_penetration) &&
-      (contact.distance > cdata.collision_margin_data.getCollisionMargin(key.first, key.second)))
+      (contact.distance > cdata.collision_margin_data.getCollisionMargin(key.first(), key.second())))
     return nullptr;
 
   if (!found)

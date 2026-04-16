@@ -149,18 +149,18 @@ TEST(LinkIdPairTest, MakeCanonical)  // NOLINT
 {
   const LinkId a = LinkId("link_a");
   const LinkId b = LinkId("link_b");
-  const LinkIdPair ab = LinkIdPair::make(a, b);
-  const LinkIdPair ba = LinkIdPair::make(b, a);
+  const LinkIdPair ab = LinkIdPair(a, b);
+  const LinkIdPair ba = LinkIdPair(b, a);
   EXPECT_EQ(ab, ba);
   // Canonical ordering: first.value <= second.value
-  EXPECT_LE(ab.first.value(), ab.second.value());
+  EXPECT_LE(ab.first().value(), ab.second().value());
 }
 
 TEST(LinkIdPairTest, Equality)  // NOLINT
 {
-  const LinkIdPair p1 = LinkIdPair::make(LinkId("x"), LinkId("y"));
-  const LinkIdPair p2 = LinkIdPair::make(LinkId("y"), LinkId("x"));
-  const LinkIdPair p3 = LinkIdPair::make(LinkId("x"), LinkId("z"));
+  const LinkIdPair p1 = LinkIdPair(LinkId("x"), LinkId("y"));
+  const LinkIdPair p2 = LinkIdPair(LinkId("y"), LinkId("x"));
+  const LinkIdPair p3 = LinkIdPair(LinkId("x"), LinkId("z"));
   EXPECT_EQ(p1, p2);
   EXPECT_NE(p1, p3);
 }
@@ -168,29 +168,29 @@ TEST(LinkIdPairTest, Equality)  // NOLINT
 TEST(LinkIdPairTest, HashWorksInUnorderedMap)  // NOLINT
 {
   std::unordered_map<LinkIdPair, int, LinkIdPair::Hash> map;
-  const LinkIdPair key = LinkIdPair::make(LinkId("a"), LinkId("b"));
+  const LinkIdPair key = LinkIdPair(LinkId("a"), LinkId("b"));
   map[key] = 42;
 
   // Lookup with reversed order should find same entry
-  const LinkIdPair reversed = LinkIdPair::make(LinkId("b"), LinkId("a"));
+  const LinkIdPair reversed = LinkIdPair(LinkId("b"), LinkId("a"));
   EXPECT_EQ(map.at(reversed), 42);
 }
 
 TEST(LinkIdPairTest, SameLinkPair)  // NOLINT
 {
   const LinkId a = LinkId("self");
-  const LinkIdPair pair = LinkIdPair::make(a, a);
-  EXPECT_EQ(pair.first, pair.second);
+  const LinkIdPair pair = LinkIdPair(a, a);
+  EXPECT_EQ(pair.first(), pair.second());
 }
 
 TEST(NameIdTest, LinkIdPairPreservesNames)  // NOLINT
 {
   const LinkId a = LinkId("link_a");
   const LinkId b = LinkId("link_b");
-  const LinkIdPair pair = LinkIdPair::make(b, a);
+  const LinkIdPair pair = LinkIdPair(b, a);
   // After canonical ordering, names should be preserved
-  EXPECT_FALSE(pair.first.name().empty());
-  EXPECT_FALSE(pair.second.name().empty());
+  EXPECT_FALSE(pair.first().name().empty());
+  EXPECT_FALSE(pair.second().name().empty());
 }
 
 // ======================== Cereal serialization ========================

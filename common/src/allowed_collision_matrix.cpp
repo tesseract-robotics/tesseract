@@ -50,7 +50,7 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
                                                  const LinkId& link_id2,
                                                  const std::string& reason)
 {
-  auto key = LinkIdPair::make(link_id1, link_id2);
+  auto key = LinkIdPair(link_id1, link_id2);
 
   // Hash collision check
   auto it = lookup_table_.find(key);
@@ -73,14 +73,14 @@ const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions()
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2)
 {
-  lookup_table_.erase(LinkIdPair::make(link_id1, link_id2));
+  lookup_table_.erase(LinkIdPair(link_id1, link_id2));
 }
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 {
   for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
-    if (it->first.first == link_id || it->first.second == link_id)
+    if (it->first.first() == link_id || it->first.second() == link_id)
       it = lookup_table_.erase(it);
     else
       ++it;
@@ -89,7 +89,7 @@ void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 
 bool AllowedCollisionMatrix::isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const
 {
-  return lookup_table_.find(LinkIdPair::make(link_id1, link_id2)) != lookup_table_.end();
+  return lookup_table_.find(LinkIdPair(link_id1, link_id2)) != lookup_table_.end();
 }
 
 void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }
