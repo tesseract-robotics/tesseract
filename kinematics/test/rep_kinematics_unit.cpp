@@ -154,7 +154,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   KinematicGroup kin_group_copy(kin_group);
 
   {
-    EXPECT_EQ(kin_group.getBaseLinkId(), tesseract::common::LinkId(scene_graph->getRoot()));
+    EXPECT_EQ(kin_group.getBaseLinkId(), scene_graph->getRoot());
     runInvKinTest(kin_group, pose, working_frame, tip_link_name, seed);
     runKinGroupJacobianABBExternalPositionerTest(kin_group);
     runActiveLinkNamesABBExternalPositionerTest(kin_group);
@@ -174,7 +174,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
 
   // Check KinematicGroup copy
   {
-    EXPECT_EQ(kin_group_copy.getBaseLinkId(), tesseract::common::LinkId(scene_graph->getRoot()));
+    EXPECT_EQ(kin_group_copy.getBaseLinkId(), scene_graph->getRoot());
     runInvKinTest(kin_group_copy, pose, working_frame, tip_link_name, seed);
     runKinGroupJacobianABBExternalPositionerTest(kin_group_copy);
     runActiveLinkNamesABBExternalPositionerTest(kin_group_copy);
@@ -203,7 +203,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin2->getJointIds(), joint_ids);
 
   KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
-  EXPECT_EQ(kin_group2.getBaseLinkId(), tesseract::common::LinkId(scene_graph->getRoot()));
+  EXPECT_EQ(kin_group2.getBaseLinkId(), scene_graph->getRoot());
   runInvKinTest(kin_group2, pose, working_frame, tip_link_name, seed);
   runKinGroupJacobianABBExternalPositionerTest(kin_group2);
   runActiveLinkNamesABBExternalPositionerTest(kin_group2);

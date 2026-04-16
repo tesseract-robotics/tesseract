@@ -1677,7 +1677,7 @@ bool Environment::Implementation::applyAddLinkCommandHelper(
     tesseract::scene_graph::Joint joint(joint_name);
     joint.type = tesseract::scene_graph::JointType::FIXED;
     joint.child_link_id = tesseract::common::LinkId(link_name);
-    joint.parent_link_id = tesseract::common::LinkId(scene_graph->getRoot());
+    joint.parent_link_id = scene_graph->getRoot();
 
     if (!scene_graph->addLink(*link, joint))
       return false;
@@ -1955,8 +1955,8 @@ bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<cons
     // Connect root of subgraph to graph
     tesseract::scene_graph::Joint root_joint(cmd->getPrefix() + cmd->getSceneGraph()->getName() + "_joint");
     root_joint.type = tesseract::scene_graph::JointType::FIXED;
-    root_joint.parent_link_id = tesseract::common::LinkId(scene_graph->getRoot());
-    root_joint.child_link_id = tesseract::common::LinkId(cmd->getPrefix() + cmd->getSceneGraph()->getRoot());
+    root_joint.parent_link_id = scene_graph->getRoot();
+    root_joint.child_link_id = tesseract::common::LinkId(cmd->getPrefix() + cmd->getSceneGraph()->getRoot().name());
     root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
     tesseract::scene_graph::SceneGraph::ConstPtr sg = cmd->getSceneGraph();
@@ -2830,7 +2830,7 @@ Environment::getCurrentFloatingJointValues(const std::vector<tesseract::common::
 std::string Environment::getRootLinkName() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).scene_graph->getRoot();
+  return std::as_const<Implementation>(*impl_).scene_graph->getRoot().name();
 }
 
 std::vector<std::string> Environment::getLinkNames() const

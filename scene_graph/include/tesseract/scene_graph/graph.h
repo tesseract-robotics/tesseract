@@ -71,7 +71,7 @@ class JointLimits;
 
 /** @brief Defines the boost graph property. */
 using GraphProperty =
-    boost::property<boost::graph_name_t, std::string, boost::property<boost::graph_root_t, std::string>>;
+    boost::property<boost::graph_name_t, std::string, boost::property<boost::graph_root_t, common::LinkId>>;
 
 /** @brief Defines the boost graph vertex property. */
 using VertexProperty = boost::property<boost::vertex_link_t, std::shared_ptr<Link>>;
@@ -163,7 +163,7 @@ public:
    * @brief Gets the root link name (aka. World Coordinate Frame)
    * @return The root link name
    */
-  const std::string& getRoot() const;
+  const common::LinkId& getRoot() const;
 
   /**
    * @brief Adds a link to the graph
