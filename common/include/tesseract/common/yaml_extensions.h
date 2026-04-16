@@ -709,24 +709,24 @@ struct convert<tesseract::common::TaskComposerPluginInfo>
 };
 
 template <>
-struct convert<tesseract::common::TransformMap>
+struct convert<tesseract::common::JointIdTransformMap>
 {
-  static Node encode(const tesseract::common::TransformMap& rhs)
+  static Node encode(const tesseract::common::JointIdTransformMap& rhs)
   {
     Node node;
     for (const auto& pair : rhs)
-      node[pair.first] = pair.second;
+      node[pair.first.name()] = pair.second;
 
     return node;
   }
 
-  static bool decode(const Node& node, tesseract::common::TransformMap& rhs)
+  static bool decode(const Node& node, tesseract::common::JointIdTransformMap& rhs)
   {
     if (!node.IsMap())
       return false;
 
     for (const auto& pair : node)
-      rhs[pair.first.as<std::string>()] = pair.second.as<Eigen::Isometry3d>();
+      rhs[tesseract::common::JointId(pair.first.as<std::string>())] = pair.second.as<Eigen::Isometry3d>();
 
     return true;
   }
@@ -749,7 +749,7 @@ struct convert<tesseract::common::CalibrationInfo>
   {
     const YAML::Node& joints_node = node["joints"];
 
-    rhs.joints = joints_node.as<tesseract::common::TransformMap>();
+    rhs.joints = joints_node.as<tesseract::common::JointIdTransformMap>();
 
     return true;
   }
