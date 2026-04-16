@@ -417,8 +417,8 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
     q(qnr->second) = joint_value;
     return true;
   }
-  // Note: no error log on miss (unlike the string overload) — callers use pre-validated IDs
-  // from active_joint_ids_, populated from data_.active_joint_names, so a miss is unreachable.
+  // Note: no error log on miss — callers use pre-validated IDs
+  // from active_joint_ids_, populated from data_.active_joint_ids, so a miss is unreachable.
   return false;
 }
 
