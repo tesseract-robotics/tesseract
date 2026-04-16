@@ -228,7 +228,7 @@ void serialize(Archive& ar, SceneGraph& obj)
 
     ar(cereal::make_nvp("acm", obj.acm_));
 
-    std::string root_link_name = obj.getRoot();
+    std::string root_link_name = obj.getRoot().name();
     ar(cereal::make_nvp("root_link_name", root_link_name));
   }
 }

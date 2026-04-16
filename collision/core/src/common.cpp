@@ -35,27 +35,26 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::collision
 {
-std::vector<ObjectPairKey>
-getCollisionObjectPairs(const std::vector<std::string>& active_links,
-                        const std::vector<std::string>& static_links,
+std::vector<tesseract::common::LinkIdPair>
+getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_links,
+                        const std::vector<tesseract::common::LinkId>& static_links,
                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator)
 {
   std::size_t num_pairs = active_links.size() * (active_links.size() - 1) / 2;
   num_pairs += (active_links.size() * static_links.size());
 
-  std::vector<ObjectPairKey> clp;
+  std::vector<tesseract::common::LinkIdPair> clp;
   clp.reserve(num_pairs);
 
   // Create active to active pairs
   for (std::size_t i = 0; i < active_links.size() - 1; ++i)
   {
-    const std::string& l1 = active_links[i];
+    const auto& l1 = active_links[i];
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
     {
-      const std::string& l2 = active_links[j];
-      if (validator == nullptr ||
-          !(*validator)(tesseract::common::LinkId(l1), tesseract::common::LinkId(l2)))
-        clp.emplace_back((l1 <= l2) ? l1 : l2, (l1 <= l2) ? l2 : l1);
+      const auto& l2 = active_links[j];
+      if (validator == nullptr || !(*validator)(l1, l2))
+        clp.push_back(tesseract::common::LinkIdPair::make(l1, l2));
     }
   }
 
@@ -64,9 +63,8 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
   {
     for (const auto& l2 : static_links)
     {
-      if (validator == nullptr ||
-          !(*validator)(tesseract::common::LinkId(l1), tesseract::common::LinkId(l2)))
-        clp.emplace_back((l1 <= l2) ? l1 : l2, (l1 <= l2) ? l2 : l1);
+      if (validator == nullptr || !(*validator)(l1, l2))
+        clp.push_back(tesseract::common::LinkIdPair::make(l1, l2));
     }
   }
 

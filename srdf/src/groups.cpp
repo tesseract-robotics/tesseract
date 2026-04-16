@@ -57,7 +57,7 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
 
     std::vector<tesseract::common::LinkId> links;
     std::vector<tesseract::common::JointId> joints;
-    std::vector<std::pair<std::string, std::string>> chains;
+    ChainGroup chains;
 
     // get the links in the groups
     for (const tinyxml2::XMLElement* link_xml = xml_element->FirstChildElement("link"); link_xml != nullptr;
