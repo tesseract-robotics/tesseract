@@ -48,6 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::scene_graph
 {
+using tesseract::common::JointId;
 using tesseract::common::LinkId;
 KDL::Frame convert(const Eigen::Isometry3d& transform)
 {
@@ -197,18 +198,18 @@ KDL::RigidBodyInertia convert(const std::shared_ptr<const Inertial>& inertial)
 bool KDLTreeData::operator==(const KDLTreeData& rhs) const
 {
   bool equal = true;
-  equal &= (base_link_name == rhs.base_link_name);
-  equal &= (joint_names == rhs.joint_names);
-  equal &= (active_joint_names == rhs.active_joint_names);
-  equal &= (floating_joint_names == rhs.floating_joint_names);
-  equal &= (link_names == rhs.link_names);
-  equal &= (active_link_names == rhs.active_link_names);
-  equal &= (static_link_names == rhs.static_link_names);
+  equal &= (base_link_id == rhs.base_link_id);
+  equal &= (joint_ids == rhs.joint_ids);
+  equal &= (active_joint_ids == rhs.active_joint_ids);
+  equal &= (floating_joint_ids == rhs.floating_joint_ids);
+  equal &= (link_ids == rhs.link_ids);
+  equal &= (active_link_ids == rhs.active_link_ids);
+  equal &= (static_link_ids == rhs.static_link_ids);
 
   auto isometry_equal = [](const Eigen::Isometry3d& iso_1, const Eigen::Isometry3d& iso_2) {
     return iso_1.isApprox(iso_2, 1e-5);
   };
-  equal &= tesseract::common::isIdenticalMap<tesseract::common::TransformMap, Eigen::Isometry3d>(
+  equal &= tesseract::common::isIdenticalMap<tesseract::common::JointIdTransformMap, Eigen::Isometry3d>(
       floating_joint_values, rhs.floating_joint_values, isometry_equal);
 
   return equal;
@@ -240,47 +241,47 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     {
       std::size_t num_v = boost::num_vertices(graph);
       std::size_t num_e = boost::num_edges(graph);
-      data_.link_names.reserve(num_v);
-      data_.active_link_names.reserve(num_v);
-      data_.static_link_names.reserve(num_v);
-      data_.joint_names.reserve(num_e);
-      data_.active_joint_names.reserve(num_e);
-      data_.floating_joint_names.reserve(num_e);
+      data_.link_ids.reserve(num_v);
+      data_.active_link_ids.reserve(num_v);
+      data_.static_link_ids.reserve(num_v);
+      data_.joint_ids.reserve(num_e);
+      data_.active_joint_ids.reserve(num_e);
+      data_.floating_joint_ids.reserve(num_e);
 
-      data_.link_names.push_back(link->getName());
-      data_.static_link_names.push_back(link->getName());
-      data_.base_link_name = link->getName();
+      data_.link_ids.push_back(link->getId());
+      data_.static_link_ids.push_back(link->getId());
+      data_.base_link_id = link->getId();
       return;
     }
 
-    data_.link_names.push_back(link->getName());
+    data_.link_ids.push_back(link->getId());
 
     boost::graph_traits<Graph>::in_edge_iterator ei, ei_end;
     boost::tie(ei, ei_end) = boost::in_edges(vertex, graph);
     SceneGraph::Edge e = *ei;
     const Joint::ConstPtr& parent_joint = boost::get(boost::edge_joint, graph)[e];
-    data_.joint_names.push_back(parent_joint->getName());
+    data_.joint_ids.push_back(parent_joint->getId());
 
     if (parent_joint->type == JointType::FLOATING)
     {
-      data_.floating_joint_names.push_back(parent_joint->getName());
-      data_.floating_joint_values[parent_joint->getName()] = parent_joint->parent_to_joint_origin_transform;
+      data_.floating_joint_ids.push_back(parent_joint->getId());
+      data_.floating_joint_values[parent_joint->getId()] = parent_joint->parent_to_joint_origin_transform;
     }
 
     KDL::Joint kdl_jnt = convert(parent_joint);
     if (kdl_jnt.getType() != KDL::Joint::None)
     {
-      data_.active_joint_names.push_back(parent_joint->getName());
-      data_.active_link_names.push_back(link->getName());
+      data_.active_joint_ids.push_back(parent_joint->getId());
+      data_.active_link_ids.push_back(link->getId());
     }
     else
     {
       auto it = std::find(
-          data_.active_link_names.begin(), data_.active_link_names.end(), parent_joint->parent_link_id.name());
-      if (it != data_.active_link_names.end())
-        data_.active_link_names.push_back(link->getName());
+          data_.active_link_ids.begin(), data_.active_link_ids.end(), parent_joint->parent_link_id);
+      if (it != data_.active_link_ids.end())
+        data_.active_link_ids.push_back(link->getId());
       else
-        data_.static_link_names.push_back(link->getName());
+        data_.static_link_ids.push_back(link->getId());
     }
 
     // construct the kdl segment
@@ -301,13 +302,13 @@ protected:
 struct kdl_sub_tree_builder : public boost::dfs_visitor<>
 {
   kdl_sub_tree_builder(KDLTreeData& data,
-                       const std::vector<std::string>& joint_names,
-                       const std::unordered_map<std::string, double>& joint_values,
-                       const tesseract::common::TransformMap& floating_joint_values)
-    : data_(data), joint_names_(joint_names), joint_values_(joint_values), floating_joint_values_(floating_joint_values)
+                       const std::vector<JointId>& joint_ids,
+                       const std::unordered_map<JointId, double>& joint_values,
+                       const tesseract::common::JointIdTransformMap& floating_joint_values)
+    : data_(data), joint_ids_(joint_ids), joint_values_(joint_values), floating_joint_values_(floating_joint_values)
   {
-    for (const auto& floating_joint_value : floating_joint_values)
-      data_.floating_joint_values.at(floating_joint_value.first) = floating_joint_value.second;
+    for (const auto& [id, tf] : floating_joint_values)
+      data_.floating_joint_values.at(id) = tf;
   }
 
   template <class u, class g>
@@ -324,19 +325,19 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     auto num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
     if (num_in_edges == 0)  // The root of the tree will have not incoming edges
     {
-      data_.base_link_name = link->getName();
+      data_.base_link_id = link->getId();
       data_.tree = KDL::Tree(link->getName());
-      segment_transforms_[link->getName()] = KDL::Frame::Identity();
+      segment_transforms_[link->getId()] = KDL::Frame::Identity();
 
       std::size_t num_v = boost::num_vertices(graph);
       std::size_t num_e = boost::num_edges(graph);
-      data_.link_names.reserve(num_v);
-      data_.static_link_names.reserve(num_v);
-      data_.active_link_names.reserve(num_v);
-      data_.active_joint_names.reserve(num_e);
+      data_.link_ids.reserve(num_v);
+      data_.static_link_ids.reserve(num_v);
+      data_.active_link_ids.reserve(num_v);
+      data_.active_joint_ids.reserve(num_e);
 
-      data_.link_names.push_back(link->getName());
-      data_.static_link_names.push_back(link->getName());
+      data_.link_ids.push_back(link->getId());
+      data_.static_link_ids.push_back(link->getId());
       return;
     }
 
@@ -344,103 +345,103 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     boost::tie(ei, ei_end) = boost::in_edges(vertex, graph);
     SceneGraph::Edge e = *ei;
     const Joint::ConstPtr& parent_joint = boost::get(boost::edge_joint, graph)[e];
-    bool found = (std::find(joint_names_.begin(), joint_names_.end(), parent_joint->getName()) != joint_names_.end());
+    bool found = (std::find(joint_ids_.begin(), joint_ids_.end(), parent_joint->getId()) != joint_ids_.end());
     KDL::Joint kdl_jnt = convert(parent_joint);
     KDL::Frame parent_to_joint = (parent_joint->type == JointType::FLOATING) ?
-                                     convert(data_.floating_joint_values.at(parent_joint->getName())) :
+                                     convert(data_.floating_joint_values.at(parent_joint->getId())) :
                                      convert(parent_joint->parent_to_joint_origin_transform);
 
     KDL::Segment kdl_sgm(link->getName(), kdl_jnt, parent_to_joint, inert);
-    std::string parent_link_name = parent_joint->parent_link_id.name();
+    const LinkId parent_link_id = parent_joint->parent_link_id;
 
     if (parent_joint->type == JointType::FIXED || parent_joint->type == JointType::FLOATING)
-      segment_transforms_[parent_joint->child_link_id.name()] =
-          segment_transforms_[parent_link_name] * kdl_sgm.pose(0.0);
+      segment_transforms_[parent_joint->child_link_id] =
+          segment_transforms_[parent_link_id] * kdl_sgm.pose(0.0);
     else
-      segment_transforms_[parent_joint->child_link_id.name()] =
-          segment_transforms_[parent_link_name] * kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
+      segment_transforms_[parent_joint->child_link_id] =
+          segment_transforms_[parent_link_id] * kdl_sgm.pose(joint_values_.at(parent_joint->getId()));
 
     if (!started_ && found)
     {
       started_ = found;
 
       // construct the kdl segment to root if needed
-      if (parent_link_name != data_.base_link_name)
+      if (parent_link_id != data_.base_link_id)
       {
-        std::string world_joint_name = data_.base_link_name + "_" + parent_link_name;
-        KDL::Segment world_sgm = KDL::Segment(parent_link_name,
+        std::string world_joint_name = data_.base_link_id.name() + "_" + parent_link_id.name();
+        KDL::Segment world_sgm = KDL::Segment(parent_link_id.name(),
                                               KDL::Joint(world_joint_name, KDL::Joint::None),
-                                              segment_transforms_[parent_link_name],
+                                              segment_transforms_[parent_link_id],
                                               KDL::RigidBodyInertia(0));
-        data_.tree.addSegment(world_sgm, data_.base_link_name);
+        data_.tree.addSegment(world_sgm, data_.base_link_id.name());
       }
-      link_names_.push_back(parent_link_name);
-      link_names_.push_back(link->getName());
-      data_.static_link_names.push_back(parent_link_name);
-      data_.link_names.push_back(parent_link_name);
-      data_.link_names.push_back(link->getName());
-      data_.active_link_names.push_back(link->getName());
-      data_.active_joint_names.push_back(parent_joint->getName());
+      link_ids_.push_back(parent_link_id);
+      link_ids_.push_back(link->getId());
+      data_.static_link_ids.push_back(parent_link_id);
+      data_.link_ids.push_back(parent_link_id);
+      data_.link_ids.push_back(link->getId());
+      data_.active_link_ids.push_back(link->getId());
+      data_.active_joint_ids.push_back(parent_joint->getId());
 
       // construct the kdl segment
       KDL::Segment sgm = KDL::Segment(link->getName(), kdl_jnt, parent_to_joint, inert);
 
       // add segment to tree
-      data_.tree.addSegment(sgm, parent_link_name);
+      data_.tree.addSegment(sgm, parent_link_id.name());
     }
     else if (started_)
     {
-      auto it = std::find(link_names_.begin(), link_names_.end(), parent_link_name);
+      auto it = std::find(link_ids_.begin(), link_ids_.end(), parent_link_id);
 
-      if (it == link_names_.end() && !found)
+      if (it == link_ids_.end() && !found)
         return;
 
-      if (it == link_names_.end() && found)
+      if (it == link_ids_.end() && found)
       {
-        data_.link_names.push_back(parent_link_name);
-        link_names_.push_back(parent_link_name);
-        data_.static_link_names.push_back(parent_link_name);
+        data_.link_ids.push_back(parent_link_id);
+        link_ids_.push_back(parent_link_id);
+        data_.static_link_ids.push_back(parent_link_id);
 
-        KDL::Frame new_tree_parent_to_joint = segment_transforms_[data_.base_link_name].Inverse() *
-                                              segment_transforms_[parent_joint->parent_link_id.name()];
+        KDL::Frame new_tree_parent_to_joint = segment_transforms_[data_.base_link_id].Inverse() *
+                                              segment_transforms_[parent_joint->parent_link_id];
 
         // construct the kdl segment
-        std::string new_joint_name = data_.base_link_name + "_to_" + parent_link_name + "_joint";
-        KDL::Segment sgm = KDL::Segment(parent_link_name,
+        std::string new_joint_name = data_.base_link_id.name() + "_to_" + parent_link_id.name() + "_joint";
+        KDL::Segment sgm = KDL::Segment(parent_link_id.name(),
                                         KDL::Joint(new_joint_name, KDL::Joint::None),
                                         new_tree_parent_to_joint,
                                         KDL::RigidBodyInertia(0));
 
         // add segment to tree
-        data_.tree.addSegment(sgm, data_.base_link_name);
+        data_.tree.addSegment(sgm, data_.base_link_id.name());
       }
-      else if (it != link_names_.end() && !found)
+      else if (it != link_ids_.end() && !found)
       {
         if (parent_joint->type == JointType::FIXED || parent_joint->type == JointType::FLOATING)
           parent_to_joint = kdl_sgm.pose(0.0);
         else
-          parent_to_joint = kdl_sgm.pose(joint_values_.at(parent_joint->getName()));
+          parent_to_joint = kdl_sgm.pose(joint_values_.at(parent_joint->getId()));
 
         kdl_jnt = KDL::Joint(parent_joint->getName(), KDL::Joint::None);
       }
 
-      data_.link_names.push_back(link->getName());
-      link_names_.push_back(link->getName());
+      data_.link_ids.push_back(link->getId());
+      link_ids_.push_back(link->getId());
 
-      auto active_it = std::find(data_.active_link_names.begin(), data_.active_link_names.end(), parent_link_name);
-      if (active_it != data_.active_link_names.end() || kdl_jnt.getType() != KDL::Joint::None)
-        data_.active_link_names.push_back(link->getName());
+      auto active_it = std::find(data_.active_link_ids.begin(), data_.active_link_ids.end(), parent_link_id);
+      if (active_it != data_.active_link_ids.end() || kdl_jnt.getType() != KDL::Joint::None)
+        data_.active_link_ids.push_back(link->getId());
       else
-        data_.static_link_names.push_back(link->getName());
+        data_.static_link_ids.push_back(link->getId());
 
       if (kdl_jnt.getType() != KDL::Joint::None)
-        data_.active_joint_names.push_back(parent_joint->getName());
+        data_.active_joint_ids.push_back(parent_joint->getId());
 
       // construct the kdl segment
       KDL::Segment sgm = KDL::Segment(link->getName(), kdl_jnt, parent_to_joint, inert);
 
       // add segment to tree
-      data_.tree.addSegment(sgm, parent_link_name);
+      data_.tree.addSegment(sgm, parent_link_id.name());
     }
   }
 
@@ -448,14 +449,14 @@ protected:
   KDLTreeData& data_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   int search_cnt_{ -1 };
   bool started_{ false };
-  std::map<std::string, KDL::Frame> segment_transforms_;
-  std::vector<std::string> link_names_;
+  std::map<LinkId, KDL::Frame> segment_transforms_;
+  std::vector<LinkId> link_ids_;
 
-  const std::vector<std::string>& joint_names_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const std::vector<JointId>& joint_ids_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  const std::unordered_map<std::string, double>& joint_values_;
+  const std::unordered_map<JointId, double>& joint_values_;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  const tesseract::common::TransformMap& floating_joint_values_;
+  const tesseract::common::JointIdTransformMap& floating_joint_values_;
 };
 
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
@@ -492,16 +493,16 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
       static_cast<const Graph&>(scene_graph),
       boost::visitor(builder).root_vertex(scene_graph.getVertex(root_name)).vertex_index_map(prop_index_map));
 
-  assert(data.link_names.size() == scene_graph.getLinks().size());
-  assert(data.active_joint_names.size() <= scene_graph.getJoints().size());
-  assert(data.active_link_names.size() < scene_graph.getLinks().size());
+  assert(data.link_ids.size() == scene_graph.getLinks().size());
+  assert(data.active_joint_ids.size() <= scene_graph.getJoints().size());
+  assert(data.active_link_ids.size() < scene_graph.getLinks().size());
   return data;
 }
 
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
-                            const std::vector<std::string>& joint_names,
-                            const std::unordered_map<std::string, double>& joint_values,
-                            const tesseract::common::TransformMap& floating_joint_values)
+                            const std::vector<JointId>& joint_ids,
+                            const std::unordered_map<JointId, double>& joint_values,
+                            const tesseract::common::JointIdTransformMap& floating_joint_values)
 {
   if (!scene_graph.isTree())
     throw std::runtime_error("parseSubSceneGraph: currently only works if the scene graph is a tree.");
@@ -509,7 +510,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
   KDLTreeData data;
   data.tree = KDL::Tree(scene_graph.getRoot());
 
-  kdl_sub_tree_builder builder(data, joint_names, joint_values, floating_joint_values);
+  kdl_sub_tree_builder builder(data, joint_ids, joint_values, floating_joint_values);
 
   std::map<SceneGraph::Vertex, size_t> index_map;
   boost::associative_property_map<std::map<SceneGraph::Vertex, size_t>> prop_index_map(index_map);
@@ -524,7 +525,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
                                 .root_vertex(scene_graph.getVertex(scene_graph.getRoot()))
                                 .vertex_index_map(prop_index_map));
 
-  if (data.tree.getNrOfJoints() != joint_names.size())
+  if (data.tree.getNrOfJoints() != joint_ids.size())
     throw std::runtime_error("parseSubSceneGraph: failed to generate sub-tree given the provided joint names.");
 
   return data;

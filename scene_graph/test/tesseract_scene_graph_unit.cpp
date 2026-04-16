@@ -1110,7 +1110,7 @@ void testSceneGraphKDLTree(KDL::Tree& tree)
 
 void testSubSceneGraphKDLTree(tesseract::scene_graph::KDLTreeData& data,
                               tesseract::scene_graph::KDLTreeData& full_data,
-                              const std::unordered_map<std::string, double>& joint_values)
+                              const std::unordered_map<JointId, double>& joint_values)
 {
   std::vector<std::string> prefix{ "left_", "right_" };
   KDL::TreeFkSolverPos_recursive solver(data.tree);
@@ -1119,12 +1119,12 @@ void testSubSceneGraphKDLTree(tesseract::scene_graph::KDLTreeData& data,
   KDL::JntArray joints;
   joints.resize(data.tree.getNrOfJoints());
   for (unsigned int i = 0; i < data.tree.getNrOfJoints(); ++i)
-    joints(i) = joint_values.at(data.active_joint_names[i]);
+    joints(i) = joint_values.at(data.active_joint_ids[i]);
 
   KDL::JntArray full_joints;
   joints.resize(full_data.tree.getNrOfJoints());
   for (unsigned int i = 0; i < full_data.tree.getNrOfJoints(); ++i)
-    joints(i) = joint_values.at(full_data.active_joint_names[i]);
+    joints(i) = joint_values.at(full_data.active_joint_ids[i]);
 
   EXPECT_EQ(data.tree.getRootSegment()->first, "world");
   EXPECT_EQ(full_data.tree.getRootSegment()->first, "world");
@@ -1269,17 +1269,17 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
     EXPECT_TRUE(g.getLinkVisibility(link->getName()));
   }
 
-  std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4" };
-  std::vector<std::string> link_names{ "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
-  std::vector<std::string> static_link_names{ "base_link", "link_1" };
-  std::vector<std::string> active_link_names{ "link_2", "link_3", "link_4", "link_5" };
+  std::vector<JointId> joint_ids{ "joint_1", "joint_2", "joint_3", "joint_4" };
+  std::vector<LinkId> link_ids{ "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
+  std::vector<LinkId> static_link_ids{ "base_link", "link_1" };
+  std::vector<LinkId> active_link_ids{ "link_2", "link_3", "link_4", "link_5" };
   {
     KDLTreeData data = parseSceneGraph(g);
 
-    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, joint_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_ids, link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_ids, static_link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_ids, joint_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_ids, active_link_ids, false));
 
     testSceneGraphKDLTree(data.tree);
 
@@ -1306,10 +1306,10 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
   {
     KDLTreeData data = parseSceneGraph(*g_clone);
 
-    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, joint_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_ids, link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_ids, static_link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_ids, joint_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_ids, active_link_ids, false));
 
     testSceneGraphKDLTree(data.tree);
 
@@ -1331,32 +1331,32 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
   SceneGraph g = buildTestSceneGraphForSubTree();
   std::vector<std::string> joint_names{ "left_joint_1",  "left_joint_2",  "left_joint_3",  "left_joint_4",
                                         "right_joint_1", "right_joint_2", "right_joint_3", "right_joint_4" };
-  std::vector<std::string> sub_joint_names{ "left_joint_2",  "left_joint_3",  "left_joint_4",
-                                            "right_joint_2", "right_joint_3", "right_joint_4" };
-  std::vector<std::string> link_names{ "world",        "left_link_2",  "left_link_3",  "left_link_4", "left_link_5",
-                                       "right_link_2", "right_link_3", "right_link_4", "right_link_5" };
+  std::vector<JointId> sub_joint_ids{ "left_joint_2",  "left_joint_3",  "left_joint_4",
+                                      "right_joint_2", "right_joint_3", "right_joint_4" };
+  std::vector<LinkId> link_ids{ "world",        "left_link_2",  "left_link_3",  "left_link_4", "left_link_5",
+                                "right_link_2", "right_link_3", "right_link_4", "right_link_5" };
 
-  std::vector<std::string> static_link_names{ "world", "left_link_2", "right_link_2" };
+  std::vector<LinkId> static_link_ids{ "world", "left_link_2", "right_link_2" };
 
-  std::vector<std::string> active_link_names{ "left_link_3",  "left_link_4",  "left_link_5",
-                                              "right_link_3", "right_link_4", "right_link_5" };
+  std::vector<LinkId> active_link_ids{ "left_link_3",  "left_link_4",  "left_link_5",
+                                       "right_link_3", "right_link_4", "right_link_5" };
 
-  std::unordered_map<std::string, double> joint_values;
+  std::unordered_map<JointId, double> joint_values;
   for (const auto& joint_name : joint_names)
   {
     auto jnt = g.getJoint(joint_name);
     std::uniform_real_distribution<double> sample(jnt->limits->lower, jnt->limits->upper);
-    joint_values[joint_name] = sample(tesseract::common::mersenne);
+    joint_values[JointId(joint_name)] = sample(tesseract::common::mersenne);
   }
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(g, sub_joint_names, joint_values, tesseract::common::TransformMap());
+    KDLTreeData data = parseSceneGraph(g, sub_joint_ids, joint_values, tesseract::common::JointIdTransformMap());
 
-    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, sub_joint_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_ids, link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_ids, static_link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_ids, sub_joint_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_ids, active_link_ids, false));
 
     testSubSceneGraphKDLTree(data, full_data, joint_values);
 
@@ -1382,12 +1382,12 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
 
   {
     KDLTreeData full_data = parseSceneGraph(g);
-    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_names, joint_values, tesseract::common::TransformMap());
+    KDLTreeData data = parseSceneGraph(*g_clone, sub_joint_ids, joint_values, tesseract::common::JointIdTransformMap());
 
-    EXPECT_TRUE(tesseract::common::isIdentical(data.link_names, link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_names, static_link_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_names, sub_joint_names, false));
-    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_names, active_link_names, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.link_ids, link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.static_link_ids, static_link_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_joint_ids, sub_joint_ids, false));
+    EXPECT_TRUE(tesseract::common::isIdentical(data.active_link_ids, active_link_ids, false));
 
     testSubSceneGraphKDLTree(data, full_data, joint_values);
 
