@@ -134,7 +134,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_TRUE(checker.isCollisionObjectEnabled("thin_box_link"));
 
   ContactManagerConfig config;
-  config.modify_object_enabled[tesseract::common::LinkId("thin_box_link")] = false;
+  config.modify_object_enabled["thin_box_link"] = false;
 
   checker.applyContactManagerConfig(config);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
@@ -244,7 +244,7 @@ inline void runTest(ContinuousContactManager& checker)
   EXPECT_TRUE(checker.isCollisionObjectEnabled("thin_box_link"));
 
   ContactManagerConfig config;
-  config.modify_object_enabled[tesseract::common::LinkId("thin_box_link")] = false;
+  config.modify_object_enabled["thin_box_link"] = false;
 
   checker.applyContactManagerConfig(config);
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
