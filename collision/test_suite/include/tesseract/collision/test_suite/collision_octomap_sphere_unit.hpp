@@ -103,9 +103,9 @@ inline void runTestTyped(DiscreteContactManager& checker, double tol, ContactTes
 
   // Set the collision object transforms
   tesseract::common::LinkIdTransformMap location;
-  location[tesseract::common::LinkId("octomap_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId("sphere_link")] = Eigen::Isometry3d::Identity();
-  location[tesseract::common::LinkId("sphere_link")].translation() = Eigen::Vector3d(0, 0, 1);
+  location["octomap_link"] = Eigen::Isometry3d::Identity();
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere_link"].translation() = Eigen::Vector3d(0, 0, 1);
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
