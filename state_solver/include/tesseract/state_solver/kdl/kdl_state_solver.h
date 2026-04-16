@@ -57,6 +57,12 @@ public:
 
   StateSolver::UPtr clone() const override;
 
+  // Bring base class string-to-ID default overloads into scope (prevent name hiding)
+  using StateSolver::setState;
+  using StateSolver::getState;
+  using StateSolver::getLinkTransforms;
+  using StateSolver::getJacobian;
+
   void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
   void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
