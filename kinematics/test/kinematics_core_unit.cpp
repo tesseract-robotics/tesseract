@@ -529,9 +529,9 @@ TEST(TesseractKinematicsUnit, JointGroupCalcFwdKinLinkIdUnit)  // NOLINT
   tesseract::common::LinkIdTransformMap result = joint_group->calcFwdKin(jvals);
 
   // Verify specific LinkId keys are present
-  EXPECT_TRUE(result.count(LinkId("base_link")) > 0);
-  EXPECT_TRUE(result.count(LinkId("tool0")) > 0);
-  EXPECT_TRUE(result.count(LinkId("link_7")) > 0);
+  EXPECT_TRUE(result.count("base_link") > 0);
+  EXPECT_TRUE(result.count("tool0") > 0);
+  EXPECT_TRUE(result.count("link_7") > 0);
 
   // Verify the result is non-empty and contains expected links
   EXPECT_FALSE(result.empty());
@@ -553,14 +553,14 @@ TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
   // Active links are those moved by the active joints
   for (const auto& name : joint_group->getActiveLinkNames())
   {
-    EXPECT_TRUE(joint_group->isActiveLinkId(LinkId(name)));
+    EXPECT_TRUE(joint_group->isActiveLinkId(name));
   }
 
   // base_link should not be active (it's the fixed base)
-  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId("base_link")));
+  EXPECT_FALSE(joint_group->isActiveLinkId("base_link"));
 
   // Non-existent link should not be active
-  EXPECT_FALSE(joint_group->isActiveLinkId(LinkId("nonexistent_link")));
+  EXPECT_FALSE(joint_group->isActiveLinkId("nonexistent_link"));
 }
 
 int main(int argc, char** argv)
