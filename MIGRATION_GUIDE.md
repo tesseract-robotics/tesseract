@@ -460,6 +460,53 @@ for (const auto& [id, value] : scene_state.joints) {
 }
 ```
 
+### Rule 22: `TransformMap` type alias removed
+
+The string-keyed `TransformMap` (`AlignedUnorderedMap<std::string, Eigen::Isometry3d>`)
+has been removed from `eigen_types.h`. All usages must switch to
+`JointIdTransformMap` or `LinkIdTransformMap` depending on whether the
+keys represent joints or links.
+
+**Search pattern:** `\bTransformMap\b`
+
+### Rule 23: `CalibrationInfo::joints` type changed
+
+```cpp
+// BEFORE
+tesseract::common::TransformMap joints;  // string-keyed
+cal_info.joints["joint_name"] = transform;
+
+// AFTER
+tesseract::common::JointIdTransformMap joints;  // JointId-keyed
+cal_info.joints["joint_name"] = transform;  // OK — implicit JointId ctor
+```
+
+Iteration that extracts the key as a string must use `.name()`:
+```cpp
+for (const auto& [id, tf] : cal_info.joints)
+    some_function(id.name(), tf);  // id.name() to get string
+```
+
+### Rule 24: `EnvironmentMonitorInterface` floating joints parameter changed
+
+All 8 `setEnvironmentState` methods changed their `floating_joints` parameter
+from `TransformMap` to `JointIdTransformMap`.
+
+```cpp
+// BEFORE
+bool setEnvironmentState(const std::string& ns,
+    const std::unordered_map<std::string, double>& joints,
+    const TransformMap& floating_joints = {}) const = 0;
+
+// AFTER
+bool setEnvironmentState(const std::string& ns,
+    const std::unordered_map<std::string, double>& joints,
+    const JointIdTransformMap& floating_joints = {}) const = 0;
+```
+
+**Downstream impact:** All implementations of `EnvironmentMonitorInterface`
+(e.g., in `tesseract_ros`) must update their method signatures.
+
 ---
 
 ## Convenience Helpers
@@ -578,7 +625,8 @@ Likely uses:
 | `ObjectPairKey` | `tesseract::common::LinkIdPair` |
 | `LinkIdPair::make(a, b)` | `LinkIdPair(a, b)` |
 | `pair.first` / `pair.second` (LinkIdPair) | `pair.first()` / `pair.second()` |
-| `TransformMap` (string-keyed) | `LinkIdTransformMap` / `JointIdTransformMap` |
+| `TransformMap` (removed) | `LinkIdTransformMap` / `JointIdTransformMap` |
+| `CalibrationInfo::joints` (TransformMap) | `CalibrationInfo::joints` (JointIdTransformMap) |
 | `ContactResult::link_names` | `ContactResult::link_ids` |
 | `JointState::joint_names` | `JointState::joint_ids` |
 | `KDLTreeData::joint_names` | `KDLTreeData::joint_ids` |
