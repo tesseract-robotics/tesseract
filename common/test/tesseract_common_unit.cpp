@@ -3953,7 +3953,7 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
   const auto& data_original = cmd_original.getCollisionMargins();
 
   auto make_key = [](const std::string& n1, const std::string& n2) {
-    return tesseract::common::LinkIdPair::make(tesseract::common::LinkId(n1),
+    return tesseract::common::LinkIdPair(tesseract::common::LinkId(n1),
                                                tesseract::common::LinkId(n2));
   };
 
@@ -4037,7 +4037,7 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
   const auto& data_original = acm_original.getAllAllowedCollisions();
 
   auto make_key = [](const std::string& n1, const std::string& n2) {
-    return tesseract::common::LinkIdPair::make(tesseract::common::LinkId(n1),
+    return tesseract::common::LinkIdPair(tesseract::common::LinkId(n1),
                                                tesseract::common::LinkId(n2));
   };
 
@@ -4778,7 +4778,7 @@ TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
   // Entry values preserve original names
   const auto& entries = acm.getAllAllowedCollisions();
   EXPECT_EQ(entries.size(), 1);
-  const auto it = entries.find(LinkIdPair::make(id_a, id_b));
+  const auto it = entries.find(LinkIdPair(id_a, id_b));
   ASSERT_NE(it, entries.end());
   // Names should be canonical (alphabetical within LinkIdPair ordering)
   EXPECT_FALSE(it->second.name1.empty());
@@ -4810,10 +4810,10 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   const auto& pair_data = margin_data.getCollisionMarginPairData();
   const auto& margins = pair_data.getCollisionMargins();
   EXPECT_EQ(margins.size(), 1);
-  const auto it = margins.find(LinkIdPair::make(id_x, id_y));
+  const auto it = margins.find(LinkIdPair(id_x, id_y));
   ASSERT_NE(it, margins.end());
-  EXPECT_FALSE(it->first.first.name().empty());
-  EXPECT_FALSE(it->first.second.name().empty());
+  EXPECT_FALSE(it->first.first().name().empty());
+  EXPECT_FALSE(it->first.second().name().empty());
   EXPECT_NEAR(it->second, 0.1, 1e-12);
 
   // Max margin tests with LinkId

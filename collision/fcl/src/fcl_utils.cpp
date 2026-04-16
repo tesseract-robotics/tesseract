@@ -248,7 +248,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!col_result.isCollision())
     return false;
 
-  auto link_pair = tesseract::common::LinkIdPair::make(cd1->getLinkId(), cd2->getLinkId());
+  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
 
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
   const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
@@ -302,7 +302,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  auto link_pair = tesseract::common::LinkIdPair::make(cd1->getLinkId(), cd2->getLinkId());
+  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
   const double security_margin = cdata->collision_margin_data.getCollisionMargin(link_pair);
   if (d > security_margin)
     return false;

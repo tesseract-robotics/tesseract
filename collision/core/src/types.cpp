@@ -100,7 +100,7 @@ bool ContactRequest::operator!=(const ContactRequest& rhs) const { return !opera
 
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
 {
-  assert(key.first.value() <= key.second.value());
+  assert(key.first().value() <= key.second().value());
   ++count_;
   auto& cv = data_[key];
   return cv.emplace_back(std::move(result));
@@ -109,7 +109,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactRes
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, const MappedType& results)
 {
   assert(!results.empty());
-  assert(key.first.value() <= key.second.value());
+  assert(key.first().value() <= key.second().value());
   count_ += static_cast<long>(results.size());
   auto& cv = data_[key];
   cv.insert(cv.end(), results.begin(), results.end());
@@ -118,7 +118,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, const Mapp
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactResult result)
 {
-  assert(key.first.value() <= key.second.value());
+  assert(key.first().value() <= key.second().value());
   auto& cv = data_[key];
   count_ += (1 - static_cast<long>(cv.size()));
   assert(count_ >= 0);
@@ -129,7 +129,7 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactRes
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, const MappedType& results)
 {
-  assert(key.first.value() <= key.second.value());
+  assert(key.first().value() <= key.second().value());
   assert(!results.empty());
   auto& cv = data_[key];
   count_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
@@ -151,7 +151,7 @@ void ContactResultMap::addInterpolatedCollisionResults(
 {
   for (auto& pair : sub_segment_results.data_)
   {
-    assert(pair.first.first.value() <= pair.first.second.value());
+    assert(pair.first.first().value() <= pair.first.second().value());
     // Update cc_time and cc_type
     for (auto& r : pair.second)
     {
