@@ -1198,7 +1198,7 @@ void runAddSceneGraphTest()
   std::string prefix = "prefix_";
   Joint prefix_joint(prefix + subgraph_joint_name);
   prefix_joint.parent_link_id = scene_graph->getRoot();
-  prefix_joint.child_link_id = LinkId(prefix + subgraph->getRoot());
+  prefix_joint.child_link_id = LinkId(prefix + subgraph->getRoot().name());
   prefix_joint.type = JointType::FLOATING;
 
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint, prefix));
@@ -1216,7 +1216,7 @@ void runAddSceneGraphTest()
   joint_names = state_solver.getActiveJointNames();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot()) !=
+  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) !=
               state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) !=
               state.joint_transforms.end());
@@ -1228,7 +1228,7 @@ void runAddSceneGraphTest()
   prefix = "prefix2_";
   Joint prefix_joint2(prefix + subgraph_joint_name);
   prefix_joint2.parent_link_id = scene_graph->getRoot();
-  prefix_joint2.child_link_id = LinkId(prefix + subgraph->getRoot());
+  prefix_joint2.child_link_id = LinkId(prefix + subgraph->getRoot().name());
   prefix_joint2.type = JointType::FIXED;
 
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint2, prefix));
@@ -1247,7 +1247,7 @@ void runAddSceneGraphTest()
 
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
   state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot()) !=
+  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) !=
               state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) !=
               state.joint_transforms.end());
