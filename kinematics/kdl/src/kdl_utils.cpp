@@ -135,7 +135,7 @@ bool parseSceneGraph(KDLChainData& results,
 
     results.joint_ids[j] = tesseract::common::JointId(jnt.getName());
 
-    auto joint = scene_graph.getJoint(results.joint_ids[j].name());
+    auto joint = scene_graph.getJoint(results.joint_ids[j]);
     double lower = std::numeric_limits<float>::lowest();
     double upper = std::numeric_limits<float>::max();
     // Does the joint have limits?

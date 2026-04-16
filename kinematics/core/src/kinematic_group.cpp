@@ -80,8 +80,7 @@ getLinksInFixedJointKinematicTree(const tesseract::common::LinkId& input_link,
           fixed_joint_tree_links.insert(link);
 
           //   2. Add the fixed-joint children of this link to the list of relatives
-          const std::vector<std::string> children = scene_graph.getLinkChildrenNames(link.name());
-          for (const auto& child_id : tesseract::common::toIds<tesseract::common::LinkId>(children))
+          for (const auto& child_id : scene_graph.getLinkChildrenIds(link))
             fixed_joint_tree_links.insert(child_id);
         }
         break;

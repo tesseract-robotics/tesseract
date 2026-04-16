@@ -55,7 +55,7 @@ ROPInvKin::ROPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   positioner_limits.resize(s, 2);
   for (Eigen::Index i = 0; i < s; ++i)
   {
-    auto joint = scene_graph.getJoint(joint_ids[static_cast<std::size_t>(i)].name());
+    auto joint = scene_graph.getJoint(joint_ids[static_cast<std::size_t>(i)]);
     positioner_limits(i, 0) = joint->limits->lower;
     positioner_limits(i, 1) = joint->limits->upper;
   }
