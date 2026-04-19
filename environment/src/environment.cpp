@@ -76,10 +76,9 @@ EnvironmentContactAllowedValidator::EnvironmentContactAllowedValidator(
 {
 }
 
-bool EnvironmentContactAllowedValidator::operator()(const tesseract::common::LinkId& link_id1,
-                                                    const tesseract::common::LinkId& link_id2) const
+bool EnvironmentContactAllowedValidator::operator()(const tesseract::common::LinkIdPair& pair) const
 {
-  return scene_graph_->isCollisionAllowed(link_id1, link_id2);
+  return scene_graph_->isCollisionAllowed(pair);
 }
 
 void getCollisionObject(std::vector<std::shared_ptr<const tesseract::geometry::Geometry>>& shapes,

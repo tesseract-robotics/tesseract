@@ -844,16 +844,16 @@ struct convert<tesseract::common::PairsCollisionMarginData>
   static Node encode(const tesseract::common::PairsCollisionMarginData& rhs)
   {
     Node node(NodeType::Map);
-    for (const auto& [key, margin] : rhs)
+    for (const auto& [key, entry] : rhs)
     {
       Node key_node(NodeType::Sequence);
-      key_node.push_back(key.first().name());
-      key_node.push_back(key.second().name());
+      key_node.push_back(entry.name1);
+      key_node.push_back(entry.name2);
 
       // tell yaml-cpp “emit this sequence in [a, b] inline style”
       key_node.SetStyle(YAML::EmitterStyle::Flow);
 
-      node[key_node] = margin;
+      node[key_node] = entry.margin;
     }
 
     return node;
@@ -877,7 +877,10 @@ struct convert<tesseract::common::PairsCollisionMarginData>
       auto id1 = tesseract::common::LinkId(name1);
       auto id2 = tesseract::common::LinkId(name2);
       auto pair_key = tesseract::common::LinkIdPair(id1, id2);
-      rhs.emplace(pair_key, margin);
+      if (id1.value() <= id2.value())
+        rhs.emplace(pair_key, tesseract::common::PairMarginEntry{ std::move(name1), std::move(name2), margin });
+      else
+        rhs.emplace(pair_key, tesseract::common::PairMarginEntry{ std::move(name2), std::move(name1), margin });
     }
     return true;
   }

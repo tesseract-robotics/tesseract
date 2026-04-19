@@ -463,14 +463,11 @@ CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : m_link_id(std::move(id))
-  , m_type_id(type_id)
-  , m_shapes(std::move(shapes))
-  , m_shape_poses(std::move(shape_poses))
+  : m_link_id(std::move(id)), m_type_id(type_id), m_shapes(std::move(shapes)), m_shape_poses(std::move(shape_poses))
 {
   assert(!m_shapes.empty());
   assert(!m_shape_poses.empty());
-  assert(!m_link_id.name().empty());
+  assert(m_link_id.isValid());
   assert(m_shapes.size() == m_shape_poses.size());
 
   m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
@@ -766,7 +763,9 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  if (processResult(collisions, contact, key, found) == nullptr)
+  const double security_margin = collisions.collision_margin_data.getCollisionMargin(key);
+
+  if (processResult(collisions, contact, key, security_margin, found) == nullptr)
     return 0;
 
   return 1;
@@ -905,7 +904,9 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  ContactResult* col = processResult(collisions, contact, key, found);
+  const double security_margin = collisions.collision_margin_data.getCollisionMargin(key);
+
+  ContactResult* col = processResult(collisions, contact, key, security_margin, found);
   if (col == nullptr)
     return 0;
 
@@ -1045,8 +1046,8 @@ btScalar CastBroadphaseContactResultCallback::addSingleResult(btManifoldPoint& c
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);  // NOLINT
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
-  assert(!(cp.m_distance1 > static_cast<btScalar>(
-                                collisions_.collision_margin_data.getCollisionMargin(cd0->getLinkId(), cd1->getLinkId()))));
+  assert(!(cp.m_distance1 > static_cast<btScalar>(collisions_.collision_margin_data.getCollisionMargin(
+                                cd0->getLinkId(), cd1->getLinkId()))));
 #endif
 
   return addCastSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);

@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <Eigen/Core>
 #include <unordered_map>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <tesseract/common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -26,7 +27,7 @@ struct ACMEntry
   bool operator!=(const ACMEntry& other) const { return !(*this == other); }
 };
 
-using AllowedCollisionEntries = std::unordered_map<LinkIdPair, ACMEntry, LinkIdPair::Hash>;
+using AllowedCollisionEntries = boost::unordered_flat_map<LinkIdPair, ACMEntry, LinkIdPair::Hash>;
 
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
 
@@ -83,12 +84,19 @@ public:
   virtual void removeAllowedCollision(const LinkId& link_id);
 
   /**
-   * @brief This checks if two links are allowed to be in collision (Tier 1 — LinkId, hot-path)
-   * @param link_id1 First link id
-   * @param link_id2 Second link id
+   * @brief This checks if a link pair is allowed to be in collision (hot-path primary).
+   * @param pair Canonically ordered link-id pair
    * @return True if allowed to be in collision, otherwise false
    */
-  virtual bool isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const;
+  virtual bool isCollisionAllowed(const LinkIdPair& pair) const;
+
+  /**
+   * @brief Convenience overload; forwards to the pair-based primary.
+   */
+  bool isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const
+  {
+    return isCollisionAllowed(LinkIdPair(link_id1, link_id2));
+  }
 
   /**
    * @brief Clears the list of allowed collisions, so that no collision will be
