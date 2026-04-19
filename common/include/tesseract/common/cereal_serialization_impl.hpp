@@ -1,3 +1,6 @@
+#ifndef TESSERACT_COMMON_CEREAL_SERIALIZATION_IMPL_HPP
+#define TESSERACT_COMMON_CEREAL_SERIALIZATION_IMPL_HPP
+
 #include <tesseract/common/cereal_serialization.h>
 
 // These must be include before calling macro CEREAL_REGISTER_TYPE
@@ -71,6 +74,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::Resource, tesseract::com
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::Resource, tesseract::common::BytesResource)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface, tesseract::common::ProfileDictionaryPtrAnyPoly)
 
-// LCOV_EXCL_START
-CEREAL_REGISTER_DYNAMIC_INIT(tesseract_common_cereal)
-// LCOV_EXCL_STOP
+#endif // TESSERACT_COMMON_CEREAL_SERIALIZATION_IMPL_HPP

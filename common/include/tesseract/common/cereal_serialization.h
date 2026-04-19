@@ -225,4 +225,6 @@ void serialize(Archive& ar, ProfileDictionary& obj)
 
 }  // namespace tesseract::common
 
+#include <tesseract/common/cereal_serialization_impl.hpp>
+
 #endif  // TESSERACT_COMMON_CEREAL_SERIALIZATION_H
