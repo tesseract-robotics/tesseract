@@ -23,3 +23,22 @@
  */
 
 #include <tesseract/common/types.h>
+
+#include <stdexcept>
+#include <string>
+
+namespace tesseract::common
+{
+void checkPairHashCollision(const char* context,
+                            const std::string& new_name1,
+                            const std::string& new_name2,
+                            const std::string& existing_name1,
+                            const std::string& existing_name2)
+{
+  const bool names_match = (existing_name1 == new_name1 && existing_name2 == new_name2) ||
+                           (existing_name1 == new_name2 && existing_name2 == new_name1);
+  if (!names_match)
+    throw std::runtime_error(std::string(context) + " LinkIdPair hash collision: ('" + new_name1 + "', '" + new_name2 +
+                             "') collides with ('" + existing_name1 + "', '" + existing_name2 + "')");
+}
+}  // namespace tesseract::common

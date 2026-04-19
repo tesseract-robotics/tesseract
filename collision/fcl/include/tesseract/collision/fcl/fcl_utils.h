@@ -279,6 +279,7 @@ inline void updateCollisionObjectFilters(
  */
 bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
                          const CollisionObjectWrapper* cd2,
+                         const tesseract::common::LinkIdPair& pair,
                          const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                          bool verbose);
 
