@@ -121,7 +121,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   std::vector<tesseract::common::JointId> joint_ids;
   joint_ids.reserve(joint_names.size());
   for (const auto& name : joint_names)
-    joint_ids.push_back(tesseract::common::JointId(name));
+    joint_ids.emplace_back(name);
   tesseract::common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_names);
 
   auto fwd_kin = getFullFwdKinematics(*scene_graph);
@@ -150,7 +150,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
   EXPECT_EQ(inv_kin->getJointIds(), joint_ids);
 
-  KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
+  KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin), *scene_graph, scene_state);
   KinematicGroup kin_group_copy(kin_group);
 
   {
@@ -202,7 +202,7 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   EXPECT_EQ(inv_kin2->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
   EXPECT_EQ(inv_kin2->getJointIds(), joint_ids);
 
-  KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
+  KinematicGroup kin_group2(manip_name, joint_ids, std::move(inv_kin2), *scene_graph, scene_state);
   EXPECT_EQ(kin_group2.getBaseLinkId(), scene_graph->getRoot());
   runInvKinTest(kin_group2, pose, working_frame, tip_link_name, seed);
   runKinGroupJacobianABBExternalPositionerTest(kin_group2);

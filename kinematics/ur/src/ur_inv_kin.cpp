@@ -39,6 +39,7 @@
 #include <tesseract/kinematics/utils.h>
 
 #include <cassert>
+#include <utility>
 
 static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
 
@@ -225,13 +226,13 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
 // LCOV_EXCL_STOP
 
 URInvKin::URInvKin(URParameters params,
-                   const std::string& base_link_name,
-                   const std::string& tip_link_name,
+                   tesseract::common::LinkId base_link_id,
+                   tesseract::common::LinkId tip_link_id,
                    const std::vector<common::JointId>& joint_ids,
                    std::string solver_name)
   : params_(params)
-  , base_link_id_(tesseract::common::LinkId(base_link_name))
-  , tip_link_id_(tesseract::common::LinkId(tip_link_name))
+  , base_link_id_(std::move(base_link_id))
+  , tip_link_id_(std::move(tip_link_id))
   , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
 {

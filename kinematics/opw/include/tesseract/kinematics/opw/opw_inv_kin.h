@@ -64,8 +64,8 @@ public:
    * @param solver_name The solver name of the kinematic chain
    */
   OPWInvKin(opw_kinematics::Parameters<double> params,
-            const std::string& base_link_name,
-            const std::string& tip_link_name,
+            tesseract::common::LinkId base_link_id,
+            tesseract::common::LinkId tip_link_id,
             const std::vector<common::JointId>& joint_ids,
             std::string solver_name = OPW_INV_KIN_CHAIN_SOLVER_NAME);
 
