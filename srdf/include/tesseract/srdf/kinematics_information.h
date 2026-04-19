@@ -130,13 +130,13 @@ struct KinematicsInformation
   bool hasGroupJointState(const std::string& group_name, const std::string& state_name) const;
 
   /** @brief Add group tool center point */
-  void addGroupTCP(const std::string& group_name, const std::string& tcp_name, const Eigen::Isometry3d& tcp);
+  void addGroupTCP(const std::string& group_name, const common::LinkId& tcp_id, const Eigen::Isometry3d& tcp);
 
   /** @brief Remove group tool center point */
-  void removeGroupTCP(const std::string& group_name, const std::string& tcp_name);
+  void removeGroupTCP(const std::string& group_name, const common::LinkId& tcp_id);
 
   /** @brief Check if group tool center point exists */
-  bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
+  bool hasGroupTCP(const std::string& group_name, const common::LinkId& tcp_id) const;
 
   bool operator==(const KinematicsInformation& rhs) const;
   bool operator!=(const KinematicsInformation& rhs) const;

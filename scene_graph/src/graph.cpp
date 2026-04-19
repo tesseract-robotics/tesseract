@@ -725,7 +725,6 @@ bool SceneGraph::changeJointAccelerationLimits(const common::JointId& id, double
   return true;
 }
 
-
 bool SceneGraph::changeJointJerkLimits(const common::JointId& id, double limit)
 {
   auto found = joint_map_.find(id);
@@ -787,10 +786,9 @@ void SceneGraph::removeAllowedCollision(const common::LinkId& link_id) { acm_->r
 
 void SceneGraph::clearAllowedCollisions() { acm_->clearAllowedCollisions(); }
 
-bool SceneGraph::isCollisionAllowed(const tesseract::common::LinkId& link_id1,
-                                    const tesseract::common::LinkId& link_id2) const
+bool SceneGraph::isCollisionAllowed(const tesseract::common::LinkIdPair& pair) const
 {
-  return acm_->isCollisionAllowed(link_id1, link_id2);
+  return acm_->isCollisionAllowed(pair);
 }
 
 std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() const
@@ -806,7 +804,6 @@ std::shared_ptr<const Link> SceneGraph::getSourceLink(const common::JointId& id)
   Vertex v = boost::source(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
 }
-
 
 std::shared_ptr<const Link> SceneGraph::getTargetLink(const common::JointId& id) const
 {
@@ -1001,7 +998,8 @@ SceneGraph::getAdjacencyMapIds(const std::vector<LinkId>& link_ids) const
 std::unordered_map<std::string, std::string>
 SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
 {
-  std::unordered_map<LinkId, LinkId, LinkId::Hash> id_map = getAdjacencyMapIds(tesseract::common::toIds<LinkId>(link_names));
+  std::unordered_map<LinkId, LinkId, LinkId::Hash> id_map =
+      getAdjacencyMapIds(tesseract::common::toIds<LinkId>(link_names));
 
   std::unordered_map<std::string, std::string> result;
   result.reserve(id_map.size());

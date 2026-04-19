@@ -29,7 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <memory>
-#include <unordered_map>
 #include <Eigen/Geometry>
 #include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -72,24 +71,6 @@ public:
   virtual void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                         const tesseract::common::JointIdTransformMap& floating_joint_values = {}) = 0;
 
-  /** @brief Set the current state from a string-keyed map (delegates to JointValues overload) */
-  virtual void setState(const std::unordered_map<std::string, double>& joint_values,
-                        const tesseract::common::JointIdTransformMap& floating_joint_values = {})
-  {
-    SceneState::JointValues id_map;
-    for (const auto& [name, val] : joint_values)
-      id_map[tesseract::common::JointId(name)] = val;
-    setState(id_map, floating_joint_values);
-  }
-
-  /** @brief Set the current state from string joint names + values (delegates to JointId overload) */
-  virtual void setState(const std::vector<std::string>& joint_names,
-                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                        const tesseract::common::JointIdTransformMap& floating_joint_values = {})
-  {
-    setState(tesseract::common::toIds<tesseract::common::JointId>(joint_names), joint_values, floating_joint_values);
-  }
-
   /**
    * @brief Set the current state of the floating joint values
    * @param floating_joint_values The floating joint values to set
@@ -114,24 +95,6 @@ public:
   virtual SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
-  /** @brief Get the state from a string-keyed map (delegates to JointValues overload) */
-  virtual SceneState getState(const std::unordered_map<std::string, double>& joint_values,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const
-  {
-    SceneState::JointValues id_map;
-    for (const auto& [name, val] : joint_values)
-      id_map[tesseract::common::JointId(name)] = val;
-    return getState(id_map, floating_joint_values);
-  }
-
-  /** @brief Get the state from string joint names + values (delegates to JointId overload) */
-  virtual SceneState getState(const std::vector<std::string>& joint_names,
-                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const
-  {
-    return getState(tesseract::common::toIds<tesseract::common::JointId>(joint_names), joint_values,
-                    floating_joint_values);
-  }
   /**
    * @brief Get the state given floating joint values
    * @param floating_joint_values The floating joint values to leverage
@@ -148,14 +111,6 @@ public:
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
-  /** @brief Get link transforms using string joint names (delegates to JointId overload) */
-  virtual void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
-                                 const std::vector<std::string>& joint_names,
-                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
-  {
-    getLinkTransforms(link_transforms, tesseract::common::toIds<tesseract::common::JointId>(joint_names), joint_values);
-  }
-
   /**
    * @brief Get link transforms using joint IDs instead of names
    * @param link_transforms The link_transforms to populate with data.
@@ -171,34 +126,6 @@ public:
    * @return The current state
    */
   virtual SceneState getState() const = 0;
-
-  /** @brief Get the jacobian from a string-keyed map (delegates to JointId overload) */
-  virtual Eigen::MatrixXd
-  getJacobian(const std::unordered_map<std::string, double>& joint_values,
-              const std::string& link_name,
-              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const
-  {
-    std::vector<tesseract::common::JointId> ids;
-    Eigen::VectorXd vals(static_cast<Eigen::Index>(joint_values.size()));
-    Eigen::Index i = 0;
-    for (const auto& [name, val] : joint_values)
-    {
-      ids.push_back(tesseract::common::JointId(name));
-      vals(i++) = val;
-    }
-    return getJacobian(ids, vals, tesseract::common::LinkId(link_name), floating_joint_values);
-  }
-
-  /** @brief Get the jacobian from string joint names (delegates to JointId overload) */
-  virtual Eigen::MatrixXd
-  getJacobian(const std::vector<std::string>& joint_names,
-              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-              const std::string& link_name,
-              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const
-  {
-    return getJacobian(tesseract::common::toIds<tesseract::common::JointId>(joint_names), joint_values,
-                       tesseract::common::LinkId(link_name), floating_joint_values);
-  }
 
   /**
    * @brief Get the jacobian for a link identified by LinkId
@@ -265,19 +192,13 @@ public:
   virtual std::vector<tesseract::common::LinkId> getLinkIds() const = 0;
 
   /** @brief Get the vector of active link names (delegates to getActiveLinkIds) */
-  virtual std::vector<std::string> getActiveLinkNames() const
-  {
-    return tesseract::common::toNames(getActiveLinkIds());
-  }
+  virtual std::vector<std::string> getActiveLinkNames() const { return tesseract::common::toNames(getActiveLinkIds()); }
 
   /** @brief Get the vector of active link IDs */
   virtual std::vector<tesseract::common::LinkId> getActiveLinkIds() const = 0;
 
   /** @brief Get a vector of static link names (delegates to getStaticLinkIds) */
-  virtual std::vector<std::string> getStaticLinkNames() const
-  {
-    return tesseract::common::toNames(getStaticLinkIds());
-  }
+  virtual std::vector<std::string> getStaticLinkNames() const { return tesseract::common::toNames(getStaticLinkIds()); }
 
   /** @brief Get a vector of static link IDs */
   virtual std::vector<tesseract::common::LinkId> getStaticLinkIds() const = 0;

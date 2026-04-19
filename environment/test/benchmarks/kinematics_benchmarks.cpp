@@ -69,16 +69,16 @@ static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& s
 
 static void BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
                                                         const StateSolver::Ptr& state_solver,
-                                                        const std::vector<std::string>& joint_names,
+                                                        const std::vector<tesseract::common::JointId>& joint_ids,
                                                         const tesseract::common::TrajArray& traj,
-                                                        const std::string& link_name)
+                                                        const tesseract::common::LinkId& link_id)
 {
   Eigen::MatrixXd jacobian;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
-      benchmark::DoNotOptimize(jacobian = state_solver->getJacobian(joint_names, traj.row(i), link_name));
+      benchmark::DoNotOptimize(jacobian = state_solver->getJacobian(joint_ids, traj.row(i), link_id));
     }
   }
 }
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
   env->setResourceLocator(std::make_shared<tesseract::common::GeneralResourceLocator>());
 
   // Set the robot initial state
-  std::vector<std::string> joint_names;
+  std::vector<tesseract::common::JointId> joint_names;
   joint_names.emplace_back("joint_a1");
   joint_names.emplace_back("joint_a2");
   joint_names.emplace_back("joint_a3");
@@ -204,9 +204,9 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&,
                        StateSolver::Ptr,
-                       std::vector<std::string>,
+                       std::vector<tesseract::common::JointId>,
                        const tesseract::common::TrajArray&,
-                       std::string)>
+                       tesseract::common::LinkId)>
         BM_GET_JACOBIAN_JN_JV_SS = BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS";
     // NOLINTNEXTLINE

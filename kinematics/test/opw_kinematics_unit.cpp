@@ -141,7 +141,7 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   // Check Inverse Kinematics
-  KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
+  KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin), *scene_graph, scene_state);
 
   runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
 
@@ -150,7 +150,7 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   abb_joint_2->limits->upper = 1.57079;
 
   auto inv_kin2 = std::make_unique<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_ids);
-  KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
+  KinematicGroup kin_group2(manip_name, joint_ids, std::move(inv_kin2), *scene_graph, scene_state);
 
   Eigen::Isometry3d pose2;
   pose2.setIdentity();

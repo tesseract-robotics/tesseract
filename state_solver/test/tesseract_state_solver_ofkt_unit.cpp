@@ -38,8 +38,7 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTFixedNode
     OFKTRootNode root_node("base_link");
-    OFKTFixedNode node(
-        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
+    OFKTFixedNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
     const OFKTFixedNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_ANY_THROW(node.storeJointValue(M_PI_2));  // NOLINT
@@ -58,8 +57,7 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 
   {  // OFKTFloatingNode
     OFKTRootNode root_node("base_link");
-    OFKTFloatingNode node(
-        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
+    OFKTFloatingNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity());
     const OFKTFloatingNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_ANY_THROW(node.storeJointValue(M_PI_2));  // NOLINT
@@ -79,11 +77,7 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   {  // OFKTRevoluteNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d(0, 0, 1));
     OFKTRootNode root_node("base_link");
-    OFKTRevoluteNode node(&root_node,
-                          "base_link",
-                          "joint_a1",
-                          Eigen::Isometry3d::Identity(),
-                          Eigen::Vector3d(0, 0, 1));
+    OFKTRevoluteNode node(&root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity(), Eigen::Vector3d(0, 0, 1));
     EXPECT_TRUE(node.getParent() == &root_node);
     EXPECT_FALSE(node.updateWorldTransformationRequired());
     EXPECT_TRUE(node.getAxis().isApprox(Eigen::Vector3d(0, 0, 1), 1e-6));
@@ -100,11 +94,8 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   {  // OFKTContinuousNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d(0, 0, 1));
     OFKTRootNode root_node("base_link");
-    OFKTContinuousNode node(&root_node,
-                            "base_link",
-                            "joint_a1",
-                            Eigen::Isometry3d::Identity(),
-                            Eigen::Vector3d(0, 0, 1));
+    OFKTContinuousNode node(
+        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity(), Eigen::Vector3d(0, 0, 1));
     const OFKTContinuousNode& const_node = node;
     EXPECT_TRUE(const_node.getParent() == &root_node);
     EXPECT_FALSE(node.updateWorldTransformationRequired());
@@ -122,11 +113,8 @@ TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
   {  // OFKTPrismaticNode
     auto check = Eigen::Isometry3d::Identity() * Eigen::Translation3d(1.45, 0, 0);
     OFKTRootNode root_node("base_link");
-    OFKTPrismaticNode node(&root_node,
-                           "base_link",
-                           "joint_a1",
-                           Eigen::Isometry3d::Identity(),
-                           Eigen::Vector3d(1, 0, 0));
+    OFKTPrismaticNode node(
+        &root_node, "base_link", "joint_a1", Eigen::Isometry3d::Identity(), Eigen::Vector3d(1, 0, 0));
     EXPECT_TRUE(node.getParent() == &root_node);
     EXPECT_FALSE(node.updateWorldTransformationRequired());
     EXPECT_TRUE(node.getAxis().isApprox(Eigen::Vector3d(1, 0, 0), 1e-6));
@@ -237,11 +225,11 @@ TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
     EXPECT_TRUE(state.joints.count(jid) > 0) << "Missing JointId entry for joint: " << joint_name;
   }
 
-  // Verify getState(names, values) also produces LinkIdTransformMap
-  auto names = solver.getActiveJointNames();
-  Eigen::VectorXd values = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(names.size()));
+  // Verify getState(ids, values) also produces LinkIdTransformMap
+  auto ids = solver.getActiveJointIds();
+  Eigen::VectorXd values = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(ids.size()));
   values[0] = 0.3;
-  auto new_state = solver.getState(names, values);
+  auto new_state = solver.getState(ids, values);
 
   for (const auto& link_name : solver.getLinkNames())
   {

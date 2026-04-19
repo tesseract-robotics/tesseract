@@ -1,8 +1,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <iostream>
-#include <fstream>
 #include <yaml-cpp/yaml.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -377,20 +375,20 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   EXPECT_TRUE(joint_groups.empty());
 
   joint_groups["manipulator_joint"] = { tesseract::common::JointId("joint_1"),
-                                        tesseract::common::JointId("joint_2"),
-                                        tesseract::common::JointId("joint_3"),
-                                        tesseract::common::JointId("joint_4") };
+                                        "joint_2",
+                                        "joint_3",
+                                        "joint_4" };
   EXPECT_FALSE(srdf.kinematics_information.joint_groups.empty());
 
   // Add link groups
   auto& link_groups = srdf.kinematics_information.link_groups;
   EXPECT_TRUE(link_groups.empty());
   link_groups["manipulator_link"] = { tesseract::common::LinkId("base_link"),
-                                      tesseract::common::LinkId("link_1"),
-                                      tesseract::common::LinkId("link_2"),
-                                      tesseract::common::LinkId("link_3"),
-                                      tesseract::common::LinkId("link_4"),
-                                      tesseract::common::LinkId("link_5") };
+                                      "link_1",
+                                      "link_2",
+                                      "link_3",
+                                      "link_4",
+                                      "link_5" };
   EXPECT_FALSE(srdf.kinematics_information.link_groups.empty());
 
   // Add group states
@@ -1819,11 +1817,11 @@ TEST(TesseractSRDFUnit, AddRemoveJointGroupUnit)  // NOLINT
 
   // ADD
   JointGroup joint_group = { tesseract::common::JointId("joint_1"),
-                              tesseract::common::JointId("joint_2"),
-                              tesseract::common::JointId("joint_3"),
-                              tesseract::common::JointId("joint_4"),
-                              tesseract::common::JointId("joint_5"),
-                              tesseract::common::JointId("joint_6") };
+                              "joint_2",
+                              "joint_3",
+                              "joint_4",
+                              "joint_5",
+                              "joint_6" };
   info.addJointGroup("manipulator", joint_group);
   EXPECT_TRUE(info.hasJointGroup("manipulator"));
   EXPECT_TRUE(info.hasGroup("manipulator"));
@@ -1837,21 +1835,21 @@ TEST(TesseractSRDFUnit, AddRemoveJointGroupUnit)  // NOLINT
 
   // Different order equal
   joint_group = { tesseract::common::JointId("joint_6"),
-                  tesseract::common::JointId("joint_5"),
-                  tesseract::common::JointId("joint_4"),
-                  tesseract::common::JointId("joint_3"),
-                  tesseract::common::JointId("joint_2"),
-                  tesseract::common::JointId("joint_1") };
+                  "joint_5",
+                  "joint_4",
+                  "joint_3",
+                  "joint_2",
+                  "joint_1" };
   info1_copy.addJointGroup("manipulator", joint_group);
   EXPECT_EQ(info1_copy, info);
 
   // Not Equal
   joint_group = { tesseract::common::JointId("joint_6"),
-                  tesseract::common::JointId("joint_5"),
-                  tesseract::common::JointId("joint_4"),
-                  tesseract::common::JointId("joint_3"),
-                  tesseract::common::JointId("joint_2"),
-                  tesseract::common::JointId("joint_0") };
+                  "joint_5",
+                  "joint_4",
+                  "joint_3",
+                  "joint_2",
+                  "joint_0" };
   info1_copy.addJointGroup("manipulator", joint_group);
   EXPECT_NE(info1_copy, info);
 
@@ -1874,11 +1872,11 @@ TEST(TesseractSRDFUnit, AddRemoveLinkGroupUnit)  // NOLINT
 
   // ADD
   LinkGroup link_group = { tesseract::common::LinkId("link_1"),
-                            tesseract::common::LinkId("link_2"),
-                            tesseract::common::LinkId("link_3"),
-                            tesseract::common::LinkId("link_4"),
-                            tesseract::common::LinkId("link_5"),
-                            tesseract::common::LinkId("link_6") };
+                            "link_2",
+                            "link_3",
+                            "link_4",
+                            "link_5",
+                            "link_6" };
   info.addLinkGroup("manipulator", link_group);
   EXPECT_TRUE(info.hasLinkGroup("manipulator"));
   EXPECT_TRUE(info.hasGroup("manipulator"));
@@ -1891,21 +1889,21 @@ TEST(TesseractSRDFUnit, AddRemoveLinkGroupUnit)  // NOLINT
 
   // Different order equal
   link_group = { tesseract::common::LinkId("link_6"),
-                 tesseract::common::LinkId("link_5"),
-                 tesseract::common::LinkId("link_4"),
-                 tesseract::common::LinkId("link_3"),
-                 tesseract::common::LinkId("link_2"),
-                 tesseract::common::LinkId("link_1") };
+                 "link_5",
+                 "link_4",
+                 "link_3",
+                 "link_2",
+                 "link_1" };
   info1_copy.addLinkGroup("manipulator", link_group);
   EXPECT_EQ(info1_copy, info);
 
   // Not Equal
   link_group = { tesseract::common::LinkId("link_6"),
-                 tesseract::common::LinkId("link_5"),
-                 tesseract::common::LinkId("link_4"),
-                 tesseract::common::LinkId("link_3"),
-                 tesseract::common::LinkId("link_2"),
-                 tesseract::common::LinkId("link_0") };
+                 "link_5",
+                 "link_4",
+                 "link_3",
+                 "link_2",
+                 "link_0" };
   info1_copy.addLinkGroup("manipulator", link_group);
   EXPECT_NE(info1_copy, info);
 
