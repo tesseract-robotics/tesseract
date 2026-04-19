@@ -1,6 +1,11 @@
 #ifndef TESSERACT_COLLISION_COLLISION_BOX_BOX_CAST_UNIT_H
 #define TESSERACT_COLLISION_COLLISION_BOX_BOX_CAST_UNIT_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/geometry/geometries.h>
 
@@ -93,9 +98,9 @@ inline void addCollisionObjects(ContinuousContactManager& checker)
   const auto& co = checker.getCollisionObjects();
   for (std::size_t i = 0; i < co.size(); ++i)
   {
-    EXPECT_TRUE(checker.getCollisionObjectGeometries(co[i].name()).size() == 1);
-    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co[i].name()).size() == 1);
-    const auto& cgt = checker.getCollisionObjectGeometriesTransforms(co[i].name());
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co[i]).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co[i]).size() == 1);
+    const auto& cgt = checker.getCollisionObjectGeometriesTransforms(co[i]);
     if (i != 2)
     {
       EXPECT_TRUE(cgt[0].isApprox(Eigen::Isometry3d::Identity(), 1e-5));

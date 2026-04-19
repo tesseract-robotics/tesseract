@@ -45,17 +45,18 @@ void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
 template <class Archive, typename Tag>
 void save(Archive& ar, const OrderedIdPair<Tag>& pair)
 {
-  ar(cereal::make_nvp("first", pair.first()));
-  ar(cereal::make_nvp("second", pair.second()));
+  ar(cereal::make_nvp("first_id", pair.first_id()));
+  ar(cereal::make_nvp("second_id", pair.second_id()));
 }
 
 template <class Archive, typename Tag>
 void load(Archive& ar, OrderedIdPair<Tag>& pair)
 {
-  NameId<Tag> first, second;
-  ar(cereal::make_nvp("first", first));
-  ar(cereal::make_nvp("second", second));
-  pair = OrderedIdPair<Tag>(first, second);
+  uint64_t first_id = 0;
+  uint64_t second_id = 0;
+  ar(cereal::make_nvp("first_id", first_id));
+  ar(cereal::make_nvp("second_id", second_id));
+  pair = OrderedIdPair<Tag>(first_id, second_id);
 }
 
 template <class Archive, class T>
@@ -100,8 +101,8 @@ void save(Archive& ar, const CollisionMarginPairData& obj)
 {
   // Serialize as string-based format for backwards compatibility
   std::map<std::pair<std::string, std::string>, double> compat;
-  for (const auto& [key, margin] : obj.lookup_table_)
-    compat[{ key.first().name(), key.second().name() }] = margin;
+  for (const auto& [key, entry] : obj.lookup_table_)
+    compat[{ entry.name1, entry.name2 }] = entry.margin;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 
