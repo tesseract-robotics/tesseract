@@ -36,10 +36,11 @@ namespace tesseract::kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract::scene_graph::SceneGraph& scene_graph,
-                                     const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
-                                     Config kdl_config,
-                                     std::string solver_name)
+KDLInvKinChainLMA::KDLInvKinChainLMA(
+    const tesseract::scene_graph::SceneGraph& scene_graph,
+    const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
+    Config kdl_config,
+    std::string solver_name)
   : kdl_config_(kdl_config), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
@@ -58,8 +59,8 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract::scene_graph::SceneGraph& s
 }
 
 KDLInvKinChainLMA::KDLInvKinChainLMA(const tesseract::scene_graph::SceneGraph& scene_graph,
-                                     tesseract::common::LinkId base_link,
-                                     tesseract::common::LinkId tip_link,
+                                     const tesseract::common::LinkId& base_link,
+                                     const tesseract::common::LinkId& tip_link,
                                      Config kdl_config,
                                      std::string solver_name)
   : KDLInvKinChainLMA(scene_graph, { std::make_pair(base_link, tip_link) }, kdl_config, std::move(solver_name))

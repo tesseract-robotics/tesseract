@@ -24,6 +24,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+#include <utility>
 #include <console_bridge/console.h>
 #include <opw_kinematics/opw_kinematics.h>
 #include <opw_kinematics/opw_utilities.h>
@@ -36,13 +37,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract::kinematics
 {
 OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
-                     const std::string& base_link_name,
-                     const std::string& tip_link_name,
+                     tesseract::common::LinkId base_link_id,
+                     tesseract::common::LinkId tip_link_id,
                      const std::vector<common::JointId>& joint_ids,
                      std::string solver_name)
   : params_(params)
-  , base_link_id_(tesseract::common::LinkId(base_link_name))
-  , tip_link_id_(tesseract::common::LinkId(tip_link_name))
+  , base_link_id_(std::move(base_link_id))
+  , tip_link_id_(std::move(tip_link_id))
   , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
 {

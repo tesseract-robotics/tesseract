@@ -377,12 +377,19 @@ public:
   void clearAllowedCollisions();
 
   /**
-   * @brief Check if two links are allowed to be in collision
-   * @param link_name1 link name
-   * @param link_name2 link name
+   * @brief Check if a link pair is allowed to be in collision (hot-path primary).
+   * @param pair Canonically ordered link-id pair
    * @return True if the two links are allowed to be in collision, otherwise false
    */
-  bool isCollisionAllowed(const tesseract::common::LinkId& link_id1, const tesseract::common::LinkId& link_id2) const;
+  bool isCollisionAllowed(const tesseract::common::LinkIdPair& pair) const;
+
+  /**
+   * @brief Convenience overload; forwards to the pair-based primary.
+   */
+  bool isCollisionAllowed(const tesseract::common::LinkId& link_id1, const tesseract::common::LinkId& link_id2) const
+  {
+    return isCollisionAllowed(tesseract::common::LinkIdPair(link_id1, link_id2));
+  }
 
   /**
    * @brief Get the allowed collision matrix

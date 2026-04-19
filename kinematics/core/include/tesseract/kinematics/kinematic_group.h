@@ -97,7 +97,7 @@ public:
    * @param scene_state The scene state
    */
   KinematicGroup(std::string name,
-                 const std::vector<std::string>& joint_names,
+                 const std::vector<tesseract::common::JointId>& joint_ids,
                  std::unique_ptr<InverseKinematics> inv_kin,
                  const tesseract::scene_graph::SceneGraph& scene_graph,
                  const tesseract::scene_graph::SceneState& scene_state);

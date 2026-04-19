@@ -76,14 +76,15 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                "state '%s' in group '%s'!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str())));
+      auto joint_id = tesseract::common::JointId(joint_name);
 
-      if (!scene_graph.getJoint(joint_name))
+      if (!scene_graph.getJoint(joint_id))
         std::throw_with_nested(std::runtime_error(tesseract::common::strFormat("GroupStates: State '%s' for group '%s' "
                                                                                "joint name '%s' is not know to the "
                                                                                "URDF!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str(),
-                                                                               joint_name.c_str())));
+                                                                               joint_id.name().c_str())));
 
       status = tesseract::common::QueryDoubleAttributeRequired(joint_xml, "value", joint_value);
       if (status != tinyxml2::XML_SUCCESS)
@@ -93,9 +94,9 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                "'value'!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str(),
-                                                                               joint_name.c_str())));
+                                                                               joint_id.name().c_str())));
 
-      joint_state[tesseract::common::JointId(joint_name)] = joint_value;
+      joint_state[joint_id] = joint_value;
     }
 
     if (joint_state.empty())
