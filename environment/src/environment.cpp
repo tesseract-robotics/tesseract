@@ -1400,10 +1400,14 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
 
   auto state_solver_clone = state_solver->clone();
 
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
   auto traj_link = std::make_shared<tesseract::scene_graph::Link>(cmd->getLinkName());
-  std::vector<std::string> joint_names;
-  std::vector<std::string> active_link_names;
-  std::unordered_map<std::string, std::vector<tesseract::scene_graph::Collision::Ptr>> link_collision_geom;
+  const LinkId parent_link_id(cmd->getParentLinkName());
+  std::vector<JointId> joint_ids;
+  std::vector<LinkId> active_link_ids;
+  std::unordered_map<LinkId, std::vector<tesseract::scene_graph::Collision::Ptr>> link_collision_geom;
   std::vector<std::vector<tesseract::scene_graph::Collision::Ptr>> per_state_collision_geom;
   per_state_collision_geom.reserve(traj.size());
   for (const auto& state : traj)
@@ -1428,13 +1432,12 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
     }
 
     tesseract::scene_graph::SceneState scene_state = state_solver_clone->getState(state.joint_ids, state.position);
-    if (joint_names.empty() || !tesseract::common::isIdentical(state.getJointNames(), joint_names, false))
+    if (joint_ids.empty() || !tesseract::common::isIdentical(state.joint_ids, joint_ids, false))
     {
-      joint_names = state.getJointNames();
-      active_link_names = scene_graph->getJointChildrenNames(joint_names);
+      joint_ids = state.joint_ids;
+      active_link_ids = scene_graph->getJointChildrenIds(joint_ids);
 
-      if (std::find(active_link_names.begin(), active_link_names.end(), cmd->getParentLinkName()) !=
-          active_link_names.end())
+      if (std::find(active_link_ids.begin(), active_link_ids.end(), parent_link_id) != active_link_ids.end())
       {
         CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) where parent link is an active link.",
                                cmd->getLinkName().c_str());
@@ -1442,18 +1445,15 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
       }
     }
 
-    using tesseract::common::LinkId;
     std::vector<tesseract::scene_graph::Collision::Ptr> state_collision_geom;
-    Eigen::Isometry3d parent_link_tf_inv =
-        scene_state.link_transforms.at(LinkId(cmd->getParentLinkName())).inverse();
-    for (const auto& link_name : active_link_names)
+    Eigen::Isometry3d parent_link_tf_inv = scene_state.link_transforms.at(parent_link_id).inverse();
+    for (const auto& link_id : active_link_ids)
     {
-      Eigen::Isometry3d link_transform =
-          parent_link_tf_inv * scene_state.link_transforms.at(LinkId(link_name));
-      auto link = scene_graph->getLink(link_name);
+      Eigen::Isometry3d link_transform = parent_link_tf_inv * scene_state.link_transforms.at(link_id);
+      auto link = scene_graph->getLink(link_id);
       assert(link != nullptr);
 
-      auto clone = link->clone(link_name + "_clone");
+      auto clone = link->clone(link_id.name() + "_clone");
 
       for (auto& vis_clone : clone.visual)
       {
@@ -1464,7 +1464,7 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
       for (auto& col_clone : clone.collision)
       {
         col_clone->origin = link_transform * col_clone->origin;
-        link_collision_geom[link_name].push_back(col_clone);
+        link_collision_geom[link_id].push_back(col_clone);
         state_collision_geom.push_back(col_clone);
       }
     }
