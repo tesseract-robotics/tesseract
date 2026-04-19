@@ -1086,7 +1086,7 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
 
     runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_name, seed);
 
-    KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
+    KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin), *scene_graph, scene_state);
     EXPECT_EQ(kin_group.getBaseLinkId(), scene_graph->getRoot());
     runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
     runKinGroupJacobianIIWATest(kin_group);
@@ -1123,7 +1123,7 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
 
     runInvKinTest(*inv_kin3, *fwd_kin3, pose, tip_link_name, seed);
 
-    KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin3), *scene_graph, scene_state);
+    KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin3), *scene_graph, scene_state);
     EXPECT_EQ(kin_group.getBaseLinkId(), scene_graph->getRoot());
     runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
     runKinGroupJacobianIIWATest(kin_group);

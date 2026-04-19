@@ -59,7 +59,7 @@ TEST(TesseractKinematicsUnit, IKFastInvKin7DOF)  // NOLINT
   joint_ids.reserve(joint_names.size());
   for (const auto& name : joint_names)
   {
-    joint_ids.push_back(tesseract::common::JointId(name));
+    joint_ids.emplace_back(name);
   }
   auto iiwa_inv_kin = std::make_shared<IKFastInvKin>(
       base_link_name, tip_link_name, joint_ids, IKFAST_INV_KIN_CHAIN_SOLVER_NAME, free_joint_states);
