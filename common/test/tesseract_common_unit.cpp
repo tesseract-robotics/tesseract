@@ -502,8 +502,8 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 
   tesseract::common::JointState joint_state;
   joint_state.joint_ids = { tesseract::common::JointId("joint_1"),
-                            tesseract::common::JointId("joint_2"),
-                            tesseract::common::JointId("joint_3") };
+                            "joint_2",
+                            "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -627,8 +627,8 @@ TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
 
   tesseract::common::JointState joint_state;
   joint_state.joint_ids = { tesseract::common::JointId("joint_1"),
-                            tesseract::common::JointId("joint_2"),
-                            tesseract::common::JointId("joint_3") };
+                            "joint_2",
+                            "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -3952,25 +3952,22 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
   cmd_original.setCollisionMargin("base", "tool0", 1.5);
   const auto& data_original = cmd_original.getCollisionMargins();
 
-  auto make_key = [](const std::string& n1, const std::string& n2) {
-    return tesseract::common::LinkIdPair(tesseract::common::LinkId(n1),
-                                               tesseract::common::LinkId(n2));
-  };
+  auto make_key = [](const std::string& n1, const std::string& n2) { return tesseract::common::LinkIdPair(n1, n2); };
 
   {
     YAML::Node n(data_original);
     auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")), 0.8);
-    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")), 1.5);
+    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")).margin, 0.8);
+    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")).margin, 1.5);
   }
 
   {
     YAML::Node n = YAML::Load(yaml_string);
     auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")), 0.8);
-    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")), 1.5);
+    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")).margin, 0.8);
+    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")).margin, 1.5);
   }
 
   {  // Failure: Is not map
@@ -4036,10 +4033,7 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
   acm_original.addAllowedCollision("base", "tool0", "never");
   const auto& data_original = acm_original.getAllAllowedCollisions();
 
-  auto make_key = [](const std::string& n1, const std::string& n2) {
-    return tesseract::common::LinkIdPair(tesseract::common::LinkId(n1),
-                                               tesseract::common::LinkId(n2));
-  };
+  auto make_key = [](const std::string& n1, const std::string& n2) { return tesseract::common::LinkIdPair(n1, n2); };
 
   {
     YAML::Node n(data_original);
@@ -4812,9 +4806,9 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   EXPECT_EQ(margins.size(), 1);
   const auto it = margins.find(LinkIdPair(id_x, id_y));
   ASSERT_NE(it, margins.end());
-  EXPECT_FALSE(it->first.first().name().empty());
-  EXPECT_FALSE(it->first.second().name().empty());
-  EXPECT_NEAR(it->second, 0.1, 1e-12);
+  EXPECT_FALSE(it->second.name1.empty());
+  EXPECT_FALSE(it->second.name2.empty());
+  EXPECT_NEAR(it->second.margin, 0.1, 1e-12);
 
   // Max margin tests with LinkId
   EXPECT_NEAR(margin_data.getMaxCollisionMargin(id_x), 0.1, 1e-12);
