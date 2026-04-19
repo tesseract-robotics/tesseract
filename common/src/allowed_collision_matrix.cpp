@@ -50,23 +50,19 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
                                                  const LinkId& link_id2,
                                                  const std::string& reason)
 {
-  auto key = LinkIdPair(link_id1, link_id2);
+  const LinkIdPair key(link_id1, link_id2);
+  auto [name1, name2] = orderedPairNames(link_id1, link_id2);
 
-  // Hash collision check
-  auto it = lookup_table_.find(key);
-  if (it != lookup_table_.end())
+  auto [it, inserted] = lookup_table_.try_emplace(key);
+  if (!inserted)
   {
-    bool names_match = (it->second.name1 == link_id1.name() && it->second.name2 == link_id2.name()) ||
-                       (it->second.name1 == link_id2.name() && it->second.name2 == link_id1.name());
-    if (!names_match)
-      throw std::runtime_error("ACM LinkIdPair hash collision: ('" + link_id1.name() + "', '" + link_id2.name() +
-                               "') collides with ('" + it->second.name1 + "', '" + it->second.name2 + "')");
+    checkPairHashCollision("ACM", name1, name2, it->second.name1, it->second.name2);
+    it->second.reason = reason;
   }
-
-  if (link_id1.value() <= link_id2.value())
-    lookup_table_[key] = ACMEntry{ link_id1.name(), link_id2.name(), reason };
   else
-    lookup_table_[key] = ACMEntry{ link_id2.name(), link_id1.name(), reason };
+  {
+    it->second = ACMEntry{ std::move(name1), std::move(name2), reason };
+  }
 }
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
@@ -78,19 +74,17 @@ void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, cons
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 {
+  const uint64_t id = link_id.value();
   for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
-    if (it->first.first() == link_id || it->first.second() == link_id)
+    if (it->first.first_id() == id || it->first.second_id() == id)
       it = lookup_table_.erase(it);
     else
       ++it;
   }
 }
 
-bool AllowedCollisionMatrix::isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const
-{
-  return lookup_table_.find(LinkIdPair(link_id1, link_id2)) != lookup_table_.end();
-}
+bool AllowedCollisionMatrix::isCollisionAllowed(const LinkIdPair& pair) const { return lookup_table_.contains(pair); }
 
 void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }
 

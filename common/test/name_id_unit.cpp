@@ -74,7 +74,7 @@ TEST(NameIdTest, ZeroGuard)  // NOLINT
 TEST(NameIdTest, NameAccessor)  // NOLINT
 {
   const LinkId id = LinkId("test_link");
-  EXPECT_EQ(id.name(), "test_link");
+  EXPECT_EQ(id, "test_link");
 }
 
 TEST(NameIdTest, DefaultConstructedHasEmptyName)  // NOLINT
@@ -152,8 +152,8 @@ TEST(LinkIdPairTest, MakeCanonical)  // NOLINT
   const LinkIdPair ab = LinkIdPair(a, b);
   const LinkIdPair ba = LinkIdPair(b, a);
   EXPECT_EQ(ab, ba);
-  // Canonical ordering: first.value <= second.value
-  EXPECT_LE(ab.first().value(), ab.second().value());
+  // Canonical ordering: first_id <= second_id
+  EXPECT_LE(ab.first_id(), ab.second_id());
 }
 
 TEST(LinkIdPairTest, Equality)  // NOLINT
@@ -180,17 +180,18 @@ TEST(LinkIdPairTest, SameLinkPair)  // NOLINT
 {
   const LinkId a = LinkId("self");
   const LinkIdPair pair = LinkIdPair(a, a);
-  EXPECT_EQ(pair.first(), pair.second());
+  EXPECT_EQ(pair.first_id(), pair.second_id());
 }
 
-TEST(NameIdTest, LinkIdPairPreservesNames)  // NOLINT
+TEST(LinkIdPairTest, CanonicalOrdering)  // NOLINT
 {
   const LinkId a = LinkId("link_a");
   const LinkId b = LinkId("link_b");
-  const LinkIdPair pair = LinkIdPair(b, a);
-  // After canonical ordering, names should be preserved
-  EXPECT_FALSE(pair.first().name().empty());
-  EXPECT_FALSE(pair.second().name().empty());
+  const LinkIdPair ab = LinkIdPair(a, b);
+  const LinkIdPair ba = LinkIdPair(b, a);
+  EXPECT_EQ(ab.first_id(), ba.first_id());
+  EXPECT_EQ(ab.second_id(), ba.second_id());
+  EXPECT_LE(ab.first_id(), ab.second_id());
 }
 
 // ======================== Cereal serialization ========================
@@ -254,7 +255,7 @@ TEST(NameIdTest, ConstructorFromString)  // NOLINT
 {
   auto id = LinkId(std::string("test_link"));
   EXPECT_TRUE(id.isValid());
-  EXPECT_EQ(id.name(), "test_link");
+  EXPECT_EQ(id, "test_link");
   EXPECT_NE(id.value(), 0U);
 }
 
@@ -262,7 +263,7 @@ TEST(NameIdTest, ConstructorFromCharStar)  // NOLINT
 {
   auto id = LinkId("literal_link");
   EXPECT_TRUE(id.isValid());
-  EXPECT_EQ(id.name(), "literal_link");
+  EXPECT_EQ(id, "literal_link");
   EXPECT_EQ(id, LinkId(std::string("literal_link")));
 }
 
@@ -287,7 +288,7 @@ TEST(NameIdTest, ConstructorJointId)  // NOLINT
 {
   auto jid = JointId("test_joint");
   EXPECT_TRUE(jid.isValid());
-  EXPECT_EQ(jid.name(), "test_joint");
+  EXPECT_EQ(jid, "test_joint");
   // JointId and LinkId with same name should have same hash but different types
   auto lid = LinkId("test_joint");
   EXPECT_EQ(jid.value(), lid.value());

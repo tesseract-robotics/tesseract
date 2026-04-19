@@ -59,17 +59,26 @@ bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract:
                   const tesseract::common::LinkId& id);
 
 /**
- * @brief Determine if contact is allowed between two objects.
- * @param id1 The LinkId of the first object
- * @param id2 The LinkId of the second object
+ * @brief Determine if contact is allowed between two objects (hot-path primary).
+ * @param pair Canonically ordered link-id pair
  * @param validator The contact allowed validator
  * @param verbose If true print debug information
  * @return True if contact is allowed between the two object, otherwise false.
  */
-bool isContactAllowed(const tesseract::common::LinkId& id1,
-                      const tesseract::common::LinkId& id2,
+bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose = false);
+
+/**
+ * @brief Convenience overload; forwards to the pair-based primary.
+ */
+inline bool isContactAllowed(const tesseract::common::LinkId& id1,
+                             const tesseract::common::LinkId& id2,
+                             const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                             bool verbose = false)
+{
+  return isContactAllowed(tesseract::common::LinkIdPair(id1, id2), validator, verbose);
+}
 
 /**
  * @brief processResult Processes the ContactResult based on the information in the ContactTestData
@@ -82,6 +91,7 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
 ContactResult* processResult(ContactTestData& cdata,
                              ContactResult& contact,
                              const tesseract::common::LinkIdPair& key,
+                             double margin,
                              bool found);
 
 /**

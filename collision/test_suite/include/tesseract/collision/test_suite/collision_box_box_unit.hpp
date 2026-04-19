@@ -1,6 +1,11 @@
 #ifndef TESSERACT_COLLISION_COLLISION_BOX_BOX_UNIT_HPP
 #define TESSERACT_COLLISION_COLLISION_BOX_BOX_UNIT_HPP
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/bullet/convex_hull_utils.h>
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/collision/discrete_contact_manager.h>
@@ -118,9 +123,9 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   EXPECT_TRUE(checker.getCollisionObjects().size() == 3);
   for (const auto& co : checker.getCollisionObjects())
   {
-    EXPECT_TRUE(checker.getCollisionObjectGeometries(co.name()).size() == 1);
-    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co.name()).size() == 1);
-    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co.name()))
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co).size() == 1);
+    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co))
     {
       EXPECT_TRUE(cgt.isApprox(Eigen::Isometry3d::Identity(), 1e-5));
     }
@@ -167,7 +172,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "box_link")
+  if (result_vector[0].link_ids[0] != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -248,7 +253,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
     idx = { 0, 1, 1 };
-    if (result_vector[0].link_ids[0].name() != "box_link")
+    if (result_vector[0].link_ids[0] != "box_link")
       idx = { 1, 0, -1 };
 
     if (result_vector[0].single_contact_point)
@@ -285,7 +290,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
     idx = { 0, 1, 1 };
-    if (result_vector[0].link_ids[0].name() != "box_link")
+    if (result_vector[0].link_ids[0] != "box_link")
       idx = { 1, 0, -1 };
 
     if (result_vector[0].single_contact_point)

@@ -32,9 +32,9 @@ ACMContactAllowedValidator::ACMContactAllowedValidator(tesseract::common::Allowe
 {
 }
 
-bool ACMContactAllowedValidator::operator()(const LinkId& link_id1, const LinkId& link_id2) const
+bool ACMContactAllowedValidator::operator()(const LinkIdPair& pair) const
 {
-  return acm_.isCollisionAllowed(link_id1, link_id2);
+  return acm_.isCollisionAllowed(pair);
 }
 
 CombinedContactAllowedValidator::CombinedContactAllowedValidator(
@@ -44,21 +44,21 @@ CombinedContactAllowedValidator::CombinedContactAllowedValidator(
 {
 }
 
-bool CombinedContactAllowedValidator::operator()(const LinkId& link_id1, const LinkId& link_id2) const
+bool CombinedContactAllowedValidator::operator()(const LinkIdPair& pair) const
 {
   assert(!validators_.empty());
   if (type_ == CombinedContactAllowedValidatorType::OR)
   {
     bool value{ false };
     for (const auto& validator : validators_)
-      value = value || (*validator)(link_id1, link_id2);
+      value = value || (*validator)(pair);
 
     return value;
   }
 
   bool value{ true };
   for (const auto& validator : validators_)
-    value = value && (*validator)(link_id1, link_id2);
+    value = value && (*validator)(pair);
 
   return value;
 }
