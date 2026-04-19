@@ -104,7 +104,7 @@ public:
   short int m_collisionFilterMask{ btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter };
   bool m_enabled{ true };
 
-  /** @brief Get the integer link ID (hash of the name) */
+  /** @brief Get Get the collision object id */
   const tesseract::common::LinkId& getLinkId() const { return m_link_id; }
   /** @brief Get a user defined type */
   const int& getTypeID() const;
@@ -135,7 +135,7 @@ public:
   void manageReserve(std::size_t s);
 
 protected:
-  /** @brief Link ID derived from name, also carries the name string */
+  /** @brief The id of the collision object */
   tesseract::common::LinkId m_link_id;
   /** @brief A user defined type id */
   int m_type_id{ -1 };

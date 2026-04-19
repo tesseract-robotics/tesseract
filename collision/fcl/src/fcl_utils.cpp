@@ -216,12 +216,13 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
 
 bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
                          const CollisionObjectWrapper* cd2,
+                         const tesseract::common::LinkIdPair& pair,
                          const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                          bool verbose)
 {
   return cd1->m_enabled && cd2->m_enabled && (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&                                      // NOLINT
-         !isContactAllowed(cd1->getLinkId(), cd2->getLinkId(), validator, verbose);
+         !isContactAllowed(pair, validator, verbose);
 }
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
@@ -234,7 +235,9 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
+  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
+
+  if (!needsCollisionCheck(cd1, cd2, link_pair, cdata->validator, false))
     return false;
 
   std::size_t num_contacts = (cdata->req.contact_limit > 0) ? static_cast<std::size_t>(cdata->req.contact_limit) :
@@ -248,12 +251,12 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!col_result.isCollision())
     return false;
 
-  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
-
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
   const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
   Eigen::Isometry3d tf1_inv = tf1.inverse();
   Eigen::Isometry3d tf2_inv = tf2.inverse();
+
+  const double security_margin = cdata->collision_margin_data.getCollisionMargin(link_pair);
 
   for (size_t i = 0; i < col_result.numContacts(); ++i)
   {
@@ -279,7 +282,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
     const auto it = cdata->res->find(link_pair);
     bool found = (it != cdata->res->end() && !it->second.empty());
 
-    processResult(*cdata, contact, link_pair, found);
+    processResult(*cdata, contact, link_pair, security_margin, found);
   }
 
   return cdata->done;
@@ -295,14 +298,15 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
+  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
+
+  if (!needsCollisionCheck(cd1, cd2, link_pair, cdata->validator, false))
     return false;
 
   fcl::DistanceResultd fcl_result;
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
   const double security_margin = cdata->collision_margin_data.getCollisionMargin(link_pair);
   if (d > security_margin)
     return false;
@@ -338,7 +342,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   const auto it = cdata->res->find(link_pair);
   bool found = (it != cdata->res->end() && !it->second.empty());
 
-  processResult(*cdata, contact, link_pair, found);
+  processResult(*cdata, contact, link_pair, security_margin, found);
 
   return cdata->done;
 }
@@ -347,10 +351,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : link_id_(std::move(id))
-  , type_id_(type_id)
-  , shapes_(std::move(shapes))
-  , shape_poses_(std::move(shape_poses))
+  : link_id_(std::move(id)), type_id_(type_id), shapes_(std::move(shapes)), shape_poses_(std::move(shape_poses))
 {
   assert(!shapes_.empty());                       // NOLINT
   assert(!shape_poses_.empty());                  // NOLINT

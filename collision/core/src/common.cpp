@@ -53,8 +53,9 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
     {
       const auto& l2 = active_links[j];
-      if (validator == nullptr || !(*validator)(l1, l2))
-        clp.push_back(tesseract::common::LinkIdPair(l1, l2));
+      auto pair = tesseract::common::LinkIdPair(l1, l2);
+      if (validator == nullptr || !(*validator)(pair))
+        clp.push_back(pair);
     }
   }
 
@@ -63,8 +64,9 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
   {
     for (const auto& l2 : static_links)
     {
-      if (validator == nullptr || !(*validator)(l1, l2))
-        clp.push_back(tesseract::common::LinkIdPair(l1, l2));
+      auto pair = tesseract::common::LinkIdPair(l1, l2);
+      if (validator == nullptr || !(*validator)(pair))
+        clp.push_back(pair);
     }
   }
 
@@ -77,28 +79,29 @@ bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract:
   return active_ids.empty() || (active_ids.count(id) > 0);
 }
 
-bool isContactAllowed(const tesseract::common::LinkId& id1,
-                      const tesseract::common::LinkId& id2,
+bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose)
 {
   // do not distance check geoms part of the same object / link / attached body
-  if (id1 == id2)
+  if (pair.first_id() == pair.second_id())
     return true;
 
-  if (validator != nullptr && (*validator)(id1, id2))
+  if (validator != nullptr && (*validator)(pair))
   {
     if (verbose)
     {
       CONSOLE_BRIDGE_logError("Collision between LinkId(%lu) and LinkId(%lu) is allowed. No contacts are computed.",
-                              id1.value(), id2.value());
+                              pair.first_id(),
+                              pair.second_id());
     }
     return true;
   }
 
   if (verbose)
   {
-    CONSOLE_BRIDGE_logError("Actually checking collisions between LinkId(%lu) and LinkId(%lu)", id1.value(), id2.value());
+    CONSOLE_BRIDGE_logError(
+        "Actually checking collisions between LinkId(%lu) and LinkId(%lu)", pair.first_id(), pair.second_id());
   }
 
   return false;
@@ -107,13 +110,13 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
 ContactResult* processResult(ContactTestData& cdata,
                              ContactResult& contact,
                              const tesseract::common::LinkIdPair& key,
+                             double margin,
                              bool found)
 {
   if (cdata.req.is_valid && !(*cdata.req.is_valid)(contact))
     return nullptr;
 
-  if ((cdata.req.calculate_distance || cdata.req.calculate_penetration) &&
-      (contact.distance > cdata.collision_margin_data.getCollisionMargin(key.first(), key.second())))
+  if ((cdata.req.calculate_distance || cdata.req.calculate_penetration) && (contact.distance > margin))
     return nullptr;
 
   if (!found)
