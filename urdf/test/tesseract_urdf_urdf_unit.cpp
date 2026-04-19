@@ -463,14 +463,14 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 
   std::cout << path << "\n";
   EXPECT_TRUE(path.links.size() == 4);
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_1")) != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_2")) != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_3")) != path.links.end());
-  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_4")) != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_2") != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_3") != path.links.end());
+  EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
   EXPECT_TRUE(path.joints.size() == 3);
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_a2")) != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_a3")) != path.joints.end());
-  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_a4")) != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a2") != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a3") != path.joints.end());
+  EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_a4") != path.joints.end());
 }
 
 TEST(TesseractURDFUnit, write_urdf)  // NOLINT

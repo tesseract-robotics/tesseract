@@ -89,15 +89,16 @@ void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> vec);
  */
 struct KDLChainData
 {
-  KDL::Chain robot_chain;                            /**< @brief KDL Chain object */
-  KDL::Tree kdl_tree;                                /**< @brief KDL tree object */
-  std::vector<tesseract::common::JointId> joint_ids; /**< @brief List of joint ids */
-  tesseract::common::LinkId base_link_id;            /**< @brief Link id of first link in the kinematic object */
-  tesseract::common::LinkId tip_link_id;             /**< @brief Link id of last link in the kinematic object */
+  KDL::Chain robot_chain;                                 /**< @brief KDL Chain object */
+  KDL::Tree kdl_tree;                                     /**< @brief KDL tree object */
+  std::vector<tesseract::common::JointId> joint_ids;      /**< @brief List of joint ids */
+  tesseract::common::LinkId base_link_id;                 /**< @brief Link id of first link in the kinematic object */
+  tesseract::common::LinkId tip_link_id;                  /**< @brief Link id of last link in the kinematic object */
   std::map<tesseract::common::LinkId, int> segment_index; /**< @brief A map from link id to kdl chain segment number */
-  std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>> chains; /**< The chains used to create the object */
-  KDL::JntArray q_min;                                     /**< @brief Lower joint limits */
-  KDL::JntArray q_max;                                     /**< @brief Upper joint limits */
+  std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>> chains; /**< The chains used to create
+                                                                                          the object */
+  KDL::JntArray q_min;                                                                 /**< @brief Lower joint limits */
+  KDL::JntArray q_max;                                                                 /**< @brief Upper joint limits */
 };
 
 /**

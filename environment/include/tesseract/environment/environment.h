@@ -217,13 +217,13 @@ public:
   std::shared_ptr<const tesseract::kinematics::JointGroup> getJointGroup(const std::string& group_name) const;
 
   /**
-   * @brief Get a joint group given a vector of joint names
+   * @brief Get a joint group given a vector of joint ids
    * @param name The name to assign to the joint group
-   * @param joint_names The joint names that make up the group
+   * @param joint_ids The joint ids that make up the group
    * @return A joint group
    */
   std::shared_ptr<const tesseract::kinematics::JointGroup>
-  getJointGroup(const std::string& name, const std::vector<std::string>& joint_names) const;
+  getJointGroup(const std::string& name, const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   /**
    * @brief Get a kinematic group given group name and solver name
@@ -401,36 +401,36 @@ public:
 
   /**
    * @brief Get a link in the environment
-   * @param name The name of the link
+   * @param name The id of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  std::shared_ptr<const tesseract::scene_graph::Link> getLink(const std::string& name) const;
+  std::shared_ptr<const tesseract::scene_graph::Link> getLink(const common::LinkId& id) const;
 
   /**
-   * @brief Get joint by name
-   * @param name The name of the joint
+   * @brief Get joint by id
+   * @param name The id of the joint
    * @return Joint Const Pointer
    */
-  std::shared_ptr<const tesseract::scene_graph::Joint> getJoint(const std::string& name) const;
+  std::shared_ptr<const tesseract::scene_graph::Joint> getJoint(const common::JointId& id) const;
 
   /**
    * @brief Gets the limits associated with a joint
-   * @param joint_name Name of the joint to be updated
+   * @param joint_name Id of the joint to be updated
    * @return The joint limits set for the given joint
    */
-  std::shared_ptr<const tesseract::scene_graph::JointLimits> getJointLimits(const std::string& joint_name) const;
+  std::shared_ptr<const tesseract::scene_graph::JointLimits> getJointLimits(const common::JointId& joint_id) const;
 
   /**
    * @brief Get whether a link should be considered during collision checking
    * @return True if should be considered during collision checking, otherwise false
    */
-  bool getLinkCollisionEnabled(const std::string& name) const;
+  bool getLinkCollisionEnabled(const common::LinkId& id) const;
 
   /**
    * @brief Get a given links visibility setting
    * @return True if should be visible, otherwise false
    */
-  bool getLinkVisibility(const std::string& name) const;
+  bool getLinkVisibility(const common::LinkId& id) const;
 
   /**
    * @brief Get the allowed collision matrix
