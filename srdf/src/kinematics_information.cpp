@@ -147,27 +147,27 @@ bool KinematicsInformation::hasGroupJointState(const std::string& group_name, co
 }
 
 void KinematicsInformation::addGroupTCP(const std::string& group_name,
-                                        const std::string& tcp_name,
+                                        const common::LinkId& tcp_id,
                                         const Eigen::Isometry3d& tcp)
 {
-  group_tcps[group_name][tesseract::common::LinkId(tcp_name)] = tcp;
+  group_tcps[group_name][tcp_id] = tcp;
 }
 
-void KinematicsInformation::removeGroupTCP(const std::string& group_name, const std::string& tcp_name)
+void KinematicsInformation::removeGroupTCP(const std::string& group_name, const common::LinkId& tcp_id)
 {
   auto& inner = group_tcps.at(group_name);
-  inner.erase(tesseract::common::LinkId(tcp_name));
+  inner.erase(tcp_id);
   if (inner.empty())
     group_tcps.erase(group_name);
 }
 
-bool KinematicsInformation::hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const
+bool KinematicsInformation::hasGroupTCP(const std::string& group_name, const common::LinkId& tcp_id) const
 {
   auto it = group_tcps.find(group_name);
   if (it == group_tcps.end())
     return false;
 
-  return (it->second.find(tesseract::common::LinkId(tcp_name)) != it->second.end());
+  return (it->second.find(tcp_id) != it->second.end());
 }
 
 bool KinematicsInformation::operator==(const KinematicsInformation& rhs) const

@@ -236,16 +236,16 @@ void runTest(tesseract::scene_graph::SceneGraph& g)
 
     std::cout << path << "\n";
     EXPECT_TRUE(path.links.size() == 3);
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_1")) != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_5")) != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_4")) != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
     EXPECT_TRUE(path.joints.size() == 2);
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_5")) != path.joints.end());
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_6")) != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_5") != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_6") != path.joints.end());
     EXPECT_TRUE(path.active_joints.size() == 2);
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId("joint_5")) !=
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") !=
                 path.active_joints.end());
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId("joint_6")) !=
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") !=
                 path.active_joints.end());
 
     std::cout << (g.getName().c_str()) << "\n";
@@ -256,25 +256,25 @@ void runTest(tesseract::scene_graph::SceneGraph& g)
 
     std::cout << path << "\n";
     EXPECT_TRUE(path.links.size() == 3);
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_1")) != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_5")) != path.links.end());
-    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), LinkId("link_4")) != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_1") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_5") != path.links.end());
+    EXPECT_TRUE(std::find(path.links.begin(), path.links.end(), "link_4") != path.links.end());
     EXPECT_TRUE(path.joints.size() == 2);
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_5")) != path.joints.end());
-    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), JointId("joint_6")) != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_5") != path.joints.end());
+    EXPECT_TRUE(std::find(path.joints.begin(), path.joints.end(), "joint_6") != path.joints.end());
     EXPECT_TRUE(path.active_joints.size() == 2);
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId("joint_5")) !=
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_5") !=
                 path.active_joints.end());
-    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), JointId("joint_6")) !=
+    EXPECT_TRUE(std::find(path.active_joints.begin(), path.active_joints.end(), "joint_6") !=
                 path.active_joints.end());
 
     std::cout << (g.getName().c_str()) << "\n";
   }
 
   // Should throw since this is a directory and not a file
-  EXPECT_ANY_THROW(g.saveDOT(tesseract::common::getTempPath()));                             // NOLINT
-  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));                                    // NOLINT
-  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));  // NOLINT
+  EXPECT_ANY_THROW(g.saveDOT(tesseract::common::getTempPath()));  // NOLINT
+  EXPECT_ANY_THROW(g.getVertex("vertex_does_not_exist"));         // NOLINT
+  EXPECT_ANY_THROW(g.getEdge("edge_does_not_exist"));             // NOLINT
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
@@ -471,7 +471,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveLinkUnit)  // NOLINT
   Joint::ConstPtr j = g.getJoint("joint_4");
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
-  EXPECT_NE(j->parent_link_id.name(), "link_4");
+  EXPECT_NE(j->parent_link_id, "link_4");
 
   Joint move_joint = j->clone("move_joint_4");
   move_joint.parent_link_id = "link_4";
@@ -530,14 +530,14 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphIdCollectionMethodsUnit)  // NO
   {
     std::vector<LinkId> adjacent = g.getAdjacentLinkIds("link_3");
     EXPECT_EQ(adjacent.size(), 1);
-    EXPECT_EQ(adjacent[0], LinkId("link_4"));
+    EXPECT_EQ(adjacent[0], "link_4");
   }
 
   // --- getInvAdjacentLinkIds ---
   {
     std::vector<LinkId> inv_adjacent = g.getInvAdjacentLinkIds("link_3");
     EXPECT_EQ(inv_adjacent.size(), 1);
-    EXPECT_EQ(inv_adjacent[0], LinkId("link_2"));
+    EXPECT_EQ(inv_adjacent[0], "link_2");
   }
 
   // --- getLinkChildrenIds ---
@@ -548,57 +548,55 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphIdCollectionMethodsUnit)  // NO
   {
     std::vector<LinkId> children = g.getLinkChildrenIds("link_3");
     EXPECT_EQ(children.size(), 1);
-    EXPECT_EQ(children[0], LinkId("link_4"));
+    EXPECT_EQ(children[0], "link_4");
   }
   {
     std::vector<LinkId> children = g.getLinkChildrenIds("link_2");
     EXPECT_EQ(children.size(), 3);
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_3")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_4")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_5")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_3"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_4"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_5"), children.end());
   }
 
   // --- getJointChildrenIds (single) ---
   {
     std::vector<LinkId> children = g.getJointChildrenIds("joint_4");
     EXPECT_EQ(children.size(), 1);
-    EXPECT_EQ(children[0], LinkId("link_5"));
+    EXPECT_EQ(children[0], "link_5");
   }
   {
     std::vector<LinkId> children = g.getJointChildrenIds("joint_1");
     EXPECT_EQ(children.size(), 4);
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_2")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_3")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_4")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_5")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_2"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_3"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_4"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_5"), children.end());
   }
 
   // --- getJointChildrenIds (multi) ---
   {
-    std::vector<LinkId> children =
-        g.getJointChildrenIds(std::vector<JointId>({ JointId("joint_4") }));
+    std::vector<LinkId> children = g.getJointChildrenIds(std::vector<JointId>({ JointId("joint_4") }));
     EXPECT_EQ(children.size(), 1);
-    EXPECT_EQ(children[0], LinkId("link_5"));
+    EXPECT_EQ(children[0], "link_5");
   }
   {
-    std::vector<LinkId> children =
-        g.getJointChildrenIds(std::vector<JointId>({ JointId("joint_1") }));
+    std::vector<LinkId> children = g.getJointChildrenIds(std::vector<JointId>({ JointId("joint_1") }));
     EXPECT_EQ(children.size(), 4);
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_2")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_3")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_4")), children.end());
-    EXPECT_NE(std::find(children.begin(), children.end(), LinkId("link_5")), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_2"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_3"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_4"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_5"), children.end());
   }
 
   // --- getAdjacencyMapIds ---
   {
     std::unordered_map<LinkId, LinkId, LinkId::Hash> adj_map =
-        g.getAdjacencyMapIds({ LinkId("link_2"), LinkId("link_3") });
+        g.getAdjacencyMapIds({ LinkId("link_2"), "link_3" });
     EXPECT_EQ(adj_map.size(), 4);
-    EXPECT_EQ(adj_map.at("link_3"), LinkId("link_3"));
-    EXPECT_EQ(adj_map.at("link_4"), LinkId("link_3"));
-    EXPECT_EQ(adj_map.at("link_5"), LinkId("link_2"));
-    EXPECT_EQ(adj_map.at("link_2"), LinkId("link_2"));
+    EXPECT_EQ(adj_map.at("link_3"), "link_3");
+    EXPECT_EQ(adj_map.at("link_4"), "link_3");
+    EXPECT_EQ(adj_map.at("link_5"), "link_2");
+    EXPECT_EQ(adj_map.at("link_2"), "link_2");
   }
 }
 
@@ -773,9 +771,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphMoveJointUnit)  // NOLINT
   Joint::ConstPtr j = g.getJoint("joint_4");
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
-  EXPECT_NE(j->parent_link_id.name(), "link_4");
+  EXPECT_NE(j->parent_link_id, "link_4");
   EXPECT_TRUE(g.moveJoint("joint_4", "link_4"));
-  EXPECT_EQ(j->parent_link_id.name(), "link_4");
+  EXPECT_EQ(j->parent_link_id, "link_4");
   EXPECT_EQ(g.getLinks().size(), 5);
   EXPECT_EQ(g.getJoints().size(), 4);
 

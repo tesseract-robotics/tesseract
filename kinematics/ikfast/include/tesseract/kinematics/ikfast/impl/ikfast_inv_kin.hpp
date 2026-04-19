@@ -36,13 +36,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::kinematics
 {
-inline IKFastInvKin::IKFastInvKin(const std::string& base_link_name,
-                                  const std::string& tip_link_name,
+inline IKFastInvKin::IKFastInvKin(tesseract::common::LinkId base_link_id,
+                                  tesseract::common::LinkId tip_link_id,
                                   const std::vector<common::JointId>& joint_ids,
                                   std::string solver_name,
                                   std::vector<std::vector<double>> free_joint_states)
-  : base_link_id_(tesseract::common::LinkId(base_link_name))
-  , tip_link_id_(tesseract::common::LinkId(tip_link_name))
+  : base_link_id_(std::move(base_link_id))
+  , tip_link_id_(std::move(tip_link_id))
   , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
   , free_joint_states_(std::move(free_joint_states))

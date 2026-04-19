@@ -106,30 +106,28 @@ KinGroupIKInput::KinGroupIKInput(Eigen::Isometry3d p, tesseract::common::LinkId 
 }
 
 KinematicGroup::KinematicGroup(std::string name,
-                               const std::vector<std::string>& joint_names,
+                               const std::vector<tesseract::common::JointId>& joint_ids,
                                std::unique_ptr<InverseKinematics> inv_kin,
                                const tesseract::scene_graph::SceneGraph& scene_graph,
                                const tesseract::scene_graph::SceneState& scene_state)
-  : JointGroup(std::move(name), joint_names, scene_graph, scene_state), inv_kin_(std::move(inv_kin))
+  : JointGroup(std::move(name), joint_ids, scene_graph, scene_state), inv_kin_(std::move(inv_kin))
 {
-  // joint_names parameter is still valid (JointGroup's by-value param made a copy)
   const auto& inv_kin_joint_ids = inv_kin_->getJointIds();
-  std::vector<std::string> inv_kin_joint_names = tesseract::common::toNames(inv_kin_joint_ids);
 
-  if (static_cast<Eigen::Index>(joint_names.size()) != inv_kin_->numJoints())
-    throw std::runtime_error("KinematicGroup: joint_names is not the correct size");
+  if (static_cast<Eigen::Index>(joint_ids.size()) != inv_kin_->numJoints())
+    throw std::runtime_error("KinematicGroup: joint_ids is not the correct size");
 
-  if (!tesseract::common::isIdentical(joint_names, inv_kin_joint_names, false))
-    throw std::runtime_error("KinematicGroup: joint_names does not match same names in inverse kinematics object!");
+  if (!tesseract::common::isIdentical(joint_ids, inv_kin_joint_ids, false))
+    throw std::runtime_error("KinematicGroup: joint_ids does not match inverse kinematics object!");
 
-  reorder_required_ = !tesseract::common::isIdentical(joint_names, inv_kin_joint_names, true);
+  reorder_required_ = !tesseract::common::isIdentical(joint_ids, inv_kin_joint_ids, true);
 
   if (reorder_required_)
   {
-    inv_kin_joint_map_.reserve(joint_names.size());
-    for (const auto& joint_name : joint_names)
+    inv_kin_joint_map_.reserve(joint_ids.size());
+    for (const auto& joint_id : joint_ids)
       inv_kin_joint_map_.push_back(std::distance(
-          inv_kin_joint_names.begin(), std::find(inv_kin_joint_names.begin(), inv_kin_joint_names.end(), joint_name)));
+          inv_kin_joint_ids.begin(), std::find(inv_kin_joint_ids.begin(), inv_kin_joint_ids.end(), joint_id)));
   }
 
   // Get the IK solver working frame name, and check that it exists in the scene state

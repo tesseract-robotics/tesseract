@@ -149,7 +149,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
 
   runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_name, seed);
 
-  KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
+  KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin), *scene_graph, scene_state);
   KinematicGroup kin_group_copy(kin_group);
 
   {
@@ -205,7 +205,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
 
   runInvKinTest(*inv_kin2, *fwd_kin, pose, tip_link_name, seed);
 
-  KinematicGroup kin_group2(manip_name, joint_names, std::move(inv_kin2), *scene_graph, scene_state);
+  KinematicGroup kin_group2(manip_name, joint_ids, std::move(inv_kin2), *scene_graph, scene_state);
   EXPECT_EQ(kin_group2.getBaseLinkId(), scene_graph->getRoot());
   runInvKinTest(kin_group2, pose, base_link_name, tip_link_name, seed);
   runKinGroupJacobianABBOnPositionerTest(kin_group2);

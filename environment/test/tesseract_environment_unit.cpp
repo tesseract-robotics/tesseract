@@ -148,10 +148,8 @@ void runGetLinkTransformsTest(Environment& env)
     {
       const std::string& link_name = link_names.at(i);
       EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms.at(i), 1e-6));
-      EXPECT_TRUE(env_state.link_transforms.at(link_name)
-                      .isApprox(link_transforms2.at(link_name), 1e-6));
-      EXPECT_TRUE(
-          env_state.link_transforms.at(link_name).isApprox(env.getLinkTransform(link_name), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms2.at(link_name), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(env.getLinkTransform(link_name), 1e-6));
     }
   }
 
@@ -162,8 +160,7 @@ void runGetLinkTransformsTest(Environment& env)
   {
     for (const auto& link2 : link_names)
     {
-      Eigen::Isometry3d t1 = env_state.link_transforms.at(link1).inverse() *
-                             env_state.link_transforms.at(link2);
+      Eigen::Isometry3d t1 = env_state.link_transforms.at(link1).inverse() * env_state.link_transforms.at(link2);
       Eigen::Isometry3d t2 = env.getRelativeLinkTransform(link1, link2);
       EXPECT_TRUE(t1.isApprox(t2, 1e-6));
     }
@@ -1084,10 +1081,8 @@ TEST(TesseractEnvironmentUnit, EnvAddSceneGraphCommandUnit)  // NOLINT
   state = env->getState();
   EXPECT_TRUE(env->getJoint("provided_subgraph_joint") != nullptr);
   EXPECT_TRUE(env->getLink("prefix2_subgraph_base_link") != nullptr);
-  EXPECT_TRUE(state.link_transforms.find("prefix2_subgraph_base_link") !=
-              state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find("provided_subgraph_joint") !=
-              state.joint_transforms.end());
+  EXPECT_TRUE(state.link_transforms.find("prefix2_subgraph_base_link") != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find("provided_subgraph_joint") != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find("provided_subgraph_joint") == state.joints.end());
 }
 
@@ -1678,7 +1673,7 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
   state = env->getState();
-  EXPECT_TRUE(env->getJoint(joint_name1)->parent_link_id.name() == "tool0");
+  EXPECT_TRUE(env->getJoint(joint_name1)->parent_link_id == "tool0");
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
@@ -1764,7 +1759,7 @@ TEST(TesseractEnvironmentUnit, EnvMoveLinkCommandUnit)  // NOLINT
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
   state = env->getState();
-  EXPECT_TRUE(env->getJoint(moved_joint_name)->parent_link_id.name() == "tool0");
+  EXPECT_TRUE(env->getJoint(moved_joint_name)->parent_link_id == "tool0");
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
@@ -1976,7 +1971,7 @@ void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_sol
   for (int i = 0; i < 10; ++i)
   {
     SceneState base_random_state = base_solver.getRandomState();
-    auto ajn = base_solver.getActiveJointNames();
+    auto ajn = base_solver.getActiveJointIds();
     auto ajv = base_random_state.getJointValues(ajn);
     SceneState comp_state_const = comp_solver.getState(ajn, ajv);
     comp_solver.setState(ajn, ajv);
@@ -2616,14 +2611,12 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
     // Check joints and links names
     for (const auto& joint_name : joint_names)
     {
-      EXPECT_TRUE(current_state.joint_transforms.find(joint_name) !=
-                  current_state.joint_transforms.end());
+      EXPECT_TRUE(current_state.joint_transforms.find(joint_name) != current_state.joint_transforms.end());
     }
 
     for (const auto& link_name : link_names)
     {
-      EXPECT_TRUE(current_state.link_transforms.find(link_name) !=
-                  current_state.link_transforms.end());
+      EXPECT_TRUE(current_state.link_transforms.find(link_name) != current_state.link_transforms.end());
     }
 
     for (const auto& joint_name : active_joint_names)
@@ -2631,8 +2624,7 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
       EXPECT_TRUE(current_state.joints.find(joint_name) != current_state.joints.end());
     }
 
-    EXPECT_TRUE(
-        current_state.link_transforms.at("base_link").isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(current_state.link_transforms.at("base_link").isApprox(Eigen::Isometry3d::Identity()));
 
     {
       Eigen::Isometry3d result = Eigen::Isometry3d::Identity();
@@ -2713,14 +2705,12 @@ TEST(TesseractEnvironmentUnit, EnvSetState2)  // NOLINT
     // Check joints and links names
     for (const auto& joint_name : joint_names)
     {
-      EXPECT_TRUE(current_state.joint_transforms.find(joint_name) !=
-                  current_state.joint_transforms.end());
+      EXPECT_TRUE(current_state.joint_transforms.find(joint_name) != current_state.joint_transforms.end());
     }
 
     for (const auto& link_name : link_names)
     {
-      EXPECT_TRUE(current_state.link_transforms.find(link_name) !=
-                  current_state.link_transforms.end());
+      EXPECT_TRUE(current_state.link_transforms.find(link_name) != current_state.link_transforms.end());
     }
 
     int cnt = 0;
@@ -2730,8 +2720,7 @@ TEST(TesseractEnvironmentUnit, EnvSetState2)  // NOLINT
       EXPECT_NEAR(current_state.joints.at(joint_name), jvals(cnt++), 1e-5);
     }
 
-    EXPECT_TRUE(
-        current_state.link_transforms.at("base_link").isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(current_state.link_transforms.at("base_link").isApprox(Eigen::Isometry3d::Identity()));
     EXPECT_TRUE(current_state.link_transforms.at("base").isApprox(Eigen::Isometry3d::Identity()));
 
     {
@@ -2789,8 +2778,7 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
   {  // Should return the solution form the provided callback
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.1);
-    tesseract::common::ManipulatorInfo manip_info(
-        "manipulator", "unknown", "unknown", tcp);
+    tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown", tcp);
     Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(std::get<Eigen::Isometry3d>(manip_info.tcp_offset).isApprox(found_tcp, 1e-6));
   }
@@ -2805,15 +2793,13 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
   }
 
   {  // The tcp offset name is a link in the environment so it should throw an exception
-    tesseract::common::ManipulatorInfo manip_info(
-        "manipulator", "unknown", "unknown");
+    tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
     manip_info.tcp_offset = LinkId("tool0");
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 
   {  // If the tcp offset name does not exist it should throw an exception
-    tesseract::common::ManipulatorInfo manip_info(
-        "manipulator", "unknown", "unknown");
+    tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
     manip_info.tcp_offset = LinkId("unknown");
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
@@ -2982,10 +2968,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   joint_names.emplace_back("joint_a6");
   joint_names.emplace_back("joint_a7");
 
-  std::vector<tesseract::common::JointId> joint_ids;
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    joint_ids.push_back(name);
+  auto joint_ids = tesseract::common::toIds<tesseract::common::JointId>(joint_names);
 
   Eigen::VectorXd joint_start_pos(7);
   joint_start_pos(0) = -0.4;

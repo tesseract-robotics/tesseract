@@ -60,14 +60,14 @@ public:
   JointGroup& operator=(JointGroup&&) = default;
 
   /**
-   * @brief Create a kinematics group without inverse kinematics for the provided joint names
+   * @brief Create a kinematics group without inverse kinematics for the provided joint ids
    * @param name The name of the kinematic group
-   * @param joint_names The joints names to create kinematic group from
+   * @param joint_ids The joint ids to create kinematic group from
    * @param scene_graph The scene graph
    * @param scene_state The scene state
    */
   JointGroup(std::string name,
-             std::vector<std::string> joint_names,
+             std::vector<tesseract::common::JointId> joint_ids,
              const tesseract::scene_graph::SceneGraph& scene_graph,
              const tesseract::scene_graph::SceneState& scene_state);
 

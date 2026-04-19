@@ -191,7 +191,7 @@ TEST(TesseractSceneGraphUnit, LinkGetIdUnit)  // NOLINT
   Link link("my_link");
 
   // getId() should match LinkId constructed from name
-  EXPECT_EQ(link.getId(), tesseract::common::LinkId("my_link"));
+  EXPECT_EQ(link.getId(), "my_link");
   EXPECT_TRUE(link.getId().isValid());
 
   // Clone preserves getId

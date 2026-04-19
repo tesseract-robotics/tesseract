@@ -45,7 +45,8 @@ JointId jid = joint_name_string;          // implicit from std::string variable
 ### Rule 1: `NameId::fromName(x)` → `NameId(x)` or just `x`
 
 The static factory `LinkId::fromName(name)` / `JointId::fromName(name)` was removed.
-Replace with the constructor, or rely on implicit conversion.
+Replace with the constructor, or rely on implicit conversion. Unit tests should use
+implicit for literals.
 
 ```cpp
 // BEFORE
@@ -575,11 +576,7 @@ conversion is the same hash computation that `fromName()` used.
 
 ### Step 4: Build and Test
 
-```bash
-cd /path/to/build
-cmake --build . -j$(nproc)
-ctest --output-on-failure -j$(nproc)
-```
+Refer to workspace level CLAUDE.md for build and test instructions.
 
 ---
 

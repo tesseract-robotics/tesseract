@@ -175,8 +175,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
 
   Joint joint_1_clone = joint_1.clone();
   EXPECT_EQ(joint_1_clone.getName(), "joint_n1");
-  EXPECT_EQ(joint_1_clone.parent_link_id.name(), "link_n1");
-  EXPECT_EQ(joint_1_clone.child_link_id.name(), "link_n2");
+  EXPECT_EQ(joint_1_clone.parent_link_id, "link_n1");
+  EXPECT_EQ(joint_1_clone.child_link_id, "link_n2");
   EXPECT_TRUE(joint_1_clone.parent_to_joint_origin_transform.isApprox(joint_1.parent_to_joint_origin_transform));
   EXPECT_TRUE(joint_1_clone.axis.isApprox(Eigen::Vector3d::UnitZ()));
   EXPECT_EQ(joint_1_clone.type, JointType::PRISMATIC);
@@ -242,7 +242,7 @@ TEST(TesseractSceneGraphUnit, JointGetIdUnit)  // NOLINT
   Joint joint("my_joint");
 
   // getId() should match JointId constructed from name
-  EXPECT_EQ(joint.getId(), tesseract::common::JointId("my_joint"));
+  EXPECT_EQ(joint.getId(), "my_joint");
   EXPECT_TRUE(joint.getId().isValid());
 }
 
