@@ -1114,7 +1114,8 @@ inline std::string createTempSchemaFile(const std::string& name, const YAML::Nod
 {
   // Create temp file in $TEMPDIR with a unique name using static counter
   static unsigned int counter = 0;  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-  std::string path = tesseract::common::getTempPath() + "/test_schema_" + name + "_" + std::to_string(counter++) + ".yaml";
+  std::string path =
+      tesseract::common::getTempPath() + "/test_schema_" + name + "_" + std::to_string(counter++) + ".yaml";
 
   std::ofstream file(path);
   if (!file.is_open())

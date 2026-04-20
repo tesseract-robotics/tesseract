@@ -74,4 +74,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
                                      tesseract::environment::SetActiveDiscreteContactManagerCommand)
 
-#endif // TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_IMPL_HPP
+#endif  // TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_IMPL_HPP

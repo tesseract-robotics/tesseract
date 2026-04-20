@@ -37,4 +37,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::geometry::PolygonMesh, tesseract
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::geometry::PolygonMesh, tesseract::geometry::ConvexMesh)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::geometry::PolygonMesh, tesseract::geometry::SDFMesh)
 
-#endif // TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_IMPL_HPP
+#endif  // TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_IMPL_HPP

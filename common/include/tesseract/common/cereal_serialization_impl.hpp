@@ -74,4 +74,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::Resource, tesseract::com
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::Resource, tesseract::common::BytesResource)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface, tesseract::common::ProfileDictionaryPtrAnyPoly)
 
-#endif // TESSERACT_COMMON_CEREAL_SERIALIZATION_IMPL_HPP
+#endif  // TESSERACT_COMMON_CEREAL_SERIALIZATION_IMPL_HPP

@@ -17,4 +17,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface, tesseract:
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface,
                                      tesseract::collision::ContactResultMapVectorAnyPoly)
 
-#endif // TESSERACT_COLLISION_CEREAL_SERIALIZATION_IMPL_HPP
+#endif  // TESSERACT_COLLISION_CEREAL_SERIALIZATION_IMPL_HPP
