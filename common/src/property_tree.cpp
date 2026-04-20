@@ -410,9 +410,17 @@ void PropertyTree::rebuildAutoValidators()
       else if (str_type == property_type::UNSIGNED_INT)
         auto_validators_.emplace_back(validateTypeCastWithRange<unsigned int>);
       else if (str_type == property_type::LONG_INT)
+#ifndef _WIN32
         auto_validators_.emplace_back(validateTypeCastWithRange<long int>);
+#else
+        auto_validators_.emplace_back(validateTypeCastWithRange<long long int>);
+#endif
       else if (str_type == property_type::LONG_UNSIGNED_INT)
+#ifndef _WIN32
         auto_validators_.emplace_back(validateTypeCastWithRange<long unsigned int>);
+#else
+        auto_validators_.emplace_back(validateTypeCastWithRange<long long unsigned int>);
+#endif
       else if (str_type == property_type::EIGEN_ISOMETRY_3D)
         auto_validators_.emplace_back(validateTypeCast<Eigen::Isometry3d>);
       // else if (str_type == property_type::EIGEN_MATRIX_2D)

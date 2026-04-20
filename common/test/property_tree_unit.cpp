@@ -3397,7 +3397,12 @@ TEST(TypeCoverage, StandaloneTypes)  // NOLINT
   PropertyTree long_uint_node;
   long_uint_node.setAttribute(TYPE, LONG_UNSIGNED_INT);
   long_uint_node.setValue(YAML::Node(9999999999UL));
+#ifndef _WIN32
   EXPECT_EQ(long_uint_node.as<long unsigned int>(), 9999999999UL);
+#else
+  // Need to use long long on Windows for 64 bit ints
+  EXPECT_EQ(long_uint_node.as<long long unsigned int>(), 9999999999UL);
+#endif
 }
 
 TEST(TypeCoverage, ListOfBool)  // NOLINT
