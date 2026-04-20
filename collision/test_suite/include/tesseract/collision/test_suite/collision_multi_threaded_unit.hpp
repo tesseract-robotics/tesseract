@@ -91,7 +91,8 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   auto start_time = std::chrono::high_resolution_clock::now();
 
-#pragma omp parallel for num_threads(num_threads) shared(location, link_names)
+  const auto& const_location = location;
+#pragma omp parallel for num_threads(num_threads) shared(const_location, link_names)
   for (long i = 0; i < num_threads; ++i)  // NOLINT
   {
     const int tn = omp_get_thread_num();
@@ -102,13 +103,13 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
       auto link_id = tesseract::common::LinkId(name);
       if (tn == 0)
       {
-        Eigen::Isometry3d pose = location[link_id];
+        Eigen::Isometry3d pose = const_location.at(link_id);
         pose.translation()[0] += 0.1;
         manager->setCollisionObjectsTransform(name, pose);
       }
       else if (tn == 1)
       {
-        Eigen::Isometry3d pose = location[link_id];
+        Eigen::Isometry3d pose = const_location.at(link_id);
         pose.translation()[1] += 0.1;
         std::vector<std::string> names = { name };
         tesseract::common::VectorIsometry3d transforms = { pose };
@@ -116,13 +117,13 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
       }
       else if (tn == 2)
       {
-        Eigen::Isometry3d pose = location[link_id];
+        Eigen::Isometry3d pose = const_location.at(link_id);
         pose.translation()[2] += 0.1;
         manager->setCollisionObjectsTransform(name, pose);
       }
       else
       {
-        Eigen::Isometry3d pose = location[link_id];
+        Eigen::Isometry3d pose = const_location.at(link_id);
         pose.translation()[0] -= 0.1;
         std::vector<std::string> names = { name };
         tesseract::common::VectorIsometry3d transforms = { pose };
