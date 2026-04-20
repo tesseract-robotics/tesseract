@@ -258,9 +258,9 @@ std::unique_ptr<Mesh> toTriangleMesh(const Box& geom, double /*tolerance*/, cons
   for (std::size_t i = 0; i < triangles.size(); i += 4)
   {
     // triangles layout: [3, v1, v2, v3]
-    const std::size_t v1 = boost::numeric_cast<std::size_t>(triangles[i + 1]);
-    const std::size_t v2 = boost::numeric_cast<std::size_t>(triangles[i + 2]);
-    const std::size_t v3 = boost::numeric_cast<std::size_t>(triangles[i + 3]);
+    const auto v1 = boost::numeric_cast<std::size_t>(triangles[i + 1]);
+    const auto v2 = boost::numeric_cast<std::size_t>(triangles[i + 2]);
+    const auto v3 = boost::numeric_cast<std::size_t>(triangles[i + 3]);
 
     const Eigen::Vector3d& a = (*vertices)[v1];
     const Eigen::Vector3d& b = (*vertices)[v2];
@@ -329,8 +329,8 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cylinder& geom, double tolerance, con
   for (int i = 0; i < radial_segments; ++i)
   {
     const int next = (i + 1) % radial_segments;
-    const std::size_t next_u = boost::numeric_cast<std::size_t>(next);
-    const std::size_t i_u = boost::numeric_cast<std::size_t>(i);
+    const auto next_u = boost::numeric_cast<std::size_t>(next);
+    const auto i_u = boost::numeric_cast<std::size_t>(i);
     triangles.push_back(3);
     triangles.push_back(center_top_index);
     triangles.push_back(top_rim_indices[i_u]);
@@ -341,8 +341,8 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cylinder& geom, double tolerance, con
   for (int i = 0; i < radial_segments; ++i)
   {
     const int next = (i + 1) % radial_segments;
-    const std::size_t next_u = boost::numeric_cast<std::size_t>(next);
-    const std::size_t i_u = boost::numeric_cast<std::size_t>(i);
+    const auto next_u = boost::numeric_cast<std::size_t>(next);
+    const auto i_u = boost::numeric_cast<std::size_t>(i);
     triangles.push_back(3);
     triangles.push_back(center_bottom_index);
     triangles.push_back(bottom_rim_indices[next_u]);
@@ -354,18 +354,18 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cylinder& geom, double tolerance, con
   {
     const int next = (i + 1) % radial_segments;
 
-    const std::size_t next_u = boost::numeric_cast<std::size_t>(next);
-    const std::size_t i_u = boost::numeric_cast<std::size_t>(i);
+    const auto next_u = boost::numeric_cast<std::size_t>(next);
+    const auto i_u = boost::numeric_cast<std::size_t>(i);
 
     const int top1 = top_rim_indices[i_u];
     const int top2 = top_rim_indices[next_u];
     const int bot1 = bottom_rim_indices[i_u];
     const int bot2 = bottom_rim_indices[next_u];
 
-    const std::size_t top1_u = boost::numeric_cast<std::size_t>(top1);
-    const std::size_t top2_u = boost::numeric_cast<std::size_t>(top2);
-    const std::size_t bot1_u = boost::numeric_cast<std::size_t>(bot1);
-    const std::size_t bot2_u = boost::numeric_cast<std::size_t>(bot2);
+    const auto top1_u = boost::numeric_cast<std::size_t>(top1);
+    const auto top2_u = boost::numeric_cast<std::size_t>(top2);
+    const auto bot1_u = boost::numeric_cast<std::size_t>(bot1);
+    const auto bot2_u = boost::numeric_cast<std::size_t>(bot2);
 
     // Compute shared normal for side vertices (drop Z, then normalize)
     Eigen::Vector3d norm1(origin * Eigen::Vector3d{ (*vertices)[top1_u].x(), (*vertices)[top1_u].y(), 0.0 });
@@ -442,8 +442,8 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cone& geom, double tolerance, const E
   {
     const int next = (i + 1) % radial_segments;
 
-    const std::size_t next_u = boost::numeric_cast<std::size_t>(next);
-    const std::size_t i_u = boost::numeric_cast<std::size_t>(i);
+    const auto next_u = boost::numeric_cast<std::size_t>(next);
+    const auto i_u = boost::numeric_cast<std::size_t>(i);
 
     triangles.push_back(3);
     triangles.push_back(apex_index);
@@ -456,8 +456,8 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cone& geom, double tolerance, const E
   {
     const int next = (i + 1) % radial_segments;
 
-    const std::size_t next_u = boost::numeric_cast<std::size_t>(next);
-    const std::size_t i_u = boost::numeric_cast<std::size_t>(i);
+    const auto next_u = boost::numeric_cast<std::size_t>(next);
+    const auto i_u = boost::numeric_cast<std::size_t>(i);
 
     triangles.push_back(3);
     triangles.push_back(base_center_index);
