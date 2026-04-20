@@ -1112,9 +1112,9 @@ TEST(PropertyTreeHelpers, IsMapType)  // NOLINT
 // Helper to create a temporary YAML file with a given content
 inline std::string createTempSchemaFile(const std::string& name, const YAML::Node& schema)
 {
-  // Create temp file in /tmp with a unique name using static counter
+  // Create temp file in $TEMPDIR with a unique name using static counter
   static unsigned int counter = 0;  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-  std::string path = "/tmp/test_schema_" + name + "_" + std::to_string(counter++) + ".yaml";
+  std::string path = tesseract::common::getTempPath() + "/test_schema_" + name + "_" + std::to_string(counter++) + ".yaml";
 
   std::ofstream file(path);
   if (!file.is_open())
