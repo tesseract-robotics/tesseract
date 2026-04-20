@@ -76,7 +76,7 @@ std::string fileToString(const std::filesystem::path& filepath)
   std::string contents;
 
   ifs.seekg(0, std::ios::end);
-  contents.reserve(ifs.tellg());
+  contents.reserve(static_cast<std::size_t>(ifs.tellg()));
   ifs.seekg(0, std::ios::beg);
 
   contents.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
