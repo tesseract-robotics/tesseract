@@ -1,8 +1,6 @@
 #ifndef TESSERACT_COMMON_CEREAL_SERIALIZATION_IMPL_HPP
 #define TESSERACT_COMMON_CEREAL_SERIALIZATION_IMPL_HPP
 
-#include <tesseract/common/cereal_serialization.h>
-
 // These must be include before calling macro CEREAL_REGISTER_TYPE
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/xml.hpp>
