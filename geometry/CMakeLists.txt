@@ -25,7 +25,6 @@ set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "geometry" PARENT_SCOPE)
 
 add_library(
   geometry
-  src/cereal_serialization.cpp
   src/conversions.cpp
   src/geometry.cpp
   src/utils.cpp

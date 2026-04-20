@@ -166,4 +166,6 @@ void serialize(Archive& ar, CompoundMesh& obj)
 
 }  // namespace tesseract::geometry
 
+#include <tesseract/geometry/cereal_serialization_impl.hpp>
+
 #endif  // TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_H

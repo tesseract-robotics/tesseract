@@ -244,4 +244,6 @@ void serialize(Archive& ar, Environment& obj)
 
 }  // namespace tesseract::environment
 
+#include <tesseract/environment/cereal_serialization_impl.hpp>
+
 #endif  // TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_H

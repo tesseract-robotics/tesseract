@@ -1,3 +1,6 @@
+#ifndef TESSERACT_COLLISION_CEREAL_SERIALIZATION_IMPL_HPP
+#define TESSERACT_COLLISION_CEREAL_SERIALIZATION_IMPL_HPP
+
 #include <tesseract/collision/cereal_serialization.h>
 
 // These must be include before calling macro CEREAL_REGISTER_TYPE
@@ -14,6 +17,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface, tesseract:
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::common::AnyInterface,
                                      tesseract::collision::ContactResultMapVectorAnyPoly)
 
-// LCOV_EXCL_START
-CEREAL_REGISTER_DYNAMIC_INIT(tesseract_collision_cereal)
-// LCOV_EXCL_STOP
+#endif // TESSERACT_COLLISION_CEREAL_SERIALIZATION_IMPL_HPP

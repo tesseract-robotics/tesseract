@@ -2,7 +2,6 @@ set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "environment" PARENT_SCOPE)
 
 add_library(
   environment
-  src/cereal_serialization.cpp
   src/environment.cpp
   src/environment_cache.cpp
   src/environment_monitor_interface.cpp
