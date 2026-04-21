@@ -71,12 +71,11 @@ inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
                                      const tesseract::common::LinkIdTransformMap& tip_link_poses,
                                      const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  const auto tip_id = tip_link_id_;
   assert(tip_link_poses.size() == 1);
-  assert(tip_link_poses.find(tip_id) != tip_link_poses.end());
-  assert(std::abs(1.0 - tip_link_poses.at(tip_id).matrix().determinant()) < 1e-6);
+  assert(tip_link_poses.find(tip_link_id_) != tip_link_poses.end());
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_id_).matrix().determinant()) < 1e-6);
 
-  const Eigen::Isometry3d& pose = tip_link_poses.at(tip_id);
+  const Eigen::Isometry3d& pose = tip_link_poses.at(tip_link_id_);
 
   // Convert to ikfast data type
   Eigen::Transform<IkReal, 3, Eigen::Isometry> ikfast_tcp = pose.cast<IkReal>();
@@ -131,7 +130,7 @@ inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
 inline Eigen::Index IKFastInvKin::numJoints() const { return static_cast<Eigen::Index>(GetNumJoints()); }
 inline std::vector<tesseract::common::JointId> IKFastInvKin::getJointIds() const { return joint_ids_; }
 inline tesseract::common::LinkId IKFastInvKin::getBaseLinkId() const { return base_link_id_; }
-inline tesseract::common::LinkId IKFastInvKin::getWorkingFrameId() const { return base_link_id_; }
+inline tesseract::common::LinkId IKFastInvKin::getWorkingFrame() const { return base_link_id_; }
 inline std::vector<tesseract::common::LinkId> IKFastInvKin::getTipLinkIds() const { return { tip_link_id_ }; }
 inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }
 

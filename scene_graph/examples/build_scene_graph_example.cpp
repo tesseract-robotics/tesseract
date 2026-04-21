@@ -280,27 +280,27 @@ int main(int /*argc*/, char** /*argv*/)
   //! [build_scene_graph_add_joints]
 
   //! [build_scene_graph_adjacent_links]
-  std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
+  std::vector<tesseract::common::LinkId> adjacent_links = g.getAdjacentLinkIds("link_3");
   for (const auto& adj : adjacent_links)
-    CONSOLE_BRIDGE_logInform(adj.c_str());
+    CONSOLE_BRIDGE_logInform(adj.name().c_str());
   //! [build_scene_graph_adjacent_links]
 
   //! [build_scene_graph_inv_adjacent_links]
-  std::vector<std::string> inv_adjacent_links = g.getInvAdjacentLinkNames("link_3");
+  std::vector<tesseract::common::LinkId> inv_adjacent_links = g.getInvAdjacentLinkIds("link_3");
   for (const auto& inv_adj : inv_adjacent_links)
-    CONSOLE_BRIDGE_logInform(inv_adj.c_str());
+    CONSOLE_BRIDGE_logInform(inv_adj.name().c_str());
   //! [build_scene_graph_inv_adjacent_links]
 
   //! [build_scene_graph_link_children]
-  std::vector<std::string> child_link_names = g.getLinkChildrenNames("link_2");
-  for (const auto& child_link : child_link_names)
-    CONSOLE_BRIDGE_logInform(child_link.c_str());
+  std::vector<tesseract::common::LinkId> child_link_ids = g.getLinkChildrenIds("link_2");
+  for (const auto& child_link : child_link_ids)
+    CONSOLE_BRIDGE_logInform(child_link.name().c_str());
   //! [build_scene_graph_link_children]
 
   //! [build_scene_graph_joint_children]
-  child_link_names = g.getJointChildrenNames("joint_1");
-  for (const auto& child_link : child_link_names)
-    CONSOLE_BRIDGE_logInform(child_link.c_str());
+  child_link_ids = g.getJointChildrenIds("joint_1");
+  for (const auto& child_link : child_link_ids)
+    CONSOLE_BRIDGE_logInform(child_link.name().c_str());
   //! [build_scene_graph_joint_children]
 
   //! [build_scene_graph_save_dot]

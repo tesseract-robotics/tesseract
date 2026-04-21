@@ -57,8 +57,6 @@ public:
   OFKTNode* getParent() override;
   const OFKTNode* getParent() const override;
 
-  const std::string& getLinkName() const override;
-  const std::string& getJointName() const override;
   tesseract::common::LinkId getLinkId() const override;
   tesseract::common::JointId getJointId() const override;
 

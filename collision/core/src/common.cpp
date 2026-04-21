@@ -73,10 +73,10 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
   return clp;
 }
 
-bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active,
                   const tesseract::common::LinkId& id)
 {
-  return active_ids.empty() || (active_ids.count(id) > 0);
+  return active.empty() || (active.count(id) > 0);
 }
 
 bool isContactAllowed(const tesseract::common::LinkIdPair& pair,

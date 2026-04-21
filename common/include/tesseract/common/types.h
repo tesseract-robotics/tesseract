@@ -29,6 +29,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <utility>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::common
@@ -69,7 +71,7 @@ struct NameId
   }
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  NameId(const char* name) : NameId(std::string(name)) {}
+  NameId(const char* name) : NameId(name != nullptr ? std::string(name) : std::string{}) {}
 
   /** @brief The numeric hash of the name. Zero means invalid/default-constructed. */
   constexpr uint64_t value() const noexcept { return value_; }

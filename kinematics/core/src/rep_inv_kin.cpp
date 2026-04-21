@@ -129,8 +129,8 @@ void REPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   manip_inv_kin_ = manipulator->clone();
   manip_reach_ = manipulator_reach;
   positioner_fwd_kin_ = positioner->clone();
-  working_frame_id_ = positioner_fwd_kin_->getTipLinkIds()[0];
-  manip_tip_link_id_ = manip_inv_kin_->getTipLinkIds()[0];
+  working_frame_ = positioner_fwd_kin_->getTipLinkIds()[0];
+  manip_tip_link_ = manip_inv_kin_->getTipLinkIds()[0];
   dof_ = positioner_fwd_kin_->numJoints() + manip_inv_kin_->numJoints();
 
   joint_ids_ = positioner_fwd_kin_->getJointIds();
@@ -167,8 +167,8 @@ REPInvKin& REPInvKin::operator=(const REPInvKin& other)
   manip_reach_ = other.manip_reach_;
   joint_ids_ = other.joint_ids_;
   manip_base_to_positioner_base_ = other.manip_base_to_positioner_base_;
-  working_frame_id_ = other.working_frame_id_;
-  manip_tip_link_id_ = other.manip_tip_link_id_;
+  working_frame_ = other.working_frame_;
+  manip_tip_link_ = other.manip_tip_link_;
   dof_ = other.dof_;
   dof_range_ = other.dof_range_;
 
@@ -209,16 +209,17 @@ void REPInvKin::ikAt(IKSolutions& solutions,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   TESSERACT_THREAD_LOCAL tesseract::common::LinkIdTransformMap positioner_poses;
+  positioner_poses.clear();
   positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
-  Eigen::Isometry3d positioner_tf = positioner_poses[working_frame_id_];
+  Eigen::Isometry3d positioner_tf = positioner_poses[working_frame_];
 
   Eigen::Isometry3d robot_target_pose =
-      manip_base_to_positioner_base_ * positioner_tf * tip_link_poses.at(manip_tip_link_id_);
+      manip_base_to_positioner_base_ * positioner_tf * tip_link_poses.at(manip_tip_link_);
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
   tesseract::common::LinkIdTransformMap robot_target_poses;
-  robot_target_poses[manip_tip_link_id_] = robot_target_pose;
+  robot_target_poses[manip_tip_link_] = robot_target_pose;
 
   auto robot_dof = manip_inv_kin_->numJoints();
   auto positioner_dof = static_cast<Eigen::Index>(positioner_pose.size());
@@ -246,8 +247,8 @@ void REPInvKin::calcInvKin(IKSolutions& solutions,
                            const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
-  assert(tip_link_poses.find(manip_tip_link_id_) != tip_link_poses.end());
-  assert(std::abs(1.0 - tip_link_poses.at(manip_tip_link_id_).matrix().determinant()) < 1e-6);  // NOLINT
+  assert(tip_link_poses.find(manip_tip_link_) != tip_link_poses.end());
+  assert(std::abs(1.0 - tip_link_poses.at(manip_tip_link_).matrix().determinant()) < 1e-6);  // NOLINT
 
   calcInvKinHelper(solutions, tip_link_poses, seed);
 }
@@ -258,9 +259,9 @@ Eigen::Index REPInvKin::numJoints() const { return dof_; }
 
 tesseract::common::LinkId REPInvKin::getBaseLinkId() const { return manip_inv_kin_->getBaseLinkId(); }
 
-tesseract::common::LinkId REPInvKin::getWorkingFrameId() const { return working_frame_id_; }
+tesseract::common::LinkId REPInvKin::getWorkingFrame() const { return working_frame_; }
 
-std::vector<tesseract::common::LinkId> REPInvKin::getTipLinkIds() const { return { manip_tip_link_id_ }; }
+std::vector<tesseract::common::LinkId> REPInvKin::getTipLinkIds() const { return { manip_tip_link_ }; }
 
 std::string REPInvKin::getSolverName() const { return solver_name_; }
 

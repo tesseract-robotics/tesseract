@@ -267,9 +267,9 @@ TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
   check_pairs.emplace_back("base_link", "link_1");
   check_pairs.emplace_back("base_link", "link_2");
   check_pairs.emplace_back("base_link", "link_3");
-  check_pairs.emplace_back("link_1", "part_link");
-  check_pairs.emplace_back("link_2", "part_link");
-  check_pairs.emplace_back("link_3", "part_link");
+  check_pairs.emplace_back("part_link", "link_1");
+  check_pairs.emplace_back("part_link", "link_2");
+  check_pairs.emplace_back("part_link", "link_3");
 
   std::vector<tesseract::common::LinkIdPair> pairs =
       tesseract::collision::getCollisionObjectPairs(active_links, static_links);
@@ -285,13 +285,22 @@ TEST(TesseractCoreUnit, getCollisionObjectPairsUnit)  // NOLINT
   check_pairs.emplace_back("link_2", "link_3");
   check_pairs.emplace_back("base_link", "link_2");
   check_pairs.emplace_back("base_link", "link_3");
-  check_pairs.emplace_back("link_1", "part_link");
-  check_pairs.emplace_back("link_2", "part_link");
-  check_pairs.emplace_back("link_3", "part_link");
+  check_pairs.emplace_back("part_link", "link_1");
+  check_pairs.emplace_back("part_link", "link_2");
+  check_pairs.emplace_back("part_link", "link_3");
 
   pairs = tesseract::collision::getCollisionObjectPairs(active_links, static_links, validator);
 
   EXPECT_TRUE(tesseract::common::isIdentical<tesseract::common::LinkIdPair>(pairs, check_pairs, false));
+}
+
+TEST(TesseractCoreUnit, isContactAllowedUnit)  // NOLINT
+{
+  auto validator = std::make_shared<TestContactAllowedValidator>();
+
+  EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "base_link", validator, false));
+  EXPECT_FALSE(tesseract::collision::isContactAllowed("base_link", "link_2", validator, false));
+  EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "link_1", validator, true));
 }
 
 TEST(TesseractCoreUnit, scaleVerticesUnit)  // NOLINT
@@ -1420,6 +1429,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
   // Test resize method
   {
     std::vector<tesseract::common::JointId> joint_ids{ "joint1" };
+
     tesseract::collision::ContactTrajectoryResults results(joint_ids);
     EXPECT_EQ(results.steps.size(), 0);
 

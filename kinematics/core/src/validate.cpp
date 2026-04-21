@@ -44,7 +44,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
   Eigen::VectorXd seed_angles(manip.numJoints());
   Eigen::VectorXd joint_angles2(manip.numJoints());
   auto tip_links = manip.getAllPossibleTipLinkIds();
-  auto working_frames = manip.getAllValidWorkingFrameIds();
+  auto working_frames = manip.getAllValidWorkingFrames();
   const int nj = static_cast<int>(manip.numJoints());
 
   std::vector<std::vector<double>> passed_data;
@@ -73,15 +73,13 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
       joint_angles2[t] = M_PI_4;
 
       auto poses1 = manip.calcFwdKin(joint_angles2);
-      const auto wf_id = check.first;
-      const auto tl_id = check.second;
-      test1 = poses1.at(wf_id).inverse() * poses1.at(tl_id);
-      KinGroupIKInput ik_input(test1, wf_id, tl_id);
+      test1 = poses1.at(check.first).inverse() * poses1.at(check.second);
+      KinGroupIKInput ik_input(test1, check.first, check.second);
       IKSolutions sols = manip.calcInvKin({ ik_input }, seed_angles);
       for (const auto& sol : sols)
       {
         auto poses2 = manip.calcFwdKin(sol);
-        test2 = poses2.at(wf_id).inverse() * poses2.at(tl_id);
+        test2 = poses2.at(check.first).inverse() * poses2.at(check.second);
 
         double translation_distance = (test1.translation() - test2.translation()).norm();
         double angular_distance =
@@ -96,6 +94,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
             ++angular_failures;
 
           angular_max = std::max(angular_distance, angular_max);
+
           translation_max = std::max(translation_distance, translation_max);
 
           std::vector<double> data{ translation_distance, tol, angular_distance, tol };

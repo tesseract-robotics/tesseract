@@ -39,7 +39,6 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <string>
 #include <vector>
 #include <memory>
 #include <unordered_map>

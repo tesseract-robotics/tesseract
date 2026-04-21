@@ -210,7 +210,7 @@ public:
       ContactResultMap& sub_segment_results,
       long sub_segment_index,
       long sub_segment_last_index,
-      const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
+      const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
       double segment_dt,
       bool discrete,
       const ContactResultMap::FilterFn& filter = nullptr);
@@ -448,7 +448,7 @@ struct ContactManagerConfig
 
   /** @brief Each key is a link ID. Objects will be enabled/disabled based on the value. Objects that aren't in the
    * map are unmodified from the defaults*/
-  std::unordered_map<tesseract::common::LinkId, bool, tesseract::common::LinkId::Hash> modify_object_enabled;
+  std::unordered_map<tesseract::common::LinkId, bool> modify_object_enabled;
 
   /**
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins

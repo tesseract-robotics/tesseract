@@ -127,13 +127,10 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  const auto box_id = tesseract::common::LinkId("box_link");
-  const auto cylinder_id = tesseract::common::LinkId("cylinder_link");
-
   tesseract::common::LinkIdTransformMap location;
-  location[box_id] = Eigen::Isometry3d::Identity();
-  location[cylinder_id] = Eigen::Isometry3d::Identity();
-  location[cylinder_id].translation()(0) = 0.2;
+  location["box_link"] = Eigen::Isometry3d::Identity();
+  location["cylinder_link"] = Eigen::Isometry3d::Identity();
+  location["cylinder_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -171,13 +168,13 @@ inline void runTest(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location[cylinder_id].translation() = Eigen::Vector3d(1, 0, 0);
+  location["cylinder_link"].translation() = Eigen::Vector3d(1, 0, 0);
   result.clear();
   result_vector.clear();
 
   // Use different method for setting transforms
   std::vector<std::string> names = { "cylinder_link" };
-  tesseract::common::VectorIsometry3d transforms = { location[cylinder_id] };
+  tesseract::common::VectorIsometry3d transforms = { location["cylinder_link"] };
   checker.setCollisionObjectsTransform(names, transforms);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenCopyResults(result_vector);

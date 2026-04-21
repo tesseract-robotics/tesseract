@@ -10,8 +10,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
 
-using tesseract::common::LinkId;
-
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointDynamicsUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;

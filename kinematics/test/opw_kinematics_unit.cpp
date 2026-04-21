@@ -65,44 +65,38 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   // Setup test
   tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraphABB(locator);
-  std::string base_link_name = "base_link";
-  std::string tip_link_name = "tool0";
-  std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  tesseract::common::LinkId base_link_id = "base_link";
+  tesseract::common::LinkId tip_link_id = "tool0";
+  std::vector<tesseract::common::JointId> joint_ids{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
 
-  KDLFwdKinChain fwd_kin(*scene_graph, base_link_name, tip_link_name);
+  KDLFwdKinChain fwd_kin(*scene_graph, base_link_id, tip_link_id);
 
   opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
-  std::vector<tesseract::common::JointId> joint_ids;
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-  {
-    joint_ids.push_back(tesseract::common::JointId(name));
-  }
-  auto inv_kin = std::make_shared<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_ids);
+  auto inv_kin = std::make_shared<OPWInvKin>(opw_params, base_link_id, tip_link_id, joint_ids);
 
   EXPECT_EQ(inv_kin->getSolverName(), OPW_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);
-  EXPECT_EQ(inv_kin->getBaseLinkId(), tesseract::common::LinkId(base_link_name));
-  EXPECT_EQ(inv_kin->getWorkingFrameId(), tesseract::common::LinkId(base_link_name));
+  EXPECT_EQ(inv_kin->getBaseLinkId(), base_link_id);
+  EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_id);
   EXPECT_EQ(inv_kin->getTipLinkIds().size(), 1);
-  EXPECT_EQ(inv_kin->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
+  EXPECT_EQ(inv_kin->getTipLinkIds()[0], tip_link_id);
   EXPECT_EQ(inv_kin->getJointIds(), joint_ids);
 
-  runInvKinTest(*inv_kin, fwd_kin, pose, tip_link_name, seed);
+  runInvKinTest(*inv_kin, fwd_kin, pose, tip_link_id, seed);
 
   // Check cloned
   InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
   EXPECT_EQ(inv_kin2->getSolverName(), OPW_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 6);
-  EXPECT_EQ(inv_kin2->getBaseLinkId(), tesseract::common::LinkId(base_link_name));
-  EXPECT_EQ(inv_kin2->getWorkingFrameId(), tesseract::common::LinkId(base_link_name));
+  EXPECT_EQ(inv_kin2->getBaseLinkId(), base_link_id);
+  EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_id);
   EXPECT_EQ(inv_kin2->getTipLinkIds().size(), 1);
-  EXPECT_EQ(inv_kin2->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
+  EXPECT_EQ(inv_kin2->getTipLinkIds()[0], tip_link_id);
   EXPECT_EQ(inv_kin2->getJointIds(), joint_ids);
 
-  runInvKinTest(*inv_kin2, fwd_kin, pose, tip_link_name, seed);
+  runInvKinTest(*inv_kin2, fwd_kin, pose, tip_link_id, seed);
 }
 
 TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
@@ -122,19 +116,14 @@ TEST(TesseractKinematicsUnit, OPWInvKinGroupUnit)  // NOLINT
   std::string manip_name = "manip";
   std::string base_link_name = "base_link";
   std::string tip_link_name = "tool0";
-  const std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  const std::vector<tesseract::common::JointId> joint_ids{ "joint_1", "joint_2", "joint_3",
+                                                           "joint_4", "joint_5", "joint_6" };
   std::vector<std::string> invalid_joint_names{
     "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6"
   };
 
   opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
-  std::vector<tesseract::common::JointId> joint_ids;
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-  {
-    joint_ids.push_back(tesseract::common::JointId(name));
-  }
   auto inv_kin = std::make_unique<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_ids);
 
   tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);

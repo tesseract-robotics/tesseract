@@ -65,7 +65,6 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
   joint_ids_ = other.joint_ids_;
   params_ = other.params_;
   solver_name_ = other.solver_name_;
-
   return *this;
 }
 
@@ -73,13 +72,12 @@ void OPWInvKin::calcInvKin(IKSolutions& solutions,
                            const tesseract::common::LinkIdTransformMap& tip_link_poses,
                            const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  const auto tip_id = tip_link_id_;
-  assert(tip_link_poses.size() == 1);                                               // NOLINT
-  assert(tip_link_poses.find(tip_id) != tip_link_poses.end());                      // NOLINT
-  assert(std::abs(1.0 - tip_link_poses.at(tip_id).matrix().determinant()) < 1e-6);  // NOLINT
+  assert(tip_link_poses.size() == 1);                                                     // NOLINT
+  assert(tip_link_poses.find(tip_link_id_) != tip_link_poses.end());                      // NOLINT
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_id_).matrix().determinant()) < 1e-6);  // NOLINT
 
   // NOLINTNEXTLINE
-  opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_id));
+  opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_id_));
 
   // Check the output
   if (solutions.capacity() < (solutions.size() + sols.size()))
@@ -95,13 +93,9 @@ void OPWInvKin::calcInvKin(IKSolutions& solutions,
 Eigen::Index OPWInvKin::numJoints() const { return 6; }
 
 std::vector<tesseract::common::JointId> OPWInvKin::getJointIds() const { return joint_ids_; }
-
 tesseract::common::LinkId OPWInvKin::getBaseLinkId() const { return base_link_id_; }
-
-tesseract::common::LinkId OPWInvKin::getWorkingFrameId() const { return base_link_id_; }
-
+tesseract::common::LinkId OPWInvKin::getWorkingFrame() const { return base_link_id_; }
 std::vector<tesseract::common::LinkId> OPWInvKin::getTipLinkIds() const { return { tip_link_id_ }; }
-
 std::string OPWInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract::kinematics

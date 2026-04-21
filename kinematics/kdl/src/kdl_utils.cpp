@@ -132,9 +132,9 @@ bool parseSceneGraph(KDLChainData& results,
     // KDL segments does not contain the the base link in this list. When calling function that take segmentNr, like
     // JntToCart to get the base link transform you would pass an index of zero and for subsequent links it is
     // index + 1. This was determined through testing which is captured in this packages unit tests.
-    results.segment_index[tesseract::common::LinkId(seg.getName())] = static_cast<int>(i + 1);
+    results.segment_index[seg.getName()] = static_cast<int>(i + 1);
 
-    results.joint_ids[j] = tesseract::common::JointId(jnt.getName());
+    results.joint_ids[j] = jnt.getName();
 
     auto joint = scene_graph.getJoint(results.joint_ids[j]);
     double lower = std::numeric_limits<float>::lowest();

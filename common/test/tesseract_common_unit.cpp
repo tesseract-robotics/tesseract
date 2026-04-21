@@ -454,12 +454,12 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
 
   // Test empty method
   {
-    tesseract::common::ManipulatorInfo manip_info("manip", "world", tesseract::common::LinkId{});
+    tesseract::common::ManipulatorInfo manip_info("manip", "world", "");
     EXPECT_TRUE(manip_info.empty());
   }
 
   {
-    tesseract::common::ManipulatorInfo manip_info("manip", tesseract::common::LinkId{}, "tool0");
+    tesseract::common::ManipulatorInfo manip_info("manip", "", "tool0");
     EXPECT_TRUE(manip_info.empty());
   }
 
@@ -469,7 +469,7 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
   }
 
   {
-    tesseract::common::ManipulatorInfo manip_info("", tesseract::common::LinkId{}, tesseract::common::LinkId{});
+    tesseract::common::ManipulatorInfo manip_info("", "", "");
     manip_info.manipulator_ik_solver = "manip";
     EXPECT_TRUE(manip_info.empty());
   }
@@ -501,9 +501,7 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(any_null == any_type);
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_ids = { tesseract::common::JointId("joint_1"),
-                            "joint_2",
-                            "joint_3" };
+  joint_state.joint_ids = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -626,9 +624,7 @@ TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_ids = { tesseract::common::JointId("joint_1"),
-                            "joint_2",
-                            "joint_3" };
+  joint_state.joint_ids = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -2961,6 +2957,37 @@ TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT
   acm2.clearAllowedCollisions();
   acm2.addAllowedCollision("link1", "link2", "do_not_match");
   EXPECT_FALSE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
+}
+
+TEST(TesseractCommonUnit, AllowedCollisionMatrixInsertThrowsOnHashCollision)  // NOLINT
+{
+  // Seed the target with a real pair; its LinkIdPair key is K.
+  tesseract::common::AllowedCollisionMatrix target;
+  target.addAllowedCollision("link1", "link2", "seed");
+
+  // Build a source whose stored entry uses the same LinkIdPair key K but
+  // different stored names — simulating the outcome of a real hash collision
+  // without needing to synthesize one in std::hash<std::string>.
+  tesseract::common::AllowedCollisionEntries corrupt;
+  const tesseract::common::LinkIdPair key("link1", "link2");
+  corrupt[key] = tesseract::common::ACMEntry{ "other_a", "other_b", "conflict" };
+  tesseract::common::AllowedCollisionMatrix source(std::move(corrupt));
+
+  EXPECT_THROW(target.insertAllowedCollisionMatrix(source), std::runtime_error);  // NOLINT
+}
+
+TEST(TesseractCommonUnit, CollisionMarginPairDataApplyModifyThrowsOnHashCollision)  // NOLINT
+{
+  tesseract::common::CollisionMarginPairData target;
+  target.setCollisionMargin("link1", "link2", 0.01);
+
+  tesseract::common::PairsCollisionMarginData corrupt;
+  const tesseract::common::LinkIdPair key("link1", "link2");
+  corrupt[key] = tesseract::common::PairMarginEntry{ "other_a", "other_b", 0.02 };
+  tesseract::common::CollisionMarginPairData source(corrupt);
+
+  EXPECT_THROW(target.apply(source, tesseract::common::CollisionMarginPairOverrideType::MODIFY),  // NOLINT
+               std::runtime_error);
 }
 
 TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT

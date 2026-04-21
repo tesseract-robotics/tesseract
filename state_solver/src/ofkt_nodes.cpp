@@ -65,8 +65,6 @@ void OFKTBaseNode::setParent(OFKTNode* parent)
 OFKTNode* OFKTBaseNode::getParent() { return parent_; }
 const OFKTNode* OFKTBaseNode::getParent() const { return parent_; }
 
-const std::string& OFKTBaseNode::getLinkName() const { return link_id_.name(); }
-const std::string& OFKTBaseNode::getJointName() const { return joint_id_.name(); }
 tesseract::common::LinkId OFKTBaseNode::getLinkId() const { return link_id_; }
 tesseract::common::JointId OFKTBaseNode::getJointId() const { return joint_id_; }
 
