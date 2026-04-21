@@ -36,10 +36,11 @@ namespace tesseract::kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-KDLInvKinChainNR::KDLInvKinChainNR(const tesseract::scene_graph::SceneGraph& scene_graph,
-                                   const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
-                                   Config kdl_config,
-                                   std::string solver_name)
+KDLInvKinChainNR::KDLInvKinChainNR(
+    const tesseract::scene_graph::SceneGraph& scene_graph,
+    const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
+    Config kdl_config,
+    std::string solver_name)
   : kdl_config_(kdl_config), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
@@ -156,7 +157,7 @@ Eigen::Index KDLInvKinChainNR::numJoints() const { return kdl_data_.robot_chain.
 
 tesseract::common::LinkId KDLInvKinChainNR::getBaseLinkId() const { return kdl_data_.base_link_id; }
 
-tesseract::common::LinkId KDLInvKinChainNR::getWorkingFrameId() const { return kdl_data_.base_link_id; }
+tesseract::common::LinkId KDLInvKinChainNR::getWorkingFrame() const { return kdl_data_.base_link_id; }
 
 std::vector<tesseract::common::LinkId> KDLInvKinChainNR::getTipLinkIds() const { return { kdl_data_.tip_link_id }; }
 

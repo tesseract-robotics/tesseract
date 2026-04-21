@@ -118,9 +118,9 @@ public:
 
   const std::vector<tesseract::common::LinkId>& getCollisionObjects() const override final;
 
-  void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids) override final;
+  void setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids) override final;
 
-  const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+  const std::unordered_set<tesseract::common::LinkId>&
   getActiveCollisionObjectIds() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
@@ -154,8 +154,8 @@ public:
 
 private:
   std::string name_;
-  /** @brief Active collision objects by LinkId (O(1) lookup) */
-  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_ids_;
+  /** @brief A list of the active collision objects */
+  std::unordered_set<tesseract::common::LinkId> active_;
   /** @brief A list of the collision objects */
   std::vector<tesseract::common::LinkId> collision_objects_;
   /** @brief The bullet collision dispatcher used for getting object to object collison algorithm */
@@ -166,11 +166,11 @@ private:
   TesseractCollisionConfigurationInfo config_info_;
   /** @brief The bullet collision configuration */
   TesseractCollisionConfiguration coll_config_;
-  /** @brief A map of collision objects being managed, keyed by LinkId */
+  /** @brief A map of collision objects being managed */
   bullet_internal::Link2Cow link2cow_;
   /** @brief A vector of collision objects (active followed by static) */
   std::vector<bullet_internal::COW::Ptr> cows_;
-  /** @brief A map of cast collision objects being managed, keyed by LinkId */
+  /** @brief A map of cast collision objects being managed. */
   bullet_internal::Link2Cow link2castcow_;
 
   /**

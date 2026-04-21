@@ -76,29 +76,34 @@ public:
 
   int getRevision() const override final;
 
-  // Bring base class string-to-ID default overloads into scope (prevent name hiding)
-  using StateSolver::setState;
-  using StateSolver::getState;
-  using StateSolver::getLinkTransforms;
-  using StateSolver::getJacobian;
-
   void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
-  void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
+
   void setState(const SceneState::JointValues& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+
   void setState(const std::vector<tesseract::common::JointId>& joint_ids,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
 
+  void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
+
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
+
   SceneState getState(const SceneState::JointValues& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
   SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
+  SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
+
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<tesseract::common::JointId>& joint_ids,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                         const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
 
   void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                          const std::vector<tesseract::common::JointId>& joint_ids,
@@ -112,6 +117,7 @@ public:
   getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
               const tesseract::common::LinkId& link_id,
               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
   Eigen::MatrixXd
   getJacobian(const std::vector<tesseract::common::JointId>& joint_ids,
               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -149,38 +155,23 @@ public:
 
   bool moveLink(const Joint& joint) override final;
 
-  using MutableStateSolver::removeLink;
   bool removeLink(const tesseract::common::LinkId& link_id) override final;
 
   bool replaceJoint(const Joint& joint) override final;
 
-  using MutableStateSolver::removeJoint;
-
   bool removeJoint(const tesseract::common::JointId& joint_id) override final;
-
-  using MutableStateSolver::moveJoint;
 
   bool moveJoint(const tesseract::common::JointId& joint_id,
                  const tesseract::common::LinkId& parent_link_id) override final;
 
-  using MutableStateSolver::changeJointOrigin;
-
   bool changeJointOrigin(const tesseract::common::JointId& joint_id,
                          const Eigen::Isometry3d& new_origin) override final;
 
-  using MutableStateSolver::changeJointPositionLimits;
-
   bool changeJointPositionLimits(const tesseract::common::JointId& joint_id, double lower, double upper) override final;
-
-  using MutableStateSolver::changeJointVelocityLimits;
 
   bool changeJointVelocityLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
-  using MutableStateSolver::changeJointAccelerationLimits;
-
   bool changeJointAccelerationLimits(const tesseract::common::JointId& joint_id, double limit) override final;
-
-  using MutableStateSolver::changeJointJerkLimits;
 
   bool changeJointJerkLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
@@ -196,14 +187,11 @@ private:
   std::vector<tesseract::common::JointId> active_joint_ids_;   /**< The active joint IDs */
   std::vector<tesseract::common::JointId> floating_joint_ids_; /**< The floating joint IDs */
   std::vector<tesseract::common::LinkId> link_ids_;            /**< All link IDs in insertion order */
-
-  /** @brief The joint ID map to node */
-  std::unordered_map<tesseract::common::JointId, std::unique_ptr<OFKTNode>, tesseract::common::JointId::Hash> nodes_;
-  /** @brief The link ID map to node */
-  std::unordered_map<tesseract::common::LinkId, OFKTNode*, tesseract::common::LinkId::Hash> link_map_;
-  tesseract::common::KinematicLimits limits_; /**< The kinematic limits */
-  std::unique_ptr<OFKTNode> root_;            /**< The root node of the tree */
-  int revision_{ 0 };                         /**< The revision number */
+  std::unordered_map<tesseract::common::JointId, std::unique_ptr<OFKTNode>> nodes_; /**< The joint ID map to node */
+  std::unordered_map<tesseract::common::LinkId, OFKTNode*> link_map_;               /**< The link ID map to node */
+  tesseract::common::KinematicLimits limits_;                                       /**< The kinematic limits */
+  std::unique_ptr<OFKTNode> root_;                                                  /**< The root node of the tree */
+  int revision_{ 0 };                                                               /**< The revision number */
 
   /** @brief The state solver can be accessed from multiple threads, need use mutex throughout */
   mutable std::shared_mutex mutex_;
@@ -215,6 +203,12 @@ private:
    */
   SceneState getStateUnlocked(const SceneState::JointValues& joint_values,
                               const tesseract::common::JointIdTransformMap& floating_joint_values) const;
+
+  /**
+   * @brief Apply floating joint transforms to current_state_ and propagate transforms from the root.
+   * Caller must hold a unique lock.
+   */
+  void applyFloatingAndUpdate(const tesseract::common::JointIdTransformMap& floating_joint_values);
 
   void clear();
 

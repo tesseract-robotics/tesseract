@@ -110,16 +110,13 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   std::string manip_name = "robot_on_positioner";
-  std::string base_link_name = "positioner_base_link";
-  std::string tip_link_name = "tool0";
-  std::vector<std::string> joint_names{
+  tesseract::common::LinkId base_link_id = "positioner_base_link";
+  tesseract::common::LinkId tip_link_id = "tool0";
+  std::vector<tesseract::common::JointId> joint_ids{
     "positioner_joint_1", "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"
   };
-  std::vector<tesseract::common::JointId> joint_ids;
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-    joint_ids.push_back(tesseract::common::JointId(name));
-  tesseract::common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_names);
+
+  tesseract::common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_ids);
 
   auto fwd_kin = getFullFwdKinematics(*scene_graph);
   auto inv_kin = getFullInvKinematics(*scene_graph);
@@ -141,20 +138,20 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   EXPECT_TRUE(inv_kin != nullptr);
   EXPECT_EQ(inv_kin->getSolverName(), DEFAULT_ROP_INV_KIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 7);
-  EXPECT_EQ(inv_kin->getBaseLinkId(), tesseract::common::LinkId(base_link_name));
-  EXPECT_EQ(inv_kin->getWorkingFrameId(), tesseract::common::LinkId(base_link_name));
+  EXPECT_EQ(inv_kin->getBaseLinkId(), base_link_id);
+  EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_id);
   EXPECT_EQ(inv_kin->getTipLinkIds().size(), 1);
-  EXPECT_EQ(inv_kin->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
+  EXPECT_EQ(inv_kin->getTipLinkIds()[0], tip_link_id);
   EXPECT_EQ(inv_kin->getJointIds(), joint_ids);
 
-  runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_name, seed);
+  runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_id, seed);
 
   KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin), *scene_graph, scene_state);
   KinematicGroup kin_group_copy(kin_group);
 
   {
     EXPECT_EQ(kin_group.getBaseLinkId(), scene_graph->getRoot());
-    runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
+    runInvKinTest(kin_group, pose, base_link_id, tip_link_id, seed);
     runKinGroupJacobianABBOnPositionerTest(kin_group);
     runActiveLinkNamesABBOnPositionerTest(kin_group);
     runKinJointLimitsTest(kin_group.getLimits(), target_limits);
@@ -162,20 +159,19 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
     EXPECT_EQ(kin_group.getName(), manip_name);
     EXPECT_EQ(kin_group.getJointIds(), joint_ids);
 
-    auto all_tip_link_names = kin_group.getAllPossibleTipLinkNames();
-    EXPECT_GE(all_tip_link_names.size(), 1);
-    EXPECT_NE(std::find(all_tip_link_names.begin(), all_tip_link_names.end(), tip_link_name), all_tip_link_names.end());
+    auto all_tip_link_ids = kin_group.getAllPossibleTipLinkIds();
+    EXPECT_GE(all_tip_link_ids.size(), 1);
+    EXPECT_NE(std::find(all_tip_link_ids.begin(), all_tip_link_ids.end(), tip_link_id), all_tip_link_ids.end());
 
     auto all_working_frames = kin_group.getAllValidWorkingFrames();
     EXPECT_GE(all_working_frames.size(), 1);
-    EXPECT_NE(std::find(all_working_frames.begin(), all_working_frames.end(), base_link_name),
-              all_working_frames.end());
+    EXPECT_NE(std::find(all_working_frames.begin(), all_working_frames.end(), base_link_id), all_working_frames.end());
   }
 
   // Check KinematicGroup copy
   {
     EXPECT_EQ(kin_group_copy.getBaseLinkId(), scene_graph->getRoot());
-    runInvKinTest(kin_group_copy, pose, base_link_name, tip_link_name, seed);
+    runInvKinTest(kin_group_copy, pose, base_link_id, tip_link_id, seed);
     runKinGroupJacobianABBOnPositionerTest(kin_group_copy);
     runActiveLinkNamesABBOnPositionerTest(kin_group_copy);
     runKinJointLimitsTest(kin_group_copy.getLimits(), target_limits);
@@ -183,31 +179,30 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
     EXPECT_EQ(kin_group_copy.getName(), manip_name);
     EXPECT_EQ(kin_group_copy.getJointIds(), joint_ids);
 
-    auto all_tip_link_names = kin_group.getAllPossibleTipLinkNames();
-    EXPECT_GE(all_tip_link_names.size(), 1);
-    EXPECT_NE(std::find(all_tip_link_names.begin(), all_tip_link_names.end(), tip_link_name), all_tip_link_names.end());
+    auto all_tip_link_ids = kin_group.getAllPossibleTipLinkIds();
+    EXPECT_GE(all_tip_link_ids.size(), 1);
+    EXPECT_NE(std::find(all_tip_link_ids.begin(), all_tip_link_ids.end(), tip_link_id), all_tip_link_ids.end());
 
     auto all_working_frames = kin_group.getAllValidWorkingFrames();
     EXPECT_GE(all_working_frames.size(), 1);
-    EXPECT_NE(std::find(all_working_frames.begin(), all_working_frames.end(), base_link_name),
-              all_working_frames.end());
+    EXPECT_NE(std::find(all_working_frames.begin(), all_working_frames.end(), base_link_id), all_working_frames.end());
   }
 
   // Check cloned
   EXPECT_TRUE(inv_kin2 != nullptr);
   EXPECT_EQ(inv_kin2->getSolverName(), DEFAULT_ROP_INV_KIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 7);
-  EXPECT_EQ(inv_kin2->getBaseLinkId(), tesseract::common::LinkId(base_link_name));
-  EXPECT_EQ(inv_kin2->getWorkingFrameId(), tesseract::common::LinkId(base_link_name));
+  EXPECT_EQ(inv_kin2->getBaseLinkId(), base_link_id);
+  EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_id);
   EXPECT_EQ(inv_kin2->getTipLinkIds().size(), 1);
-  EXPECT_EQ(inv_kin2->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
+  EXPECT_EQ(inv_kin2->getTipLinkIds()[0], tip_link_id);
   EXPECT_EQ(inv_kin2->getJointIds(), joint_ids);
 
-  runInvKinTest(*inv_kin2, *fwd_kin, pose, tip_link_name, seed);
+  runInvKinTest(*inv_kin2, *fwd_kin, pose, tip_link_id, seed);
 
   KinematicGroup kin_group2(manip_name, joint_ids, std::move(inv_kin2), *scene_graph, scene_state);
   EXPECT_EQ(kin_group2.getBaseLinkId(), scene_graph->getRoot());
-  runInvKinTest(kin_group2, pose, base_link_name, tip_link_name, seed);
+  runInvKinTest(kin_group2, pose, base_link_id, tip_link_id, seed);
   runKinGroupJacobianABBOnPositionerTest(kin_group2);
   runActiveLinkNamesABBOnPositionerTest(kin_group2);
   runKinJointLimitsTest(kin_group2.getLimits(), target_limits);

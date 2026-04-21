@@ -31,10 +31,6 @@
 
 namespace tesseract::scene_graph
 {
-Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint_names) const
-{
-  return getJointValues(tesseract::common::toIds<tesseract::common::JointId>(joint_names));
-}
 
 Eigen::VectorXd SceneState::getJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const
 {
@@ -44,12 +40,6 @@ Eigen::VectorXd SceneState::getJointValues(const std::vector<tesseract::common::
     jv(j) = joints.at(joint_ids[j]);
 
   return jv;
-}
-
-tesseract::common::JointIdTransformMap
-SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
-{
-  return getFloatingJointValues(tesseract::common::toIds<tesseract::common::JointId>(joint_names));
 }
 
 tesseract::common::JointIdTransformMap
@@ -73,8 +63,8 @@ bool SceneState::operator==(const SceneState& rhs) const
   equal &= isIdenticalMap<JointValues, double>(joints, rhs.joints);
   equal &= isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(floating_joints, rhs.floating_joints, isometry_equal);
   equal &= isIdenticalMap<LinkIdTransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
-  equal &= isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(
-      joint_transforms, rhs.joint_transforms, isometry_equal);
+  equal &=
+      isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(joint_transforms, rhs.joint_transforms, isometry_equal);
 
   return equal;
 }

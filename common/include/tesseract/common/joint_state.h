@@ -43,7 +43,7 @@ public:
   JointState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& position);
   JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Eigen::VectorXd>& position);
 
-  /** @brief The joint IDs corresponding to the position vector (carries names via .name()). */
+  /** @brief The joint IDs corresponding to the position vector. */
   std::vector<JointId> joint_ids;
 
   /** @brief Get joint names derived from joint_ids */

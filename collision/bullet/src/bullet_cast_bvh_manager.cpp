@@ -106,7 +106,7 @@ ContinuousContactManager::UPtr BulletCastBVHManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
+  manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -171,7 +171,7 @@ bool BulletCastBVHManager::removeCollisionObject(const tesseract::common::LinkId
       link2castcow_.erase(cast_it);
     }
 
-    active_ids_.erase(id);
+    active_.erase(id);
     return true;
   }
 
@@ -243,6 +243,23 @@ bool BulletCastBVHManager::isCollisionObjectEnabled(const tesseract::common::Lin
   return false;
 }
 
+void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+                                                        const Eigen::Isometry3d& pose)
+{
+  auto it = link2cow_.find(id);
+  if (it != link2cow_.end())
+  {
+    COW::Ptr& cow = it->second;
+    btTransform tf = convertEigenToBt(pose);
+    cow->setWorldTransform(tf);
+    link2castcow_[id]->setWorldTransform(tf);
+
+    // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
+    if (cow->getBroadphaseHandle() != nullptr)
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+  }
+}
+
 void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
   for (const auto& [id, tf] : transforms)
@@ -259,23 +276,6 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common:
       if (cow->getBroadphaseHandle() != nullptr)
         updateBroadphaseAABB(cow, broadphase_, dispatcher_);
     }
-  }
-}
-
-void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
-                                                        const Eigen::Isometry3d& pose)
-{
-  auto it = link2cow_.find(id);
-  if (it != link2cow_.end())
-  {
-    COW::Ptr& cow = it->second;
-    btTransform tf = convertEigenToBt(pose);
-    cow->setWorldTransform(tf);
-    link2castcow_[id]->setWorldTransform(tf);
-
-    // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
-    if (cow->getBroadphaseHandle() != nullptr)
-      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
 
@@ -352,15 +352,26 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common:
   }
 }
 
+void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
+                                                        const tesseract::common::LinkIdTransformMap& pose2)
+{
+  for (const auto& id : getCollisionObjects())
+  {
+    auto it1 = pose1.find(id);
+    auto it2 = pose2.find(id);
+    if (it1 != pose1.end() && it2 != pose2.end())
+      setCollisionObjectsTransform(id, it1->second, it2->second);
+  }
+}
+
 const std::vector<tesseract::common::LinkId>& BulletCastBVHManager::getCollisionObjects() const
 {
   return collision_objects_;
 }
 
-void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+void BulletCastBVHManager::setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids)
 {
-  active_ids_.clear();
-  active_ids_.insert(ids.begin(), ids.end());
+  active_ = ids;
 
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
@@ -371,16 +382,16 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<tesseract
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     {
       // Update with active
-      updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getLinkId()];
 
       // Update with active
-      updateCollisionObjectFilters(active_ids_, active_cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_, active_cow, broadphase_, dispatcher_);
 
       // Check if the link is still active.
-      if (!isLinkActive(active_ids_, cow->getLinkId()))
+      if (!isLinkActive(active_, cow->getLinkId()))
       {
         // Remove the active collision object from the broadphase
         removeCollisionObjectFromBroadphase(active_cow, broadphase_, dispatcher_);
@@ -392,16 +403,16 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<tesseract
     else
     {
       // Update with active
-      updateCollisionObjectFilters(active_ids_, cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getLinkId()];
 
       // Update with active
-      updateCollisionObjectFilters(active_ids_, active_cow, broadphase_, dispatcher_);
+      updateCollisionObjectFilters(active_, active_cow, broadphase_, dispatcher_);
 
       // Check if link is now active
-      if (isLinkActive(active_ids_, cow->getLinkId()))
+      if (isLinkActive(active_, cow->getLinkId()))
       {
         // Remove the static collision object from the broadphase
         removeCollisionObjectFromBroadphase(cow, broadphase_, dispatcher_);
@@ -413,22 +424,10 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<tesseract
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+const std::unordered_set<tesseract::common::LinkId>&
 BulletCastBVHManager::getActiveCollisionObjectIds() const
 {
-  return active_ids_;
-}
-
-void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
-                                                        const tesseract::common::LinkIdTransformMap& pose2)
-{
-  for (const auto& id : getCollisionObjects())
-  {
-    auto it1 = pose1.find(id);
-    auto it2 = pose2.find(id);
-    if (it1 != pose1.end() && it2 != pose2.end())
-      setCollisionObjectsTransform(id, it1->second, it2->second);
-  }
+  return active_;
 }
 
 void BulletCastBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)

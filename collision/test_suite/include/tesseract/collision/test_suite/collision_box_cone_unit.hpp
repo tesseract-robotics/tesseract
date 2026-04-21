@@ -128,16 +128,13 @@ inline void runTest(DiscreteContactManager& checker)
   checker.setCollisionMarginData(CollisionMarginData(0.5));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
 
+  checker.setCollisionMarginPair("box_link", "cone_link", 0.1);
+
   // Set the collision object transforms
-  const auto box_id = tesseract::common::LinkId("box_link");
-  const auto cone_id = tesseract::common::LinkId("cone_link");
-
-  checker.setCollisionMarginPair(box_id, cone_id, 0.1);
-
   tesseract::common::LinkIdTransformMap location;
-  location[box_id] = Eigen::Isometry3d::Identity();
-  location[cone_id] = Eigen::Isometry3d::Identity();
-  location[cone_id].translation()(0) = 0.2;
+  location["box_link"] = Eigen::Isometry3d::Identity();
+  location["cone_link"] = Eigen::Isometry3d::Identity();
+  location["cone_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -181,12 +178,12 @@ inline void runTest(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location[cone_id].translation() = Eigen::Vector3d(1, 0, 0);
+  location["cone_link"].translation() = Eigen::Vector3d(1, 0, 0);
   result.clear();
   result_vector.clear();
 
   // Use different method for setting transforms
-  checker.setCollisionObjectsTransform("cone_link", location[cone_id]);
+  checker.setCollisionObjectsTransform("cone_link", location["cone_link"]);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenCopyResults(result_vector);
 

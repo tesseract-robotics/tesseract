@@ -52,10 +52,10 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
 
 /**
  * @brief This will check if a link is active provided a set. If the set is empty the link is considered active.
- * @param active_ids Set of active LinkIds
+ * @param active Set of active LinkIds
  * @param id The LinkId to check if it is active.
  */
-bool isLinkActive(const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active,
                   const tesseract::common::LinkId& id);
 
 /**

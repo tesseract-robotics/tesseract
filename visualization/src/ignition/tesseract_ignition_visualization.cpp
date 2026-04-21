@@ -260,7 +260,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
       for (size_t i = 0; i < m.dist_results.size(); ++i)
       {
         const tesseract::collision::ContactResult& dist = m.dist_results[i];
-        double safety_distance = m.margin_data.getPairCollisionMargin(dist.link_ids[0].name(), dist.link_ids[1].name());
+        double safety_distance = m.margin_data.getPairCollisionMargin(dist.link_ids[0], dist.link_ids[1]);
 
         std::string link_name = model_name + std::to_string(++cnt);
         gz::msgs::Link* link_msg = model->add_link();

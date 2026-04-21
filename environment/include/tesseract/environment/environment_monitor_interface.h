@@ -113,7 +113,7 @@ public:
   virtual tesseract::scene_graph::SceneState getEnvironmentState(const std::string& monitor_namespace) const = 0;
 
   /**
-   * @brief Set environments state in the provided namespace (ID-keyed overloads, primary)
+   * @brief Set environments state in the provided namespace
    * @param monitor_namespace The monitored namespace to set the state
    * @return True if successful, otherwise false
    */
@@ -127,7 +127,11 @@ public:
   virtual bool setEnvironmentState(const std::string& monitor_namespace,
                                    const tesseract::common::JointIdTransformMap& floating_joints) const = 0;
 
-  /** @brief Set environments state in the provided namespace (string overloads, delegate to ID) */
+  /**
+   * @brief Set environment state in the provided namespace (string overload, delegates to ID)
+   * @param monitor_namespace The monitored namespace to set the state
+   * @return True if successful, otherwise false
+   */
   virtual bool setEnvironmentState(const std::string& monitor_namespace,
                                    const std::unordered_map<std::string, double>& joints,
                                    const tesseract::common::JointIdTransformMap& floating_joints = {}) const
@@ -152,13 +156,14 @@ public:
                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                    const tesseract::common::JointIdTransformMap& floating_joints = {}) const
   {
-    return setEnvironmentState(
-        monitor_namespace, tesseract::common::toIds<tesseract::common::JointId>(joint_names), joint_values,
-        floating_joints);
+    return setEnvironmentState(monitor_namespace,
+                               tesseract::common::toIds<tesseract::common::JointId>(joint_names),
+                               joint_values,
+                               floating_joints);
   }
 
   /**
-   * @brief Set environment state for all monitor namespaces (ID-keyed overloads, primary)
+   * @brief Set environment state for all monitor namespaces
    * @return A vector of failed namespace, if empty all namespace were updated successfully.
    */
   virtual std::vector<std::string>
@@ -171,7 +176,10 @@ public:
   virtual std::vector<std::string>
   setEnvironmentState(const tesseract::common::JointIdTransformMap& floating_joints = {}) const = 0;
 
-  /** @brief Set environment state for all monitor namespaces (string overloads, delegate to ID) */
+  /**
+   * @brief Set environment state for all monitor namespaces  (string overload, delegates to ID)
+   * @return A vector of failed namespace, if empty all namespace were updated successfully.
+   */
   virtual std::vector<std::string>
   setEnvironmentState(const std::unordered_map<std::string, double>& joints,
                       const tesseract::common::JointIdTransformMap& floating_joints = {}) const

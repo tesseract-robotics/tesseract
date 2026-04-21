@@ -379,16 +379,58 @@ public:
    * This does not change the internal state of the solver.
    *
    * @param link_transforms The link_transforms to populate with data.
-   * @param joints A map of joint names to joint values to change.
+   * @param joint_names The joints to change.
    * @param joint_values The joint values
    * @param floating_joints The floating joint origin transform
    */
-  /** @brief Get the link transforms using integer LinkId keys */
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                         const tesseract::common::JointIdTransformMap& floating_joints) const;
+
+  /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joint_ids The joints to change.
+   * @param joint_values The joint values
+   * @param floating_joints The floating joint origin transform
+   */
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<tesseract::common::JointId>& joint_ids,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                         const tesseract::common::JointIdTransformMap& floating_joints) const;
+
+  /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joint_names The joints to change.
+   * @param joint_values The joint values
+   */
   void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
 
-  /** @brief Get the link transforms using JointId keys (avoids string-to-ID conversion) */
+  /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joint_names The joints to change.
+   * @param joint_values The joint values
+   */
   void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                          const std::vector<tesseract::common::JointId>& joint_ids,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
@@ -466,7 +508,7 @@ public:
   Eigen::VectorXd getCurrentJointValues() const;
 
   /**
-   * @brief Get the current joint values for a vector of joints
+   * @brief Get the current joint values for a vector of joints by name
    *
    * Order should be the same as the input vector
    *
@@ -475,28 +517,43 @@ public:
   Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const;
 
   /**
-   * @brief Get the current floating joint values
-   * @return The joint origin transform for the floating joint
+   * @brief Get the current joint values for a vector of joints by id
+   *
+   * Order should be the same as the input vector
+   *
+   * @return A vector of joint values
    */
-  tesseract::common::JointIdTransformMap getCurrentFloatingJointValues() const;
-
-  /** @brief Get current joint values by JointId vector (avoids string-to-ID conversion) */
   Eigen::VectorXd getCurrentJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   /**
    * @brief Get the current floating joint values
    * @return The joint origin transform for the floating joint
    */
+  tesseract::common::JointIdTransformMap getCurrentFloatingJointValues() const;
+
+  /**
+   * @brief Get the current floating joint values by name
+   * @return The joint origin transform for the floating joint
+   */
   tesseract::common::JointIdTransformMap
   getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
 
-  /** @brief Get current floating joint values by JointId vector (avoids string-to-ID conversion) */
+  /**
+   * @brief Get the current floating joint values by id
+   * @return The joint origin transform for the floating joint
+   */
   tesseract::common::JointIdTransformMap
   getCurrentFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   /**
+   * @brief Get the root link id
+   * @return Id of the root link
+   */
+  tesseract::common::LinkId getRootLinkId() const;
+
+  /**
    * @brief Get the root link name
-   * @return String
+   * @return Name of the root link
    */
   std::string getRootLinkName() const;
 
@@ -517,6 +574,14 @@ public:
 
   /** @brief Get a vector of active link IDs in the environment */
   std::vector<tesseract::common::LinkId> getActiveLinkIds() const;
+
+  /**
+   * @brief Get a vector of active link ids affected by the provided joints in the environment
+   * @param joint_ids A list of joint ids
+   * @return A vector of active link ids
+   */
+  std::vector<tesseract::common::LinkId>
+  getActiveLinkIds(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   /**
    * @brief Get a vector of active link names affected by the provided joints in the environment
@@ -545,7 +610,7 @@ public:
   std::vector<std::string> getStaticLinkNames(const std::vector<std::string>& joint_names) const;
 
   /**
-   * @brief Get a vector of static link names not affected by the provided joints in the environment
+   * @brief Get a vector of static link ids not affected by the provided joints in the environment
    * @param joint_ids A list of joint ids
    * @return A vector of static link ids
    */

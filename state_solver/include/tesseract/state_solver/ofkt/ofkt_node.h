@@ -33,7 +33,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <memory>
-#include <string>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -97,26 +96,14 @@ public:
   virtual const OFKTNode* getParent() const = 0;
 
   /**
-   * @brief Get the link name associated with the node
-   * @return The link name
-   */
-  virtual const std::string& getLinkName() const = 0;
-
-  /**
-   * @brief Get the joint name associated with the node
-   * @return The link name
-   */
-  virtual const std::string& getJointName() const = 0;
-
-  /**
    * @brief Get the link ID associated with the node
-   * @return The link ID (pre-computed from link name)
+   * @return The link ID
    */
   virtual tesseract::common::LinkId getLinkId() const = 0;
 
   /**
    * @brief Get the joint ID associated with the node
-   * @return The joint ID (pre-computed from joint name)
+   * @return The joint ID
    */
   virtual tesseract::common::JointId getJointId() const = 0;
 

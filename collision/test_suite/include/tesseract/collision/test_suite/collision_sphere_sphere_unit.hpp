@@ -183,7 +183,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -239,7 +239,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -303,7 +303,7 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -359,7 +359,7 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -422,7 +422,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.270548, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -496,7 +496,7 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -547,7 +547,7 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.280223, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_ids[0].name() != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)

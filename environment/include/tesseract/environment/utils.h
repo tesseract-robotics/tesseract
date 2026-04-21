@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract::environment
 {
 /**
- * @brief Get the active Link Names Recursively
+ * @brief Get the active link ids Recursively
  *
  *        This currently only works for graphs that are trees. Need to create a generic method using boost::visitor
  *        TODO: Need to update using graph->getLinkChildren
@@ -51,10 +51,10 @@ namespace tesseract::environment
  * @param current_link
  * @param active
  */
-void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
-                                 const tesseract::scene_graph::SceneGraph& scene_graph,
-                                 const std::string& current_link,
-                                 bool active);
+void getActiveLinkIdsRecursive(std::vector<tesseract::common::LinkId>& active_links,
+                               const tesseract::scene_graph::SceneGraph& scene_graph,
+                               const tesseract::common::LinkId& current_link,
+                               bool active);
 
 /**
  * @brief Should perform a continuous collision check between two states only passing along the contact_request to the
@@ -75,7 +75,7 @@ void checkTrajectorySegment(tesseract::collision::ContactResultMap& contact_resu
  * @brief Should perform a discrete collision check a state first configuring manager with config
  * @param contact_results The contact results to populate. It does not get cleared
  * @param manager A continuous contact manager
- * @param state Environment state (LinkId-keyed)
+ * @param state Environment state
  * @param contact_request Contact request passed to the manager
  */
 void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_results,
@@ -87,7 +87,7 @@ void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_result
  * @brief Should perform a discrete collision check a state only passing contact_request to the manager
  * @param contact_results The contact results to populate. It does not get cleared
  * @param manager A discrete contact manager
- * @param state Environment state (LinkId-keyed)
+ * @param state Environment state
  * @param contact_request Contact request passed to the manager
  */
 void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_results,

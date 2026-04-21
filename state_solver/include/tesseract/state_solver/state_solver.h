@@ -27,7 +27,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
-#include <string>
 #include <memory>
 #include <Eigen/Geometry>
 #include <Eigen/Core>
@@ -112,6 +111,23 @@ public:
                               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
   /**
+   * @brief Get the link transforms of the scene for a given set or subset of joint values.
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
+   *
+   * @param link_transforms The link_transforms to populate with data.
+   * @param joint_ids A list of joint IDs to change.
+   * @param joint_values The joint values
+   * @param floating_joint_values The floating joint origin transform
+   */
+  virtual void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                                 const std::vector<tesseract::common::JointId>& joint_ids,
+                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                 const tesseract::common::JointIdTransformMap& floating_joint_values) const = 0;
+
+  /**
    * @brief Get link transforms using joint IDs instead of names
    * @param link_transforms The link_transforms to populate with data.
    * @param joint_ids A list of joint IDs to change.
@@ -158,26 +174,11 @@ public:
    */
   virtual SceneState getRandomState() const = 0;
 
-  /** @brief Get the vector of joint names (delegates to getJointIds) */
-  virtual std::vector<std::string> getJointNames() const { return tesseract::common::toNames(getJointIds()); }
-
   /** @brief Get the vector of joint IDs */
   virtual std::vector<tesseract::common::JointId> getJointIds() const = 0;
 
-  /** @brief Get the vector of floating joint names (delegates to getFloatingJointIds) */
-  virtual std::vector<std::string> getFloatingJointNames() const
-  {
-    return tesseract::common::toNames(getFloatingJointIds());
-  }
-
   /** @brief Get the vector of floating joint IDs */
   virtual std::vector<tesseract::common::JointId> getFloatingJointIds() const = 0;
-
-  /** @brief Get the vector of active joint names (delegates to getActiveJointIds) */
-  virtual std::vector<std::string> getActiveJointNames() const
-  {
-    return tesseract::common::toNames(getActiveJointIds());
-  }
 
   /** @brief Get the vector of active joint IDs which align with the limits */
   virtual std::vector<tesseract::common::JointId> getActiveJointIds() const = 0;
@@ -185,20 +186,11 @@ public:
   /** @brief Get the base link ID */
   virtual tesseract::common::LinkId getBaseLinkId() const = 0;
 
-  /** @brief Get the vector of link names (delegates to getLinkIds) */
-  virtual std::vector<std::string> getLinkNames() const { return tesseract::common::toNames(getLinkIds()); }
-
   /** @brief Get the vector of link IDs */
   virtual std::vector<tesseract::common::LinkId> getLinkIds() const = 0;
 
-  /** @brief Get the vector of active link names (delegates to getActiveLinkIds) */
-  virtual std::vector<std::string> getActiveLinkNames() const { return tesseract::common::toNames(getActiveLinkIds()); }
-
   /** @brief Get the vector of active link IDs */
   virtual std::vector<tesseract::common::LinkId> getActiveLinkIds() const = 0;
-
-  /** @brief Get a vector of static link names (delegates to getStaticLinkIds) */
-  virtual std::vector<std::string> getStaticLinkNames() const { return tesseract::common::toNames(getStaticLinkIds()); }
 
   /** @brief Get a vector of static link IDs */
   virtual std::vector<tesseract::common::LinkId> getStaticLinkIds() const = 0;

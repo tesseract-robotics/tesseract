@@ -43,42 +43,36 @@ void runURKinematicsTests(const URParameters& params,
   // Setup test
   auto scene_graph = getSceneGraphUR(params, shoulder_offset, elbow_offset);
 
-  std::string base_link_name = "base_link";
-  std::string tip_link_name = "tool0";
-  std::vector<std::string> joint_names{ "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
-                                        "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
+  tesseract::common::LinkId base_link_id = "base_link";
+  tesseract::common::LinkId tip_link_id = "tool0";
+  std::vector<tesseract::common::JointId> joint_ids{ "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+                                                     "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
 
-  KDLFwdKinChain fwd_kin(*scene_graph, base_link_name, tip_link_name);
-  std::vector<tesseract::common::JointId> joint_ids;
-  joint_ids.reserve(joint_names.size());
-  for (const auto& name : joint_names)
-  {
-    joint_ids.push_back(tesseract::common::JointId(name));
-  }
-  auto inv_kin = std::make_unique<URInvKin>(params, base_link_name, tip_link_name, joint_ids);
+  KDLFwdKinChain fwd_kin(*scene_graph, base_link_id, tip_link_id);
+  auto inv_kin = std::make_unique<URInvKin>(params, base_link_id, tip_link_id, joint_ids);
 
   EXPECT_EQ(inv_kin->getSolverName(), UR_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);
-  EXPECT_EQ(inv_kin->getBaseLinkId(), tesseract::common::LinkId(base_link_name));
-  EXPECT_EQ(inv_kin->getWorkingFrameId(), tesseract::common::LinkId(base_link_name));
+  EXPECT_EQ(inv_kin->getBaseLinkId(), base_link_id);
+  EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_id);
   EXPECT_EQ(inv_kin->getTipLinkIds().size(), 1);
-  EXPECT_EQ(inv_kin->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
+  EXPECT_EQ(inv_kin->getTipLinkIds()[0], tip_link_id);
   EXPECT_EQ(inv_kin->getJointIds(), joint_ids);
 
-  runInvKinTest(*inv_kin, fwd_kin, pose, tip_link_name, seed);
+  runInvKinTest(*inv_kin, fwd_kin, pose, tip_link_id, seed);
 
   // Check cloned
   InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
   EXPECT_EQ(inv_kin2->getSolverName(), UR_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 6);
-  EXPECT_EQ(inv_kin2->getBaseLinkId(), tesseract::common::LinkId(base_link_name));
-  EXPECT_EQ(inv_kin2->getWorkingFrameId(), tesseract::common::LinkId(base_link_name));
+  EXPECT_EQ(inv_kin2->getBaseLinkId(), base_link_id);
+  EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_id);
   EXPECT_EQ(inv_kin2->getTipLinkIds().size(), 1);
-  EXPECT_EQ(inv_kin2->getTipLinkIds()[0], tesseract::common::LinkId(tip_link_name));
+  EXPECT_EQ(inv_kin2->getTipLinkIds()[0], tip_link_id);
   EXPECT_EQ(inv_kin2->getJointIds(), joint_ids);
 
-  runInvKinTest(*inv_kin2, fwd_kin, pose, tip_link_name, seed);
+  runInvKinTest(*inv_kin2, fwd_kin, pose, tip_link_id, seed);
 }
 
 TEST(TesseractKinematicsUnit, UR10InvKinUnit)  // NOLINT

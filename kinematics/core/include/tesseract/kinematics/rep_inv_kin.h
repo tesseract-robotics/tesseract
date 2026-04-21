@@ -108,7 +108,7 @@ public:
   std::vector<tesseract::common::JointId> getJointIds() const override final;
   Eigen::Index numJoints() const override final;
   tesseract::common::LinkId getBaseLinkId() const override final;
-  tesseract::common::LinkId getWorkingFrameId() const override final;
+  tesseract::common::LinkId getWorkingFrame() const override final;
   std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
@@ -117,8 +117,8 @@ private:
   std::vector<tesseract::common::JointId> joint_ids_;
   InverseKinematics::UPtr manip_inv_kin_;
   std::unique_ptr<ForwardKinematics> positioner_fwd_kin_;
-  tesseract::common::LinkId working_frame_id_;
-  tesseract::common::LinkId manip_tip_link_id_;
+  tesseract::common::LinkId working_frame_;
+  tesseract::common::LinkId manip_tip_link_;
   double manip_reach_{ 0 };
   Eigen::Isometry3d manip_base_to_positioner_base_;
   Eigen::Index dof_{ -1 };

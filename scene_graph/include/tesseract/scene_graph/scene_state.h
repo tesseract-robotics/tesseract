@@ -59,10 +59,8 @@ struct SceneState
   using UPtr = std::unique_ptr<SceneState>;
   using ConstUPtr = std::unique_ptr<const SceneState>;
 
-  /** @brief Joint ID → double map type */
-  using JointValues = std::unordered_map<tesseract::common::JointId,
-                                         double,
-                                         tesseract::common::JointId::Hash>;
+  /** @brief Joint ID to double map type */
+  using JointValues = std::unordered_map<tesseract::common::JointId, double>;
 
   /**  @brief The joint values used for calculating the joint and link transforms */
   JointValues joints;
@@ -76,11 +74,10 @@ struct SceneState
   /** @brief The joint transforms in world coordinate system */
   tesseract::common::JointIdTransformMap joint_transforms;
 
-  Eigen::VectorXd getJointValues(const std::vector<std::string>& joint_names) const;
   Eigen::VectorXd getJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
-  tesseract::common::JointIdTransformMap getFloatingJointValues(const std::vector<std::string>& joint_names) const;
-  tesseract::common::JointIdTransformMap getFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
+  tesseract::common::JointIdTransformMap
+  getFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   bool operator==(const SceneState& rhs) const;
   bool operator!=(const SceneState& rhs) const;

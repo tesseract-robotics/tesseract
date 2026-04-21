@@ -25,12 +25,13 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
-#include <iostream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>
 #include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/link.h>
+#include <tesseract/scene_graph/joint.h>
 #include <tesseract/srdf/groups.h>
 
 namespace tesseract::srdf
@@ -69,7 +70,7 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
         std::throw_with_nested(std::runtime_error(
             strFormat("Group: '%s' link element is missing or failed to parse attribute 'name'!", group_name.c_str())));
 
-      if (!scene_graph.getLink(link_name))
+      if (auto l = scene_graph.getLink(link_name); !l || l->getName() != link_name)
         std::throw_with_nested(std::runtime_error(strFormat(
             "Group: '%s' link '%s' is not known to the Scene Graph!", group_name.c_str(), link_name.c_str())));
 
@@ -87,7 +88,7 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
                                                             "attribute 'name'!",
                                                             group_name.c_str())));
 
-      if (!scene_graph.getJoint(joint_name))
+      if (auto j = scene_graph.getJoint(joint_name); !j || j->getName() != joint_name)
         std::throw_with_nested(std::runtime_error(strFormat(
             "Group: '%s' joint '%s' is not known to the Scene Graph!", group_name.c_str(), joint_name.c_str())));
 
@@ -113,13 +114,13 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
                                                             "'tip_link'!",
                                                             group_name.c_str())));
 
-      if (!scene_graph.getLink(base_link_name))
+      if (auto l = scene_graph.getLink(base_link_name); !l || l->getName() != base_link_name)
         std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element base link '%s' is not known to "
                                                             "the Scene Graph!",
                                                             group_name.c_str(),
                                                             base_link_name.c_str())));
 
-      if (!scene_graph.getLink(tip_link_name))
+      if (auto l = scene_graph.getLink(tip_link_name); !l || l->getName() != tip_link_name)
         std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element tip link '%s' is not known to "
                                                             "the Scene Graph!",
                                                             group_name.c_str(),

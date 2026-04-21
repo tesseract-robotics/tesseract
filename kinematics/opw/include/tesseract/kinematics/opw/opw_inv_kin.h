@@ -76,7 +76,7 @@ public:
   Eigen::Index numJoints() const override final;
   std::vector<tesseract::common::JointId> getJointIds() const override final;
   tesseract::common::LinkId getBaseLinkId() const override final;
-  tesseract::common::LinkId getWorkingFrameId() const override final;
+  tesseract::common::LinkId getWorkingFrame() const override final;
   std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
@@ -88,6 +88,6 @@ protected:
   std::vector<tesseract::common::JointId> joint_ids_;        /**< @brief Joints of the kinematic object */
   std::string solver_name_{ OPW_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
 };
-}  // namespace tesseract::kinematics
 
+}  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_OPW_INV_KIN_H

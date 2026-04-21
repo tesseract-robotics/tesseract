@@ -262,13 +262,12 @@ void URInvKin::calcInvKin(IKSolutions& solutions,
                           const tesseract::common::LinkIdTransformMap& tip_link_poses,
                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  const auto tip_id = tip_link_id_;
   assert(tip_link_poses.size() == 1);
-  assert(tip_link_poses.find(tip_id) != tip_link_poses.end());
-  assert(std::abs(1.0 - tip_link_poses.at(tip_id).matrix().determinant()) < 1e-6);  // NOLINT
+  assert(tip_link_poses.find(tip_link_id_) != tip_link_poses.end());
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_id_).matrix().determinant()) < 1e-6);  // NOLINT
 
   Eigen::Isometry3d base_offset = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitZ());
-  Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_id);
+  Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_link_id_);
 
   // Do the analytic IK
   // NOLINTNEXTLINE
@@ -292,15 +291,10 @@ void URInvKin::calcInvKin(IKSolutions& solutions,
 }
 
 Eigen::Index URInvKin::numJoints() const { return 6; }
-
 std::vector<tesseract::common::JointId> URInvKin::getJointIds() const { return joint_ids_; }
-
 tesseract::common::LinkId URInvKin::getBaseLinkId() const { return base_link_id_; }
-
-tesseract::common::LinkId URInvKin::getWorkingFrameId() const { return base_link_id_; }
-
+tesseract::common::LinkId URInvKin::getWorkingFrame() const { return base_link_id_; }
 std::vector<tesseract::common::LinkId> URInvKin::getTipLinkIds() const { return { tip_link_id_ }; }
-
 std::string URInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract::kinematics

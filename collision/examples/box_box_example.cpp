@@ -262,14 +262,11 @@ int main(int /*argc*/, char** /*argv*/)
   //! [collision_example_set_margin_data]
 
   //! [collision_example_set_transforms_initial]
-  const auto box_id = tesseract::common::LinkId("box_link");
-  const auto second_box_id = tesseract::common::LinkId("second_box_link");
-
   tesseract::common::LinkIdTransformMap location;
-  location[box_id] = Eigen::Isometry3d::Identity();
-  location[box_id].translation()(0) = 0.2;
-  location[box_id].translation()(1) = 0.1;
-  location[second_box_id] = Eigen::Isometry3d::Identity();
+  location["box_link"] = Eigen::Isometry3d::Identity();
+  location["box_link"].translation()(0) = 0.2;
+  location["box_link"].translation()(1) = 0.1;
+  location["second_box_link"] = Eigen::Isometry3d::Identity();
 
   checker.setCollisionObjectsTransform(location);
   //! [collision_example_set_transforms_initial]
@@ -299,7 +296,7 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform("Test object is out side the contact distance");
 
   //! [collision_example_move_outside_contact_distance]
-  location[box_id].translation() = Eigen::Vector3d(1.60, 0, 0);
+  location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
   checker.setCollisionObjectsTransform(location);
   //! [collision_example_move_outside_contact_distance]
 
