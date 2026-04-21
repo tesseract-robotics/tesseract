@@ -91,13 +91,10 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
 {
   EXPECT_EQ(base_solver.getBaseLinkId(), comp_solver.getBaseLinkId());
   EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getJointIds(), comp_solver.getJointIds(), false));
-  EXPECT_TRUE(
-      tesseract::common::isIdentical(base_solver.getActiveJointIds(), comp_solver.getActiveJointIds(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getActiveJointIds(), comp_solver.getActiveJointIds(), false));
   EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getLinkIds(), comp_solver.getLinkIds(), false));
-  EXPECT_TRUE(
-      tesseract::common::isIdentical(base_solver.getActiveLinkIds(), comp_solver.getActiveLinkIds(), false));
-  EXPECT_TRUE(
-      tesseract::common::isIdentical(base_solver.getStaticLinkIds(), comp_solver.getStaticLinkIds(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getActiveLinkIds(), comp_solver.getActiveLinkIds(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getStaticLinkIds(), comp_solver.getStaticLinkIds(), false));
   EXPECT_TRUE(
       tesseract::common::isIdentical(base_solver.getFloatingJointIds(), comp_solver.getFloatingJointIds(), false));
 
@@ -1211,12 +1208,9 @@ void runAddSceneGraphTest()
   joint_names = state_solver.getActiveJointIds();
   state = state_solver.getState();
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
-  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) !=
-              state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) !=
-              state.joint_transforms.end());
-  EXPECT_TRUE(state.floating_joints.find(prefix + subgraph_joint_name) !=
-              state.floating_joints.end());
+  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) != state.joint_transforms.end());
+  EXPECT_TRUE(state.floating_joints.find(prefix + subgraph_joint_name) != state.floating_joints.end());
   EXPECT_TRUE(state.joints.find(prefix + subgraph_joint_name) == state.joints.end());
 
   // Add subgraph with prefix and joint
@@ -1242,10 +1236,8 @@ void runAddSceneGraphTest()
 
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
   state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) !=
-              state.link_transforms.end());
-  EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) !=
-              state.joint_transforms.end());
+  EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) != state.link_transforms.end());
+  EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(prefix + subgraph_joint_name) == state.joints.end());
 
   // Add empty subgraph with prefix and joint
@@ -1315,10 +1307,8 @@ void runChangeJointOriginTest()
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
   EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
-  EXPECT_TRUE(
-      state.joint_transforms.at(JointId(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
-  EXPECT_TRUE(
-      state.floating_joints.at(JointId(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
+  EXPECT_TRUE(state.joint_transforms.at(JointId(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
+  EXPECT_TRUE(state.floating_joints.at(JointId(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
   EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
   EXPECT_EQ(state.floating_joints.size(), 1);
 

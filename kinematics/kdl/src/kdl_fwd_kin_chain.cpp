@@ -39,9 +39,10 @@ using Eigen::VectorXd;
 
 thread_local KDL::JntArray KDLFwdKinChain::kdl_joints_cache;  // NOLINT
 
-KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                               const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
-                               std::string solver_name)
+KDLFwdKinChain::KDLFwdKinChain(
+    const tesseract::scene_graph::SceneGraph& scene_graph,
+    const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
+    std::string solver_name)
   : solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
@@ -55,8 +56,8 @@ KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_g
 }
 
 KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                               tesseract::common::LinkId base_link,
-                               tesseract::common::LinkId tip_link,
+                               const tesseract::common::LinkId& base_link,
+                               const tesseract::common::LinkId& tip_link,
                                std::string solver_name)
   : KDLFwdKinChain(scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
 {
