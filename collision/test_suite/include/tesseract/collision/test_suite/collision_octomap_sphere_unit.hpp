@@ -79,7 +79,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   {
     EXPECT_TRUE(checker.getCollisionObjectGeometries(co).size() == 1);
     EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co).size() == 1);
-    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co)) 
+    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co))
     {
       EXPECT_TRUE(cgt.isApprox(Eigen::Isometry3d::Identity(), 1e-5));
     }

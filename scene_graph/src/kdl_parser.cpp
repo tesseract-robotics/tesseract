@@ -276,8 +276,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     }
     else
     {
-      auto it = std::find(
-          data_.active_link_ids.begin(), data_.active_link_ids.end(), parent_joint->parent_link_id);
+      auto it = std::find(data_.active_link_ids.begin(), data_.active_link_ids.end(), parent_joint->parent_link_id);
       if (it != data_.active_link_ids.end())
         data_.active_link_ids.push_back(link->getId());
       else
@@ -355,8 +354,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     const LinkId parent_link_id = parent_joint->parent_link_id;
 
     if (parent_joint->type == JointType::FIXED || parent_joint->type == JointType::FLOATING)
-      segment_transforms_[parent_joint->child_link_id] =
-          segment_transforms_[parent_link_id] * kdl_sgm.pose(0.0);
+      segment_transforms_[parent_joint->child_link_id] = segment_transforms_[parent_link_id] * kdl_sgm.pose(0.0);
     else
       segment_transforms_[parent_joint->child_link_id] =
           segment_transforms_[parent_link_id] * kdl_sgm.pose(joint_values_.at(parent_joint->getId()));
@@ -402,8 +400,8 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
         link_ids_.push_back(parent_link_id);
         data_.static_link_ids.push_back(parent_link_id);
 
-        KDL::Frame new_tree_parent_to_joint = segment_transforms_[data_.base_link_id].Inverse() *
-                                              segment_transforms_[parent_joint->parent_link_id];
+        KDL::Frame new_tree_parent_to_joint =
+            segment_transforms_[data_.base_link_id].Inverse() * segment_transforms_[parent_joint->parent_link_id];
 
         // construct the kdl segment
         std::string new_joint_name = data_.base_link_id.name() + "_to_" + parent_link_id.name() + "_joint";

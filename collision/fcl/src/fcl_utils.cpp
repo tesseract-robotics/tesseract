@@ -355,7 +355,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
 {
   assert(!shapes_.empty());                       // NOLINT
   assert(!shape_poses_.empty());                  // NOLINT
-  assert(!name_.empty());                         // NOLINT
+  assert(id.isValid());                           // NOLINT
   assert(shapes_.size() == shape_poses_.size());  // NOLINT
 
   m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;

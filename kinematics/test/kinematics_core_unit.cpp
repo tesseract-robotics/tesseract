@@ -517,9 +517,11 @@ TEST(TesseractKinematicsUnit, JointGroupCalcFwdKinLinkIdUnit)  // NOLINT
   // Create a JointGroup from the scene graph
   tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
   auto joint_group = std::make_unique<tesseract::kinematics::JointGroup>(
-      "manipulator", std::vector<tesseract::common::JointId>{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                                              "joint_a5", "joint_a6", "joint_a7" },
-      *scene_graph, ss.getState());
+      "manipulator",
+      std::vector<tesseract::common::JointId>{
+          "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6", "joint_a7" },
+      *scene_graph,
+      ss.getState());
 
   Eigen::VectorXd jvals = Eigen::VectorXd::Zero(7);
   jvals[1] = 0.5;
@@ -546,9 +548,11 @@ TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
 
   tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
   auto joint_group = std::make_unique<tesseract::kinematics::JointGroup>(
-      "manipulator", std::vector<tesseract::common::JointId>{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                                              "joint_a5", "joint_a6", "joint_a7" },
-      *scene_graph, ss.getState());
+      "manipulator",
+      std::vector<tesseract::common::JointId>{
+          "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6", "joint_a7" },
+      *scene_graph,
+      ss.getState());
 
   // Active links are those moved by the active joints
   for (const auto& name : joint_group->getActiveLinkIds())
