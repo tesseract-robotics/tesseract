@@ -2990,6 +2990,23 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataApplyModifyThrowsOnHashCollisio
                std::runtime_error);
 }
 
+TEST(TesseractCommonUnit, CheckHashCollisionUnit)  // NOLINT
+{
+  EXPECT_NO_THROW(tesseract::common::checkHashCollision("LinkId", "foo", "foo"));                   // NOLINT
+  EXPECT_THROW(tesseract::common::checkHashCollision("LinkId", "foo", "bar"), std::runtime_error);  // NOLINT
+}
+
+TEST(TesseractCommonUnit, CheckPairHashCollisionUnit)  // NOLINT
+{
+  // Same order: no throw.
+  EXPECT_NO_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "a", "b"));  // NOLINT
+  // Swapped order: also no throw (check is order-independent).
+  EXPECT_NO_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "b", "a"));  // NOLINT
+  // Mismatch in either slot: throws.
+  EXPECT_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "a", "c"), std::runtime_error);  // NOLINT
+  EXPECT_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "x", "y"), std::runtime_error);  // NOLINT
+}
+
 TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
 {
   double tol = std::numeric_limits<double>::epsilon();

@@ -924,7 +924,7 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
 {
   // Create a map to assign an index to each unique link name
-  std::unordered_map<std::string, std::size_t> link_index_map;
+  std::unordered_map<common::LinkId, std::size_t> link_index_map;
   std::size_t index = 0;
   for (const auto& step : steps)
   {
@@ -934,15 +934,15 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const std::string name0 = contact_pair.second.front().link_ids[0].name();
-        const std::string name1 = contact_pair.second.front().link_ids[1].name();
-        if (link_index_map.find(name0) == link_index_map.end())
+        const auto id0 = contact_pair.second.front().link_ids[0];
+        const auto id1 = contact_pair.second.front().link_ids[1];
+        if (link_index_map.find(id0) == link_index_map.end())
         {
-          link_index_map[name0] = index++;
+          link_index_map[id0] = index++;
         }
-        if (link_index_map.find(name1) == link_index_map.end())
+        if (link_index_map.find(id1) == link_index_map.end())
         {
-          link_index_map[name1] = index++;
+          link_index_map[id1] = index++;
         }
       }
     }
@@ -961,10 +961,10 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const std::string cname0 = contact_pair.second.front().link_ids[0].name();
-        const std::string cname1 = contact_pair.second.front().link_ids[1].name();
-        std::size_t row = link_index_map[cname0];
-        std::size_t col = link_index_map[cname1];
+        const auto cid0 = contact_pair.second.front().link_ids[0];
+        const auto cid1 = contact_pair.second.front().link_ids[1];
+        std::size_t row = link_index_map[cid0];
+        std::size_t col = link_index_map[cid1];
         collision_matrix[row][col]++;
         collision_matrix[col][row]++;
       }
@@ -983,7 +983,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   // Determine the maximum width for the link name column
   std::size_t max_link_name_length = 0;
   for (const auto& entry : link_index_map)
-    max_link_name_length = std::max(entry.first.size(), max_link_name_length);
+    max_link_name_length = std::max(entry.first.name().size(), max_link_name_length);
 
   // Adjust the width to have some extra space after the longest link name
   const int column_width = static_cast<int>(max_link_name_length) + 2;
@@ -1005,16 +1005,16 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   ss << "\n";
 
   // Prepare the data rows
-  std::vector<std::string> link_names(link_index_map.size());
+  std::vector<common::LinkId> link_ids(link_index_map.size());
   for (const auto& entry : link_index_map)
   {
-    link_names[entry.second] = entry.first;
+    link_ids[entry.second] = entry.first;
   }
 
-  for (std::size_t i = 0; i < link_names.size(); ++i)
+  for (std::size_t i = 0; i < link_ids.size(); ++i)
   {
-    ss << std::setw(5) << i << std::setw(column_width) << link_names[i] << "|";
-    for (std::size_t j = 0; j < link_names.size(); ++j)
+    ss << std::setw(5) << i << std::setw(column_width) << link_ids[i].name() << "|";
+    for (std::size_t j = 0; j < link_ids.size(); ++j)
     {
       if (i == j)
         break;
