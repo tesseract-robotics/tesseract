@@ -374,9 +374,8 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   // Write the ACM
   const auto& allowed_collision_entries = acm.getAllAllowedCollisions();
   auto sorted_entries = getAlphabeticalACMEntries(allowed_collision_entries);
-  for (const auto& entry_ref : sorted_entries)
+  for (const auto& entry : sorted_entries)
   {
-    const auto& entry = entry_ref.get();
     tinyxml2::XMLElement* xml_acm_entry = doc.NewElement("disable_collisions");
     xml_acm_entry->SetAttribute("link1", entry.name1.c_str());
     xml_acm_entry->SetAttribute("link2", entry.name2.c_str());

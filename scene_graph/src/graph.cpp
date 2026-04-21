@@ -294,10 +294,8 @@ bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool repla
   auto found = link_map_.find(link_ptr->getId());
   bool link_exists = (found != link_map_.end());
 
-  // O(1) hash collision check: found by ID but name differs
-  if (link_exists && found->second.first->getName() != link_ptr->getName())
-    throw std::runtime_error("LinkId hash collision: '" + link_ptr->getName() + "' and '" +
-                             found->second.first->getName() + "'");
+  if (link_exists)
+    common::checkHashCollision("LinkId", link_ptr->getName(), found->second.first->getName());
 
   if (link_exists && !replace_allowed)
     return false;
@@ -470,10 +468,8 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
     return false;
   }
 
-  // O(1) hash collision check: found by ID but name differs
-  if (found != joint_map_.end() && found->second.first->getName() != joint_ptr->getName())
-    throw std::runtime_error("JointId hash collision: '" + joint_ptr->getName() + "' and '" +
-                             found->second.first->getName() + "'");
+  if (found != joint_map_.end())
+    common::checkHashCollision("JointId", joint_ptr->getName(), found->second.first->getName());
 
   if (found != joint_map_.end())
   {

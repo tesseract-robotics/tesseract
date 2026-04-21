@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
 #include <tesseract/srdf/configs.h>
+#include <tesseract/srdf/utils.h>
 
 namespace tesseract::srdf
 {
@@ -88,7 +89,7 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
   // Check to make sure calibration joints exist
   for (const auto& cal_joint : info.joints)
   {
-    if (auto j = scene_graph.getJoint(cal_joint.first); !j || j->getName() != cal_joint.first.name())
+    if (!isRegisteredJoint(scene_graph, cal_joint.first.name()))
       std::throw_with_nested(
           std::runtime_error("calibration_config: joint '" + cal_joint.first.name() + "' does not exist!"));
   }
