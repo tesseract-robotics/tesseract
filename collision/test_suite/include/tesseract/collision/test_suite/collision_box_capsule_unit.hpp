@@ -126,13 +126,10 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  const auto box_id = tesseract::common::LinkId("box_link");
-  const auto capsule_id = tesseract::common::LinkId("capsule_link");
-
   tesseract::common::LinkIdTransformMap location;
-  location[box_id] = Eigen::Isometry3d::Identity();
-  location[capsule_id] = Eigen::Isometry3d::Identity();
-  location[capsule_id].translation()(0) = 0.2;
+  location["box_link"] = Eigen::Isometry3d::Identity();
+  location["capsule_link"] = Eigen::Isometry3d::Identity();
+  location["capsule_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
@@ -170,7 +167,7 @@ inline void runTest(DiscreteContactManager& checker)
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
-  location[capsule_id].translation() = Eigen::Vector3d(0, 0, 1);
+  location["capsule_link"].translation() = Eigen::Vector3d(0, 0, 1);
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);

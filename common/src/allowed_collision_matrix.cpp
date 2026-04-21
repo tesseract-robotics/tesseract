@@ -35,16 +35,33 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
 
   for (const auto& entry : entries_1)
   {
+    // Check if the key exists
     auto cp = entries_2.find(entry.first);
     if (cp == entries_2.end())
       return false;
+    // Check if the value is the same
     if (cp->second != entry.second)
       return false;
   }
   return true;
 }
 
-AllowedCollisionMatrix::AllowedCollisionMatrix(AllowedCollisionEntries entries) : lookup_table_(std::move(entries)) {}
+AllowedCollisionMatrix::AllowedCollisionMatrix(AllowedCollisionEntries entries)
+{
+  lookup_table_.reserve(entries.size());
+  for (auto& [key, entry] : entries)
+    insertEntryChecked(key, std::move(entry));
+}
+
+void AllowedCollisionMatrix::insertEntryChecked(const LinkIdPair& key, ACMEntry entry)
+{
+  auto [it, inserted] = lookup_table_.try_emplace(key, std::move(entry));
+  if (!inserted)
+  {
+    checkPairHashCollision("ACM", entry.name1, entry.name2, it->second.name1, it->second.name2);
+    it->second.reason = std::move(entry.reason);
+  }
+}
 
 void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
                                                  const LinkId& link_id2,
@@ -52,17 +69,7 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
 {
   const LinkIdPair key(link_id1, link_id2);
   auto [name1, name2] = orderedPairNames(link_id1, link_id2);
-
-  auto [it, inserted] = lookup_table_.try_emplace(key);
-  if (!inserted)
-  {
-    checkPairHashCollision("ACM", name1, name2, it->second.name1, it->second.name2);
-    it->second.reason = reason;
-  }
-  else
-  {
-    it->second = ACMEntry{ std::move(name1), std::move(name2), reason };
-  }
+  insertEntryChecked(key, ACMEntry{ std::move(name1), std::move(name2), reason });
 }
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
@@ -78,19 +85,27 @@ void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
   for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
     if (it->first.first_id() == id || it->first.second_id() == id)
+    {
       it = lookup_table_.erase(it);
+    }
     else
+    {
       ++it;
+    }
   }
 }
 
-bool AllowedCollisionMatrix::isCollisionAllowed(const LinkIdPair& pair) const { return lookup_table_.contains(pair); }
+bool AllowedCollisionMatrix::isCollisionAllowed(const LinkIdPair& pair) const
+{
+  return lookup_table_.find(pair) != lookup_table_.end();
+}
 
 void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }
 
 void AllowedCollisionMatrix::insertAllowedCollisionMatrix(const AllowedCollisionMatrix& acm)
 {
-  lookup_table_.insert(acm.getAllAllowedCollisions().begin(), acm.getAllAllowedCollisions().end());
+  for (const auto& [key, entry] : acm.getAllAllowedCollisions())
+    insertEntryChecked(key, entry);
 }
 
 void AllowedCollisionMatrix::reserveAllowedCollisionMatrix(std::size_t size) { lookup_table_.reserve(size); }

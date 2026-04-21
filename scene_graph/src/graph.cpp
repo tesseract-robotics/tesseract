@@ -119,7 +119,7 @@ protected:
 
 struct adjacency_detector : public boost::default_bfs_visitor
 {
-  adjacency_detector(std::unordered_map<LinkId, LinkId, LinkId::Hash>& adjacency_map,
+  adjacency_detector(std::unordered_map<LinkId, LinkId>& adjacency_map,
                      std::map<SceneGraph::Vertex, boost::default_color_type>& color_map,
                      const LinkId& base_link_id,
                      const std::vector<LinkId>& terminate_on_links)
@@ -150,7 +150,7 @@ struct adjacency_detector : public boost::default_bfs_visitor
 
 protected:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  std::unordered_map<LinkId, LinkId, LinkId::Hash>& adjacency_map_;
+  std::unordered_map<LinkId, LinkId>& adjacency_map_;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   std::map<SceneGraph::Vertex, boost::default_color_type>& color_map_;
   const LinkId& base_link_id_;                     // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
@@ -900,11 +900,6 @@ std::vector<LinkId> SceneGraph::getAdjacentLinkIds(const LinkId& id) const
   return link_ids;
 }
 
-std::vector<std::string> SceneGraph::getAdjacentLinkNames(const std::string& name) const
-{
-  return tesseract::common::toNames(getAdjacentLinkIds(LinkId(name)));
-}
-
 std::vector<LinkId> SceneGraph::getInvAdjacentLinkIds(const LinkId& id) const
 {
   std::vector<LinkId> link_ids;
@@ -913,11 +908,6 @@ std::vector<LinkId> SceneGraph::getInvAdjacentLinkIds(const LinkId& id) const
     link_ids.push_back(boost::get(boost::vertex_link, *this)[vd]->getId());
 
   return link_ids;
-}
-
-std::vector<std::string> SceneGraph::getInvAdjacentLinkNames(const std::string& name) const
-{
-  return tesseract::common::toNames(getInvAdjacentLinkIds(LinkId(name)));
 }
 
 std::vector<LinkId> SceneGraph::getLinkChildrenIds(const LinkId& id) const
@@ -930,22 +920,12 @@ std::vector<LinkId> SceneGraph::getLinkChildrenIds(const LinkId& id) const
   return child_link_ids;
 }
 
-std::vector<std::string> SceneGraph::getLinkChildrenNames(const std::string& name) const
-{
-  return tesseract::common::toNames(getLinkChildrenIds(LinkId(name)));
-}
-
 std::vector<LinkId> SceneGraph::getJointChildrenIds(const JointId& id) const
 {
   const auto& graph = static_cast<const Graph&>(*this);
   Edge e = getEdge(id);
   Vertex v = boost::target(e, graph);
   return getLinkChildrenHelper(v);  // NOLINT
-}
-
-std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& name) const
-{
-  return tesseract::common::toNames(getJointChildrenIds(JointId(name)));
 }
 
 std::vector<LinkId> SceneGraph::getJointChildrenIds(const std::vector<JointId>& ids) const
@@ -960,13 +940,7 @@ std::vector<LinkId> SceneGraph::getJointChildrenIds(const std::vector<JointId>& 
   return std::vector<LinkId>{ link_ids.begin(), link_ids.end() };
 }
 
-std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std::string>& names) const
-{
-  return tesseract::common::toNames(getJointChildrenIds(tesseract::common::toIds<JointId>(names)));
-}
-
-std::unordered_map<LinkId, LinkId, LinkId::Hash>
-SceneGraph::getAdjacencyMapIds(const std::vector<LinkId>& link_ids) const
+std::unordered_map<LinkId, LinkId> SceneGraph::getAdjacencyMap(const std::vector<LinkId>& link_ids) const
 {
   std::map<Vertex, size_t> index_map;
   boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
@@ -979,7 +953,7 @@ SceneGraph::getAdjacencyMapIds(const std::vector<LinkId>& link_ids) const
   for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i, ++c)
     boost::put(prop_index_map, *i, c);
 
-  std::unordered_map<LinkId, LinkId, LinkId::Hash> adjacency_map;
+  std::unordered_map<LinkId, LinkId> adjacency_map;
   for (const auto& link_id : link_ids)
   {
     Vertex start_vertex = getVertex(link_id);
@@ -993,19 +967,6 @@ SceneGraph::getAdjacencyMapIds(const std::vector<LinkId>& link_ids) const
   }
 
   return adjacency_map;
-}
-
-std::unordered_map<std::string, std::string>
-SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
-{
-  std::unordered_map<LinkId, LinkId, LinkId::Hash> id_map =
-      getAdjacencyMapIds(tesseract::common::toIds<LinkId>(link_names));
-
-  std::unordered_map<std::string, std::string> result;
-  result.reserve(id_map.size());
-  for (const auto& entry : id_map)
-    result[entry.first.name()] = entry.second.name();
-  return result;
 }
 
 void SceneGraph::saveDOT(const std::string& path) const
@@ -1254,14 +1215,13 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
                                   const Joint& joint,
                                   const std::string& prefix)
 {
-  std::string parent_link = joint.parent_link_id.name();
   std::string child_link = joint.child_link_id.name();
 
   // Assumes the joint already contains the prefix in the parent and child link names
   if (!prefix.empty())
     child_link.erase(0, prefix.length());
 
-  if (getLink(parent_link) == nullptr || scene_graph.getLink(child_link) == nullptr)
+  if (getLink(joint.parent_link_id) == nullptr || scene_graph.getLink(child_link) == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to add inserted graph, provided joint link names do not exist in inserted graph!");
     return false;
@@ -1343,10 +1303,10 @@ bool SceneGraph::operator==(const SceneGraph& rhs) const
 
   bool equal = true;
   equal &= pointersEqual(acm_, rhs.acm_);
-  equal &= isIdenticalMap<std::unordered_map<LinkId, std::pair<Link::Ptr, Vertex>, LinkId::Hash>,
-                          std::pair<Link::Ptr, Vertex>>(link_map_, rhs.link_map_, link_pair_equal);
-  equal &= isIdenticalMap<std::unordered_map<JointId, std::pair<Joint::Ptr, Edge>, JointId::Hash>,
-                          std::pair<Joint::Ptr, Edge>>(joint_map_, rhs.joint_map_, joint_pair_equal);
+  equal &= isIdenticalMap<std::unordered_map<LinkId, std::pair<Link::Ptr, Vertex>>, std::pair<Link::Ptr, Vertex>>(
+      link_map_, rhs.link_map_, link_pair_equal);
+  equal &= isIdenticalMap<std::unordered_map<JointId, std::pair<Joint::Ptr, Edge>>, std::pair<Joint::Ptr, Edge>>(
+      joint_map_, rhs.joint_map_, joint_pair_equal);
 
   return equal;
 }

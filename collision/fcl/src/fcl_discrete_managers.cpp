@@ -63,7 +63,7 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
   for (const auto& id : collision_objects_)
     manager->addCollisionObject(link2cow_.at(id)->clone());
 
-  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
+  manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(collision_margin_data_);
   manager->setContactAllowedValidator(validator_);
 
@@ -137,7 +137,7 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const tesseract::common::LinkI
 
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
     link2cow_.erase(it);
-    active_ids_.erase(id);
+    active_.erase(id);
     return true;
   }
   return false;
@@ -239,23 +239,22 @@ const std::vector<tesseract::common::LinkId>& FCLDiscreteBVHManager::getCollisio
   return collision_objects_;
 }
 
-void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids)
 {
-  active_ids_.clear();
-  active_ids_.insert(ids.begin(), ids.end());
+  active_ = ids;
 
   for (auto& co : link2cow_)
-    updateCollisionObjectFilters(active_ids_, co.second, static_manager_, dynamic_manager_);
+    updateCollisionObjectFilters(active_, co.second, static_manager_, dynamic_manager_);
 
   // This causes a refit on the bvh tree.
   dynamic_manager_->update();
   static_manager_->update();
 }
 
-const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+const std::unordered_set<tesseract::common::LinkId>&
 FCLDiscreteBVHManager::getActiveCollisionObjectIds() const
 {
-  return active_ids_;
+  return active_;
 }
 
 void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
@@ -352,8 +351,8 @@ void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   }
 
   // If active links is not empty update filters to replace the active links list
-  if (!active_ids_.empty())
-    updateCollisionObjectFilters(active_ids_, cow, static_manager_, dynamic_manager_);
+  if (!active_.empty())
+    updateCollisionObjectFilters(active_, cow, static_manager_, dynamic_manager_);
 
   // This causes a refit on the bvh tree.
   dynamic_manager_->update();

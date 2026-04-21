@@ -58,9 +58,9 @@ inline void addCollisionObjects(T& checker)
   const auto& co = checker.getCollisionObjects();
   for (std::size_t i = 0; i < co.size(); ++i)
   {
-    EXPECT_TRUE(checker.getCollisionObjectGeometries(co[i].name()).size() == 1);
-    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co[i].name()).size() == 1);
-    const auto& cgt = checker.getCollisionObjectGeometriesTransforms(co[i].name());
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co[i]).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co[i]).size() == 1);
+    const auto& cgt = checker.getCollisionObjectGeometriesTransforms(co[i]);
     if (i == 0)
     {
       EXPECT_TRUE(cgt[0].isApprox(octomap_pose, 1e-5));
@@ -109,9 +109,6 @@ inline void runTestCompound(DiscreteContactManager& checker)
 
 inline void runTestCompound(ContinuousContactManager& checker)
 {
-  const auto octomap1_link = tesseract::common::LinkId("octomap1_link");
-  const auto octomap2_link = tesseract::common::LinkId("octomap2_link");
-
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
@@ -126,11 +123,11 @@ inline void runTestCompound(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
 
   // Set Pair
-  checker.setCollisionMarginPair(octomap1_link, octomap2_link, 0.25);
+  checker.setCollisionMarginPair("octomap1_link", "octomap2_link", 0.25);
 
   // Set the collision object transforms
   tesseract::common::LinkIdTransformMap location;
-  location[octomap2_link] = Eigen::Isometry3d::Identity();
+  location["octomap2_link"] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
 
   // Set the collision object transforms
@@ -139,7 +136,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   end_pos = Eigen::Isometry3d::Identity();
   start_pos.translation() = Eigen::Vector3d(0, -2.0, 0);
   end_pos.translation() = Eigen::Vector3d(0, 2.0, 0);
-  checker.setCollisionObjectsTransform(octomap1_link, start_pos, end_pos);
+  checker.setCollisionObjectsTransform("octomap1_link", start_pos, end_pos);
 
   // Perform collision check
   ContactResultMap result;

@@ -33,7 +33,6 @@ tesseract::scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBC
 {
   using namespace tesseract::scene_graph;
   using namespace tesseract::srdf;
-  using tesseract::common::LinkId;
 
   auto g = std::make_shared<SceneGraph>();
 
@@ -174,7 +173,6 @@ tesseract::scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBC
 tesseract::scene_graph::SceneGraph buildTestSceneGraph()
 {
   using namespace tesseract::scene_graph;
-  using tesseract::common::LinkId;
   SceneGraph g;
 
   Link base_link("base_link");
@@ -235,7 +233,6 @@ TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
   using namespace tesseract::srdf;
-  using tesseract::common::LinkId;
   using namespace tesseract::common;
 
   GeneralResourceLocator locator;
@@ -374,21 +371,13 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   auto& joint_groups = srdf.kinematics_information.joint_groups;
   EXPECT_TRUE(joint_groups.empty());
 
-  joint_groups["manipulator_joint"] = { tesseract::common::JointId("joint_1"),
-                                        "joint_2",
-                                        "joint_3",
-                                        "joint_4" };
+  joint_groups["manipulator_joint"] = { "joint_1", "joint_2", "joint_3", "joint_4" };
   EXPECT_FALSE(srdf.kinematics_information.joint_groups.empty());
 
   // Add link groups
   auto& link_groups = srdf.kinematics_information.link_groups;
   EXPECT_TRUE(link_groups.empty());
-  link_groups["manipulator_link"] = { tesseract::common::LinkId("base_link"),
-                                      "link_1",
-                                      "link_2",
-                                      "link_3",
-                                      "link_4",
-                                      "link_5" };
+  link_groups["manipulator_link"] = { "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
   EXPECT_FALSE(srdf.kinematics_information.link_groups.empty());
 
   // Add group states
@@ -1816,12 +1805,7 @@ TEST(TesseractSRDFUnit, AddRemoveJointGroupUnit)  // NOLINT
   KinematicsInformation info;
 
   // ADD
-  JointGroup joint_group = { tesseract::common::JointId("joint_1"),
-                              "joint_2",
-                              "joint_3",
-                              "joint_4",
-                              "joint_5",
-                              "joint_6" };
+  JointGroup joint_group = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   info.addJointGroup("manipulator", joint_group);
   EXPECT_TRUE(info.hasJointGroup("manipulator"));
   EXPECT_TRUE(info.hasGroup("manipulator"));
@@ -1834,22 +1818,12 @@ TEST(TesseractSRDFUnit, AddRemoveJointGroupUnit)  // NOLINT
   EXPECT_EQ(info1_copy, info);
 
   // Different order equal
-  joint_group = { tesseract::common::JointId("joint_6"),
-                  "joint_5",
-                  "joint_4",
-                  "joint_3",
-                  "joint_2",
-                  "joint_1" };
+  joint_group = { "joint_6", "joint_5", "joint_4", "joint_3", "joint_2", "joint_1" };
   info1_copy.addJointGroup("manipulator", joint_group);
   EXPECT_EQ(info1_copy, info);
 
   // Not Equal
-  joint_group = { tesseract::common::JointId("joint_6"),
-                  "joint_5",
-                  "joint_4",
-                  "joint_3",
-                  "joint_2",
-                  "joint_0" };
+  joint_group = { "joint_6", "joint_5", "joint_4", "joint_3", "joint_2", "joint_0" };
   info1_copy.addJointGroup("manipulator", joint_group);
   EXPECT_NE(info1_copy, info);
 
@@ -1871,12 +1845,7 @@ TEST(TesseractSRDFUnit, AddRemoveLinkGroupUnit)  // NOLINT
   KinematicsInformation info;
 
   // ADD
-  LinkGroup link_group = { tesseract::common::LinkId("link_1"),
-                            "link_2",
-                            "link_3",
-                            "link_4",
-                            "link_5",
-                            "link_6" };
+  LinkGroup link_group = { "link_1", "link_2", "link_3", "link_4", "link_5", "link_6" };
   info.addLinkGroup("manipulator", link_group);
   EXPECT_TRUE(info.hasLinkGroup("manipulator"));
   EXPECT_TRUE(info.hasGroup("manipulator"));
@@ -1888,22 +1857,12 @@ TEST(TesseractSRDFUnit, AddRemoveLinkGroupUnit)  // NOLINT
   EXPECT_EQ(info1_copy, info);
 
   // Different order equal
-  link_group = { tesseract::common::LinkId("link_6"),
-                 "link_5",
-                 "link_4",
-                 "link_3",
-                 "link_2",
-                 "link_1" };
+  link_group = { "link_6", "link_5", "link_4", "link_3", "link_2", "link_1" };
   info1_copy.addLinkGroup("manipulator", link_group);
   EXPECT_EQ(info1_copy, info);
 
   // Not Equal
-  link_group = { tesseract::common::LinkId("link_6"),
-                 "link_5",
-                 "link_4",
-                 "link_3",
-                 "link_2",
-                 "link_0" };
+  link_group = { "link_6", "link_5", "link_4", "link_3", "link_2", "link_0" };
   info1_copy.addLinkGroup("manipulator", link_group);
   EXPECT_NE(info1_copy, info);
 
@@ -1980,10 +1939,8 @@ TEST(TesseractSRDFUnit, AddRemoveGroupTCPUnit)  // NOLINT
   info.addGroupTCP("manipulator", "welder", tcp_welder);
   EXPECT_TRUE(info.hasGroupTCP("manipulator", "laser"));
   EXPECT_TRUE(info.hasGroupTCP("manipulator", "welder"));
-  EXPECT_TRUE(
-      info.group_tcps.at("manipulator").at("laser").isApprox(tcp_laser, 1e-6));
-  EXPECT_TRUE(
-      info.group_tcps.at("manipulator").at("welder").isApprox(tcp_welder, 1e-6));
+  EXPECT_TRUE(info.group_tcps.at("manipulator").at("laser").isApprox(tcp_laser, 1e-6));
+  EXPECT_TRUE(info.group_tcps.at("manipulator").at("welder").isApprox(tcp_welder, 1e-6));
   EXPECT_EQ(info.group_tcps.at("manipulator").size(), 2);
   EXPECT_EQ(info.group_tcps.size(), 1);
 

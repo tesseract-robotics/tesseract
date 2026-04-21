@@ -144,7 +144,7 @@ void ContactResultMap::addInterpolatedCollisionResults(
     ContactResultMap& sub_segment_results,
     long sub_segment_index,
     long sub_segment_last_index,
-    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_link_ids,
+    const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
     double segment_dt,
     bool discrete,
     const tesseract::collision::ContactResultMap::FilterFn& filter)
@@ -158,7 +158,7 @@ void ContactResultMap::addInterpolatedCollisionResults(
       // Iterate over the two time values in r.cc_time
       for (size_t j = 0; j < 2; ++j)
       {
-        if (active_link_ids.count(r.link_ids[j]) > 0)
+        if (active_link_ids.find(r.link_ids[j]) != active_link_ids.end())
         {
           r.cc_time[j] = (r.cc_time[j] < 0) ?
                              (static_cast<double>(sub_segment_index) * segment_dt) :
@@ -937,9 +937,13 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
         const std::string name0 = contact_pair.second.front().link_ids[0].name();
         const std::string name1 = contact_pair.second.front().link_ids[1].name();
         if (link_index_map.find(name0) == link_index_map.end())
+        {
           link_index_map[name0] = index++;
+        }
         if (link_index_map.find(name1) == link_index_map.end())
+        {
           link_index_map[name1] = index++;
+        }
       }
     }
   }

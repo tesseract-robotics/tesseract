@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/allowed_collision_matrix.h>
 #include <tesseract/srdf/disabled_collisions.h>
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/link.h>
 
 namespace tesseract::srdf
 {
@@ -54,12 +55,12 @@ tesseract::common::AllowedCollisionMatrix parseDisabledCollisions(const tesserac
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'link2'!"));
 
-    if (!scene_graph.getLink(link1_name))
+    if (auto l = scene_graph.getLink(link1_name); !l || l->getName() != link1_name)
     {
       CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link1_name.c_str());
       continue;
     }
-    if (!scene_graph.getLink(link2_name))
+    if (auto l = scene_graph.getLink(link2_name); !l || l->getName() != link2_name)
     {
       CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link2_name.c_str());
       continue;

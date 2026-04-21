@@ -167,7 +167,7 @@ TEST(LinkIdPairTest, Equality)  // NOLINT
 
 TEST(LinkIdPairTest, HashWorksInUnorderedMap)  // NOLINT
 {
-  std::unordered_map<LinkIdPair, int, LinkIdPair::Hash> map;
+  std::unordered_map<LinkIdPair, int> map;
   const LinkIdPair key = LinkIdPair(LinkId("a"), LinkId("b"));
   map[key] = 42;
 
@@ -265,6 +265,15 @@ TEST(NameIdTest, ConstructorFromCharStar)  // NOLINT
   EXPECT_TRUE(id.isValid());
   EXPECT_EQ(id, "literal_link");
   EXPECT_EQ(id, LinkId(std::string("literal_link")));
+}
+
+TEST(NameIdTest, ConstructorFromNullCharStarIsInvalid)  // NOLINT
+{
+  const char* null_name = nullptr;
+  auto id = LinkId(null_name);
+  EXPECT_FALSE(id.isValid());
+  EXPECT_EQ(id.value(), 0U);
+  EXPECT_TRUE(id.name().empty());
 }
 
 TEST(NameIdTest, ConstructorEmptyStringIsInvalid)  // NOLINT

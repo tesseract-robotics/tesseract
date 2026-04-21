@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/types.h>
 #include <tesseract/srdf/group_states.h>
@@ -78,7 +79,7 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                group_name.c_str())));
       auto joint_id = tesseract::common::JointId(joint_name);
 
-      if (!scene_graph.getJoint(joint_id))
+      if (auto j = scene_graph.getJoint(joint_id); !j || j->getName() != joint_name)
         std::throw_with_nested(std::runtime_error(tesseract::common::strFormat("GroupStates: State '%s' for group '%s' "
                                                                                "joint name '%s' is not know to the "
                                                                                "URDF!",
