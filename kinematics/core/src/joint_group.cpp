@@ -54,23 +54,18 @@ JointGroup::JointGroup(std::string name,
       throw std::runtime_error("Joint '" + joint_id.name() + "' does not exist in the provided scene graph!");
   }
 
-  std::unordered_map<JointId, double> joint_values_id;
-  for (const auto& [id, val] : scene_state.joints)
-    joint_values_id[id] = val;
-
-  tesseract::scene_graph::KDLTreeData data =
-      tesseract::scene_graph::parseSceneGraph(scene_graph, joint_ids_, joint_values_id, scene_state.floating_joints);
+  tesseract::scene_graph::KDLTreeData data = tesseract::scene_graph::parseSceneGraph(
+      scene_graph, joint_ids_, scene_state.joints, scene_state.floating_joints);
   state_solver_ = std::make_unique<tesseract::scene_graph::KDLStateSolver>(scene_graph, data);
-
-  // Build jacobian_map_
   jacobian_map_.reserve(joint_ids_.size());
   std::vector<JointId> solver_jids = state_solver_->getActiveJointIds();
   for (const auto& jid : joint_ids_)
     jacobian_map_.push_back(std::distance(solver_jids.begin(), std::find(solver_jids.begin(), solver_jids.end(), jid)));
 
-  // Build active link IDs set
-  std::vector<LinkId> active_link_ids = state_solver_->getActiveLinkIds();
-  active_link_ids_.insert(active_link_ids.begin(), active_link_ids.end());
+  // Build active link IDs vector + set (vector preserves solver ordering)
+  active_link_ids_ = state_solver_->getActiveLinkIds();
+  active_link_ids_set_.reserve(active_link_ids_.size());
+  active_link_ids_set_.insert(active_link_ids_.begin(), active_link_ids_.end());
 
   // Build link_ids_, link_id_set_, static_link_ids_, static_link_transforms_
   for (const auto& link : scene_graph.getLinks())
@@ -78,7 +73,7 @@ JointGroup::JointGroup(std::string name,
     const auto& link_id = link->getId();
     link_ids_.push_back(link_id);
     link_id_set_.insert(link_id);
-    if (active_link_ids_.count(link_id) == 0)
+    if (active_link_ids_set_.count(link_id) == 0)
     {
       static_link_ids_.push_back(link_id);
       static_link_transforms_[link_id] = scene_state.link_transforms.at(link_id);
@@ -91,6 +86,7 @@ JointGroup::JointGroup(std::string name,
   {
     auto joint = scene_graph.getJoint(joint_ids_[static_cast<std::size_t>(i)]);
 
+    // Set limits
     limits_.joint_limits(i, 0) = joint->limits->lower;
     limits_.joint_limits(i, 1) = joint->limits->upper;
     limits_.velocity_limits(i, 0) = -joint->limits->velocity;
@@ -100,6 +96,7 @@ JointGroup::JointGroup(std::string name,
     limits_.jerk_limits(i, 0) = -joint->limits->jerk;
     limits_.jerk_limits(i, 1) = joint->limits->jerk;
 
+    // Set redundancy indices
     switch (joint->type)
     {
       case tesseract::scene_graph::JointType::REVOLUTE:
@@ -111,7 +108,7 @@ JointGroup::JointGroup(std::string name,
     }
   }
 
-  if (static_link_ids_.size() + active_link_ids_.size() != scene_graph.getLinks().size())
+  if (static_link_ids_.size() + active_link_ids_set_.size() != scene_graph.getLinks().size())
     throw std::runtime_error("JointGroup: Static link names are not correct!");
 }
 
@@ -125,6 +122,7 @@ JointGroup::JointGroup(const JointGroup& other)
   , joint_ids_(other.joint_ids_)
   , link_id_set_(other.link_id_set_)
   , active_link_ids_(other.active_link_ids_)
+  , active_link_ids_set_(other.active_link_ids_set_)
   , static_link_ids_(other.static_link_ids_)
   , static_link_transforms_(other.static_link_transforms_)
   , limits_(other.limits_)
@@ -145,6 +143,7 @@ JointGroup& JointGroup::operator=(const JointGroup& other)
   joint_ids_ = other.joint_ids_;
   link_id_set_ = other.link_id_set_;
   active_link_ids_ = other.active_link_ids_;
+  active_link_ids_set_ = other.active_link_ids_set_;
   static_link_ids_ = other.static_link_ids_;
   static_link_transforms_ = other.static_link_transforms_;
   limits_ = other.limits_;
@@ -157,8 +156,7 @@ tesseract::common::LinkIdTransformMap
 JointGroup::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   tesseract::common::LinkIdTransformMap transforms;
-  state_solver_->getLinkTransforms(transforms, joint_ids_, joint_angles);
-  transforms.insert(static_link_transforms_.begin(), static_link_transforms_.end());
+  calcFwdKin(transforms, joint_angles);
   return transforms;
 }
 
@@ -309,26 +307,13 @@ const std::vector<tesseract::common::LinkId>& JointGroup::getLinkIds() const { r
 
 std::vector<std::string> JointGroup::getLinkNames() const { return tesseract::common::toNames(link_ids_); }
 
-std::vector<tesseract::common::LinkId> JointGroup::getActiveLinkIds() const
-{
-  return { active_link_ids_.begin(), active_link_ids_.end() };
-}
-
-std::vector<std::string> JointGroup::getActiveLinkNames() const
-{
-  std::vector<tesseract::common::LinkId> ids(active_link_ids_.begin(), active_link_ids_.end());
-  return tesseract::common::toNames(ids);
-}
+const std::vector<tesseract::common::LinkId>& JointGroup::getActiveLinkIds() const { return active_link_ids_; }
 
 const std::vector<tesseract::common::LinkId>& JointGroup::getStaticLinkIds() const { return static_link_ids_; }
 
-std::vector<std::string> JointGroup::getStaticLinkNames() const { return tesseract::common::toNames(static_link_ids_); }
-
-tesseract::common::LinkId JointGroup::getBaseLinkId() const { return state_solver_->getBaseLinkId(); }
-
 bool JointGroup::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
-  return active_link_ids_.count(link_id) != 0;
+  return active_link_ids_set_.count(link_id) != 0;
 }
 
 bool JointGroup::hasLinkId(const tesseract::common::LinkId& link_id) const { return link_id_set_.count(link_id) != 0; }
@@ -348,6 +333,8 @@ void JointGroup::setLimits(const tesseract::common::KinematicLimits& limits)
 std::vector<Eigen::Index> JointGroup::getRedundancyCapableJointIndices() const { return redundancy_indices_; }
 
 Eigen::Index JointGroup::numJoints() const { return static_cast<Eigen::Index>(joint_ids_.size()); }
+
+tesseract::common::LinkId JointGroup::getBaseLinkId() const { return state_solver_->getBaseLinkId(); }
 
 std::string JointGroup::getName() const { return name_; }
 

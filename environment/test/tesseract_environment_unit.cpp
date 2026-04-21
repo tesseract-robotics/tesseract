@@ -131,24 +131,26 @@ void runGetLinkTransformsTest(Environment& env)
   for (int i = 0; i < 20; ++i)
   {
     SceneState random_state = state_solver->getRandomState();
-    auto jn = env.getActiveJointNames();
-    env.setState(jn, random_state.getJointValues(jn));
+    env.setState(random_state.joints);
 
     std::vector<std::string> link_names = env.getLinkNames();
 
-    std::vector<std::string> joint_names = env.getActiveJointNames();
-    Eigen::VectorXd joint_values = random_state.getJointValues(joint_names);
+    std::vector<tesseract::common::JointId> joint_ids = env.getActiveJointIds();
+    Eigen::VectorXd joint_values = random_state.getJointValues(joint_ids);
 
     SceneState env_state = env.getState();
     tesseract::common::VectorIsometry3d link_transforms = env.getLinkTransforms();
     tesseract::common::LinkIdTransformMap link_transforms2;
-    env.getLinkTransforms(link_transforms2, joint_names, joint_values);
+    env.getLinkTransforms(link_transforms2, joint_ids, joint_values);
 
+    tesseract::common::LinkIdTransformMap link_transforms3;
+    env.getLinkTransforms(link_transforms3, joint_ids, joint_values, env.getCurrentFloatingJointValues());
     for (std::size_t i = 0; i < link_names.size(); ++i)
     {
       const std::string& link_name = link_names.at(i);
       EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms.at(i), 1e-6));
       EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms2.at(link_name), 1e-6));
+      EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(link_transforms3.at(link_name), 1e-6));
       EXPECT_TRUE(env_state.link_transforms.at(link_name).isApprox(env.getLinkTransform(link_name), 1e-6));
     }
   }
@@ -1959,22 +1961,17 @@ void runCompareSceneStates(const SceneState& base_state, const SceneState& compa
 void runCompareStateSolver(const StateSolver& base_solver, StateSolver& comp_solver)
 {
   EXPECT_EQ(base_solver.getBaseLinkId(), comp_solver.getBaseLinkId());
-  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getJointNames(), comp_solver.getJointNames(), false));
-  EXPECT_TRUE(
-      tesseract::common::isIdentical(base_solver.getActiveJointNames(), comp_solver.getActiveJointNames(), false));
-  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getLinkNames(), comp_solver.getLinkNames(), false));
-  EXPECT_TRUE(
-      tesseract::common::isIdentical(base_solver.getActiveLinkNames(), comp_solver.getActiveLinkNames(), false));
-  EXPECT_TRUE(
-      tesseract::common::isIdentical(base_solver.getStaticLinkNames(), comp_solver.getStaticLinkNames(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getJointIds(), comp_solver.getJointIds(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getActiveJointIds(), comp_solver.getActiveJointIds(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getLinkIds(), comp_solver.getLinkIds(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getActiveLinkIds(), comp_solver.getActiveLinkIds(), false));
+  EXPECT_TRUE(tesseract::common::isIdentical(base_solver.getStaticLinkIds(), comp_solver.getStaticLinkIds(), false));
 
   for (int i = 0; i < 10; ++i)
   {
     SceneState base_random_state = base_solver.getRandomState();
-    auto ajn = base_solver.getActiveJointIds();
-    auto ajv = base_random_state.getJointValues(ajn);
-    SceneState comp_state_const = comp_solver.getState(ajn, ajv);
-    comp_solver.setState(ajn, ajv);
+    SceneState comp_state_const = comp_solver.getState(base_random_state.joints);
+    comp_solver.setState(base_random_state.joints);
     const SceneState& comp_state = comp_solver.getState();
 
     runCompareSceneStates(base_random_state, comp_state_const);
@@ -2476,15 +2473,15 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
   }
 
   // Check active joints
-  std::vector<std::string> active_joint_names = env->getActiveJointNames();
-  std::vector<std::string> clone_active_joint_names = clone->getActiveJointNames();
-  for (const auto& name : active_joint_names)
-    EXPECT_TRUE(std::find(clone_active_joint_names.begin(), clone_active_joint_names.end(), name) !=
-                clone_active_joint_names.end());
+  std::vector<tesseract::common::JointId> active_joint_ids = env->getActiveJointIds();
+  std::vector<tesseract::common::JointId> clone_active_joint_ids = clone->getActiveJointIds();
+  for (const auto& name : active_joint_ids)
+    EXPECT_TRUE(std::find(clone_active_joint_ids.begin(), clone_active_joint_ids.end(), name) !=
+                clone_active_joint_ids.end());
 
   // Check that the state is preserved
-  Eigen::VectorXd joint_vals = env->getState().getJointValues(active_joint_names);
-  Eigen::VectorXd clone_joint_vals = clone->getState().getJointValues(active_joint_names);
+  Eigen::VectorXd joint_vals = env->getState().getJointValues(active_joint_ids);
+  Eigen::VectorXd clone_joint_vals = clone->getState().getJointValues(active_joint_ids);
   EXPECT_TRUE(joint_vals.isApprox(clone_joint_vals));
 
   // Check that the collision margin data is preserved
@@ -2544,11 +2541,7 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   EXPECT_EQ(callback_counter, 1);
 
   // Set the environment to a random state
-  {
-    auto rand_jn = env->getActiveJointNames();
-    auto rand_state = env->getStateSolver()->getRandomState();
-    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
-  }
+  env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 2);
@@ -2556,11 +2549,7 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   states.push_back(env->getState(active_joint_names, jvals));
   states.push_back(env->getState(map_jvals));
 
-  {
-    auto rand_jn = env->getActiveJointNames();
-    auto rand_state = env->getStateSolver()->getRandomState();
-    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
-  }
+  env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 3);
@@ -2571,11 +2560,7 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   states.push_back(env->getState());
   EXPECT_EQ(callback_counter, 4);
 
-  {
-    auto rand_jn = env->getActiveJointNames();
-    auto rand_state = env->getStateSolver()->getRandomState();
-    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
-  }
+  env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues();
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 5);
@@ -2586,11 +2571,7 @@ TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
   states.push_back(env->getState());
   EXPECT_EQ(callback_counter, 6);
 
-  {
-    auto rand_jn = env->getActiveJointNames();
-    auto rand_state = env->getStateSolver()->getRandomState();
-    env->setState(rand_jn, rand_state.getJointValues(rand_jn));
-  }
+  env->setState(env->getStateSolver()->getRandomState().joints);
   cjv = env->getCurrentJointValues(active_joint_names);
   EXPECT_FALSE(cjv.isApprox(jvals, 1e-6));
   EXPECT_EQ(callback_counter, 7);
@@ -2787,32 +2768,32 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
     tesseract::common::ManipulatorInfo manip_info("manipulator", LinkId{}, LinkId{});
-    manip_info.tcp_offset = LinkId("laser_callback");
+    manip_info.tcp_offset = "laser_callback";
     Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(found_tcp.isApprox(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1), 1e-6));
   }
 
   {  // The tcp offset name is a link in the environment so it should throw an exception
     tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
-    manip_info.tcp_offset = LinkId("tool0");
+    manip_info.tcp_offset = "tool0";
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 
   {  // If the tcp offset name does not exist it should throw an exception
     tesseract::common::ManipulatorInfo manip_info("manipulator", "unknown", "unknown");
-    manip_info.tcp_offset = LinkId("unknown");
+    manip_info.tcp_offset = "unknown";
     EXPECT_ANY_THROW(env->findTCPOffset(manip_info));  // NOLINT
   }
 }
 
-TEST(TesseractEnvironmentUnit, getActiveLinkNamesRecursiveUnit)  // NOLINT
+TEST(TesseractEnvironmentUnit, getActiveLinkIdsRecursiveUnit)  // NOLINT
 {
   // Get the environment
   auto env = getEnvironment();
 
-  std::vector<std::string> active_links;
-  getActiveLinkNamesRecursive(active_links, *env->getSceneGraph(), env->getRootLinkName(), false);
-  std::vector<std::string> target_active_links = env->getActiveLinkNames();
+  std::vector<tesseract::common::LinkId> active_links;
+  getActiveLinkIdsRecursive(active_links, *env->getSceneGraph(), env->getRootLinkId(), false);
+  std::vector<tesseract::common::LinkId> target_active_links = env->getActiveLinkIds();
   EXPECT_TRUE(tesseract::common::isIdentical(active_links, target_active_links, false));
 }
 
@@ -2959,16 +2940,14 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   EXPECT_TRUE(env->applyCommand(cmd));
 
   // Set the robot initial state
-  std::vector<std::string> joint_names;
-  joint_names.emplace_back("joint_a1");
-  joint_names.emplace_back("joint_a2");
-  joint_names.emplace_back("joint_a3");
-  joint_names.emplace_back("joint_a4");
-  joint_names.emplace_back("joint_a5");
-  joint_names.emplace_back("joint_a6");
-  joint_names.emplace_back("joint_a7");
-
-  auto joint_ids = tesseract::common::toIds<tesseract::common::JointId>(joint_names);
+  std::vector<tesseract::common::JointId> joint_ids;
+  joint_ids.emplace_back("joint_a1");
+  joint_ids.emplace_back("joint_a2");
+  joint_ids.emplace_back("joint_a3");
+  joint_ids.emplace_back("joint_a4");
+  joint_ids.emplace_back("joint_a5");
+  joint_ids.emplace_back("joint_a6");
+  joint_ids.emplace_back("joint_a7");
 
   Eigen::VectorXd joint_start_pos(7);
   joint_start_pos(0) = -0.4;

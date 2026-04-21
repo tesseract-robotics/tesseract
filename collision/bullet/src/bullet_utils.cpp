@@ -439,12 +439,12 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
 }
 
 void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+    const std::unordered_set<tesseract::common::LinkId>& active,
     const COW::Ptr& cow)
 {
   cow->m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
 
-  if (!isLinkActive(active_ids, cow->getLinkId()))
+  if (!isLinkActive(active, cow->getLinkId()))
   {
     cow->m_collisionFilterGroup = btBroadphaseProxy::StaticFilter;
   }
@@ -1402,12 +1402,12 @@ void addCollisionObjectToBroadphase(const COW::Ptr& cow,
 }
 
 void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+    const std::unordered_set<tesseract::common::LinkId>& active,
     const COW::Ptr& cow,
     const std::unique_ptr<btBroadphaseInterface>& broadphase,
     const std::unique_ptr<btCollisionDispatcher>& dispatcher)
 {
-  updateCollisionObjectFilters(active_ids, cow);
+  updateCollisionObjectFilters(active, cow);
 
   // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
   // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
