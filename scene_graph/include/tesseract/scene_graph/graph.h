@@ -458,66 +458,47 @@ public:
   bool isEmpty() const;
 
   /**
-   * @brief Get a vector of adjacent link names provided a link name
-   * @param name Name of link
-   * @return A vector of adjacent link names
+   * @brief Get a vector of adjacent link ids provided a link name
+   * @param id Id of link
+   * @return A vector of adjacent link ids
    */
-  std::vector<std::string> getAdjacentLinkNames(const std::string& name) const;
-
-  /** @brief Get adjacent link IDs for a given link */
   std::vector<common::LinkId> getAdjacentLinkIds(const common::LinkId& id) const;
 
   /**
-   * @brief Geta a vectpr pf inverse adjacent link names provided a link name
-   * @param name
+   * @brief Geta a vector of inverse adjacent link ids provided a link id
+   * @param id
    * @return
    */
-  std::vector<std::string> getInvAdjacentLinkNames(const std::string& name) const;
-
-  /** @brief Get inverse adjacent link IDs for a given link */
   std::vector<common::LinkId> getInvAdjacentLinkIds(const common::LinkId& id) const;
 
   /**
-   * @brief Get all children for a given link name
-   * @param name Name of Link
-   * @return A vector of child link names
+   * @brief Get all children for a given link id
+   * @param id Id of Link
+   * @return A vector of child link ids
    */
-  std::vector<std::string> getLinkChildrenNames(const std::string& name) const;
-
-  /** @brief Get all children link IDs for a given link */
   std::vector<common::LinkId> getLinkChildrenIds(const common::LinkId& id) const;
 
   /**
-   * @brief Get all children link names for a given joint name
-   * @param name Name of joint
-   * @return A vector of child link names
+   * @brief Get all children link ids for a given joint id
+   * @param id Id of joint
+   * @return A vector of child link ids
    */
-  std::vector<std::string> getJointChildrenNames(const std::string& name) const;
-
-  /** @brief Get all children link IDs for a given joint */
   std::vector<common::LinkId> getJointChildrenIds(const common::JointId& id) const;
 
   /**
    * @brief Create mapping between links in the scene to the provided links if they are directly affected if the link
    * moves
    * @param link_names The links to map other links to
-   * @return A map of affected links to on of the provided link names.
+   * @return A map of affected links to on of the provided link ids.
    */
-  std::unordered_map<std::string, std::string> getAdjacencyMap(const std::vector<std::string>& link_names) const;
-
-  /** @brief Create ID-based adjacency mapping between links */
-  std::unordered_map<common::LinkId, common::LinkId, common::LinkId::Hash>
-  getAdjacencyMapIds(const std::vector<common::LinkId>& link_ids) const;
+  std::unordered_map<common::LinkId, common::LinkId> getAdjacencyMap(const std::vector<common::LinkId>& link_ids) const;
 
   /**
-   * @brief Get all children link names for the given joint names
-   * @todo Need to create custom visitor so already process joint_names do not get processed again.
-   * @param names Name of joints
-   * @return A vector of child link names
+   * @brief Get all children link ids for the given joint ids
+   * @todo Need to create custom visitor so already process joint_ids do not get processed again.
+   * @param ids Ids of joints
+   * @return A vector of child link ids
    */
-  std::vector<std::string> getJointChildrenNames(const std::vector<std::string>& names) const;
-
-  /** @brief Get all children link IDs for the given joint IDs */
   std::vector<common::LinkId> getJointChildrenIds(const std::vector<common::JointId>& ids) const;
 
   /**
@@ -599,8 +580,8 @@ protected:
   bool addJointHelper(const std::shared_ptr<Joint>& joint_ptr);
 
 private:
-  std::unordered_map<common::LinkId, std::pair<std::shared_ptr<Link>, Vertex>, common::LinkId::Hash> link_map_;
-  std::unordered_map<common::JointId, std::pair<std::shared_ptr<Joint>, Edge>, common::JointId::Hash> joint_map_;
+  std::unordered_map<common::LinkId, std::pair<std::shared_ptr<Link>, Vertex>> link_map_;
+  std::unordered_map<common::JointId, std::pair<std::shared_ptr<Joint>, Edge>> joint_map_;
   std::shared_ptr<tesseract::common::AllowedCollisionMatrix> acm_;
 
   /** @brief The rebuild the link and joint map by extraction information from the graph */

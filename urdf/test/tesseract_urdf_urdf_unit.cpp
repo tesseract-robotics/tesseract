@@ -1,5 +1,4 @@
 #include <tesseract/common/macros.h>
-#include "tesseract/scene_graph/link.h"
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
@@ -10,9 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/urdf/urdf_parser.h>
 #include <tesseract/common/resource_locator.h>
-
-using tesseract::common::JointId;
-using tesseract::common::LinkId;
+#include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 {

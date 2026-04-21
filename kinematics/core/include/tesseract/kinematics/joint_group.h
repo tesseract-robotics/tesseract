@@ -72,7 +72,7 @@ public:
              const tesseract::scene_graph::SceneState& scene_state);
 
   /**
-   * @brief Calculates tool pose of robot chain (integer-keyed, primary)
+   * @brief Calculates tool pose of robot chain
    * @details Throws an exception on failures (including uninitialized)
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return A map of LinkId to transforms
@@ -80,9 +80,9 @@ public:
   tesseract::common::LinkIdTransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
-   * @brief Calculates tool pose of robot chain (integer-keyed, populate by reference)
+   * @brief Calculates tool pose of robot chain
    * @details Throws an exception on failures (including uninitialized)
-   * @param transforms The integer-keyed map to populate with transforms
+   * @param transforms The map to populate with transforms
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    */
   void calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
@@ -91,7 +91,7 @@ public:
   /**
    * @brief Calculates jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
-   * @param link_id The LinkId of the frame that the jacobian is calculated for
+   * @param link_id The frame that the jacobian is calculated for
    * @return The jacobian at the provided link relative to the joint group base link
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
@@ -100,7 +100,7 @@ public:
   /**
    * @brief Calculates jacobian of robot given joint angles
    * @param joint_angles Input vector of joint angles
-   * @param link_id The LinkId of the frame that the jacobian is calculated for
+   * @param link_id The frame that the jacobian is calculated for
    * @param link_point A point on the link that the jacobian is calculated for
    * @return The jacobian at the provided link relative to the joint group base link
    */
@@ -163,16 +163,7 @@ public:
    *
    * @return A vector of active link ids
    */
-  std::vector<tesseract::common::LinkId> getActiveLinkIds() const;
-
-  /**
-   * @brief Get list of active link names (with and without geometry) for kinematic object
-   *
-   * Note: This only includes links that are children of the active joints
-   *
-   * @return A vector of active link names
-   */
-  std::vector<std::string> getActiveLinkNames() const;
+  const std::vector<tesseract::common::LinkId>& getActiveLinkIds() const;
 
   /**
    * @brief Get list of static link ids (with and without geometry) for kinematic object
@@ -180,16 +171,6 @@ public:
    * @return A vector of static link ids
    */
   const std::vector<tesseract::common::LinkId>& getStaticLinkIds() const;
-
-  /**
-   * @brief Get list of static link names (with and without geometry) for kinematic object
-   *
-   * @return A vector of static link names
-   */
-  std::vector<std::string> getStaticLinkNames() const;
-
-  /** @brief Get the base link ID */
-  tesseract::common::LinkId getBaseLinkId() const;
 
   /**
    * @brief Check if link is an active link
@@ -229,6 +210,9 @@ public:
    */
   Eigen::Index numJoints() const;
 
+  /** @brief Get the robot base link ID */
+  tesseract::common::LinkId getBaseLinkId() const;
+
   /** @brief Name of the manipulator */
   std::string getName() const;
 
@@ -245,8 +229,9 @@ protected:
   std::unique_ptr<tesseract::scene_graph::StateSolver> state_solver_;
   std::vector<tesseract::common::LinkId> link_ids_;
   std::vector<tesseract::common::JointId> joint_ids_;
-  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> link_id_set_;
-  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_link_ids_;
+  std::unordered_set<tesseract::common::LinkId> link_id_set_;
+  std::vector<tesseract::common::LinkId> active_link_ids_;
+  std::unordered_set<tesseract::common::LinkId> active_link_ids_set_;
   std::vector<tesseract::common::LinkId> static_link_ids_;
   tesseract::common::LinkIdTransformMap static_link_transforms_;
   tesseract::common::KinematicLimits limits_;

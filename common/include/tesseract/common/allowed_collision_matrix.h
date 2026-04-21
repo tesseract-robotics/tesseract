@@ -7,7 +7,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <Eigen/Core>
 #include <unordered_map>
-#include <boost/unordered/unordered_flat_map.hpp>
 #include <tesseract/common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -27,7 +26,7 @@ struct ACMEntry
   bool operator!=(const ACMEntry& other) const { return !(*this == other); }
 };
 
-using AllowedCollisionEntries = boost::unordered_flat_map<LinkIdPair, ACMEntry, LinkIdPair::Hash>;
+using AllowedCollisionEntries = std::unordered_map<LinkIdPair, ACMEntry>;
 
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
 
@@ -121,6 +120,14 @@ public:
 
 private:
   AllowedCollisionEntries lookup_table_;
+
+  /**
+   * @brief Insert an entry or, if the key already exists, verify the stored names match
+   *        (throwing via checkPairHashCollision otherwise) and update the reason.
+   *        Single write path used by every mutation entry point.
+   */
+  void insertEntryChecked(const LinkIdPair& key, ACMEntry entry);
+
   template <class Archive>
   friend void ::tesseract::common::save(Archive& ar, const AllowedCollisionMatrix& obj);
   template <class Archive>

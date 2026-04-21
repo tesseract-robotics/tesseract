@@ -111,7 +111,7 @@ public:
    * @brief Get the inverse kinematics working frame
    * @details This is the frame of reference in which all poses given to the calcInvKin function should be defined
    */
-  virtual tesseract::common::LinkId getWorkingFrameId() const = 0;
+  virtual tesseract::common::LinkId getWorkingFrame() const = 0;
 
   /**
    * @brief Get the ids of the tip links of the kinematics group

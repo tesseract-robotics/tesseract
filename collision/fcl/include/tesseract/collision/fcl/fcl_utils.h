@@ -189,8 +189,8 @@ protected:
 CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
 
 using COW = CollisionObjectWrapper;
-using Link2COW = std::unordered_map<tesseract::common::LinkId, COW::Ptr, tesseract::common::LinkId::Hash>;
-using Link2ConstCOW = std::unordered_map<tesseract::common::LinkId, COW::ConstPtr, tesseract::common::LinkId::Hash>;
+using Link2COW = std::unordered_map<tesseract::common::LinkId, COW::Ptr>;
+using Link2ConstCOW = std::unordered_map<tesseract::common::LinkId, COW::ConstPtr>;
 
 inline COW::Ptr createFCLCollisionObject(const tesseract::common::LinkId& id,
                                          const int& type_id,
@@ -214,20 +214,19 @@ inline COW::Ptr createFCLCollisionObject(const tesseract::common::LinkId& id,
 
 /**
  * @brief Update collision objects filters
- * @param active_ids Set of active collision object LinkIds
+ * @param active Set of active collision object LinkIds
  * @param cow The collision object to update
  * @param static_manager Broadphasse manager for static objects
  * @param dynamic_manager Broadphase manager for dynamic objects
  */
-inline void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
-    const COW::Ptr& cow,
-    const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& static_manager,
-    const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager)
+inline void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active,
+                                         const COW::Ptr& cow,
+                                         const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& static_manager,
+                                         const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager)
 {
   // For descrete checks we can check static to kinematic and kinematic to
   // kinematic
-  if (!isLinkActive(active_ids, cow->getLinkId()))
+  if (!isLinkActive(active, cow->getLinkId()))
   {
     if (cow->m_collisionFilterGroup != CollisionFilterGroups::StaticFilter)
     {

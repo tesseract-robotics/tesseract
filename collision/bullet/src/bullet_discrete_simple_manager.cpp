@@ -88,7 +88,7 @@ DiscreteContactManager::UPtr BulletDiscreteSimpleManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
+  manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -144,7 +144,7 @@ bool BulletDiscreteSimpleManager::removeCollisionObject(const tesseract::common:
     cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
     link2cow_.erase(it);
-    active_ids_.erase(id);
+    active_.erase(id);
     return true;
   }
 
@@ -205,10 +205,9 @@ const std::vector<tesseract::common::LinkId>& BulletDiscreteSimpleManager::getCo
   return collision_objects_;
 }
 
-void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids)
 {
-  active_ids_.clear();
-  active_ids_.insert(ids.begin(), ids.end());
+  active_ = ids;
 
   cows_.clear();
   cows_.reserve(link2cow_.size());
@@ -217,7 +216,7 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<te
   {
     COW::Ptr& cow = co.second;
 
-    updateCollisionObjectFilters(active_ids_, cow);
+    updateCollisionObjectFilters(active_, cow);
 
     // Update collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
@@ -227,10 +226,10 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<te
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+const std::unordered_set<tesseract::common::LinkId>&
 BulletDiscreteSimpleManager::getActiveCollisionObjectIds() const
 {
-  return active_ids_;
+  return active_;
 }
 
 void BulletDiscreteSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)

@@ -315,7 +315,6 @@ public:
   bool operator!=(const Joint& rhs) const;
 
 private:
-  /** @brief The integer identity of this joint, also carries the name string */
   common::JointId id_;
 
   template <class Archive>

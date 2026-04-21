@@ -228,7 +228,6 @@ public:
   Link clone(common::LinkId id) const;
 
 private:
-  /** @brief The integer identity of this link, also carries the name string */
   common::LinkId id_;
 
   template <class Archive>

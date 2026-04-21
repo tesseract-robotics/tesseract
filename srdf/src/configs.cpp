@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/yaml_utils.h>
@@ -87,7 +88,7 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
   // Check to make sure calibration joints exist
   for (const auto& cal_joint : info.joints)
   {
-    if (scene_graph.getJoint(cal_joint.first) == nullptr)
+    if (auto j = scene_graph.getJoint(cal_joint.first); !j || j->getName() != cal_joint.first.name())
       std::throw_with_nested(
           std::runtime_error("calibration_config: joint '" + cal_joint.first.name() + "' does not exist!"));
   }
