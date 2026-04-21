@@ -78,7 +78,7 @@ class TestProfile : public Profile
 public:
   TestProfile() = default;
   ~TestProfile() override = default;
-  TestProfile(std::size_t key) : Profile(key) {};
+  TestProfile(std::size_t key) : Profile(key){};
   TestProfile(const TestProfile&) = default;
   TestProfile& operator=(const TestProfile&) = default;
   TestProfile(TestProfile&&) = default;

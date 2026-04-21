@@ -55,8 +55,7 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
  * @param active Set of active LinkIds
  * @param id The LinkId to check if it is active.
  */
-bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active,
-                  const tesseract::common::LinkId& id);
+bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active, const tesseract::common::LinkId& id);
 
 /**
  * @brief Determine if contact is allowed between two objects (hot-path primary).

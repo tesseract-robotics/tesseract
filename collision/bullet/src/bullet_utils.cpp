@@ -438,9 +438,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
   return shape;
 }
 
-void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId>& active,
-    const COW::Ptr& cow)
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active, const COW::Ptr& cow)
 {
   cow->m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
 
@@ -1401,11 +1399,10 @@ void addCollisionObjectToBroadphase(const COW::Ptr& cow,
       aabb_min, aabb_max, type, cow.get(), cow->m_collisionFilterGroup, cow->m_collisionFilterMask, dispatcher.get()));
 }
 
-void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId>& active,
-    const COW::Ptr& cow,
-    const std::unique_ptr<btBroadphaseInterface>& broadphase,
-    const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active,
+                                  const COW::Ptr& cow,
+                                  const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                  const std::unique_ptr<btCollisionDispatcher>& dispatcher)
 {
   updateCollisionObjectFilters(active, cow);
 
