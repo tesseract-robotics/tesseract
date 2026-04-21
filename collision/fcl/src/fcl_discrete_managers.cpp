@@ -252,8 +252,7 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::unordered_set<t
   static_manager_->update();
 }
 
-const std::unordered_set<tesseract::common::LinkId>&
-FCLDiscreteBVHManager::getActiveCollisionObjectIds() const
+const std::unordered_set<tesseract::common::LinkId>& FCLDiscreteBVHManager::getActiveCollisionObjectIds() const
 {
   return active_;
 }
