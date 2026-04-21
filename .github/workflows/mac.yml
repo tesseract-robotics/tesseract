@@ -45,11 +45,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - runner: macos-13
+          - runner: macos-15-intel
             vcpkg_triplet: x64-osx-dynamic-release
             arch: x64
             homebrew_root: /usr/local
-          - runner: macos-14
+          - runner: macos-15
             vcpkg_triplet: arm64-osx-dynamic-release
             arch: arm64
             homebrew_root: /opt/homebrew
@@ -64,7 +64,7 @@ jobs:
         python-version: '3.12'
     - name: brew
       run: |
-        brew install libomp cmake automake autoconf libtool gcc ninja    
+        brew install libomp cmake automake autoconf autoconf-archive libtool gcc ninja    
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v7
       with:
