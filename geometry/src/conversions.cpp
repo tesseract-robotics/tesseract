@@ -30,6 +30,7 @@
 #include <tesseract/geometry/impl/cylinder.h>
 #include <tesseract/geometry/impl/cone.h>
 #include <tesseract/geometry/impl/capsule.h>
+#include <tesseract/common/utils.h>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -257,9 +258,9 @@ std::unique_ptr<Mesh> toTriangleMesh(const Box& geom, double /*tolerance*/, cons
   for (std::size_t i = 0; i < triangles.size(); i += 4)
   {
     // triangles layout: [3, v1, v2, v3]
-    const int v1 = triangles[i + 1];
-    const int v2 = triangles[i + 2];
-    const int v3 = triangles[i + 3];
+    const auto v1 = tesseract::common::numeric_cast<std::size_t>(triangles[i + 1]);
+    const auto v2 = tesseract::common::numeric_cast<std::size_t>(triangles[i + 2]);
+    const auto v3 = tesseract::common::numeric_cast<std::size_t>(triangles[i + 3]);
 
     const Eigen::Vector3d& a = (*vertices)[v1];
     const Eigen::Vector3d& b = (*vertices)[v2];
@@ -328,20 +329,24 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cylinder& geom, double tolerance, con
   for (int i = 0; i < radial_segments; ++i)
   {
     const int next = (i + 1) % radial_segments;
+    const auto next_u = tesseract::common::numeric_cast<std::size_t>(next);
+    const auto i_u = tesseract::common::numeric_cast<std::size_t>(i);
     triangles.push_back(3);
     triangles.push_back(center_top_index);
-    triangles.push_back(top_rim_indices[i]);
-    triangles.push_back(top_rim_indices[next]);
+    triangles.push_back(top_rim_indices[i_u]);
+    triangles.push_back(top_rim_indices[next_u]);
   }
 
   // Bottom cap triangles (fan)
   for (int i = 0; i < radial_segments; ++i)
   {
     const int next = (i + 1) % radial_segments;
+    const auto next_u = tesseract::common::numeric_cast<std::size_t>(next);
+    const auto i_u = tesseract::common::numeric_cast<std::size_t>(i);
     triangles.push_back(3);
     triangles.push_back(center_bottom_index);
-    triangles.push_back(bottom_rim_indices[next]);
-    triangles.push_back(bottom_rim_indices[i]);
+    triangles.push_back(bottom_rim_indices[next_u]);
+    triangles.push_back(bottom_rim_indices[i_u]);
   }
 
   // Side surface (quads split into triangles)
@@ -349,22 +354,30 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cylinder& geom, double tolerance, con
   {
     const int next = (i + 1) % radial_segments;
 
-    const int top1 = top_rim_indices[i];
-    const int top2 = top_rim_indices[next];
-    const int bot1 = bottom_rim_indices[i];
-    const int bot2 = bottom_rim_indices[next];
+    const auto next_u = tesseract::common::numeric_cast<std::size_t>(next);
+    const auto i_u = tesseract::common::numeric_cast<std::size_t>(i);
+
+    const int top1 = top_rim_indices[i_u];
+    const int top2 = top_rim_indices[next_u];
+    const int bot1 = bottom_rim_indices[i_u];
+    const int bot2 = bottom_rim_indices[next_u];
+
+    const auto top1_u = tesseract::common::numeric_cast<std::size_t>(top1);
+    const auto top2_u = tesseract::common::numeric_cast<std::size_t>(top2);
+    const auto bot1_u = tesseract::common::numeric_cast<std::size_t>(bot1);
+    const auto bot2_u = tesseract::common::numeric_cast<std::size_t>(bot2);
 
     // Compute shared normal for side vertices (drop Z, then normalize)
-    Eigen::Vector3d norm1(origin * Eigen::Vector3d{ (*vertices)[top1].x(), (*vertices)[top1].y(), 0.0 });
+    Eigen::Vector3d norm1(origin * Eigen::Vector3d{ (*vertices)[top1_u].x(), (*vertices)[top1_u].y(), 0.0 });
     norm1.normalize();
-    Eigen::Vector3d norm2(origin * Eigen::Vector3d{ (*vertices)[top2].x(), (*vertices)[top2].y(), 0.0 });
+    Eigen::Vector3d norm2(origin * Eigen::Vector3d{ (*vertices)[top2_u].x(), (*vertices)[top2_u].y(), 0.0 });
     norm2.normalize();
 
     // Update normals for side smoothing
-    (*normals)[top1] = norm1;
-    (*normals)[bot1] = norm1;
-    (*normals)[top2] = norm2;
-    (*normals)[bot2] = norm2;
+    (*normals)[top1_u] = norm1;
+    (*normals)[bot1_u] = norm1;
+    (*normals)[top2_u] = norm2;
+    (*normals)[bot2_u] = norm2;
 
     // Two triangles per quad
     triangles.push_back(3);
@@ -428,20 +441,28 @@ std::unique_ptr<Mesh> toTriangleMesh(const Cone& geom, double tolerance, const E
   for (int i = 0; i < radial_segments; ++i)
   {
     const int next = (i + 1) % radial_segments;
+
+    const auto next_u = tesseract::common::numeric_cast<std::size_t>(next);
+    const auto i_u = tesseract::common::numeric_cast<std::size_t>(i);
+
     triangles.push_back(3);
     triangles.push_back(apex_index);
-    triangles.push_back(base_indices[i]);
-    triangles.push_back(base_indices[next]);
+    triangles.push_back(base_indices[i_u]);
+    triangles.push_back(base_indices[next_u]);
   }
 
   // Base cap: triangle fan from base center to base rim (with flat normals)
   for (int i = 0; i < radial_segments; ++i)
   {
     const int next = (i + 1) % radial_segments;
+
+    const auto next_u = tesseract::common::numeric_cast<std::size_t>(next);
+    const auto i_u = tesseract::common::numeric_cast<std::size_t>(i);
+
     triangles.push_back(3);
     triangles.push_back(base_center_index);
-    triangles.push_back(base_indices[next]);
-    triangles.push_back(base_indices[i]);
+    triangles.push_back(base_indices[next_u]);
+    triangles.push_back(base_indices[i_u]);
   }
 
   auto faces = std::make_shared<Eigen::VectorXi>(

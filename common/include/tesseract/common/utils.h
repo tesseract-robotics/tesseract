@@ -547,5 +547,35 @@ std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& li
                                               const AllowedCollisionEntries& acm_entries,
                                               bool remove_duplicates = true);
 
+/**
+ * @brief Safely cast a number from one type to another, checking for overflow and underflow.
+ * @tparam To The target type
+ * @tparam From The source type
+ * @param value The value to cast
+ * @return The casted value
+ * @throws std::underflow_error if casting a negative signed value to an unsigned type
+ * @throws std::overflow_error if the value is out of the target type's range
+ */
+template <typename To, typename From>
+To numeric_cast(From value)
+{
+  // 1. Check if we are casting a negative signed value to an unsigned type
+  if constexpr (std::is_signed_v<From> && std::is_unsigned_v<To>)
+  {
+    if (value < 0)
+    {
+      throw std::underflow_error("Attempted to cast negative value to unsigned type");
+    }
+  }
+
+  // 2. Standard range check for overflow/underflow
+  if (value < std::numeric_limits<To>::lowest() || value > std::numeric_limits<To>::max())
+  {
+    throw std::overflow_error("Cast out of bounds");
+  }
+
+  return static_cast<To>(value);
+}
+
 }  // namespace tesseract::common
 #endif  // TESSERACT_COMMON_UTILS_H

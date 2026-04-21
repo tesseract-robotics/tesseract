@@ -53,6 +53,7 @@ target_link_libraries(
          octomath
          cereal::cereal
          assimp::assimp)
+target_compile_options(geometry PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(geometry PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(geometry PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_ASSIMP_USE_PBRMATERIAL})
 target_clang_tidy(geometry ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
