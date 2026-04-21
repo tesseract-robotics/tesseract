@@ -424,8 +424,7 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::unordered_set<te
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId>&
-BulletCastBVHManager::getActiveCollisionObjectIds() const
+const std::unordered_set<tesseract::common::LinkId>& BulletCastBVHManager::getActiveCollisionObjectIds() const
 {
   return active_;
 }

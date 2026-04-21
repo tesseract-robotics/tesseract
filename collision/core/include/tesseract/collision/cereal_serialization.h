@@ -80,8 +80,7 @@ void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
       entries.emplace_back(key, results);
   }
   // Sort by LinkIdPair for deterministic output
-  std::sort(entries.begin(), entries.end(),
-            [](const auto& a, const auto& b) { return a.first < b.first; });
+  std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
   ar(cereal::make_nvp("entries", entries));
 }
 

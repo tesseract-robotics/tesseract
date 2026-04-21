@@ -144,7 +144,7 @@ add_dependencies(tesseract_common_utils_unit tesseract::common)
 add_executable(tesseract_common_name_id_unit name_id_unit.cpp)
 target_link_libraries(tesseract_common_name_id_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
 target_compile_options(tesseract_common_name_id_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+                                                             ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(tesseract_common_name_id_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(tesseract_common_name_id_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_common_name_id_unit PUBLIC VERSION ${TESSERACT_CXX_VERSION})

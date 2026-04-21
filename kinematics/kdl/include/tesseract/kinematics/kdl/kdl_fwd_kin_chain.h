@@ -71,8 +71,8 @@ public:
    * @param solver_name The solver name of the kinematic chain
    */
   KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                 tesseract::common::LinkId base_link,
-                 tesseract::common::LinkId tip_link,
+                 const tesseract::common::LinkId& base_link,
+                 const tesseract::common::LinkId& tip_link,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
   /**

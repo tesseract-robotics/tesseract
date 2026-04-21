@@ -120,8 +120,7 @@ public:
 
   void setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids) override final;
 
-  const std::unordered_set<tesseract::common::LinkId>&
-  getActiveCollisionObjectIds() const override final;
+  const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjectIds() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
 

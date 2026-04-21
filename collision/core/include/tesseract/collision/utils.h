@@ -64,9 +64,8 @@ inline void applyContactAllowedValidatorOverride(ManagerType& manager,
  * @param modify_object_enabled Map of [key]:value = [link ID]:disable or enable
  */
 template <typename ManagerType>
-inline void applyModifyObjectEnabled(
-    ManagerType& manager,
-    const std::unordered_map<tesseract::common::LinkId, bool>& modify_object_enabled)
+inline void applyModifyObjectEnabled(ManagerType& manager,
+                                     const std::unordered_map<tesseract::common::LinkId, bool>& modify_object_enabled)
 {
   for (const auto& entry : modify_object_enabled)
   {
