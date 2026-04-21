@@ -24,28 +24,47 @@
 #include <tesseract/srdf/utils.h>
 #include <tesseract/common/allowed_collision_matrix.h>
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
+#include <tesseract/scene_graph/link.h>
 #include <tesseract/srdf/srdf_model.h>
 
 namespace tesseract::srdf
 {
+bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& name)
+{
+  auto l = scene_graph.getLink(name);
+  return l && l->getName() == name;
+}
+
+bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& name)
+{
+  auto j = scene_graph.getJoint(name);
+  return j && j->getName() == name;
+}
+
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
   for (const auto& [key, entry] : srdf_model.acm.getAllAllowedCollisions())
     scene_graph.addAllowedCollision(entry.name1, entry.name2, entry.reason);
 }
 
-std::vector<std::reference_wrapper<const tesseract::common::ACMEntry>>
+std::vector<tesseract::common::ACMEntry>
 getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries)
 {
-  std::vector<std::reference_wrapper<const tesseract::common::ACMEntry>> entries;
+  std::vector<tesseract::common::ACMEntry> entries;
   entries.reserve(allowed_collision_entries.size());
   for (const auto& [key, entry] : allowed_collision_entries)
-    entries.push_back(std::cref(entry));
+  {
+    auto copy = entry;
+    if (copy.name2 < copy.name1)
+      std::swap(copy.name1, copy.name2);
+    entries.push_back(std::move(copy));
+  }
 
   std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
-    if (a.get().name1 != b.get().name1)
-      return a.get().name1 < b.get().name1;
-    return a.get().name2 < b.get().name2;
+    if (a.name1 != b.name1)
+      return a.name1 < b.name1;
+    return a.name2 < b.name2;
   });
 
   return entries;

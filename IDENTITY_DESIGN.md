@@ -83,11 +83,11 @@ There are two layers of risk and two layers of defense.
 
 ### Layer 1 — single-ID collision in the SceneGraph
 
-All link/joint insertion routes through `SceneGraph::addLinkHelper` / `addJointHelper` in `scene_graph/src/graph.cpp`. Each does a hash-keyed lookup in `link_map_` / `joint_map_` and, if an existing entry is found whose stored name differs from the name being inserted, throws `std::runtime_error` citing both names.
+All link/joint insertion routes through `SceneGraph::addLinkHelper` / `addJointHelper` in `scene_graph/src/graph.cpp`. Each does a hash-keyed lookup in `link_map_` / `joint_map_` and delegates to `common::checkHashCollision`, which throws `std::runtime_error` citing both names when the stored name differs from the name being inserted.
 
 Because the scene graph is the authoritative identity registry, every downstream map keyed on `LinkId` / `JointId` — `LinkIdTransformMap`, `JointIdTransformMap`, `SceneState::joints`, kinematics group vectors, kdl_parser internal maps — is populated from IDs that already passed through that gate. The guarantee propagates.
 
-The SRDF parser has an additional safeguard: every place that resolves a parsed name via `getLink` / `getJoint` now also verifies `resolved->getName() == parsed_name`. This catches the otherwise-silent case where an SRDF references a name that hash-collides with an already-loaded scene-graph link or joint of a different name. See the lookup call sites in `srdf/src/{groups,group_states,disabled_collisions,collision_margins,configs}.cpp`.
+The SRDF parser has an additional safeguard: every place that resolves a parsed name routes through `tesseract::srdf::isRegisteredLink` / `isRegisteredJoint` (`srdf/src/utils.cpp`), which returns false both when the name is unknown and when it hash-collides with an already-loaded scene-graph link or joint of a different name — indistinguishable by design, since both are equally disqualifying for SRDF name resolution. Call sites in `srdf/src/{groups,group_states,disabled_collisions,collision_margins,configs}.cpp` handle the false return with their own policy (throw vs warn-and-continue) and context-specific error message.
 
 ### Layer 2 — pair-ID collision in ACM and CollisionMarginPairData
 
@@ -143,9 +143,9 @@ Net: trajopt_common's pair-keyed container inherits the same single-point-of-enf
 | Concern | Where |
 |---|---|
 | Type definitions, helpers | `common/include/tesseract/common/types.h`, `common/src/types.cpp` |
-| Single-ID collision enforcement | `scene_graph/src/graph.cpp` (`addLinkHelper`, `addJointHelper`) |
+| Single-ID collision enforcement | `common/src/types.cpp` (`checkHashCollision`); `scene_graph/src/graph.cpp` (`addLinkHelper`, `addJointHelper`) |
 | ACM write paths | `common/src/allowed_collision_matrix.cpp` (`insertEntryChecked`) |
 | Margin write paths | `common/src/collision_margin_data.cpp` (`insertEntryChecked`) |
 | YAML decoders | `common/include/tesseract/common/yaml_extensions.h` |
 | Cereal string-compat format | `common/include/tesseract/common/cereal_serialization.h` |
-| SRDF name verification | `srdf/src/{groups,group_states,disabled_collisions,collision_margins,configs}.cpp` |
+| SRDF name verification | `srdf/src/utils.cpp` (`isRegisteredLink`, `isRegisteredJoint`); call sites in `srdf/src/{groups,group_states,disabled_collisions,collision_margins,configs}.cpp` |

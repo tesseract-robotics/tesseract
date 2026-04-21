@@ -41,4 +41,10 @@ void checkPairHashCollision(const char* context,
     throw std::runtime_error(std::string(context) + " LinkIdPair hash collision: ('" + new_name1 + "', '" + new_name2 +
                              "') collides with ('" + existing_name1 + "', '" + existing_name2 + "')");
 }
+
+void checkHashCollision(const char* context, const std::string& new_name, const std::string& existing_name)
+{
+  if (existing_name != new_name)
+    throw std::runtime_error(std::string(context) + " hash collision: '" + new_name + "' and '" + existing_name + "'");
+}
 }  // namespace tesseract::common
