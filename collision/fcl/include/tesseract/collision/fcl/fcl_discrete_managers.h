@@ -110,9 +110,9 @@ public:
 
   const std::vector<tesseract::common::LinkId>& getCollisionObjects() const override final;
 
-  void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids) override final;
+  void setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids) override final;
 
-  const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+  const std::unordered_set<tesseract::common::LinkId>&
   getActiveCollisionObjectIds() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
@@ -154,8 +154,7 @@ private:
   std::unique_ptr<fcl::BroadPhaseCollisionManagerd> dynamic_manager_;
 
   fcl_internal::Link2COW link2cow_; /**< @brief A map of all (static and active) collision objects being managed */
-  /** @brief Active collision objects by LinkId (O(1) lookup) */
-  std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash> active_ids_;
+  std::unordered_set<tesseract::common::LinkId> active_; /**< @brief A list of the active collision objects */
   std::vector<tesseract::common::LinkId> collision_objects_; /**< @brief A list of the collision objects */
   CollisionMarginData collision_margin_data_;                /**< @brief The contact distance threshold */
   std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator_; /**< @brief The is allowed collision

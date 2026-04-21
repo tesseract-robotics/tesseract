@@ -85,7 +85,7 @@ public:
   Eigen::Index numJoints() const override final;
   std::vector<tesseract::common::JointId> getJointIds() const override final;
   tesseract::common::LinkId getBaseLinkId() const override final;
-  tesseract::common::LinkId getWorkingFrameId() const override final;
+  tesseract::common::LinkId getWorkingFrame() const override final;
   std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;

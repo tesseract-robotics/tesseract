@@ -73,18 +73,10 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
 
   current_state_ = other.current_state_;
   data_ = other.data_;
-  joint_id_to_qnr_ = other.joint_id_to_qnr_;
+  joint_to_qnr_ = other.joint_to_qnr_;
   joint_qnr_ = other.joint_qnr_;
   kdl_jnt_array_ = other.kdl_jnt_array_;
   limits_ = other.limits_;
-  // Cached ID vectors — safe to copy directly; IDs are independent of pointer addresses.
-  active_joint_ids_ = other.active_joint_ids_;
-  joint_ids_ = other.joint_ids_;
-  floating_joint_ids_ = other.floating_joint_ids_;
-  link_ids_ = other.link_ids_;
-  active_link_ids_ = other.active_link_ids_;
-  static_link_ids_ = other.static_link_ids_;
-  base_link_id_ = other.base_link_id_;
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
@@ -104,10 +96,10 @@ void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_val
                               const tesseract::common::JointIdTransformMap& /*floating_joint_values*/)
 {
   assert(static_cast<Eigen::Index>(data_.active_joint_ids.size()) == joint_values.size());
-  for (auto i = 0U; i < active_joint_ids_.size(); ++i)
+  for (auto i = 0U; i < data_.active_joint_ids.size(); ++i)
   {
-    if (setJointValuesHelper(kdl_jnt_array_, active_joint_ids_[i], joint_values[i]))
-      current_state_.joints[active_joint_ids_[i]] = joint_values[i];
+    if (setJointValuesHelper(kdl_jnt_array_, data_.active_joint_ids[i], joint_values[i]))
+      current_state_.joints[data_.active_joint_ids[i]] = joint_values[i];
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -118,11 +110,6 @@ void KDLStateSolver::setState(const Eigen::Ref<const Eigen::VectorXd>& joint_val
                       kdl_jnt_array_,
                       data_.tree.getRootSegment(),
                       parent_frame);
-}
-
-void KDLStateSolver::setState(const tesseract::common::JointIdTransformMap& /*floating_joint_values*/)
-{
-  throw std::runtime_error("KDLStateSolver, not supported!");
 }
 
 void KDLStateSolver::setState(const SceneState::JointValues& joint_values,
@@ -165,6 +152,11 @@ void KDLStateSolver::setState(const std::vector<JointId>& joint_ids,
                       parent_frame);
 }
 
+void KDLStateSolver::setState(const tesseract::common::JointIdTransformMap& /*floating_joint_values*/)
+{
+  throw std::runtime_error("KDLStateSolver, not supported!");
+}
+
 SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                     const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
 {
@@ -172,10 +164,10 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
 
   kdl_joints_cache = kdl_jnt_array_;
 
-  for (auto i = 0U; i < active_joint_ids_.size(); ++i)
+  for (auto i = 0U; i < data_.active_joint_ids.size(); ++i)
   {
-    if (setJointValuesHelper(kdl_joints_cache, active_joint_ids_[i], joint_values[i]))
-      state.joints[active_joint_ids_[i]] = joint_values[i];
+    if (setJointValuesHelper(kdl_joints_cache, data_.active_joint_ids[i], joint_values[i]))
+      state.joints[data_.active_joint_ids[i]] = joint_values[i];
   }
 
   static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
@@ -184,11 +176,6 @@ SceneState KDLStateSolver::getState(const Eigen::Ref<const Eigen::VectorXd>& joi
   calculateTransforms(
       state.link_transforms, state.joint_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
   return state;
-}
-
-SceneState KDLStateSolver::getState(const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
-{
-  throw std::runtime_error("KDLStateSolver, not supported!");
 }
 
 SceneState KDLStateSolver::getState(const SceneState::JointValues& joint_values,
@@ -211,6 +198,29 @@ SceneState KDLStateSolver::getState(const SceneState::JointValues& joint_values,
       state.link_transforms, state.joint_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
 
   return state;
+}
+
+void KDLStateSolver::getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                                       const std::vector<tesseract::common::JointId>& joint_ids,
+                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                       const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
+{
+  getLinkTransforms(link_transforms, joint_ids, joint_values);
+}
+
+void KDLStateSolver::getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                                       const std::vector<JointId>& joint_ids,
+                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
+
+  kdl_joints_cache = kdl_jnt_array_;
+
+  for (auto i = 0U; i < joint_ids.size(); ++i)
+    setJointValuesHelper(kdl_joints_cache, joint_ids[i], joint_values[i]);
+
+  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
+  calculateTransforms(link_transforms, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
 }
 
 SceneState KDLStateSolver::getState(const std::vector<JointId>& joint_ids,
@@ -236,29 +246,74 @@ SceneState KDLStateSolver::getState(const std::vector<JointId>& joint_ids,
   return state;
 }
 
+SceneState KDLStateSolver::getState(const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
+{
+  throw std::runtime_error("KDLStateSolver, not supported!");
+}
+
 SceneState KDLStateSolver::getState() const { return current_state_; }
 
 SceneState KDLStateSolver::getRandomState() const
 {
   Eigen::VectorXd rs = tesseract::common::generateRandomNumber(limits_.joint_limits);
-  return getState(active_joint_ids_, rs);  // NOLINT
+  return getState(data_.active_joint_ids, rs);  // NOLINT
 }
+
+Eigen::MatrixXd
+KDLStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                            const tesseract::common::LinkId& link_id,
+                            const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
+{
+  assert(joint_values.size() == data_.tree.getNrOfJoints());
+  getKDLJntArray(kdl_joints_cache, data_.active_joint_ids, joint_values);
+  if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_id))
+    return convert(kdl_jacobian_cache, joint_qnr_);
+
+  throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
+}
+
+Eigen::MatrixXd
+KDLStateSolver::getJacobian(const std::vector<JointId>& joint_ids,
+                            const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                            const tesseract::common::LinkId& link_id,
+                            const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
+{
+  getKDLJntArray(kdl_joints_cache, joint_ids, joint_values);
+  if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_id))
+    return convert(kdl_jacobian_cache, joint_qnr_);
+
+  throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
+}
+
+std::vector<JointId> KDLStateSolver::getJointIds() const { return data_.joint_ids; }
+
+std::vector<JointId> KDLStateSolver::getFloatingJointIds() const { return data_.floating_joint_ids; }
+
+std::vector<JointId> KDLStateSolver::getActiveJointIds() const { return data_.active_joint_ids; }
+
+LinkId KDLStateSolver::getBaseLinkId() const { return data_.base_link_id; }
+
+std::vector<LinkId> KDLStateSolver::getLinkIds() const { return data_.link_ids; }
+
+std::vector<LinkId> KDLStateSolver::getActiveLinkIds() const { return data_.active_link_ids; }
+
+std::vector<LinkId> KDLStateSolver::getStaticLinkIds() const { return data_.static_link_ids; }
 
 bool KDLStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
-  return std::find(active_link_ids_.begin(), active_link_ids_.end(), link_id) != active_link_ids_.end();
+  return std::find(data_.active_link_ids.begin(), data_.active_link_ids.end(), link_id) != data_.active_link_ids.end();
 }
 
 bool KDLStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const
 {
-  return std::find(link_ids_.begin(), link_ids_.end(), link_id) != link_ids_.end();
+  return std::find(data_.link_ids.begin(), data_.link_ids.end(), link_id) != data_.link_ids.end();
 }
 
 tesseract::common::VectorIsometry3d KDLStateSolver::getLinkTransforms() const
 {
   tesseract::common::VectorIsometry3d link_tfs;
   link_tfs.reserve(current_state_.link_transforms.size());
-  for (const auto& link_id : link_ids_)
+  for (const auto& link_id : data_.link_ids)
     link_tfs.push_back(current_state_.link_transforms.at(link_id));
 
   return link_tfs;
@@ -275,79 +330,19 @@ Eigen::Isometry3d KDLStateSolver::getRelativeLinkTransform(const tesseract::comm
   return current_state_.link_transforms.at(from_link_id).inverse() * current_state_.link_transforms.at(to_link_id);
 }
 
-std::vector<JointId> KDLStateSolver::getJointIds() const { return joint_ids_; }
-
-std::vector<JointId> KDLStateSolver::getFloatingJointIds() const { return floating_joint_ids_; }
-
-std::vector<JointId> KDLStateSolver::getActiveJointIds() const { return active_joint_ids_; }
-
-LinkId KDLStateSolver::getBaseLinkId() const { return base_link_id_; }
-
-std::vector<LinkId> KDLStateSolver::getLinkIds() const { return link_ids_; }
-
-std::vector<LinkId> KDLStateSolver::getActiveLinkIds() const { return active_link_ids_; }
-
-std::vector<LinkId> KDLStateSolver::getStaticLinkIds() const { return static_link_ids_; }
-
-Eigen::MatrixXd KDLStateSolver::getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                            const tesseract::common::LinkId& link_id,
-                                            const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
-{
-  assert(joint_values.size() == data_.tree.getNrOfJoints());
-  kdl_joints_cache = kdl_jnt_array_;
-  for (auto i = 0U; i < active_joint_ids_.size(); ++i)
-    kdl_joints_cache(joint_id_to_qnr_.at(active_joint_ids_[i])) = joint_values[i];
-  if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_id))
-    return convert(kdl_jacobian_cache, joint_qnr_);
-  throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
-}
-
-Eigen::MatrixXd
-KDLStateSolver::getJacobian(const std::vector<JointId>& joint_ids,
-                            const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                            const tesseract::common::LinkId& link_id,
-                            const tesseract::common::JointIdTransformMap& /*floating_joint_values*/) const
-{
-  kdl_joints_cache = kdl_jnt_array_;
-  for (auto i = 0U; i < joint_ids.size(); ++i)
-    kdl_joints_cache(joint_id_to_qnr_.at(joint_ids[i])) = joint_values[i];
-
-  if (calcJacobianHelper(kdl_jacobian_cache, kdl_joints_cache, link_id))
-    return convert(kdl_jacobian_cache, joint_qnr_);
-
-  throw std::runtime_error("KDLStateSolver: Failed to calculate jacobian.");
-}
-
-void KDLStateSolver::getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
-                                       const std::vector<JointId>& joint_ids,
-                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
-{
-  static const Eigen::Isometry3d parent_frame{ Eigen::Isometry3d::Identity() };
-
-  kdl_joints_cache = kdl_jnt_array_;
-
-  for (auto i = 0U; i < joint_ids.size(); ++i)
-    kdl_joints_cache(joint_id_to_qnr_.at(joint_ids[i])) = joint_values[i];
-
-  tesseract::common::JointIdTransformMap dummy_jt;
-  // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
-  calculateTransforms(link_transforms, dummy_jt, kdl_joints_cache, data_.tree.getRootSegment(), parent_frame);
-}
-
 tesseract::common::KinematicLimits KDLStateSolver::getLimits() const { return limits_; }
 
 bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   current_state_ = SceneState();
-  for (const auto& [id, tf] : data_.floating_joint_values)
-    current_state_.floating_joints[id] = tf;
+  current_state_.floating_joints = data_.floating_joint_values;
   kdl_jnt_array_.resize(data_.tree.getNrOfJoints());
   limits_.joint_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
   limits_.velocity_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
   limits_.acceleration_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
   limits_.jerk_limits.resize(static_cast<long int>(data_.tree.getNrOfJoints()), 2);
   joint_qnr_.resize(data_.tree.getNrOfJoints());
-  joint_id_to_qnr_.clear();
+  joint_to_qnr_.clear();
   size_t j = 0;
   for (const auto& seg : data_.tree.getSegments())
   {
@@ -356,7 +351,7 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
     if (jnt.getType() == KDL::Joint::None)
       continue;
 
-    joint_id_to_qnr_.insert(std::make_pair(JointId(jnt.getName()), seg.second.q_nr));
+    joint_to_qnr_.insert(std::make_pair(JointId(jnt.getName()), seg.second.q_nr));
     kdl_jnt_array_(seg.second.q_nr) = 0.0;
     current_state_.joints.insert(std::make_pair(JointId(jnt.getName()), 0.0));
     data_.active_joint_ids[j] = JointId(jnt.getName());
@@ -377,15 +372,6 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
   }
 
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
-
-  // Copy ID caches from parsed data
-  active_joint_ids_ = data_.active_joint_ids;
-  joint_ids_ = data_.joint_ids;
-  floating_joint_ids_ = data_.floating_joint_ids;
-  link_ids_ = data_.link_ids;
-  active_link_ids_ = data_.active_link_ids;
-  static_link_ids_ = data_.static_link_ids;
-  base_link_id_ = data_.base_link_id;
 
   // Cache LinkId/JointId per segment to avoid per-FK constructor calls.
   // Keyed by pointer to KDL TreeElement (pointer-stable in std::map).
@@ -411,14 +397,14 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
                                           const tesseract::common::JointId& joint_id,
                                           const double& joint_value) const
 {
-  auto qnr = joint_id_to_qnr_.find(joint_id);
-  if (qnr != joint_id_to_qnr_.end())
+  auto qnr = joint_to_qnr_.find(joint_id);
+  if (qnr != joint_to_qnr_.end())
   {
     q(qnr->second) = joint_value;
     return true;
   }
-  // Note: no error log on miss — callers use pre-validated IDs
-  // from active_joint_ids_, populated from data_.active_joint_ids, so a miss is unreachable.
+
+  CONSOLE_BRIDGE_logError("Tried to set joint name %s which does not exist!", joint_id.name().c_str());
   return false;
 }
 
@@ -451,6 +437,31 @@ void KDLStateSolver::calculateTransformsHelper(tesseract::common::LinkIdTransfor
   }
 }
 
+void KDLStateSolver::calculateTransformsHelper(tesseract::common::LinkIdTransformMap& link_transforms,
+                                               const KDL::JntArray& q_in,
+                                               const KDL::SegmentMap::const_iterator& it,
+                                               const Eigen::Isometry3d& parent_frame) const
+{
+  if (it != data_.tree.getSegments().end())
+  {
+    const KDL::TreeElementType& current_element = it->second;
+    KDL::Frame current_frame;
+    if (q_in.data.size() > 0)
+      current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
+    else
+      current_frame = GetTreeElementSegment(current_element).pose(0);
+
+    Eigen::Isometry3d local_frame = convert(current_frame);
+    Eigen::Isometry3d global_frame{ parent_frame * local_frame };
+    const auto& cached = segment_id_cache_.at(&current_element);
+    link_transforms[cached.link_id] = global_frame;
+    for (const auto& child : current_element.children)
+    {
+      calculateTransformsHelper(link_transforms, q_in, child, global_frame);  // NOLINT
+    }
+  }
+}
+
 void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                                          tesseract::common::JointIdTransformMap& joint_transforms,
                                          const KDL::JntArray& q_in,
@@ -459,6 +470,15 @@ void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& 
 {
   std::lock_guard<std::mutex> guard(mutex_);
   calculateTransformsHelper(link_transforms, joint_transforms, q_in, it, parent_frame);  // NOLINT
+}
+
+void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                                         const KDL::JntArray& q_in,
+                                         const KDL::SegmentMap::const_iterator& it,
+                                         const Eigen::Isometry3d& parent_frame) const
+{
+  std::lock_guard<std::mutex> guard(mutex_);
+  calculateTransformsHelper(link_transforms, q_in, it, parent_frame);  // NOLINT
 }
 
 bool KDLStateSolver::calcJacobianHelper(KDL::Jacobian& jacobian,
@@ -471,7 +491,17 @@ bool KDLStateSolver::calcJacobianHelper(KDL::Jacobian& jacobian,
     CONSOLE_BRIDGE_logError("Failed to calculate jacobian");
     return false;
   }
+
   return true;
+}
+
+void KDLStateSolver::getKDLJntArray(KDL::JntArray& kdl_joints,
+                                    const std::vector<tesseract::common::JointId>& joint_ids,
+                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  kdl_joints = kdl_jnt_array_;
+  for (unsigned i = 0; i < joint_ids.size(); ++i)
+    kdl_joints.data(joint_to_qnr_.at(joint_ids[i])) = joint_values[i];
 }
 
 // LCOV_EXCL_STOP

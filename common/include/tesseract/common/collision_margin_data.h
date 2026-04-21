@@ -32,7 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <unordered_map>
 #include <optional>
-#include <boost/unordered/unordered_flat_map.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/types.h>
@@ -83,7 +82,7 @@ struct PairMarginEntry
   bool operator!=(const PairMarginEntry& other) const { return !(*this == other); }
 };
 
-using PairsCollisionMarginData = boost::unordered_flat_map<LinkIdPair, PairMarginEntry, LinkIdPair::Hash>;
+using PairsCollisionMarginData = std::unordered_map<LinkIdPair, PairMarginEntry>;
 
 class CollisionMarginPairData
 {
@@ -101,8 +100,19 @@ public:
    */
   void setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin);
 
-  /** @brief Get the pair collision margin, or nullopt if the pair has no entry. */
+  /**
+   * @brief Get the pairs collision margin data, or nullopt if the pair has no entry.
+   * @param par The link id pair
+   * @return A link pair contact margin if exists
+   */
   std::optional<double> getCollisionMargin(const LinkIdPair& pair) const;
+
+  /**
+   * @brief Get the pairs collision margin data, or nullopt if the pair has no entry.
+   * @param id1 The first object id
+   * @param id2 The second object id
+   * @return A link pair contact margin if exists
+   */
   std::optional<double> getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
   /**
@@ -163,11 +173,18 @@ private:
   /** @brief Stores the largest collision margin */
   std::optional<double> max_collision_margin_;
 
-  /** @brief Stores the maximum collision margin for each object (keyed by LinkId::value()) */
+  /** @brief Stores the maximum collision margin for each object */
   std::unordered_map<uint64_t, double> object_max_margins_;
 
   /** @brief Set the margin for a given contact pair without updating the max margins */
   void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);
+
+  /**
+   * @brief Insert an entry or, if the key already exists, verify the stored names match
+   *        (throwing via checkPairHashCollision otherwise) and update the margin.
+   *        Single write path used by every bulk/merge/deserialization entry point.
+   */
+  void insertEntryChecked(const LinkIdPair& key, PairMarginEntry entry);
 
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
@@ -215,8 +232,25 @@ public:
    */
   void setCollisionMargin(const LinkId& id1, const LinkId& id2, double collision_margin);
 
-  /** @brief Get the pair collision margin, or the default margin if the pair has no entry. */
+  /**
+   * @brief Get the pairs collision margin data
+   *
+   * If a collision margin for the request pair does not exist it returns the default collision margin data.
+   *
+   * @param pair The link id pair
+   * @return A link pair contact margin
+   */
   double getCollisionMargin(const LinkIdPair& pair) const;
+
+  /**
+   * @brief Get the pairs collision margin data
+   *
+   * If a collision margin for the request pair does not exist it returns the default collision margin data.
+   *
+   * @param id1 The first object id
+   * @param id2 The second object id
+   * @return A link pair contact margin
+   */
   double getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
   /**

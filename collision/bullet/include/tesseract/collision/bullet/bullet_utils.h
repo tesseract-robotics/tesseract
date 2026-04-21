@@ -104,7 +104,7 @@ public:
   short int m_collisionFilterMask{ btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter };
   bool m_enabled{ true };
 
-  /** @brief Get Get the collision object id */
+  /** @brief Get the collision object id */
   const tesseract::common::LinkId& getLinkId() const { return m_link_id; }
   /** @brief Get a user defined type */
   const int& getTypeID() const;
@@ -148,8 +148,8 @@ protected:
 };
 
 using COW = CollisionObjectWrapper;
-using Link2Cow = std::unordered_map<tesseract::common::LinkId, COW::Ptr, tesseract::common::LinkId::Hash>;
-using Link2ConstCow = std::unordered_map<tesseract::common::LinkId, COW::ConstPtr, tesseract::common::LinkId::Hash>;
+using Link2Cow = std::unordered_map<tesseract::common::LinkId, COW::Ptr>;
+using Link2ConstCow = std::unordered_map<tesseract::common::LinkId, COW::ConstPtr>;
 
 /** @brief This is a casted collision shape used for checking if an object is collision free between two transforms */
 struct CastHullShape : public btConvexShape
@@ -357,11 +357,11 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
 
 /**
  * @brief Update a collision objects filters
- * @param active_ids Set of active collision object LinkIds
+ * @param active Set of active collision object ids
  * @param cow The collision object to update.
  */
 void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+    const std::unordered_set<tesseract::common::LinkId>& active,
     const COW::Ptr& cow);
 
 COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
@@ -442,13 +442,13 @@ void addCollisionObjectToBroadphase(const COW::Ptr& cow,
 
 /**
  * @brief Update a collision objects filters for broadphase
- * @param active_ids Set of active collision object LinkIds
+ * @param active Set of active collision object LinkIds
  * @param cow The collision object to update.
  * @param broadphase The broadphase to update.
  * @param dispatcher The dispatcher.
  */
 void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>& active_ids,
+    const std::unordered_set<tesseract::common::LinkId>& active,
     const COW::Ptr& cow,
     const std::unique_ptr<btBroadphaseInterface>& broadphase,
     const std::unique_ptr<btCollisionDispatcher>& dispatcher);

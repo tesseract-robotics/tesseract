@@ -42,12 +42,6 @@ class SRDFModel;
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model);
 
 /**
- * @brief Used to sort a pair of strings alphabetically - first by the pair.first and then by pair.second
- * @param pair1 First pair of strings
- * @param pair2 Second pair of strings
- * @return True if pair1 should go before pair2 (is closer to A)
- */
-/**
  * @brief Returns an alphabetically sorted vector of ACM entries
  * @param allowed_collision_entries Entries to be sorted
  * @return An alphabetically sorted vector of ACM entries (by name1, then name2)

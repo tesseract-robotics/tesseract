@@ -551,7 +551,7 @@ TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
       *scene_graph, ss.getState());
 
   // Active links are those moved by the active joints
-  for (const auto& name : joint_group->getActiveLinkNames())
+  for (const auto& name : joint_group->getActiveLinkIds())
   {
     EXPECT_TRUE(joint_group->isActiveLinkId(name));
   }

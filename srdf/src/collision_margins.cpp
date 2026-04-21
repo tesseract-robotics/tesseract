@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/link.h>
 #include <tesseract/srdf/collision_margins.h>
 #include <tesseract/common/types.h>
 #include <tesseract/common/utils.h>
@@ -66,12 +67,12 @@ tesseract::common::CollisionMarginData::Ptr parseCollisionMargins(const tesserac
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("CollisionMargins: Missing or failed to parse 'link2' attribute."));
 
-    if (!scene_graph.getLink(link1_name))
+    if (auto l = scene_graph.getLink(link1_name); !l || l->getName() != link1_name)
     {
       CONSOLE_BRIDGE_logWarn("parseCollisionMargins: Link '%s' is not known to URDF.", link1_name.c_str());
     }
 
-    if (!scene_graph.getLink(link2_name))
+    if (auto l = scene_graph.getLink(link2_name); !l || l->getName() != link2_name)
     {
       CONSOLE_BRIDGE_logWarn("parseCollisionMargins: Link '%s' is not known to URDF.", link2_name.c_str());
     }

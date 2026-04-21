@@ -148,14 +148,11 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   EXPECT_NEAR(checker.getCollisionMarginData().getCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);
 
   // Set the collision object transforms
-  const auto box_id = tesseract::common::LinkId("box_link");
-  const auto second_box_id = tesseract::common::LinkId("second_box_link");
-
   tesseract::common::LinkIdTransformMap location;
-  location[box_id] = Eigen::Isometry3d::Identity();
-  location[box_id].translation()(0) = 0.2;
-  location[box_id].translation()(1) = 0.1;
-  location[second_box_id] = Eigen::Isometry3d::Identity();
+  location["box_link"] = Eigen::Isometry3d::Identity();
+  location["box_link"].translation()(0) = 0.2;
+  location["box_link"].translation()(1) = 0.1;
+  location["second_box_link"] = Eigen::Isometry3d::Identity();
 
   checker.setCollisionObjectsTransform(location);
 
@@ -195,13 +192,13 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   // Test object is outside the contact distance
   ////////////////////////////////////////////////
   {
-    location[box_id].translation() = Eigen::Vector3d(1.60, 0, 0);
+    location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
     result.clear();
     result_vector.clear();
 
     // Use different method for setting transforms
     std::vector<std::string> names = { "box_link" };
-    tesseract::common::VectorIsometry3d transforms = { location[box_id] };
+    tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
     result.flattenCopyResults(result_vector);
@@ -218,13 +215,13 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
 
     EXPECT_EQ(checker.getCollisionMarginData().getMaxCollisionMargin(), 1.7);
     EXPECT_NEAR(checker.getCollisionMarginData().getCollisionMargin("box_link", "second_box_link"), 0.1, 1e-5);
-    location[box_id].translation() = Eigen::Vector3d(1.60, 0, 0);
+    location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
     result.clear();
     result_vector.clear();
 
     // Use different method for setting transforms
     std::vector<std::string> names = { "box_link" };
-    tesseract::common::VectorIsometry3d transforms = { location[box_id] };
+    tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
     result.flattenMoveResults(result_vector);

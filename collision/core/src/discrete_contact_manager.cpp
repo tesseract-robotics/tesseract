@@ -36,6 +36,11 @@ void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<std:
     setCollisionObjectsTransform(tesseract::common::LinkId(names[i]), poses[i]);
 }
 
+void DiscreteContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
+}
+
 void DiscreteContactManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   setActiveCollisionObjects(tesseract::common::toIds<tesseract::common::LinkId>(names));

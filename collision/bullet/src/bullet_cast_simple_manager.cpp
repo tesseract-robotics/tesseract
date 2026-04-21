@@ -86,7 +86,7 @@ ContinuousContactManager::UPtr BulletCastSimpleManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>(active_ids_.begin(), active_ids_.end()));
+  manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setContactAllowedValidator(contact_test_data_.validator);
 
@@ -143,7 +143,7 @@ bool BulletCastSimpleManager::removeCollisionObject(const tesseract::common::Lin
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
     link2cow_.erase(it);
     link2castcow_.erase(id);
-    active_ids_.erase(id);
+    active_.erase(id);
     return true;
   }
 
@@ -185,6 +185,18 @@ bool BulletCastSimpleManager::isCollisionObjectEnabled(const tesseract::common::
   return false;
 }
 
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+                                                           const Eigen::Isometry3d& pose)
+{
+  auto it = link2cow_.find(id);
+  if (it != link2cow_.end())
+  {
+    btTransform tf = convertEigenToBt(pose);
+    it->second->setWorldTransform(tf);
+    link2castcow_[id]->setWorldTransform(tf);
+  }
+}
+
 void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
   for (const auto& [id, tf] : transforms)
@@ -196,18 +208,6 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::comm
       it->second->setWorldTransform(bt_tf);
       link2castcow_[id]->setWorldTransform(bt_tf);
     }
-  }
-}
-
-void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
-                                                           const Eigen::Isometry3d& pose)
-{
-  auto it = link2cow_.find(id);
-  if (it != link2cow_.end())
-  {
-    btTransform tf = convertEigenToBt(pose);
-    it->second->setWorldTransform(tf);
-    link2castcow_[id]->setWorldTransform(tf);
   }
 }
 
@@ -278,15 +278,26 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::comm
   }
 }
 
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
+                                                           const tesseract::common::LinkIdTransformMap& pose2)
+{
+  for (const auto& id : getCollisionObjects())
+  {
+    auto it1 = pose1.find(id);
+    auto it2 = pose2.find(id);
+    if (it1 != pose1.end() && it2 != pose2.end())
+      setCollisionObjectsTransform(id, it1->second, it2->second);
+  }
+}
+
 const std::vector<tesseract::common::LinkId>& BulletCastSimpleManager::getCollisionObjects() const
 {
   return collision_objects_;
 }
 
-void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+void BulletCastSimpleManager::setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids)
 {
-  active_ids_.clear();
-  active_ids_.insert(ids.begin(), ids.end());
+  active_ = ids;
 
   cows_.clear();
   cows_.reserve(link2cow_.size());
@@ -297,13 +308,13 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<tesser
     COW::Ptr& cow = co.second;
 
     // Update with request
-    updateCollisionObjectFilters(active_ids_, cow);
+    updateCollisionObjectFilters(active_, cow);
 
     // Get the cast collision object
     COW::Ptr cast_cow = link2castcow_[cow->getLinkId()];
 
     // Update with request
-    updateCollisionObjectFilters(active_ids_, cast_cow);
+    updateCollisionObjectFilters(active_, cast_cow);
 
     // Add to collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
@@ -317,22 +328,10 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<tesser
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
+const std::unordered_set<tesseract::common::LinkId>&
 BulletCastSimpleManager::getActiveCollisionObjectIds() const
 {
-  return active_ids_;
-}
-
-void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
-                                                           const tesseract::common::LinkIdTransformMap& pose2)
-{
-  for (const auto& id : getCollisionObjects())
-  {
-    auto it1 = pose1.find(id);
-    auto it2 = pose2.find(id);
-    if (it1 != pose1.end() && it2 != pose2.end())
-      setCollisionObjectsTransform(id, it1->second, it2->second);
-  }
+  return active_;
 }
 
 void BulletCastSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)

@@ -154,14 +154,14 @@ TEST(TesseractCommonSerializeUnit, ManipulatorInfo)  // NOLINT
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info, "ManipulatorInfo");
 
   ManipulatorInfo manip_info2("manipulator", "world", "tool0");
-  manip_info2.tcp_offset = LinkId("tool0");
+  manip_info2.tcp_offset = "tool0";
   tesseract::common::testSerialization<ManipulatorInfo>(manip_info2, "ManipulatorInfo2");
 }
 
 TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
 {
   JointState joint_state;
-  joint_state.joint_ids = { JointId("joint_1"), "joint_2", "joint_3" };
+  joint_state.joint_ids = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -174,7 +174,7 @@ TEST(TesseractCommonSerializeUnit, JointState)  // NOLINT
 TEST(TesseractCommonSerializeUnit, JointTrajectory)  // NOLINT
 {
   JointState joint_state;
-  joint_state.joint_ids = { JointId("joint_1"), "joint_2", "joint_3" };
+  joint_state.joint_ids = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);

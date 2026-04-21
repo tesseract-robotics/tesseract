@@ -69,11 +69,16 @@ public:
   virtual ContinuousContactManager::UPtr clone() const = 0;
 
   /**
-   * @brief Add a object to the checker
+   * @brief Add a collision object to the checker
+   *
+   * All objects are added should initially be added as static objects. Use the
+   * setContactRequest method of defining which collision objects are moving.
+   *
    * @param id              The LinkId of the object, must be unique.
    * @param mask_id         User defined id which gets stored in the results structure.
    * @param shapes          A vector of shapes that make up the collision object.
    * @param shape_poses     A vector of poses for each shape, must be same length as shapes
+   * @param enabled         Indicate if the object is enabled for collision checking.
    * @return true if successfully added, otherwise false.
    */
   virtual bool addCollisionObject(const tesseract::common::LinkId& id,
@@ -131,7 +136,7 @@ public:
   virtual bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const = 0;
 
   /**
-   * @brief Set a single collision object's transforms
+   * @brief Set a single collision object's transform
    * @param id The LinkId of the object
    * @param pose The transformation in world
    */
@@ -162,7 +167,7 @@ public:
                                             const Eigen::Isometry3d& pose2) = 0;
 
   /**
-   * @brief Set a series of cast(moving) collision object's transforms using integer link IDs
+   * @brief Set a series of cast(moving) collision object's transforms
    * @param pose1 A start transform map <LinkId, pose>
    * @param pose2 An end transform map <LinkId, pose>
    */
@@ -181,20 +186,22 @@ public:
   virtual const std::vector<tesseract::common::LinkId>& getCollisionObjects() const = 0;
 
   /**
-   * @brief Set which collision objects can move using integer link IDs
-   * @param ids A vector of LinkIds identifying the active collision objects
+   * @brief Set which collision objects can move
+   * @param ids A set of LinkIds identifying the active collision objects
    */
-  virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids) = 0;
+  virtual void setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids) = 0;
+
+  /** @brief Set which collision objects can move by vector (delegates to set overload) */
+  virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids);
 
   /** @brief Set which collision objects can move by name (delegates to LinkId overload) */
   virtual void setActiveCollisionObjects(const std::vector<std::string>& names);
 
   /**
-   * @brief Get which collision objects can move as LinkIds
+   * @brief Get which collision objects can move
    * @return A set of active collision object LinkIds
    */
-  virtual const std::unordered_set<tesseract::common::LinkId, tesseract::common::LinkId::Hash>&
-  getActiveCollisionObjectIds() const = 0;
+  virtual const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjectIds() const = 0;
 
   /**
    * @brief Get which collision objects can move as names
