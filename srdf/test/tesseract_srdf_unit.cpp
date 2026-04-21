@@ -2294,6 +2294,61 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
   }
 }
 
+TEST(TesseractSRDFUnit, GetAlphabeticalACMEntriesUnit)  // NOLINT
+{
+  // Build entries directly. Each entry's stored name1/name2 is whatever we pass — in practice the
+  // ACM stores them in hash-canonical order, which is *not* alphabetical. getAlphabeticalACMEntries
+  // must normalize each entry so name1<=name2 alphabetically, then sort by (name1, name2).
+  tesseract::common::AllowedCollisionEntries entries;
+  entries[tesseract::common::LinkIdPair("x1", "x2")] = tesseract::common::ACMEntry{ "gamma", "beta", "r_bg" };
+  entries[tesseract::common::LinkIdPair("x3", "x4")] = tesseract::common::ACMEntry{ "delta", "alpha", "r_ad" };
+  entries[tesseract::common::LinkIdPair("x5", "x6")] = tesseract::common::ACMEntry{ "beta", "alpha", "r_ba" };
+
+  auto sorted = tesseract::srdf::getAlphabeticalACMEntries(entries);
+
+  ASSERT_EQ(sorted.size(), 3U);
+  // Each entry's names must be alphabetical; entries sorted by (name1, then name2) ascending.
+  EXPECT_EQ(sorted[0].name1, "alpha");
+  EXPECT_EQ(sorted[0].name2, "beta");
+  EXPECT_EQ(sorted[0].reason, "r_ba");
+
+  EXPECT_EQ(sorted[1].name1, "alpha");
+  EXPECT_EQ(sorted[1].name2, "delta");
+  EXPECT_EQ(sorted[1].reason, "r_ad");
+
+  EXPECT_EQ(sorted[2].name1, "beta");
+  EXPECT_EQ(sorted[2].name2, "gamma");
+  EXPECT_EQ(sorted[2].reason, "r_bg");
+
+  EXPECT_TRUE(tesseract::srdf::getAlphabeticalACMEntries({}).empty());
+}
+
+TEST(TesseractSRDFUnit, IsRegisteredLinkJointUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+
+  SceneGraph g;
+  g.addLink(Link("base_link"));
+  g.addLink(Link("link_1"));
+
+  Joint j("joint_1");
+  j.parent_link_id = "base_link";
+  j.child_link_id = "link_1";
+  j.type = JointType::FIXED;
+  g.addJoint(j);
+
+  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "base_link"));
+  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "link_1"));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, "missing_link"));
+
+  EXPECT_TRUE(tesseract::srdf::isRegisteredJoint(g, "joint_1"));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, "missing_joint"));
+
+  // A link name is not a registered joint and vice-versa (tagged-type separation).
+  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, "base_link"));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, "joint_1"));
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

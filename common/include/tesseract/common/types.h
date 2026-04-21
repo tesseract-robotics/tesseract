@@ -179,6 +179,15 @@ void checkPairHashCollision(const char* context,
                             const std::string& existing_name1,
                             const std::string& existing_name2);
 
+/**
+ * @brief Throw if a single NameId lookup hit an existing entry whose stored name differs.
+ *
+ * When a NameId-keyed map finds an existing entry at the same hash as the incoming name but
+ * the stored name is different, that is a genuine hash collision. Call this at insertion time
+ * to surface it as a clear runtime error rather than silent aliasing.
+ */
+void checkHashCollision(const char* context, const std::string& new_name, const std::string& existing_name);
+
 /** @brief Convert a vector of strings to a vector of NameId<Tag> */
 template <typename IdT>
 inline std::vector<IdT> toIds(const std::vector<std::string>& names)
