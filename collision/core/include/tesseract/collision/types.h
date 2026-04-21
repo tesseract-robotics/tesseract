@@ -206,14 +206,13 @@ public:
    * @param discrete If discrete contact checker was used
    * @param filter An option filter to exclude results
    */
-  void addInterpolatedCollisionResults(
-      ContactResultMap& sub_segment_results,
-      long sub_segment_index,
-      long sub_segment_last_index,
-      const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
-      double segment_dt,
-      bool discrete,
-      const ContactResultMap::FilterFn& filter = nullptr);
+  void addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
+                                       long sub_segment_index,
+                                       long sub_segment_last_index,
+                                       const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
+                                       double segment_dt,
+                                       bool discrete,
+                                       const ContactResultMap::FilterFn& filter = nullptr);
 
   // Flatten functions
   void flattenMoveResults(ContactResultVector& v);

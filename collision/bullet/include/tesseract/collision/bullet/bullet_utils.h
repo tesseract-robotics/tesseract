@@ -360,9 +360,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
  * @param active Set of active collision object ids
  * @param cow The collision object to update.
  */
-void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId>& active,
-    const COW::Ptr& cow);
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active, const COW::Ptr& cow);
 
 COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
                                const int& type_id,
@@ -447,11 +445,10 @@ void addCollisionObjectToBroadphase(const COW::Ptr& cow,
  * @param broadphase The broadphase to update.
  * @param dispatcher The dispatcher.
  */
-void updateCollisionObjectFilters(
-    const std::unordered_set<tesseract::common::LinkId>& active,
-    const COW::Ptr& cow,
-    const std::unique_ptr<btBroadphaseInterface>& broadphase,
-    const std::unique_ptr<btCollisionDispatcher>& dispatcher);
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active,
+                                  const COW::Ptr& cow,
+                                  const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                  const std::unique_ptr<btCollisionDispatcher>& dispatcher);
 
 /**
  * @brief Refresh the broadphase data structure

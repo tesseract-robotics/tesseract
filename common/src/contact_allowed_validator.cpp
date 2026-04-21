@@ -32,10 +32,7 @@ ACMContactAllowedValidator::ACMContactAllowedValidator(tesseract::common::Allowe
 {
 }
 
-bool ACMContactAllowedValidator::operator()(const LinkIdPair& pair) const
-{
-  return acm_.isCollisionAllowed(pair);
-}
+bool ACMContactAllowedValidator::operator()(const LinkIdPair& pair) const { return acm_.isCollisionAllowed(pair); }
 
 CombinedContactAllowedValidator::CombinedContactAllowedValidator(
     std::vector<std::shared_ptr<const ContactAllowedValidator>> validators,
