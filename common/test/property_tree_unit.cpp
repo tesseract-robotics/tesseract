@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <ctime>
 #include <cstdlib>
+#include <stdint.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // NOLINTBEGIN(bugprone-unchecked-optional-access)
 
@@ -35,8 +36,8 @@ TEST(PropertyTreeCore, SetAndGetValue)  // NOLINT
   PropertyTree pt;
   pt.setValue(YAML::Node(42));
   EXPECT_FALSE(pt.isNull());
-  EXPECT_EQ(pt.getValue().as<int>(), 42);
-  EXPECT_EQ(pt.as<int>(), 42);
+  EXPECT_EQ(pt.getValue().as<int32_t>(), 42);
+  EXPECT_EQ(pt.as<int32_t>(), 42);
 }
 
 TEST(PropertyTreeCore, BracketOperatorCreatesChild)  // NOLINT
@@ -58,7 +59,7 @@ TEST(PropertyTreeCore, BracketOperatorIdempotent)  // NOLINT
   pt["x"].setValue(YAML::Node(2));
 
   EXPECT_EQ(pt.size(), 1U);
-  EXPECT_EQ(pt["x"].as<int>(), 2);
+  EXPECT_EQ(pt["x"].as<int32_t>(), 2);
 }
 
 TEST(PropertyTreeCore, AtThrowsOnMissing)  // NOLINT
@@ -74,10 +75,10 @@ TEST(PropertyTreeCore, AtReturnsExistingChild)  // NOLINT
 {
   PropertyTree pt;
   pt["a"].setValue(YAML::Node(10));
-  EXPECT_EQ(pt.at("a").as<int>(), 10);
+  EXPECT_EQ(pt.at("a").as<int32_t>(), 10);
 
   const auto& cpt = pt;
-  EXPECT_EQ(cpt.at("a").as<int>(), 10);
+  EXPECT_EQ(cpt.at("a").as<int32_t>(), 10);
 }
 
 TEST(PropertyTreeCore, FindReturnsNullptrOrPointer)  // NOLINT
@@ -139,7 +140,7 @@ TEST(PropertyTreeAttributes, SetAndGetIntAttribute)  // NOLINT
   pt.setAttribute(MINIMUM, 5);
   auto attr = pt.getAttribute(MINIMUM);
   ASSERT_TRUE(attr.has_value());
-  EXPECT_EQ(attr->as<int>(), 5);  // NOLINT
+  EXPECT_EQ(attr->as<int32_t>(), 5);  // NOLINT
 }
 
 TEST(PropertyTreeAttributes, SetAndGetDoubleAttribute)  // NOLINT
@@ -242,7 +243,7 @@ TEST(PropertyTreeCopy, MoveConstruct)  // NOLINT
 
   PropertyTree moved(std::move(original));
   EXPECT_EQ(moved.size(), 1U);
-  EXPECT_EQ(moved.at("a").as<int>(), 1);
+  EXPECT_EQ(moved.at("a").as<int32_t>(), 1);
 }
 
 TEST(PropertyTreeCopy, DeepCopyWithOneOfPreservesState)  // NOLINT
@@ -301,7 +302,7 @@ TEST(PropertyTreeCopy, DeepCopyAssignmentWithOneOfPreservesState)  // NOLINT
                     .done()
                     .done()
                     .container("option_b")
-                    .integer("id")
+                    .int32("id")
                     .required()
                     .done()
                     .string("label")
@@ -325,15 +326,15 @@ TEST(PropertyTreeCopy, DeepCopyAssignmentWithOneOfPreservesState)  // NOLINT
   EXPECT_TRUE(errors_copy.empty());
 
   // Both should have the same selected branch fields
-  EXPECT_EQ(schema.at("id").as<int>(), 42);
-  EXPECT_EQ(schema_copy.at("id").as<int>(), 42);
+  EXPECT_EQ(schema.at("id").as<int32_t>(), 42);
+  EXPECT_EQ(schema_copy.at("id").as<int32_t>(), 42);
   EXPECT_EQ(schema.at("label").as<std::string>(), "test");
   EXPECT_EQ(schema_copy.at("label").as<std::string>(), "test");
 
   // Verify deep copy: changes to copy don't affect original
   schema_copy["id"].setValue(YAML::Node(99));
-  EXPECT_EQ(schema.at("id").as<int>(), 42);
-  EXPECT_EQ(schema_copy.at("id").as<int>(), 99);
+  EXPECT_EQ(schema.at("id").as<int32_t>(), 42);
+  EXPECT_EQ(schema_copy.at("id").as<int32_t>(), 99);
 }
 
 // ===========================================================================
@@ -347,11 +348,11 @@ TEST(PropertyTreeSerialization, ToYAMLExcludeAttributes)  // NOLINT
   pt["name"].setValue(YAML::Node("Alice"));
   pt["name"].setAttribute(TYPE, STRING);
   pt["age"].setValue(YAML::Node(30));
-  pt["age"].setAttribute(TYPE, INT);
+  pt["age"].setAttribute(TYPE, INT32);
 
   YAML::Node yaml = pt.toYAML(/*exclude_attributes=*/true);
   EXPECT_EQ(yaml["name"].as<std::string>(), "Alice");
-  EXPECT_EQ(yaml["age"].as<int>(), 30);
+  EXPECT_EQ(yaml["age"].as<int32_t>(), 30);
   EXPECT_FALSE(yaml["_attributes"].IsDefined());
 }
 
@@ -407,7 +408,7 @@ TEST(PropertyTreeMerge, MapMerge)  // NOLINT
   schema.setAttribute(TYPE, CONTAINER);
   schema["name"].setAttribute(TYPE, STRING);
   schema["name"].setAttribute(REQUIRED, true);
-  schema["age"].setAttribute(TYPE, INT);
+  schema["age"].setAttribute(TYPE, INT32);
   schema["age"].setAttribute(DEFAULT, 25);
 
   YAML::Node config;
@@ -415,7 +416,7 @@ TEST(PropertyTreeMerge, MapMerge)  // NOLINT
 
   schema.mergeConfig(config);
   EXPECT_EQ(schema.at("name").as<std::string>(), "Bob");
-  EXPECT_EQ(schema.at("age").as<int>(), 25);
+  EXPECT_EQ(schema.at("age").as<int32_t>(), 25);
 }
 
 TEST(PropertyTreeMerge, ExtraPropertyTracked)  // NOLINT
@@ -504,7 +505,7 @@ TEST(PropertyTreeMerge, SequenceWithComplexWildcardSchema)  // NOLINT
   schema["*"].setAttribute(TYPE, CONTAINER);
   schema["*"]["name"].setAttribute(TYPE, STRING);
   schema["*"]["name"].setAttribute(REQUIRED, true);
-  schema["*"]["age"].setAttribute(TYPE, INT);
+  schema["*"]["age"].setAttribute(TYPE, INT32);
 
   // Create a sequence config with map objects
   YAML::Node config(YAML::NodeType::Sequence);
@@ -524,9 +525,9 @@ TEST(PropertyTreeMerge, SequenceWithComplexWildcardSchema)  // NOLINT
   // Verify structure
   EXPECT_EQ(schema.size(), 2U);
   EXPECT_EQ(schema.at("0").at("name").as<std::string>(), "Alice");
-  EXPECT_EQ(schema.at("0").at("age").as<int>(), 30);
+  EXPECT_EQ(schema.at("0").at("age").as<int32_t>(), 30);
   EXPECT_EQ(schema.at("1").at("name").as<std::string>(), "Bob");
-  EXPECT_EQ(schema.at("1").at("age").as<int>(), 25);
+  EXPECT_EQ(schema.at("1").at("age").as<int32_t>(), 25);
 
   // Verify validation on nested schema
   auto errors = schema.validate();
@@ -601,7 +602,7 @@ TEST(PropertyTreeValidate, EnumValidationFails)  // NOLINT
 TEST(PropertyTreeValidate, IntRangePass)  // NOLINT
 {
   PropertyTree schema;
-  schema.setAttribute(TYPE, INT);
+  schema.setAttribute(TYPE, INT32);
   schema.setAttribute(MINIMUM, 0);
   schema.setAttribute(MAXIMUM, 100);
   schema.setAttribute(REQUIRED, true);
@@ -614,7 +615,7 @@ TEST(PropertyTreeValidate, IntRangePass)  // NOLINT
 TEST(PropertyTreeValidate, IntRangeFail)  // NOLINT
 {
   PropertyTree schema;
-  schema.setAttribute(TYPE, INT);
+  schema.setAttribute(TYPE, INT32);
   schema.setAttribute(MINIMUM, 0);
   schema.setAttribute(MAXIMUM, 100);
   schema.setAttribute(REQUIRED, true);
@@ -642,7 +643,7 @@ TEST(PropertyTreeValidate, DoubleRangeFail)  // NOLINT
 TEST(PropertyTreeValidate, TypeCastFail)  // NOLINT
 {
   PropertyTree schema;
-  schema.setAttribute(TYPE, INT);
+  schema.setAttribute(TYPE, INT32);
   schema.setAttribute(REQUIRED, true);
 
   schema.mergeConfig(YAML::Node("not_an_int"));
@@ -667,7 +668,7 @@ TEST(PropertyTreeValidate, SequenceValidation)  // NOLINT
 TEST(PropertyTreeValidate, MapValidation)  // NOLINT
 {
   PropertyTree schema;
-  schema.setAttribute(TYPE, createMap(INT));
+  schema.setAttribute(TYPE, createMap(INT32));
   schema.setAttribute(REQUIRED, true);
 
   YAML::Node config(YAML::NodeType::Map);
@@ -715,7 +716,7 @@ TEST(PropertyTreeValidate, ValidateCollectsMultipleErrors)  // NOLINT
   schema.setAttribute(TYPE, CONTAINER);
   schema["a"].setAttribute(TYPE, STRING);
   schema["a"].setAttribute(REQUIRED, true);
-  schema["b"].setAttribute(TYPE, INT);
+  schema["b"].setAttribute(TYPE, INT32);
   schema["b"].setAttribute(REQUIRED, true);
 
   // merge empty config -> both "a" and "b" are missing
@@ -727,7 +728,7 @@ TEST(PropertyTreeValidate, ValidateCollectsMultipleErrors)  // NOLINT
 TEST(PropertyTreeValidate, NonRequiredNullSkipsValidators)  // NOLINT
 {
   PropertyTree schema;
-  schema.setAttribute(TYPE, INT);
+  schema.setAttribute(TYPE, INT32);
   schema.setAttribute(MINIMUM, 0);
   // NOT required, and no config provided
   schema.mergeConfig(YAML::Node());
@@ -774,7 +775,7 @@ TEST(PropertyTreeBuilder, NestedContainer)  // NOLINT
   auto tree = PropertyTreeBuilder()
       .container("config")
           .string("name").required().done()
-          .integer("count").defaultVal(5).done()
+          .int32("count").defaultVal(5).done()
       .done()
       .build();
   // clang-format on
@@ -787,7 +788,7 @@ TEST(PropertyTreeBuilder, NestedContainer)  // NOLINT
 
   auto def = config->at("count").getAttribute(DEFAULT);
   ASSERT_TRUE(def.has_value());
-  EXPECT_EQ(def->as<int>(), 5);  // NOLINT
+  EXPECT_EQ(def->as<int32_t>(), 5);  // NOLINT
 }
 
 TEST(PropertyTreeBuilder, AllScalarTypes)  // NOLINT
@@ -945,7 +946,7 @@ TEST(PropertyTreeBuilder, EnumAndRange)  // NOLINT
 {
   // clang-format off
   auto tree = PropertyTreeBuilder()
-      .integer("level")
+      .int32("level")
           .minimum(1).maximum(10)
           .enumValues({"1", "5", "10"})
       .done()
@@ -955,10 +956,10 @@ TEST(PropertyTreeBuilder, EnumAndRange)  // NOLINT
   const auto& child = tree.at("level");
   auto min_attr = child.getAttribute(MINIMUM);
   ASSERT_TRUE(min_attr.has_value());
-  EXPECT_EQ(min_attr->as<int>(), 1);  // NOLINT
+  EXPECT_EQ(min_attr->as<int32_t>(), 1);  // NOLINT
   auto max_attr = child.getAttribute(MAXIMUM);
   ASSERT_TRUE(max_attr.has_value());
-  EXPECT_EQ(max_attr->as<int>(), 10);  // NOLINT
+  EXPECT_EQ(max_attr->as<int32_t>(), 10);  // NOLINT
   auto enum_attr = child.getAttribute(ENUM);
   ASSERT_TRUE(enum_attr.has_value());
   EXPECT_EQ(enum_attr->size(), 3U);  // NOLINT
@@ -969,7 +970,7 @@ TEST(PropertyTreeBuilder, DefaultValues)  // NOLINT
   // clang-format off
   auto tree = PropertyTreeBuilder()
       .boolean("b").defaultVal(true).done()
-      .integer("i").defaultVal(42).done()
+      .int32("i").defaultVal(42).done()
       .doubleNum("d").defaultVal(3.14).done()
       .string("s").defaultVal("hello").done()
       .build();
@@ -980,7 +981,7 @@ TEST(PropertyTreeBuilder, DefaultValues)  // NOLINT
   EXPECT_EQ(b_attr->as<bool>(), true);  // NOLINT
   auto i_attr = tree.at("i").getAttribute(DEFAULT);
   ASSERT_TRUE(i_attr.has_value());
-  EXPECT_EQ(i_attr->as<int>(), 42);  // NOLINT
+  EXPECT_EQ(i_attr->as<int32_t>(), 42);  // NOLINT
   auto d_attr = tree.at("d").getAttribute(DEFAULT);
   ASSERT_TRUE(d_attr.has_value());
   EXPECT_DOUBLE_EQ(d_attr->as<double>(), 3.14);  // NOLINT
@@ -1032,7 +1033,7 @@ TEST(PropertyTreeBuilder, BuildAndMergeValidate)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
       .string("name").required().done()
-      .integer("count").defaultVal(1).minimum(0).maximum(100).done()
+      .int32("count").defaultVal(1).minimum(0).maximum(100).done()
       .boolean("enabled").defaultVal(false).done()
       .build();
   // clang-format on
@@ -1046,7 +1047,7 @@ TEST(PropertyTreeBuilder, BuildAndMergeValidate)  // NOLINT
   EXPECT_TRUE(errors.empty()) << errors[0];
 
   EXPECT_EQ(schema.at("name").as<std::string>(), "test");
-  EXPECT_EQ(schema.at("count").as<int>(), 50);
+  EXPECT_EQ(schema.at("count").as<int32_t>(), 50);
   EXPECT_EQ(schema.at("enabled").as<bool>(), false);
 }
 
@@ -1068,8 +1069,8 @@ TEST(PropertyTreeHelpers, CreateListFixedSize)  // NOLINT
 
 TEST(PropertyTreeHelpers, CreateMapDefault)  // NOLINT
 {
-  auto map = createMap(INT);
-  EXPECT_EQ(map, "Map[string,int]");
+  auto map = createMap(INT32);
+  EXPECT_EQ(map, "Map[string,int32]");
 }
 
 TEST(PropertyTreeHelpers, CreateMapCustomKey)  // NOLINT
@@ -1085,9 +1086,9 @@ TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
   EXPECT_EQ(result->first, DOUBLE);  // NOLINT
   EXPECT_EQ(result->second, 0U);     // NOLINT
 
-  result = isSequenceType("List[int,5]");
+  result = isSequenceType("List[int32,5]");
   ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(result->first, INT);  // NOLINT
+  EXPECT_EQ(result->first, INT32);  // NOLINT
   EXPECT_EQ(result->second, 5U);  // NOLINT
 
   result = isSequenceType(STRING);
@@ -1096,10 +1097,10 @@ TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
 
 TEST(PropertyTreeHelpers, IsMapType)  // NOLINT
 {
-  auto result = isMapType("Map[string,int]");
+  auto result = isMapType("Map[string,int32]");
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->first, STRING);  // NOLINT
-  EXPECT_EQ(result->second, INT);    // NOLINT
+  EXPECT_EQ(result->second, INT32);    // NOLINT
 
   result = isMapType("not_a_map");
   EXPECT_FALSE(result.has_value());
@@ -1113,7 +1114,7 @@ TEST(PropertyTreeHelpers, IsMapType)  // NOLINT
 inline std::string createTempSchemaFile(const std::string& name, const YAML::Node& schema)
 {
   // Create temp file in $TEMPDIR with a unique name using static counter
-  static unsigned int counter = 0;  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static uint32_t counter = 0;  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   std::string path =
       tesseract::common::getTempPath() + "/test_schema_" + name + "_" + std::to_string(counter++) + ".yaml";
 
@@ -1200,7 +1201,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileGetMultipleTimes)  // NOLINT
 {
   // Test that lazy-loading works correctly on multiple get() calls
   YAML::Node schema_yaml;
-  schema_yaml["_attributes"]["type"] = std::string(INT);
+  schema_yaml["_attributes"]["type"] = std::string(INT32);
   schema_yaml["_attributes"]["minimum"] = 0;
   schema_yaml["_attributes"]["maximum"] = 100;
 
@@ -1223,17 +1224,17 @@ TEST(SchemaRegistry, RegisterSchemaFromFileGetMultipleTimes)  // NOLINT
     auto max_attr = loaded1.getAttribute(MAXIMUM);
     ASSERT_TRUE(min_attr.has_value());
     ASSERT_TRUE(max_attr.has_value());
-    EXPECT_EQ(min_attr->as<int>(), 0);
-    EXPECT_EQ(max_attr->as<int>(), 100);
+    EXPECT_EQ(min_attr->as<int32_t>(), 0);
+    EXPECT_EQ(max_attr->as<int32_t>(), 100);
 
     // Verify all three copies are equivalent
     min_attr = loaded2.getAttribute(MINIMUM);
     ASSERT_TRUE(min_attr.has_value());
-    EXPECT_EQ(min_attr->as<int>(), 0);
+    EXPECT_EQ(min_attr->as<int32_t>(), 0);
 
     min_attr = loaded3.getAttribute(MINIMUM);
     ASSERT_TRUE(min_attr.has_value());
-    EXPECT_EQ(min_attr->as<int>(), 0);
+    EXPECT_EQ(min_attr->as<int32_t>(), 0);
   }
   catch (const std::exception& e)
   {
@@ -1251,7 +1252,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileComplexMergeAndValidate)  // NOLINT
   schema_yaml["_attributes"]["type"] = std::string(CONTAINER);
   schema_yaml["name"]["_attributes"]["type"] = std::string(STRING);
   schema_yaml["name"]["_attributes"]["required"] = true;
-  schema_yaml["age"]["_attributes"]["type"] = std::string(INT);
+  schema_yaml["age"]["_attributes"]["type"] = std::string(INT32);
   schema_yaml["age"]["_attributes"]["minimum"] = 0;
   schema_yaml["age"]["_attributes"]["maximum"] = 150;
 
@@ -1277,7 +1278,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileComplexMergeAndValidate)  // NOLINT
 
     EXPECT_TRUE(errors.empty()) << errors[0];
     EXPECT_EQ(schema.at("name").as<std::string>(), "Bob");
-    EXPECT_EQ(schema.at("age").as<int>(), 45);
+    EXPECT_EQ(schema.at("age").as<int32_t>(), 45);
   }
   catch (const std::exception& e)
   {
@@ -1293,7 +1294,7 @@ TEST(SchemaRegistry, LoadFileAbsolutePath)  // NOLINT
   // Create a temporary YAML file
   YAML::Node schema_yaml;
   schema_yaml["_attributes"]["type"] = std::string(STRING);
-  schema_yaml["property"]["_attributes"]["type"] = std::string(INT);
+  schema_yaml["property"]["_attributes"]["type"] = std::string(INT32);
   schema_yaml["property"]["_attributes"]["required"] = true;
 
   std::string file_path = createTempSchemaFile("registry_absolute", schema_yaml);
@@ -1307,7 +1308,7 @@ TEST(SchemaRegistry, LoadFileAbsolutePath)  // NOLINT
     EXPECT_NE(loaded.find("property"), nullptr);
     auto prop_type = loaded.at("property").getAttribute(TYPE);
     ASSERT_TRUE(prop_type.has_value());
-    EXPECT_EQ(prop_type->as<std::string>(), INT);
+    EXPECT_EQ(prop_type->as<std::string>(), INT32);
   }
   catch (const std::exception& e)
   {
@@ -1324,7 +1325,7 @@ TEST(SchemaRegistry, LoadFileRelativePath)  // NOLINT
   YAML::Node schema_yaml;
   schema_yaml["_attributes"]["type"] = std::string(CONTAINER);
   schema_yaml["field1"]["_attributes"]["type"] = std::string(STRING);
-  schema_yaml["field2"]["_attributes"]["type"] = std::string(INT);
+  schema_yaml["field2"]["_attributes"]["type"] = std::string(INT32);
 
   // Get current working directory to create file there
   std::filesystem::path cwd = std::filesystem::current_path();
@@ -1375,7 +1376,7 @@ TEST(SchemaRegistry, LoadFileReturnsValidPropertyTree)  // NOLINT
   schema_yaml["name"]["_attributes"]["required"] = true;
   schema_yaml["name"]["_attributes"]["doc"] = "The name field";
 
-  schema_yaml["age"]["_attributes"]["type"] = std::string(INT);
+  schema_yaml["age"]["_attributes"]["type"] = std::string(INT32);
   schema_yaml["age"]["_attributes"]["minimum"] = 0;
   schema_yaml["age"]["_attributes"]["maximum"] = 150;
 
@@ -1403,11 +1404,11 @@ TEST(SchemaRegistry, LoadFileReturnsValidPropertyTree)  // NOLINT
 
     auto age_type = loaded.at("age").getAttribute(TYPE);
     ASSERT_TRUE(age_type.has_value());
-    EXPECT_EQ(age_type->as<std::string>(), INT);
+    EXPECT_EQ(age_type->as<std::string>(), INT32);
 
     auto min_attr = loaded.at("age").getAttribute(MINIMUM);
     ASSERT_TRUE(min_attr.has_value());
-    EXPECT_EQ(min_attr->as<int>(), 0);
+    EXPECT_EQ(min_attr->as<int32_t>(), 0);
   }
   catch (const std::exception& e)
   {
@@ -1924,7 +1925,7 @@ TEST(EndToEnd, ComplexSchemaPassesValidation)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
       .string("name").required().doc("Robot name").done()
-      .integer("dof").required().minimum(1).maximum(20).done()
+      .int32("dof").required().minimum(1).maximum(20).done()
       .doubleNum("speed").defaultVal(1.0).minimum(0.0).maximum(10.0).done()
       .container("limits")
           .doubleNum("lower").required().done()
@@ -1944,7 +1945,7 @@ TEST(EndToEnd, ComplexSchemaPassesValidation)  // NOLINT
   EXPECT_TRUE(errors.empty()) << errors[0];
 
   EXPECT_EQ(schema.at("name").as<std::string>(), "robot_arm");
-  EXPECT_EQ(schema.at("dof").as<int>(), 6);
+  EXPECT_EQ(schema.at("dof").as<int32_t>(), 6);
   EXPECT_DOUBLE_EQ(schema.at("speed").as<double>(), 1.0);
   EXPECT_DOUBLE_EQ(schema.at("limits").at("lower").as<double>(), -3.14);
 }
@@ -1955,7 +1956,7 @@ TEST(EndToEnd, ComplexSchemaFailsValidation)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
       .string("name").required().done()
-      .integer("dof").required().minimum(1).maximum(20).done()
+      .int32("dof").required().minimum(1).maximum(20).done()
       .build();
   // clang-format on
 
@@ -2011,7 +2012,7 @@ TEST(PropertyTreeFromYAML, IntegerValue)  // NOLINT
   YAML::Node yaml = YAML::Node(42);
   auto pt = PropertyTree::fromYAML(yaml);
 
-  EXPECT_EQ(pt.as<int>(), 42);
+  EXPECT_EQ(pt.as<int32_t>(), 42);
 }
 
 TEST(PropertyTreeFromYAML, ContainerWithChildren)  // NOLINT
@@ -2025,7 +2026,7 @@ TEST(PropertyTreeFromYAML, ContainerWithChildren)  // NOLINT
 
   EXPECT_EQ(pt.size(), 3U);
   EXPECT_EQ(pt.at("name").as<std::string>(), "Alice");
-  EXPECT_EQ(pt.at("age").as<int>(), 30);
+  EXPECT_EQ(pt.at("age").as<int32_t>(), 30);
   EXPECT_EQ(pt.at("active").as<bool>(), true);
 }
 
@@ -2093,13 +2094,13 @@ TEST(PropertyTreeFromYAML, RoundTripSerialization)  // NOLINT
   original["name"].setValue(YAML::Node("Alice"));
   original["name"].setAttribute("type", STRING);
   original["age"].setValue(YAML::Node(30));
-  original["age"].setAttribute("type", INT);
+  original["age"].setAttribute("type", INT32);
 
   YAML::Node serialized = original.toYAML(/*exclude_attributes=*/false);
   PropertyTree reconstructed = PropertyTree::fromYAML(serialized);
 
   EXPECT_EQ(reconstructed.at("name").as<std::string>(), "Alice");
-  EXPECT_EQ(reconstructed.at("age").as<int>(), 30);
+  EXPECT_EQ(reconstructed.at("age").as<int32_t>(), 30);
 
   auto name_attr = reconstructed.at("name").getAttribute("type");
   auto age_attr = reconstructed.at("age").getAttribute("type");
@@ -2117,9 +2118,9 @@ TEST(PropertyTreeFromYAML, SequenceValue)  // NOLINT
   auto pt = PropertyTree::fromYAML(yaml);
 
   EXPECT_EQ(pt.size(), 3U);
-  EXPECT_EQ(pt.at("0").as<int>(), 1);
-  EXPECT_EQ(pt.at("1").as<int>(), 2);
-  EXPECT_EQ(pt.at("2").as<int>(), 3);
+  EXPECT_EQ(pt.at("0").as<int32_t>(), 1);
+  EXPECT_EQ(pt.at("1").as<int32_t>(), 2);
+  EXPECT_EQ(pt.at("2").as<int32_t>(), 3);
 }
 
 // ===========================================================================
@@ -2222,7 +2223,7 @@ TEST(PropertyTreeOneOf, PartialBranchMissingRequired)  // NOLINT
         .string("name").required().done()
         .done()
       .container("option_b")
-        .integer("id").required().done()
+        .int32("id").required().done()
         .string("label").required().done()
         .done()
       .build();
@@ -2266,7 +2267,7 @@ TEST(PropertyTreeOneOf, ValidationCollectsErrorsAfterBranchSelection)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, ONEOF)
       .container("typed_int")
-        .integer("value").required().minimum(0).maximum(100).done()
+        .int32("value").required().minimum(0).maximum(100).done()
         .done()
       .container("typed_string")
         .string("text").required().done()
@@ -2325,7 +2326,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionComplex)  // NOLINT
           .string("name")
           .required()
           .done()
-          .integer("count")
+          .int32("count")
           .minimum(1)
           .maximum(100)
           .done()
@@ -2361,7 +2362,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionMultiple)  // NOLINT
   {
     registerSchema("SchemaRegistrar_Test_A", []() { return PropertyTreeBuilder().string("field_a").done().build(); });
 
-    registerSchema("SchemaRegistrar_Test_B", []() { return PropertyTreeBuilder().integer("field_b").done().build(); });
+    registerSchema("SchemaRegistrar_Test_B", []() { return PropertyTreeBuilder().int32("field_b").done().build(); });
   }
 
   EXPECT_TRUE(reg->contains("SchemaRegistrar_Test_A"));
@@ -2501,7 +2502,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileComplex)  // NOLINT
   schema_yaml["name"]["_attributes"]["type"] = std::string(STRING);
   schema_yaml["name"]["_attributes"]["required"] = true;
 
-  schema_yaml["count"]["_attributes"]["type"] = std::string(INT);
+  schema_yaml["count"]["_attributes"]["type"] = std::string(INT32);
   schema_yaml["count"]["_attributes"]["minimum"] = 1;
   schema_yaml["count"]["_attributes"]["maximum"] = 100;
 
@@ -2553,7 +2554,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMultiple)  // NOLINT
   // Create second schema
   YAML::Node schema_yaml_b;
   schema_yaml_b["_attributes"]["type"] = std::string(CONTAINER);
-  schema_yaml_b["field_b"]["_attributes"]["type"] = std::string(INT);
+  schema_yaml_b["field_b"]["_attributes"]["type"] = std::string(INT32);
 
   std::string file_path_b = createTempSchemaFile("multi_b", schema_yaml_b);
 
@@ -2604,7 +2605,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMergeAndValidate)  // NOLINT
   schema_yaml["name"]["_attributes"]["type"] = std::string(STRING);
   schema_yaml["name"]["_attributes"]["required"] = true;
 
-  schema_yaml["age"]["_attributes"]["type"] = std::string(INT);
+  schema_yaml["age"]["_attributes"]["type"] = std::string(INT32);
   schema_yaml["age"]["_attributes"]["required"] = true;
   schema_yaml["age"]["_attributes"]["minimum"] = 0;
   schema_yaml["age"]["_attributes"]["maximum"] = 150;
@@ -2629,7 +2630,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMergeAndValidate)  // NOLINT
 
     EXPECT_TRUE(errors.empty()) << errors[0];
     EXPECT_EQ(schema.at("name").as<std::string>(), "Alice");
-    EXPECT_EQ(schema.at("age").as<int>(), 30);
+    EXPECT_EQ(schema.at("age").as<int32_t>(), 30);
   }
   catch (const std::exception& e)
   {
@@ -2648,7 +2649,7 @@ TEST(ValidateCustomType, NonSequenceTypeValid)  // NOLINT
 {
   // Register a custom type schema
   auto reg = SchemaRegistry::instance();
-  auto custom_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(0).maximum(100).build();
+  auto custom_schema = PropertyTreeBuilder().attribute(TYPE, INT32).minimum(0).maximum(100).build();
   reg->registerSchema("test::CustomInt", custom_schema);
 
   // Create a PropertyTree with a custom type reference and valid data
@@ -2665,7 +2666,7 @@ TEST(ValidateCustomType, NonSequenceTypeValid)  // NOLINT
 TEST(ValidateCustomType, NonSequenceTypeInvalidData)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  auto custom_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(0).maximum(100).build();
+  auto custom_schema = PropertyTreeBuilder().attribute(TYPE, INT32).minimum(0).maximum(100).build();
   reg->registerSchema("test::CustomInt2", custom_schema);
 
   PropertyTree node;
@@ -2737,7 +2738,7 @@ TEST(ValidateCustomType, SequenceTypeValid)  // NOLINT
 TEST(ValidateCustomType, SequenceTypeWithInvalidElement)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  auto element_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(0).maximum(10).build();
+  auto element_schema = PropertyTreeBuilder().attribute(TYPE, INT32).minimum(0).maximum(10).build();
   reg->registerSchema("test::LimitedInt", element_schema);
 
   PropertyTree node;
@@ -2821,7 +2822,7 @@ TEST(ValidateCustomType, MissingTypeAttribute)  // NOLINT
 TEST(ValidateCustomType, SequenceMultipleElementErrors)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  auto element_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(50).maximum(100).build();
+  auto element_schema = PropertyTreeBuilder().attribute(TYPE, INT32).minimum(50).maximum(100).build();
   reg->registerSchema("test::RangedInt", element_schema);
 
   PropertyTree node;
@@ -3376,9 +3377,9 @@ TEST(TypeCoverage, StandaloneTypes)  // NOLINT
   EXPECT_EQ(string_node.as<std::string>(), "test");
 
   PropertyTree int_node;
-  int_node.setAttribute(TYPE, INT);
+  int_node.setAttribute(TYPE, INT32);
   int_node.setValue(YAML::Node(42));
-  EXPECT_EQ(int_node.as<int>(), 42);
+  EXPECT_EQ(int_node.as<int32_t>(), 42);
 
   PropertyTree double_node;
   double_node.setAttribute(TYPE, DOUBLE);
@@ -3429,7 +3430,7 @@ TEST(TypeCoverage, ListOfString)  // NOLINT
 
 TEST(TypeCoverage, ListOfInt)  // NOLINT
 {
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT)).build();
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT32)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(YAML::Node(1));
@@ -3469,7 +3470,7 @@ TEST(TypeCoverage, ListOfUnsignedInt)  // NOLINT
 
 TEST(TypeCoverage, ListOfLongInt)  // NOLINT
 {
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(LONG_INT)).build();
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT64)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(YAML::Node(1000000000L));
@@ -3521,7 +3522,7 @@ TEST(TypeCoverage, ListOfLongUnsignedInt)  // NOLINT
 
 TEST(TypeCoverage, ListOfFixedSize)  // NOLINT
 {
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT, 3)).build();
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT32, 3)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(YAML::Node(1));
@@ -3533,7 +3534,7 @@ TEST(TypeCoverage, ListOfFixedSize)  // NOLINT
   EXPECT_TRUE(errors.empty());
 
   // Test with wrong size
-  PropertyTree schema2 = PropertyTreeBuilder().attribute(TYPE, createList(INT, 3)).build();
+  PropertyTree schema2 = PropertyTreeBuilder().attribute(TYPE, createList(INT32, 3)).build();
 
   YAML::Node config2(YAML::NodeType::Sequence);
   config2.push_back(YAML::Node(1));
@@ -3581,7 +3582,7 @@ TEST(TypeCoverage, MapOfString)  // NOLINT
 TEST(TypeCoverage, MapOfInt)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  PropertyTree int_schema = PropertyTreeBuilder().attribute(TYPE, INT).build();
+  PropertyTree int_schema = PropertyTreeBuilder().attribute(TYPE, INT32).build();
   reg->registerSchema("int_type_for_map", int_schema);
 
   PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("int_type_for_map")).build();
@@ -3669,8 +3670,8 @@ TEST(TypeCoverage, MapOfLongUnsignedInt)  // NOLINT
 
 TEST(AutoValidatorVerification, SequenceValidatorAutomaticallyAdded)  // NOLINT
 {
-  // Type="List[int]" should automatically add validateSequence
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT)).build();
+  // Type="List[int32]" should automatically add validateSequence
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT32)).build();
 
   YAML::Node config(YAML::NodeType::Map);  // Wrong type: should be Sequence
   config["value"] = 42;
@@ -3685,8 +3686,8 @@ TEST(AutoValidatorVerification, SequenceValidatorAutomaticallyAdded)  // NOLINT
 
 TEST(AutoValidatorVerification, SequenceFixedSizeValidatorAutomaticallyAdded)  // NOLINT
 {
-  // Type="List[int,2]" should automatically add validateSequence with size checking
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT, 2)).build();
+  // Type="List[int32,2]" should automatically add validateSequence with size checking
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(INT32, 2)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(1);
@@ -3704,7 +3705,7 @@ TEST(AutoValidatorVerification, SequenceFixedSizeValidatorAutomaticallyAdded)  /
 TEST(AutoValidatorVerification, MapValidatorAutomaticallyAdded)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  PropertyTree value_schema = PropertyTreeBuilder().attribute(TYPE, INT).build();
+  PropertyTree value_schema = PropertyTreeBuilder().attribute(TYPE, INT32).build();
   reg->registerSchema("map_value_type_test", value_schema);
 
   // Type="Map[string,map_value_type_test]" should automatically add validateMap
@@ -3724,7 +3725,7 @@ TEST(AutoValidatorVerification, MapValidatorAutomaticallyAdded)  // NOLINT
 TEST(AutoValidatorVerification, CustomTypeValidatorAutomaticallyAdded)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  PropertyTree custom_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(0).maximum(100).build();
+  PropertyTree custom_schema = PropertyTreeBuilder().attribute(TYPE, INT32).minimum(0).maximum(100).build();
   reg->registerSchema("custom_int_verify", custom_schema);
 
   // Setting TYPE to custom type should automatically add validateCustomType
@@ -3740,7 +3741,7 @@ TEST(AutoValidatorVerification, CustomTypeValidatorAutomaticallyAdded)  // NOLIN
 TEST(AutoValidatorVerification, SequenceOfCustomTypesValidatorAutomaticallyAdded)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  PropertyTree element_schema = PropertyTreeBuilder().attribute(TYPE, INT).minimum(10).maximum(20).build();
+  PropertyTree element_schema = PropertyTreeBuilder().attribute(TYPE, INT32).minimum(10).maximum(20).build();
   reg->registerSchema("custom_element_verify", element_schema);
 
   // Type="List[custom_element_verify]" should automatically add validateSequence with custom type validation
@@ -3870,7 +3871,7 @@ TEST(ValidatePluginInfo, ValidDerivedTypeWithConfigValidation)  // NOLINT
   PropertyTree concrete_schema = PropertyTreeBuilder()
                                      .attribute(TYPE, "test::ConcreteWithConfig")
                                      .container("params")
-                                     .integer("value")
+                                     .int32("value")
                                      .minimum(0)
                                      .maximum(100)
                                      .done()
@@ -3903,7 +3904,7 @@ TEST(ValidatePluginInfo, ValidDerivedTypeWithInvalidConfig)  // NOLINT
   PropertyTree concrete_schema = PropertyTreeBuilder()
                                      .attribute(TYPE, "test::ConcreteWithInvalidConfig")
                                      .container("params")
-                                     .integer("value")
+                                     .int32("value")
                                      .minimum(0)
                                      .maximum(100)
                                      .done()
