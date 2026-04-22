@@ -1392,12 +1392,11 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnit)  // NOLINT
   SceneGraph g = buildTestSceneGraph();
 
   std::vector<Joint::ConstPtr> active_joints = g.getActiveJoints();
-  ASSERT_GE(active_joints.size(), 3U) << "fixture must have >=3 active joints";
 
-  std::vector<JointId> subset;
-  subset.reserve(3);
-  for (std::size_t i = 0; i < 3; ++i)
-    subset.push_back(active_joints[i]->getId());
+  // Explicit subset: exclude joint_3 so its parent link_3 (added via joint_2) hits
+  // the "downstream fixed segment" branch in kdl_sub_tree_builder (kdl_parser.cpp:416-424).
+  // Using a literal subset avoids depending on std::unordered_map iteration order.
+  const std::vector<JointId> subset{ JointId("joint_1"), JointId("joint_2"), JointId("joint_4") };
 
   // Populate joint_values for all active joints; the sub-tree builder looks up values
   // for every non-fixed joint it traverses, not just the subset.
