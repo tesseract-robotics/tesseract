@@ -38,6 +38,7 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <cassert>
 #include <fcl/geometry/bvh/BVH_model-inl.h>
 #include <fcl/geometry/shape/box-inl.h>
 #include <fcl/geometry/shape/cylinder-inl.h>
