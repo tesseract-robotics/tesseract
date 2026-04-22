@@ -1083,7 +1083,7 @@ TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
   auto result = isSequenceType("List[float64]");
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->first, FLOAT64);  // NOLINT
-  EXPECT_EQ(result->second, 0U);     // NOLINT
+  EXPECT_EQ(result->second, 0U);      // NOLINT
 
   result = isSequenceType("List[int32,5]");
   ASSERT_TRUE(result.has_value());
