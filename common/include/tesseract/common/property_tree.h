@@ -67,8 +67,8 @@ constexpr std::string_view INT32{ "int32" };
 constexpr std::string_view UINT32{ "uint32" };
 constexpr std::string_view INT64{ "int64" };
 constexpr std::string_view UINT64{ "uint64" };
-constexpr std::string_view FLOAT{ "float" };
-constexpr std::string_view DOUBLE{ "double" };
+constexpr std::string_view FLOAT32{ "float32" };
+constexpr std::string_view FLOAT64{ "float64" };
 
 // Container of properties
 constexpr std::string_view CONTAINER{ "container" };
@@ -379,8 +379,8 @@ public:
   PropertyTreeBuilder& uint32(std::string_view name);
   PropertyTreeBuilder& int64(std::string_view name);
   PropertyTreeBuilder& uint64(std::string_view name);
-  PropertyTreeBuilder& floatNum(std::string_view name);
-  PropertyTreeBuilder& doubleNum(std::string_view name);
+  PropertyTreeBuilder& float32(std::string_view name);
+  PropertyTreeBuilder& float64(std::string_view name);
   PropertyTreeBuilder& eigenIsometry3d(std::string_view name);
   PropertyTreeBuilder& eigenVectorXd(std::string_view name);
   PropertyTreeBuilder& eigenVector2d(std::string_view name);
