@@ -141,4 +141,6 @@ void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 }
 }  // namespace tesseract::collision
 
+#include <tesseract/collision/cereal_serialization_impl.hpp>
+
 #endif  // TESSERACT_COLLISION_CEREAL_SERIALIZATION_H

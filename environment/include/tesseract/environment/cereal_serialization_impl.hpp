@@ -1,4 +1,5 @@
-#include <tesseract/environment/cereal_serialization.h>
+#ifndef TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_IMPL_HPP
+#define TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_IMPL_HPP
 
 // These must be include before calling macro CEREAL_REGISTER_TYPE
 #include <cereal/archives/binary.hpp>
@@ -71,6 +72,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::environment::Command,
                                      tesseract::environment::SetActiveDiscreteContactManagerCommand)
 
-// LCOV_EXCL_START
-CEREAL_REGISTER_DYNAMIC_INIT(tesseract_environment_cereal)
-// LCOV_EXCL_STOP
+#endif  // TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_IMPL_HPP

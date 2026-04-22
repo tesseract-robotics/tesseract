@@ -23,6 +23,7 @@
 
 #include <tesseract/common/utils.h>
 #include <tesseract/common/collision_margin_data.h>
+#include <cassert>
 
 namespace tesseract::common
 {

@@ -1,4 +1,5 @@
-#include <tesseract/geometry/cereal_serialization.h>
+#ifndef TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_IMPL_HPP
+#define TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_IMPL_HPP
 
 // These must be include before calling macro CEREAL_REGISTER_TYPE
 #include <cereal/archives/binary.hpp>
@@ -34,6 +35,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::geometry::PolygonMesh, tesseract
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::geometry::PolygonMesh, tesseract::geometry::ConvexMesh)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(tesseract::geometry::PolygonMesh, tesseract::geometry::SDFMesh)
 
-// LCOV_EXCL_START
-CEREAL_REGISTER_DYNAMIC_INIT(tesseract_geometry_cereal)
-// LCOV_EXCL_STOP
+#endif  // TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_IMPL_HPP

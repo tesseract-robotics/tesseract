@@ -23,6 +23,7 @@
  */
 
 #include <tesseract/common/contact_allowed_validator.h>
+#include <cassert>
 
 namespace tesseract::common
 {

@@ -25,7 +25,6 @@ set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "geometry" PARENT_SCOPE)
 
 add_library(
   geometry
-  src/cereal_serialization.cpp
   src/conversions.cpp
   src/geometry.cpp
   src/utils.cpp
@@ -55,6 +54,7 @@ target_link_libraries(
          assimp::assimp)
 target_compile_options(geometry PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(geometry PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_options(geometry PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_definitions(geometry PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_ASSIMP_USE_PBRMATERIAL})
 target_clang_tidy(geometry ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(geometry PUBLIC VERSION ${TESSERACT_CXX_VERSION})

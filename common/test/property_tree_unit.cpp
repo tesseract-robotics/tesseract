@@ -1112,9 +1112,10 @@ TEST(PropertyTreeHelpers, IsMapType)  // NOLINT
 // Helper to create a temporary YAML file with a given content
 inline std::string createTempSchemaFile(const std::string& name, const YAML::Node& schema)
 {
-  // Create temp file in /tmp with a unique name using static counter
+  // Create temp file in $TEMPDIR with a unique name using static counter
   static unsigned int counter = 0;  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-  std::string path = "/tmp/test_schema_" + name + "_" + std::to_string(counter++) + ".yaml";
+  std::string path =
+      tesseract::common::getTempPath() + "/test_schema_" + name + "_" + std::to_string(counter++) + ".yaml";
 
   std::ofstream file(path);
   if (!file.is_open())
@@ -1192,7 +1193,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileLazyLoads)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, RegisterSchemaFromFileGetMultipleTimes)  // NOLINT
@@ -1240,7 +1241,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileGetMultipleTimes)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, RegisterSchemaFromFileComplexMergeAndValidate)  // NOLINT
@@ -1284,7 +1285,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileComplexMergeAndValidate)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, LoadFileAbsolutePath)  // NOLINT
@@ -1314,7 +1315,7 @@ TEST(SchemaRegistry, LoadFileAbsolutePath)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, LoadFileRelativePath)  // NOLINT
@@ -1352,7 +1353,7 @@ TEST(SchemaRegistry, LoadFileRelativePath)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, LoadFileNonExistentThrows)  // NOLINT
@@ -1414,7 +1415,7 @@ TEST(SchemaRegistry, LoadFileReturnsValidPropertyTree)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistry, YamlExtensionSchemasRegistered)  // NOLINT
@@ -2486,7 +2487,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFile)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistrar, RegisterSchemaFromFileComplex)  // NOLINT
@@ -2535,7 +2536,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileComplex)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 TEST(SchemaRegistrar, RegisterSchemaFromFileMultiple)  // NOLINT
@@ -2578,8 +2579,8 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMultiple)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path_a.c_str());
-  std::remove(file_path_b.c_str());
+  std::filesystem::remove(file_path_a.c_str());
+  std::filesystem::remove(file_path_b.c_str());
 }
 
 TEST(SchemaRegistrar, RegisterSchemaFromFileInvalidPath)  // NOLINT
@@ -2636,7 +2637,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMergeAndValidate)  // NOLINT
   }
 
   // Cleanup
-  std::remove(file_path.c_str());
+  std::filesystem::remove(file_path.c_str());
 }
 
 // ===========================================================================
@@ -3397,7 +3398,12 @@ TEST(TypeCoverage, StandaloneTypes)  // NOLINT
   PropertyTree long_uint_node;
   long_uint_node.setAttribute(TYPE, LONG_UNSIGNED_INT);
   long_uint_node.setValue(YAML::Node(9999999999UL));
+#ifndef _WIN32
   EXPECT_EQ(long_uint_node.as<long unsigned int>(), 9999999999UL);
+#else
+  // Need to use long long on Windows for 64 bit ints
+  EXPECT_EQ(long_uint_node.as<long long unsigned int>(), 9999999999UL);
+#endif
 }
 
 TEST(TypeCoverage, ListOfBool)  // NOLINT
