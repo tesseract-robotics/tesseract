@@ -282,7 +282,7 @@ int main(int /*argc*/, char** /*argv*/)
                              .label("Reference Frame").placeholder("sensor_frame").done()
                            .container("config").doc("Sensor-specific configuration")
                              .string("model").label("Model").defaultVal("generic").done()
-                             .integer("resolution").doc("Resolution (varies by sensor type)")
+                             .int32("resolution").doc("Resolution (varies by sensor type)")
                                .minimum(1).maximum(8192).label("Resolution").done()
                              .doubleNum("fov").doc("Field of view (degrees)")
                                .minimum(0.1).maximum(180.0).label("FOV").done()
@@ -305,7 +305,7 @@ int main(int /*argc*/, char** /*argv*/)
   std::cout << "    Type: " << schema_copy.at("type").as<std::string>() << "\n";
   std::cout << "    Frame: " << schema_copy.at("frame_id").as<std::string>() << "\n";
   std::cout << "    Model: " << schema_copy.at("config").at("model").as<std::string>() << "\n";
-  std::cout << "    Resolution: " << schema_copy.at("config").at("resolution").as<int>() << "p\n";
+  std::cout << "    Resolution: " << schema_copy.at("config").at("resolution").as<int32_t>() << "p\n";
   std::cout << "    FOV: " << schema_copy.at("config").at("fov").as<double>() << "°\n";
 
   if (errors.empty())
