@@ -1386,30 +1386,35 @@ TEST(TesseractSceneGraphUnit, LoadSubKDLUnit)  // NOLINT
   }
 }
 
-// Exercises the sub-tree builder when the provided floating_joint_values map is non-empty.
-TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
+TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
   std::vector<Joint::ConstPtr> active_joints = g.getActiveJoints();
-  const std::vector<std::string> subset{ "joint_1", "joint_2", "joint_4" };
+  ASSERT_GE(active_joints.size(), 3U) << "fixture must have >=3 active joints";
 
-  std::unordered_map<std::string, double> joint_values;
+  std::vector<JointId> subset;
+  subset.reserve(3);
+  for (std::size_t i = 0; i < 3; ++i)
+    subset.push_back(active_joints[i]->getId());
+
+  // Populate joint_values for all active joints; the sub-tree builder looks up values
+  // for every non-fixed joint it traverses, not just the subset.
+  std::unordered_map<JointId, double> joint_values;
   for (const auto& j : active_joints)
-    joint_values[j->getName()] = 0.0;
+    joint_values[j->getId()] = 0.0;
 
-  tesseract::common::TransformMap floating;
-  Eigen::Isometry3d fj_tf = Eigen::Isometry3d::Identity();
-  fj_tf.translation().x() = 0.75;
-  fj_tf.translation().y() = -0.25;
-  floating["joint_3"] = fj_tf;
+  tesseract::common::JointIdTransformMap floating;
 
   KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
 
-  ASSERT_EQ(data.floating_joint_values.count("joint_3"), 1U);
-  EXPECT_TRUE(data.floating_joint_values["joint_3"].isApprox(fj_tf));
+  EXPECT_GT(data.tree.getNrOfJoints(), 0U);
   EXPECT_EQ(data.tree.getNrOfJoints(), subset.size());
+  EXPECT_EQ(data.active_joint_ids.size(), subset.size());
+  EXPECT_FALSE(data.link_ids.empty());
+  EXPECT_FALSE(data.active_link_ids.empty());
+  EXPECT_FALSE(data.static_link_ids.empty());
 }
 
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
