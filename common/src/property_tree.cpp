@@ -401,9 +401,9 @@ void PropertyTree::rebuildAutoValidators()
         auto_validators_.emplace_back(validateTypeCast<bool>);
       else if (str_type == property_type::CHAR)
         auto_validators_.emplace_back(validateTypeCast<char>);
-      else if (str_type == property_type::FLOAT)
+      else if (str_type == property_type::FLOAT32)
         auto_validators_.emplace_back(validateTypeCastWithRange<float>);
-      else if (str_type == property_type::DOUBLE)
+      else if (str_type == property_type::FLOAT64)
         auto_validators_.emplace_back(validateTypeCastWithRange<double>);
       else if (str_type == property_type::INT32)
         auto_validators_.emplace_back(validateTypeCastWithRange<int32_t>);
@@ -701,18 +701,18 @@ PropertyTreeBuilder& PropertyTreeBuilder::uint64(std::string_view name)
   return *this;
 }
 
-PropertyTreeBuilder& PropertyTreeBuilder::floatNum(std::string_view name)
+PropertyTreeBuilder& PropertyTreeBuilder::float32(std::string_view name)
 {
   auto& child = current()[name];
-  child.setAttribute(property_attribute::TYPE, property_type::FLOAT);
+  child.setAttribute(property_attribute::TYPE, property_type::FLOAT32);
   stack_.push_back(&child);
   return *this;
 }
 
-PropertyTreeBuilder& PropertyTreeBuilder::doubleNum(std::string_view name)
+PropertyTreeBuilder& PropertyTreeBuilder::float64(std::string_view name)
 {
   auto& child = current()[name];
-  child.setAttribute(property_attribute::TYPE, property_type::DOUBLE);
+  child.setAttribute(property_attribute::TYPE, property_type::FLOAT64);
   stack_.push_back(&child);
   return *this;
 }

@@ -252,15 +252,15 @@ TEST(PropertyTreeCopy, DeepCopyWithOneOfPreservesState)  // NOLINT
   auto schema = PropertyTreeBuilder()
                     .attribute(TYPE, ONEOF)
                     .container("circle")
-                    .doubleNum("radius")
+                    .float64("radius")
                     .required()
                     .done()
                     .done()
                     .container("rectangle")
-                    .doubleNum("width")
+                    .float64("width")
                     .required()
                     .done()
-                    .doubleNum("height")
+                    .float64("height")
                     .required()
                     .done()
                     .done()
@@ -628,7 +628,7 @@ TEST(PropertyTreeValidate, IntRangeFail)  // NOLINT
 TEST(PropertyTreeValidate, DoubleRangeFail)  // NOLINT
 {
   PropertyTree schema;
-  schema.setAttribute(TYPE, DOUBLE);
+  schema.setAttribute(TYPE, FLOAT64);
   schema.setAttribute(MINIMUM, 0.0);
   schema.setAttribute(MAXIMUM, 1.0);
   schema.setAttribute(REQUIRED, true);
@@ -801,8 +801,8 @@ TEST(PropertyTreeBuilder, AllScalarTypes)  // NOLINT
       .uint32("u").done()
       .int64("li").done()
       .uint64("lu").done()
-      .floatNum("f").done()
-      .doubleNum("d").done()
+      .float32("f").done()
+      .float64("d").done()
       .build();
   // clang-format on
 
@@ -821,8 +821,8 @@ TEST(PropertyTreeBuilder, AllScalarTypes)  // NOLINT
   check("u", UINT32);
   check("li", INT64);
   check("lu", UINT64);
-  check("f", FLOAT);
-  check("d", DOUBLE);
+  check("f", FLOAT32);
+  check("d", FLOAT64);
 }
 
 TEST(PropertyTreeBuilder, EigenTypes)  // NOLINT
@@ -970,7 +970,7 @@ TEST(PropertyTreeBuilder, DefaultValues)  // NOLINT
   auto tree = PropertyTreeBuilder()
       .boolean("b").defaultVal(true).done()
       .int32("i").defaultVal(42).done()
-      .doubleNum("d").defaultVal(3.14).done()
+      .float64("d").defaultVal(3.14).done()
       .string("s").defaultVal("hello").done()
       .build();
   // clang-format on
@@ -1062,8 +1062,8 @@ TEST(PropertyTreeHelpers, CreateListDynamic)  // NOLINT
 
 TEST(PropertyTreeHelpers, CreateListFixedSize)  // NOLINT
 {
-  auto list = createList(DOUBLE, 3);
-  EXPECT_EQ(list, "List[double,3]");
+  auto list = createList(FLOAT64, 3);
+  EXPECT_EQ(list, "List[float64,3]");
 }
 
 TEST(PropertyTreeHelpers, CreateMapDefault)  // NOLINT
@@ -1074,15 +1074,15 @@ TEST(PropertyTreeHelpers, CreateMapDefault)  // NOLINT
 
 TEST(PropertyTreeHelpers, CreateMapCustomKey)  // NOLINT
 {
-  auto map = createMap("string[2]", DOUBLE);
-  EXPECT_EQ(map, "Map[string[2],double]");
+  auto map = createMap("string[2]", FLOAT64);
+  EXPECT_EQ(map, "Map[string[2],float64]");
 }
 
 TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
 {
-  auto result = isSequenceType("List[double]");
+  auto result = isSequenceType("List[float64]");
   ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(result->first, DOUBLE);  // NOLINT
+  EXPECT_EQ(result->first, FLOAT64);  // NOLINT
   EXPECT_EQ(result->second, 0U);     // NOLINT
 
   result = isSequenceType("List[int32,5]");
@@ -1925,10 +1925,10 @@ TEST(EndToEnd, ComplexSchemaPassesValidation)  // NOLINT
       .attribute(TYPE, CONTAINER)
       .string("name").required().doc("Robot name").done()
       .int32("dof").required().minimum(1).maximum(20).done()
-      .doubleNum("speed").defaultVal(1.0).minimum(0.0).maximum(10.0).done()
+      .float64("speed").defaultVal(1.0).minimum(0.0).maximum(10.0).done()
       .container("limits")
-          .doubleNum("lower").required().done()
-          .doubleNum("upper").required().done()
+          .float64("lower").required().done()
+          .float64("upper").required().done()
       .done()
       .build();
   // clang-format on
@@ -2133,11 +2133,11 @@ TEST(PropertyTreeOneOf, SelectSingleBranchExact)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, ONEOF)
       .container("circle")
-        .doubleNum("radius").required().done()
+        .float64("radius").required().done()
         .done()
       .container("rectangle")
-        .doubleNum("width").required().done()
-        .doubleNum("height").required().done()
+        .float64("width").required().done()
+        .float64("height").required().done()
         .done()
       .build();
   // clang-format on
@@ -2159,11 +2159,11 @@ TEST(PropertyTreeOneOf, SelectOtherBranch)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, ONEOF)
       .container("circle")
-        .doubleNum("radius").required().done()
+        .float64("radius").required().done()
         .done()
       .container("rectangle")
-        .doubleNum("width").required().done()
-        .doubleNum("height").required().done()
+        .float64("width").required().done()
+        .float64("height").required().done()
         .done()
       .build();
   // clang-format on
@@ -2198,11 +2198,11 @@ TEST(PropertyTreeOneOf, NoBranchMatchesThrows)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, ONEOF)
       .container("circle")
-        .doubleNum("radius").required().done()
+        .float64("radius").required().done()
         .done()
       .container("rectangle")
-        .doubleNum("width").required().done()
-        .doubleNum("height").required().done()
+        .float64("width").required().done()
+        .float64("height").required().done()
         .done()
       .build();
   // clang-format on
@@ -2330,7 +2330,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionComplex)  // NOLINT
           .maximum(100)
           .done()
           .container("config")
-          .doubleNum("threshold")
+          .float64("threshold")
           .defaultVal(0.5)
           .done()
           .done()
@@ -2506,7 +2506,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileComplex)  // NOLINT
   schema_yaml["count"]["_attributes"]["maximum"] = 100;
 
   schema_yaml["config"]["_attributes"]["type"] = std::string(CONTAINER);
-  schema_yaml["config"]["threshold"]["_attributes"]["type"] = std::string(DOUBLE);
+  schema_yaml["config"]["threshold"]["_attributes"]["type"] = std::string(FLOAT64);
   schema_yaml["config"]["threshold"]["_attributes"]["default"] = 0.5;
 
   std::string file_path = createTempSchemaFile("complex", schema_yaml);
@@ -3204,9 +3204,9 @@ TEST(PropertyTreeBuilder, AllBuilderTypes)  // NOLINT
                     .done()
                     .uint64("huge")
                     .done()
-                    .floatNum("fval")
+                    .float32("fval")
                     .done()
-                    .doubleNum("dval")
+                    .float64("dval")
                     .done()
                     .done()
                     .build();
@@ -3381,7 +3381,7 @@ TEST(TypeCoverage, StandaloneTypes)  // NOLINT
   EXPECT_EQ(int_node.as<int32_t>(), 42);
 
   PropertyTree double_node;
-  double_node.setAttribute(TYPE, DOUBLE);
+  double_node.setAttribute(TYPE, FLOAT64);
   double_node.setValue(YAML::Node(3.14));
   EXPECT_DOUBLE_EQ(double_node.as<double>(), 3.14);
 
@@ -3443,7 +3443,7 @@ TEST(TypeCoverage, ListOfInt)  // NOLINT
 
 TEST(TypeCoverage, ListOfDouble)  // NOLINT
 {
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(DOUBLE)).build();
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(FLOAT64)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(YAML::Node(1.1));
@@ -3482,7 +3482,7 @@ TEST(TypeCoverage, ListOfLongInt)  // NOLINT
 
 TEST(TypeCoverage, ListOfFloat)  // NOLINT
 {
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(FLOAT)).build();
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(FLOAT32)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(YAML::Node(1.5F));
@@ -3598,7 +3598,7 @@ TEST(TypeCoverage, MapOfInt)  // NOLINT
 TEST(TypeCoverage, MapOfDouble)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  PropertyTree double_schema = PropertyTreeBuilder().attribute(TYPE, DOUBLE).build();
+  PropertyTree double_schema = PropertyTreeBuilder().attribute(TYPE, FLOAT64).build();
   reg->registerSchema("double_type_for_map", double_schema);
 
   PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("double_type_for_map")).build();
