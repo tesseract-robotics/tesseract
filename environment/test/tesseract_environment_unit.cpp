@@ -6260,6 +6260,32 @@ TEST(TesseractEnvironmentUnit, EnvMonitorInterfaceStringOverloads)  // NOLINT
   EXPECT_EQ(m.id_setstate_vec_calls, 2);
 }
 
+TEST(TesseractEnvironmentUnit, EnvSetActiveContinuousManagerMixedLinks)  // NOLINT
+{
+  auto env = getEnvironment();
+
+  // Confirm fixture has BOTH active and static links (precondition for hitting the branch)
+  ASSERT_FALSE(env->getActiveLinkNames().empty());
+  ASSERT_FALSE(env->getStaticLinkNames().empty());
+
+  // Attaching a continuous manager triggers cloneCollisionManager() + currentStateChanged(),
+  // which exercises environment.cpp:1075-1081 and :705-711 respectively.
+  ASSERT_TRUE(env->setActiveContinuousContactManager("BulletCastBVHManager"));
+  auto mgr = env->getContinuousContactManager();
+  ASSERT_NE(mgr, nullptr);
+
+  // Trigger state changes to re-exercise currentStateChanged() -> continuous branch.
+  const std::vector<std::string> active_joint_names = env->getActiveJointNames();
+  Eigen::VectorXd jvals = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(active_joint_names.size()));
+  env->setState(active_joint_names, jvals);
+  jvals.setConstant(0.3);
+  env->setState(active_joint_names, jvals);
+
+  // If the active/static split regresses to an all-links-as-active path, Bullet's
+  // KinematicFilter assert() fires in Debug builds. Reaching this line means no assertion.
+  SUCCEED();
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
