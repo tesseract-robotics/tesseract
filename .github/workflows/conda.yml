@@ -59,7 +59,7 @@ jobs:
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
         New-Item -Name conda-forge.yml -ItemType File
-        conda smithy regenerate
+        conda smithy regenerate --no-check-version
         
         conda build -m .ci_support/win_64_.yaml --build-only .
 
@@ -93,7 +93,7 @@ jobs:
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
         cd conda
         touch conda-forge.yml
-        conda smithy regenerate
+        conda smithy regenerate --no-check-version
         
         conda build -m .ci_support/linux_64_.yaml --build-only .
 
@@ -127,6 +127,6 @@ jobs:
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
         cd conda
         touch conda-forge.yml
-        conda smithy regenerate
+        conda smithy regenerate --no-check-version
         
         conda build -m .ci_support/osx_64_.yaml --build-only .
