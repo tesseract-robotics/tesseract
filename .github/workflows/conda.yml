@@ -39,7 +39,7 @@ jobs:
     - name: install-depends
       shell: cmd
       run: |
-        python -m pip install vcstool setuptools -q
+        python -m pip install vcs2l setuptools -q
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
@@ -74,7 +74,7 @@ jobs:
         path: workspace/src/tesseract
     - name: install-depends
       run: |
-        python -m pip install vcstool setuptools -q
+        python -m pip install vcs2l setuptools -q
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
@@ -108,7 +108,7 @@ jobs:
         path: workspace/src/tesseract
     - name: install-depends
       run: |
-        python -m pip install vcstool setuptools -q
+        python -m pip install vcs2l -q
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
