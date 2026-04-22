@@ -572,7 +572,7 @@ To numeric_cast(From value)
     }
   }
   else
-  {  
+  {
     if (value < std::numeric_limits<To>::lowest() || value > std::numeric_limits<To>::max())
     {
       throw std::overflow_error("Cast out of bounds");
