@@ -4,7 +4,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
+#include <tesseract/kinematics/kdl/kdl_inv_kin_chain_lma.h>
 #include <tesseract/kinematics/joint_group.h>
+#include <tesseract/kinematics/kinematic_group.h>
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/state_solver/kdl/kdl_state_solver.h>
 #include <tesseract/common/types.h>
@@ -565,6 +567,147 @@ TEST(TesseractKinematicsUnit, JointGroupIsActiveLinkIdUnit)  // NOLINT
 
   // Non-existent link should not be active
   EXPECT_FALSE(joint_group->isActiveLinkId("nonexistent_link"));
+}
+
+TEST(TesseractKinematicsUnit, JointGroupByJointIdAccessorsUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  const auto scene_state = ss.getState();
+
+  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                  "joint_a5", "joint_a6", "joint_a7" };
+
+  // Construct JointGroup via the JointId overload.
+  tesseract::kinematics::JointGroup jg("manipulator", joint_ids, *scene_graph, scene_state);
+
+  // numJoints / getJointIds
+  EXPECT_EQ(jg.numJoints(), static_cast<Eigen::Index>(joint_ids.size()));
+  EXPECT_EQ(jg.getJointIds(), joint_ids);
+
+  // getBaseLinkId — should match scene graph root.
+  const LinkId base_link_id = jg.getBaseLinkId();
+  EXPECT_EQ(base_link_id, scene_graph->getRoot());
+
+  // Link id collections non-empty.
+  const std::vector<LinkId>& link_ids = jg.getLinkIds();
+  const std::vector<LinkId>& active_link_ids = jg.getActiveLinkIds();
+  const std::vector<LinkId>& static_link_ids = jg.getStaticLinkIds();
+  EXPECT_FALSE(link_ids.empty());
+  EXPECT_FALSE(active_link_ids.empty());
+  EXPECT_FALSE(static_link_ids.empty());
+  EXPECT_EQ(link_ids.size(), active_link_ids.size() + static_link_ids.size());
+
+  // hasLinkId / isActiveLinkId (true-case) for all links.
+  for (const auto& lid : link_ids)
+    EXPECT_TRUE(jg.hasLinkId(lid));
+  for (const auto& lid : active_link_ids)
+    EXPECT_TRUE(jg.isActiveLinkId(lid));
+
+  // isActiveLinkId (false-case) for static links and a non-existent link.
+  for (const auto& lid : static_link_ids)
+    EXPECT_FALSE(jg.isActiveLinkId(lid));
+  EXPECT_FALSE(jg.isActiveLinkId(LinkId("nonexistent_link")));
+  EXPECT_FALSE(jg.hasLinkId(LinkId("nonexistent_link")));
+
+  // calcFwdKin — both overloads.
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(joint_ids.size()));
+  q[1] = 0.25;
+  q[3] = -0.4;
+  tesseract::common::LinkIdTransformMap tfs1 = jg.calcFwdKin(q);
+  EXPECT_FALSE(tfs1.empty());
+
+  tesseract::common::LinkIdTransformMap tfs2;
+  jg.calcFwdKin(tfs2, q);
+  EXPECT_EQ(tfs1.size(), tfs2.size());
+  for (const auto& kv : tfs1)
+  {
+    ASSERT_TRUE(tfs2.count(kv.first) > 0);
+    EXPECT_TRUE(tfs2.at(kv.first).isApprox(kv.second, 1e-9));
+  }
+
+  // calcJacobian — pick an active link id to ensure a non-trivial jacobian.
+  const LinkId jac_link = active_link_ids.back();
+  Eigen::MatrixXd jac = jg.calcJacobian(q, jac_link);
+  EXPECT_EQ(jac.rows(), 6);
+  EXPECT_EQ(jac.cols(), q.size());
+
+  // calcJacobian with explicit base_link overload.
+  Eigen::MatrixXd jac_with_base = jg.calcJacobian(q, base_link_id, jac_link);
+  EXPECT_EQ(jac_with_base.rows(), 6);
+  EXPECT_EQ(jac_with_base.cols(), q.size());
+  EXPECT_TRUE(jac_with_base.isApprox(jac, 1e-9));
+
+  // calcJacobian with link_point overload.
+  Eigen::MatrixXd jac_at_point = jg.calcJacobian(q, jac_link, Eigen::Vector3d(0.05, 0.0, 0.0));
+  EXPECT_EQ(jac_at_point.rows(), 6);
+  EXPECT_EQ(jac_at_point.cols(), q.size());
+}
+
+TEST(TesseractKinematicsUnit, KinematicGroupByJointIdAccessorsUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  const auto scene_state = ss.getState();
+
+  const LinkId base_link_id("base_link");
+  const LinkId tip_link_id("tool0");
+  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                  "joint_a5", "joint_a6", "joint_a7" };
+
+  // Build an inverse kinematics solver and construct KinematicGroup via the JointId overload.
+  tesseract::kinematics::KDLInvKinChainLMA::Config config;
+  auto inv_kin = std::make_unique<tesseract::kinematics::KDLInvKinChainLMA>(
+      *scene_graph, base_link_id, tip_link_id, config);
+
+  tesseract::kinematics::KinematicGroup kg("manipulator", joint_ids, std::move(inv_kin), *scene_graph, scene_state);
+
+  // Accessors inherited from JointGroup still work through the ID-based build.
+  EXPECT_EQ(kg.numJoints(), static_cast<Eigen::Index>(joint_ids.size()));
+  EXPECT_EQ(kg.getJointIds(), joint_ids);
+  EXPECT_EQ(kg.getBaseLinkId(), scene_graph->getRoot());
+  EXPECT_FALSE(kg.getLinkIds().empty());
+  EXPECT_FALSE(kg.getActiveLinkIds().empty());
+  EXPECT_FALSE(kg.getStaticLinkIds().empty());
+
+  // Target pose reachable by the IIWA at the default configuration.
+  Eigen::Isometry3d target_pose = Eigen::Isometry3d::Identity();
+  target_pose.translation()[2] = 1.306;
+
+  Eigen::VectorXd seed(joint_ids.size());
+  seed << -0.785398, 0.785398, -0.785398, 0.785398, -0.785398, 0.785398, -0.785398;
+
+  // calcInvKin — exercise the main body, not just early-return.
+  tesseract::kinematics::KinGroupIKInput input(target_pose, base_link_id, tip_link_id);
+  tesseract::kinematics::IKSolutions solutions = kg.calcInvKin(input, seed);
+  EXPECT_FALSE(solutions.empty());
+
+  // Validate the IK solution by running it back through FK.
+  for (const auto& sol : solutions)
+  {
+    auto result_poses = kg.calcFwdKin(sol);
+    Eigen::Isometry3d result = result_poses.at(base_link_id).inverse() * result_poses.at(tip_link_id);
+    EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
+  }
+
+  // getAllValidWorkingFrames / getAllPossibleTipLinkIds.
+  const std::vector<LinkId> working_frames = kg.getAllValidWorkingFrames();
+  EXPECT_FALSE(working_frames.empty());
+  EXPECT_NE(std::find(working_frames.begin(), working_frames.end(), base_link_id), working_frames.end());
+
+  const std::vector<LinkId> tip_links = kg.getAllPossibleTipLinkIds();
+  EXPECT_FALSE(tip_links.empty());
+  EXPECT_NE(std::find(tip_links.begin(), tip_links.end(), tip_link_id), tip_links.end());
 }
 
 int main(int argc, char** argv)
