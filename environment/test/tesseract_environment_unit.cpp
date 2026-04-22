@@ -6021,6 +6021,49 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   }
 }
 
+TEST(TesseractEnvironmentUnit, EnvSetStateStringOverloads)  // NOLINT
+{
+  auto env = getEnvironment();
+
+  const std::vector<std::string> active_joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                        "joint_a5", "joint_a6", "joint_a7" };
+  Eigen::VectorXd jvals = Eigen::VectorXd::Zero(7);
+  std::unordered_map<std::string, double> map_jvals;
+  for (const auto& jn : active_joint_names)
+    map_jvals[jn] = 0.1;
+
+  // Exercise the string-keyed setState overloads
+  env->setState(active_joint_names, jvals);
+  env->setState(map_jvals);
+
+  // Exercise the string-keyed getState overloads
+  SceneState s1 = env->getState(active_joint_names, jvals);
+  SceneState s2 = env->getState(map_jvals);
+  ASSERT_EQ(s1.link_transforms.size(), s2.link_transforms.size());
+
+  // Exercise the string-keyed getLinkTransforms overload (without floating joints)
+  tesseract::common::LinkIdTransformMap tfs;
+  env->getLinkTransforms(tfs, active_joint_names, jvals);
+  EXPECT_GT(tfs.size(), 0U);
+
+  // Exercise the string-keyed getLinkTransforms overload (with floating joints)
+  tesseract::common::LinkIdTransformMap tfs_fj;
+  env->getLinkTransforms(tfs_fj, active_joint_names, jvals, env->getCurrentFloatingJointValues());
+  EXPECT_GT(tfs_fj.size(), 0U);
+
+  // Exercise getCurrentJointValues with a vector of names
+  Eigen::VectorXd cjv = env->getCurrentJointValues(active_joint_names);
+  EXPECT_EQ(cjv.size(), jvals.size());
+
+  // Exercise getStaticLinkNames with a vector of joint names
+  auto static_names = env->getStaticLinkNames(active_joint_names);
+  EXPECT_FALSE(static_names.empty());
+
+  // Exercise getGroupJointNames — the SRDF fixture configures a "manipulator" group
+  auto group_joint_names = env->getGroupJointNames("manipulator");
+  EXPECT_FALSE(group_joint_names.empty());
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
