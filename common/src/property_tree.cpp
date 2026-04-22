@@ -405,22 +405,14 @@ void PropertyTree::rebuildAutoValidators()
         auto_validators_.emplace_back(validateTypeCastWithRange<float>);
       else if (str_type == property_type::DOUBLE)
         auto_validators_.emplace_back(validateTypeCastWithRange<double>);
-      else if (str_type == property_type::INT)
-        auto_validators_.emplace_back(validateTypeCastWithRange<int>);
-      else if (str_type == property_type::UNSIGNED_INT)
-        auto_validators_.emplace_back(validateTypeCastWithRange<unsigned int>);
-      else if (str_type == property_type::LONG_INT)
-#ifndef _WIN32
-        auto_validators_.emplace_back(validateTypeCastWithRange<long int>);
-#else
-        auto_validators_.emplace_back(validateTypeCastWithRange<long long int>);
-#endif
-      else if (str_type == property_type::LONG_UNSIGNED_INT)
-#ifndef _WIN32
-        auto_validators_.emplace_back(validateTypeCastWithRange<long unsigned int>);
-#else
-        auto_validators_.emplace_back(validateTypeCastWithRange<long long unsigned int>);
-#endif
+      else if (str_type == property_type::INT32)
+        auto_validators_.emplace_back(validateTypeCastWithRange<int32_t>);
+      else if (str_type == property_type::UINT32)
+        auto_validators_.emplace_back(validateTypeCastWithRange<uint32_t>);
+      else if (str_type == property_type::INT64)
+        auto_validators_.emplace_back(validateTypeCastWithRange<int64_t>);
+      else if (str_type == property_type::UINT64)
+        auto_validators_.emplace_back(validateTypeCastWithRange<uint64_t>);
       else if (str_type == property_type::EIGEN_ISOMETRY_3D)
         auto_validators_.emplace_back(validateTypeCast<Eigen::Isometry3d>);
       // else if (str_type == property_type::EIGEN_MATRIX_2D)
@@ -677,34 +669,34 @@ PropertyTreeBuilder& PropertyTreeBuilder::boolean(std::string_view name)
   return *this;
 }
 
-PropertyTreeBuilder& PropertyTreeBuilder::integer(std::string_view name)
+PropertyTreeBuilder& PropertyTreeBuilder::int32(std::string_view name)
 {
   auto& child = current()[name];
-  child.setAttribute(property_attribute::TYPE, property_type::INT);
+  child.setAttribute(property_attribute::TYPE, property_type::INT32);
   stack_.push_back(&child);
   return *this;
 }
 
-PropertyTreeBuilder& PropertyTreeBuilder::unsignedInt(std::string_view name)
+PropertyTreeBuilder& PropertyTreeBuilder::uint32(std::string_view name)
 {
   auto& child = current()[name];
-  child.setAttribute(property_attribute::TYPE, property_type::UNSIGNED_INT);
+  child.setAttribute(property_attribute::TYPE, property_type::UINT32);
   stack_.push_back(&child);
   return *this;
 }
 
-PropertyTreeBuilder& PropertyTreeBuilder::longInt(std::string_view name)
+PropertyTreeBuilder& PropertyTreeBuilder::int64(std::string_view name)
 {
   auto& child = current()[name];
-  child.setAttribute(property_attribute::TYPE, property_type::LONG_INT);
+  child.setAttribute(property_attribute::TYPE, property_type::INT64);
   stack_.push_back(&child);
   return *this;
 }
 
-PropertyTreeBuilder& PropertyTreeBuilder::longUnsignedInt(std::string_view name)
+PropertyTreeBuilder& PropertyTreeBuilder::uint64(std::string_view name)
 {
   auto& child = current()[name];
-  child.setAttribute(property_attribute::TYPE, property_type::LONG_UNSIGNED_INT);
+  child.setAttribute(property_attribute::TYPE, property_type::UINT64);
   stack_.push_back(&child);
   return *this;
 }

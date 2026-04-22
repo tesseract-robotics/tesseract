@@ -128,8 +128,8 @@ auto schema = PropertyTreeBuilder()
     .build();
 @endcode
 
-Type methods: `container`, `string`, `character`, `boolean`, `integer`, `unsignedInt`,
-`longInt`, `longUnsignedInt`, `floatNum`, `doubleNum`, `customType`
+Type methods: `container`, `string`, `character`, `boolean`, `int32`, `uint32`,
+`int64`, `uint64`, `floatNum`, `doubleNum`, `customType`
 
 Attribute setters: `doc`, `required`, `defaultVal`, `enumValues`, `minimum`, `maximum`,
 `label`, `placeholder`, `group`, `readOnly`, `hidden`, `validator`, `attribute`
