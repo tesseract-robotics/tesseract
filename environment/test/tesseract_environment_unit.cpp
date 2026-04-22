@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/types.h>
 
 #include <tesseract/environment/environment.h>
+#include <tesseract/environment/environment_monitor_interface.h>
 #include <tesseract/environment/command.h>
 #include <tesseract/environment/commands.h>
 #include <tesseract/environment/utils.h>
@@ -6062,6 +6063,155 @@ TEST(TesseractEnvironmentUnit, EnvSetStateStringOverloads)  // NOLINT
   // Exercise getGroupJointNames — the SRDF fixture configures a "manipulator" group
   auto group_joint_names = env->getGroupJointNames("manipulator");
   EXPECT_FALSE(group_joint_names.empty());
+}
+
+namespace
+{
+class FakeMonitor : public tesseract::environment::EnvironmentMonitorInterface
+{
+public:
+  using EnvironmentMonitorInterface::EnvironmentMonitorInterface;
+
+  // Keep the inline string-wrapper overloads visible in this derived class
+  // (otherwise name-hiding from the ID overrides below would shadow them).
+  using EnvironmentMonitorInterface::setEnvironmentState;
+
+  // Counters for the ID-taking setEnvironmentState overloads that the string
+  // wrappers are expected to delegate to.
+  mutable int id_setstate_ns_id_calls = 0;
+  mutable int id_setstate_ns_vec_calls = 0;
+  mutable int id_setstate_ns_fj_calls = 0;
+  mutable int id_setstate_id_calls = 0;
+  mutable int id_setstate_vec_calls = 0;
+  mutable int id_setstate_fj_calls = 0;
+
+  // Pure-virtual stubs (not exercised by this test, but required to instantiate).
+  bool wait(std::chrono::duration<double> /*duration*/) const override { return true; }
+  bool waitForNamespace(const std::string& /*monitor_namespace*/,
+                        std::chrono::duration<double> /*duration*/) const override
+  {
+    return true;
+  }
+  void addNamespace(std::string /*monitor_namespace*/) override {}
+  void removeNamespace(const std::string& /*monitor_namespace*/) override {}
+
+  std::vector<std::string> applyCommand(const tesseract::environment::Command& /*command*/) const override
+  {
+    return {};
+  }
+  std::vector<std::string>
+  applyCommands(const std::vector<std::shared_ptr<const tesseract::environment::Command>>& /*commands*/) const override
+  {
+    return {};
+  }
+  std::vector<std::string>
+  applyCommands(const std::vector<tesseract::environment::Command>& /*commands*/) const override
+  {
+    return {};
+  }
+  bool applyCommand(const std::string& /*monitor_namespace*/,
+                    const tesseract::environment::Command& /*command*/) const override
+  {
+    return true;
+  }
+  bool applyCommands(const std::string& /*monitor_namespace*/,
+                     const std::vector<std::shared_ptr<const tesseract::environment::Command>>& /*commands*/)
+      const override
+  {
+    return true;
+  }
+  bool applyCommands(const std::string& /*monitor_namespace*/,
+                     const std::vector<tesseract::environment::Command>& /*commands*/) const override
+  {
+    return true;
+  }
+
+  tesseract::scene_graph::SceneState
+  getEnvironmentState(const std::string& /*monitor_namespace*/) const override
+  {
+    return {};
+  }
+
+  // ID overloads that the string wrappers delegate to.
+  bool setEnvironmentState(const std::string& /*monitor_namespace*/,
+                           const tesseract::scene_graph::SceneState::JointValues& /*joints*/,
+                           const tesseract::common::JointIdTransformMap& /*floating_joints*/) const override
+  {
+    ++id_setstate_ns_id_calls;
+    return true;
+  }
+  bool setEnvironmentState(const std::string& /*monitor_namespace*/,
+                           const std::vector<tesseract::common::JointId>& /*joint_ids*/,
+                           const Eigen::Ref<const Eigen::VectorXd>& /*joint_values*/,
+                           const tesseract::common::JointIdTransformMap& /*floating_joints*/) const override
+  {
+    ++id_setstate_ns_vec_calls;
+    return true;
+  }
+  bool setEnvironmentState(const std::string& /*monitor_namespace*/,
+                           const tesseract::common::JointIdTransformMap& /*floating_joints*/) const override
+  {
+    ++id_setstate_ns_fj_calls;
+    return true;
+  }
+
+  std::vector<std::string>
+  setEnvironmentState(const tesseract::scene_graph::SceneState::JointValues& /*joints*/,
+                      const tesseract::common::JointIdTransformMap& /*floating_joints*/) const override
+  {
+    ++id_setstate_id_calls;
+    return {};
+  }
+  std::vector<std::string>
+  setEnvironmentState(const std::vector<tesseract::common::JointId>& /*joint_ids*/,
+                      const Eigen::Ref<const Eigen::VectorXd>& /*joint_values*/,
+                      const tesseract::common::JointIdTransformMap& /*floating_joints*/) const override
+  {
+    ++id_setstate_vec_calls;
+    return {};
+  }
+  std::vector<std::string>
+  setEnvironmentState(const tesseract::common::JointIdTransformMap& /*floating_joints*/) const override
+  {
+    ++id_setstate_fj_calls;
+    return {};
+  }
+
+  std::unique_ptr<tesseract::environment::Environment>
+  getEnvironment(const std::string& /*monitor_namespace*/) const override
+  {
+    return nullptr;
+  }
+};
+}  // namespace
+
+TEST(TesseractEnvironmentUnit, EnvMonitorInterfaceStringOverloads)  // NOLINT
+{
+  FakeMonitor m("test_env");
+
+  std::unordered_map<std::string, double> joints_map{ { "j1", 0.0 } };
+  std::vector<std::string> names{ "j1" };
+  std::vector<double> vals{ 0.0 };
+  Eigen::VectorXd evals(1);
+  evals << 0.0;
+
+  // Namespace + string overloads (three of them).
+  EXPECT_TRUE(m.setEnvironmentState("ns", joints_map));
+  EXPECT_EQ(m.id_setstate_ns_id_calls, 1);
+
+  EXPECT_TRUE(m.setEnvironmentState("ns", names, vals));
+  EXPECT_TRUE(m.setEnvironmentState("ns", names, evals));
+  EXPECT_EQ(m.id_setstate_ns_vec_calls, 2);
+
+  // All-namespaces overloads (three of them).
+  auto r1 = m.setEnvironmentState(joints_map);
+  auto r2 = m.setEnvironmentState(names, vals);
+  auto r3 = m.setEnvironmentState(names, evals);
+  EXPECT_TRUE(r1.empty());
+  EXPECT_TRUE(r2.empty());
+  EXPECT_TRUE(r3.empty());
+  EXPECT_EQ(m.id_setstate_id_calls, 1);
+  EXPECT_EQ(m.id_setstate_vec_calls, 2);
 }
 
 int main(int argc, char** argv)
