@@ -942,6 +942,52 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveTrajectoryLink)  // NOLINT
   runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL);
 }
 
+void runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method method)
+{
+  // Get the environment
+  auto env = getEnvironment();
+
+  // Build a trajectory that (a) spans more than two states so the per-state loop
+  // body at environment.cpp:1383-1439 runs repeatedly, and (b) changes its joint
+  // ID set between states so the !isIdentical branch at environment.cpp:1407 is
+  // taken in addition to the joint_ids.empty() path.
+  tesseract::common::JointTrajectory trajectory;
+  trajectory.push_back(
+      tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3" },
+                                                     Eigen::VectorXd::Constant(3, 0.25)));
+  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3" },
+                                                     Eigen::VectorXd::Constant(3, 0.5)));
+
+  const std::string link_name = "traj_link_multi";
+  const std::string parent_link_name = "base_link";
+
+  auto cmd = std::make_shared<AddTrajectoryLinkCommand>(link_name, parent_link_name, trajectory, false, method);
+  EXPECT_TRUE(cmd != nullptr);
+  EXPECT_EQ(cmd->getType(), CommandType::ADD_TRAJECTORY_LINK);
+  EXPECT_EQ(cmd->getLinkName(), link_name);
+  EXPECT_EQ(cmd->getParentLinkName(), parent_link_name);
+  EXPECT_EQ(cmd->getMethod(), method);
+  EXPECT_EQ(cmd->getTrajectory().size(), 3U);
+  ASSERT_TRUE(env->applyCommand(cmd));
+
+  EXPECT_TRUE(env->getDiscreteContactManager()->hasCollisionObject(link_name));
+  EXPECT_TRUE(env->getContinuousContactManager()->hasCollisionObject(link_name));
+
+  const std::vector<std::string> link_names = env->getLinkNames();
+  const std::vector<std::string> joint_names = env->getJointNames();
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name) != link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name) != joint_names.end());
+}
+
+TEST(TesseractEnvironmentUnit, EnvAddTrajectoryLinkMultiState)  // NOLINT
+{
+  runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method::PER_STATE_OBJECTS);
+  runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method::PER_STATE_CONVEX_HULL);
+  runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method::GLOBAL_PER_LINK_CONVEX_HULL);
+  runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method::GLOBAL_CONVEX_HULL);
+}
+
 TEST(TesseractEnvironmentUnit, EnvAddKinematicsInformationCommandUnit)  // NOLINT
 {
   // Get the environment
