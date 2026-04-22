@@ -39,7 +39,7 @@ jobs:
     - name: install-depends
       shell: cmd
       run: |
-        python -m pip install vcstool -q
+        python -m pip install vcstool setuptools -q
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
@@ -74,7 +74,7 @@ jobs:
         path: workspace/src/tesseract
     - name: install-depends
       run: |
-        python -m pip install vcstool -q
+        python -m pip install vcstool setuptools -q
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
@@ -98,7 +98,7 @@ jobs:
         conda build -m .ci_support/linux_64_.yaml --build-only .
 
   conda-mac:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     defaults:
       run:
         shell: bash -el {0}
@@ -108,7 +108,7 @@ jobs:
         path: workspace/src/tesseract
     - name: install-depends
       run: |
-        python -m pip install vcstool -q
+        python -m pip install vcstool setuptools -q
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
