@@ -166,13 +166,13 @@ int main(int /*argc*/, char** /*argv*/)
       .container("usb_plugin")
         .string("port").required()
           .doc("Serial port").placeholder("/dev/ttyUSB0").label("Port").done()
-        .integer("baud_rate").required()
+        .int32("baud_rate").required()
           .doc("Serial baud rate").minimum(300).maximum(921600).label("Baud Rate").done()
         .done()
       .container("ethernet_plugin")
         .string("ip_address").required()
           .doc("Remote IP address").placeholder("192.168.1.1").label("IP Address").done()
-        .integer("port").required()
+        .int32("port").required()
           .doc("TCP port").minimum(1024).maximum(65535).label("Port").done()
         .boolean("use_ipv6")
           .doc("Use IPv6 if available").defaultVal(false).label("IPv6").done()
@@ -198,7 +198,7 @@ int main(int /*argc*/, char** /*argv*/)
       {
         std::cout << "    ✓ Selected USB plugin\n";
         std::cout << "    Port: " << schema_copy.at("port").as<std::string>() << "\n";
-        std::cout << "    Baud: " << schema_copy.at("baud_rate").as<int>() << "\n";
+        std::cout << "    Baud: " << schema_copy.at("baud_rate").as<int32_t>() << "\n";
       }
     }
     catch (const std::exception& ex)
@@ -225,7 +225,7 @@ int main(int /*argc*/, char** /*argv*/)
       {
         std::cout << "    ✓ Selected Ethernet plugin\n";
         std::cout << "    IP: " << schema_copy.at("ip_address").as<std::string>() << "\n";
-        std::cout << "    Port: " << schema_copy.at("port").as<int>() << "\n";
+        std::cout << "    Port: " << schema_copy.at("port").as<int32_t>() << "\n";
         std::cout << "    IPv6: " << (schema_copy.at("use_ipv6").as<bool>() ? "enabled" : "disabled") << " (default)\n";
       }
     }
@@ -302,17 +302,17 @@ int main(int /*argc*/, char** /*argv*/)
       .attribute(TYPE, ONEOF)
       .container("camera")
         .string("device").required().label("Device Path").placeholder("/dev/video0").done()
-        .integer("fps").required().minimum(1).maximum(120).label("FPS").done()
+        .int32("fps").required().minimum(1).maximum(120).label("FPS").done()
         .string("resolution").defaultVal("1280x720").label("Resolution").done()
         .done()
       .container("lidar")
         .string("device").required().label("Device Path").placeholder("/dev/ttyACM0").done()
-        .integer("scan_rate").required().minimum(1).maximum(100).label("Scan Rate (Hz)").done()
+        .int32("scan_rate").required().minimum(1).maximum(100).label("Scan Rate (Hz)").done()
         .doubleNum("range").required().minimum(0.1).maximum(200.0).label("Max Range (m)").done()
         .done()
       .container("imu")
         .string("device").required().label("Device Path").placeholder("/dev/ttyUSB0").done()
-        .integer("sample_rate").required().minimum(10).maximum(10000).label("Sample Rate (Hz)").done()
+        .int32("sample_rate").required().minimum(10).maximum(10000).label("Sample Rate (Hz)").done()
         .done()
       .build();
   // clang-format on
@@ -334,7 +334,7 @@ int main(int /*argc*/, char** /*argv*/)
       {
         std::cout << "    ✓ Selected camera branch\n";
         std::cout << "    Device: " << schema_copy.at("device").as<std::string>() << "\n";
-        std::cout << "    FPS: " << schema_copy.at("fps").as<int>() << "\n";
+        std::cout << "    FPS: " << schema_copy.at("fps").as<int32_t>() << "\n";
         std::cout << "    Resolution: " << schema_copy.at("resolution").as<std::string>() << " (default)\n";
       }
     }
@@ -362,7 +362,7 @@ int main(int /*argc*/, char** /*argv*/)
       {
         std::cout << "    ✓ Selected lidar branch\n";
         std::cout << "    Device: " << schema_copy.at("device").as<std::string>() << "\n";
-        std::cout << "    Scan Rate: " << schema_copy.at("scan_rate").as<int>() << " Hz\n";
+        std::cout << "    Scan Rate: " << schema_copy.at("scan_rate").as<int32_t>() << " Hz\n";
         std::cout << "    Max Range: " << schema_copy.at("range").as<double>() << " m\n";
       }
     }
