@@ -23,6 +23,7 @@
  * limitations under the License.
  */
 
+#include <cassert>
 #include <tesseract/collision/fcl/fcl_collision_geometry_cache.h>
 #include <tesseract/geometry/geometry.h>
 #include <mutex>
