@@ -6,18 +6,6 @@ on:
       - master
       - 'dev**'
   pull_request:
-    paths:
-      - 'collision/**'
-      - 'common/**'
-      - 'geometry/**'
-      - 'environment/**'
-      - 'kinematics/**'
-      - 'srdf/**'
-      - 'state_solver/**'
-      - 'urdf/**'
-      - 'visualization/**'
-      - '.github/workflows/clang_format.yml'
-      - '**clang-format'
   schedule:
     - cron: '0 5 * * *'
 
