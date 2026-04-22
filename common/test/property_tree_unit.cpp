@@ -797,10 +797,10 @@ TEST(PropertyTreeBuilder, AllScalarTypes)  // NOLINT
       .string("s").done()
       .character("c").done()
       .boolean("b").done()
-      .integer("i").done()
-      .unsignedInt("u").done()
-      .longInt("li").done()
-      .longUnsignedInt("lu").done()
+      .int32("i").done()
+      .uint32("u").done()
+      .int64("li").done()
+      .uint64("lu").done()
       .floatNum("f").done()
       .doubleNum("d").done()
       .build();
@@ -817,10 +817,10 @@ TEST(PropertyTreeBuilder, AllScalarTypes)  // NOLINT
   check("s", STRING);
   check("c", CHAR);
   check("b", BOOL);
-  check("i", INT);
-  check("u", UNSIGNED_INT);
-  check("li", LONG_INT);
-  check("lu", LONG_UNSIGNED_INT);
+  check("i", INT32);
+  check("u", UINT32);
+  check("li", INT64);
+  check("lu", UINT64);
   check("f", FLOAT);
   check("d", DOUBLE);
 }
@@ -3194,15 +3194,15 @@ TEST(PropertyTreeBuilder, AllBuilderTypes)  // NOLINT
                     .boolean("flag")
                     .defaultVal(true)
                     .done()
-                    .integer("count")
+                    .int32("count")
                     .minimum(-10)
                     .maximum(100)
                     .done()
-                    .unsignedInt("size")
+                    .uint32("size")
                     .done()
-                    .longInt("big")
+                    .int64("big")
                     .done()
-                    .longUnsignedInt("huge")
+                    .uint64("huge")
                     .done()
                     .floatNum("fval")
                     .done()
@@ -3386,9 +3386,9 @@ TEST(TypeCoverage, StandaloneTypes)  // NOLINT
   EXPECT_DOUBLE_EQ(double_node.as<double>(), 3.14);
 
   PropertyTree uint_node;
-  uint_node.setAttribute(TYPE, UNSIGNED_INT);
+  uint_node.setAttribute(TYPE, UINT32);
   uint_node.setValue(YAML::Node(100U));
-  EXPECT_EQ(uint_node.as<unsigned int>(), 100U);
+  EXPECT_EQ(uint_node.as<uint32_t>(), 100U);
 
   PropertyTree char_node;
   char_node.setAttribute(TYPE, CHAR);
@@ -3396,14 +3396,9 @@ TEST(TypeCoverage, StandaloneTypes)  // NOLINT
   EXPECT_EQ(char_node.as<char>(), 'a');
 
   PropertyTree long_uint_node;
-  long_uint_node.setAttribute(TYPE, LONG_UNSIGNED_INT);
+  long_uint_node.setAttribute(TYPE, UINT64);
   long_uint_node.setValue(YAML::Node(9999999999UL));
-#ifndef _WIN32
-  EXPECT_EQ(long_uint_node.as<long unsigned int>(), 9999999999UL);
-#else
-  // Need to use long long on Windows for 64 bit ints
-  EXPECT_EQ(long_uint_node.as<long long unsigned int>(), 9999999999UL);
-#endif
+  EXPECT_EQ(long_uint_node.as<uint64_t>(), 9999999999UL);
 }
 
 TEST(TypeCoverage, ListOfBool)  // NOLINT
@@ -3461,7 +3456,7 @@ TEST(TypeCoverage, ListOfDouble)  // NOLINT
 
 TEST(TypeCoverage, ListOfUnsignedInt)  // NOLINT
 {
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(UNSIGNED_INT)).build();
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(UINT32)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(YAML::Node(100U));
@@ -3513,7 +3508,7 @@ TEST(TypeCoverage, ListOfChar)  // NOLINT
 
 TEST(TypeCoverage, ListOfLongUnsignedInt)  // NOLINT
 {
-  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(LONG_UNSIGNED_INT)).build();
+  PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(UINT64)).build();
 
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back(YAML::Node(5000000000UL));
@@ -3620,7 +3615,7 @@ TEST(TypeCoverage, MapOfDouble)  // NOLINT
 TEST(TypeCoverage, MapOfUnsignedInt)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  PropertyTree uint_schema = PropertyTreeBuilder().attribute(TYPE, UNSIGNED_INT).build();
+  PropertyTree uint_schema = PropertyTreeBuilder().attribute(TYPE, UINT32).build();
   reg->registerSchema("uint_type_for_map", uint_schema);
 
   PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("uint_type_for_map")).build();
@@ -3654,7 +3649,7 @@ TEST(TypeCoverage, MapOfChar)  // NOLINT
 TEST(TypeCoverage, MapOfLongUnsignedInt)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
-  PropertyTree long_uint_schema = PropertyTreeBuilder().attribute(TYPE, LONG_UNSIGNED_INT).build();
+  PropertyTree long_uint_schema = PropertyTreeBuilder().attribute(TYPE, UINT64).build();
   reg->registerSchema("long_uint_type_for_map", long_uint_schema);
 
   PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createMap("long_uint_type_for_map")).build();
