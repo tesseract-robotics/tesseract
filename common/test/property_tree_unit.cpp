@@ -1089,7 +1089,7 @@ TEST(PropertyTreeHelpers, IsSequenceType)  // NOLINT
   result = isSequenceType("List[int32,5]");
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->first, INT32);  // NOLINT
-  EXPECT_EQ(result->second, 5U);  // NOLINT
+  EXPECT_EQ(result->second, 5U);    // NOLINT
 
   result = isSequenceType(STRING);
   EXPECT_FALSE(result.has_value());
@@ -1100,7 +1100,7 @@ TEST(PropertyTreeHelpers, IsMapType)  // NOLINT
   auto result = isMapType("Map[string,int32]");
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->first, STRING);  // NOLINT
-  EXPECT_EQ(result->second, INT32);    // NOLINT
+  EXPECT_EQ(result->second, INT32);  // NOLINT
 
   result = isMapType("not_a_map");
   EXPECT_FALSE(result.has_value());
