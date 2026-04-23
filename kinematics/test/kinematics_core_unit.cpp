@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract/kinematics/kdl/kdl_inv_kin_chain_lma.h>
+#include <tesseract/kinematics/inverse_kinematics.h>
 #include <tesseract/kinematics/joint_group.h>
 #include <tesseract/kinematics/kinematic_group.h>
 #include <tesseract/kinematics/utils.h>
@@ -16,6 +17,52 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <Eigen/Geometry>
 
 const static std::string FACTORY_NAME = "TestFactory";
+
+namespace
+{
+/**
+ * @brief Minimal InverseKinematics stub for driving KinematicGroup constructor validation paths.
+ * @details Allows the test to supply arbitrary joint_ids / working_frame / tip_links so the
+ * KinematicGroup constructor throws can be exercised directly.
+ */
+class FakeInvKin : public tesseract::kinematics::InverseKinematics
+{
+public:
+  FakeInvKin(std::vector<tesseract::common::JointId> joint_ids,
+             tesseract::common::LinkId working_frame,
+             std::vector<tesseract::common::LinkId> tip_links,
+             tesseract::common::LinkId base_link = tesseract::common::LinkId("base_link"))
+    : joint_ids_(std::move(joint_ids))
+    , working_frame_(std::move(working_frame))
+    , base_link_(std::move(base_link))
+    , tip_links_(std::move(tip_links))
+  {
+  }
+
+  void calcInvKin(tesseract::kinematics::IKSolutions& /*solutions*/,
+                  const tesseract::common::LinkIdTransformMap& /*tip_link_poses*/,
+                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const override
+  {
+  }
+
+  std::vector<tesseract::common::JointId> getJointIds() const override { return joint_ids_; }
+  Eigen::Index numJoints() const override { return static_cast<Eigen::Index>(joint_ids_.size()); }
+  tesseract::common::LinkId getBaseLinkId() const override { return base_link_; }
+  tesseract::common::LinkId getWorkingFrame() const override { return working_frame_; }
+  std::vector<tesseract::common::LinkId> getTipLinkIds() const override { return tip_links_; }
+  std::string getSolverName() const override { return "FakeInvKin"; }
+  tesseract::kinematics::InverseKinematics::UPtr clone() const override
+  {
+    return std::make_unique<FakeInvKin>(*this);
+  }
+
+private:
+  std::vector<tesseract::common::JointId> joint_ids_;
+  tesseract::common::LinkId working_frame_;
+  tesseract::common::LinkId base_link_;
+  std::vector<tesseract::common::LinkId> tip_links_;
+};
+}  // namespace
 
 TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardZeroUnit)  // NOLINT
 {
@@ -748,6 +795,67 @@ TEST(TesseractKinematicsUnit, KinematicGroupByJointIdAccessorsUnit)  // NOLINT
   const std::vector<LinkId> tip_links = kg.getAllPossibleTipLinkIds();
   EXPECT_FALSE(tip_links.empty());
   EXPECT_NE(std::find(tip_links.begin(), tip_links.end(), tip_link_id), tip_links.end());
+}
+
+TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  const auto scene_state = ss.getState();
+
+  const LinkId base_link_id("base_link");
+  const LinkId tip_link_id("tool0");
+  const std::vector<JointId> joint_ids{ JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
+                                        JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
+                                        JointId("joint_a7") };
+
+  // Wrong-size joint_ids: the fake reports 7 joints but the KinematicGroup is built with 3.
+  {
+    auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
+    const std::vector<JointId> short_ids{ joint_ids[0], joint_ids[1], joint_ids[2] };
+    EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", short_ids, std::move(inv), *scene_graph, scene_state),
+                 std::runtime_error);
+  }
+
+  // Matching size but different ids: exercises the "joint_ids does not match" throw.
+  {
+    std::vector<JointId> mismatched = joint_ids;
+    mismatched.back() = JointId("bogus_joint");
+    auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
+    EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", mismatched, std::move(inv), *scene_graph, scene_state),
+                 std::runtime_error);
+  }
+
+  // Same ids but reversed order: exercises the reorder_required_ / inv_kin_joint_map_ branch.
+  {
+    std::vector<JointId> reordered(joint_ids.rbegin(), joint_ids.rend());
+    auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
+    EXPECT_NO_THROW(tesseract::kinematics::KinematicGroup("kg_reordered",
+                                                          reordered,
+                                                          std::move(inv),
+                                                          *scene_graph,
+                                                          scene_state));
+  }
+
+  // Unknown working frame: exercises the working-frame link-transform lookup throw.
+  {
+    auto inv =
+        std::make_unique<FakeInvKin>(joint_ids, LinkId("not_a_link"), std::vector<LinkId>{ tip_link_id });
+    EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", joint_ids, std::move(inv), *scene_graph, scene_state),
+                 std::runtime_error);
+  }
+
+  // Unknown tip link: exercises the tip-link link-transform lookup throw.
+  {
+    auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ LinkId("not_a_tip") });
+    EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", joint_ids, std::move(inv), *scene_graph, scene_state),
+                 std::runtime_error);
+  }
 }
 
 int main(int argc, char** argv)
