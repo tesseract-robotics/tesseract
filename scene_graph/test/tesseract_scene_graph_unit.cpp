@@ -1416,6 +1416,65 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnit)  // NOLINT
   EXPECT_FALSE(data.static_link_ids.empty());
 }
 
+TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  SceneGraph g = buildTestSceneGraph();
+
+  // Parse the full tree twice to produce two structurally-identical KDLTreeData
+  // instances. This exercises the operator== body (kdl_parser.cpp L198-L216).
+  KDLTreeData a = parseSceneGraph(g);
+  KDLTreeData b = parseSceneGraph(g);
+
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+
+  // Mutate base_link_id to flip one of the boolean AND-chain terms.
+  {
+    KDLTreeData mutated = b;
+    mutated.base_link_id = LinkId("mutated_base");
+    EXPECT_FALSE(a == mutated);
+    EXPECT_TRUE(a != mutated);
+  }
+
+  // Inject a floating-joint value into one side to exercise the isometry_equal
+  // branch of the isIdenticalMap comparison (L212-L213). buildTestSceneGraph()
+  // contains no FLOATING joints, so floating_joint_values is empty on both
+  // sides; directly populate `b` to force the map comparison to differ.
+  {
+    KDLTreeData mutated = b;
+    Eigen::Isometry3d shifted = Eigen::Isometry3d::Identity();
+    shifted.translation().x() = 10.0;
+    mutated.floating_joint_values[JointId("phantom_floating")] = shifted;
+    EXPECT_FALSE(a == mutated);
+    EXPECT_TRUE(a != mutated);
+  }
+
+  // Two non-empty floating_joint_values maps with matching keys but differing
+  // transforms: hits the isometry_equal lambda with a false result.
+  {
+    KDLTreeData left = b;
+    KDLTreeData right = b;
+    left.floating_joint_values[JointId("phantom_floating")] = Eigen::Isometry3d::Identity();
+    Eigen::Isometry3d shifted = Eigen::Isometry3d::Identity();
+    shifted.translation().y() = 5.0;
+    right.floating_joint_values[JointId("phantom_floating")] = shifted;
+    EXPECT_FALSE(left == right);
+    EXPECT_TRUE(left != right);
+  }
+
+  // Matching non-empty floating_joint_values maps: isometry_equal returns true.
+  {
+    KDLTreeData left = b;
+    KDLTreeData right = b;
+    Eigen::Isometry3d same = Eigen::Isometry3d::Identity();
+    same.translation().z() = 2.0;
+    left.floating_joint_values[JointId("phantom_floating")] = same;
+    right.floating_joint_values[JointId("phantom_floating")] = same;
+    EXPECT_TRUE(left == right);
+  }
+}
+
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 {
   using namespace tesseract::scene_graph;
