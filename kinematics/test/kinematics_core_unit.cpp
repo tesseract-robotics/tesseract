@@ -899,6 +899,36 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentAndNameAccessorsUnit)  // 
                std::runtime_error);
 }
 
+TEST(TesseractKinematicsUnit, KinematicGroupConstructorMismatchedIdsUnit)  // NOLINT
+{
+  // Covers kinematic_group.cpp:121 — the "joint_ids does not match inverse kinematics object" throw.
+  // The existing KinematicGroupConstructorThrowsUnit's "mismatched" case fails in the JointGroup
+  // base class (bogus_joint not in scene graph) and never reaches L121. Here we keep the
+  // KinematicGroup's joint_ids all valid scene-graph joints, but have the FakeInvKin report a
+  // different (same-count) joint set, which reaches the inner set-equality check.
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  const auto scene_state = ss.getState();
+
+  const LinkId base_link_id("base_link");
+  const LinkId tip_link_id("tool0");
+  const std::vector<JointId> real_ids{ JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
+                                       JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
+                                       JointId("joint_a7") };
+
+  // FakeInvKin reports a vector of the same count but containing a bogus id.
+  std::vector<JointId> fake_inv_ids = real_ids;
+  fake_inv_ids.back() = JointId("not_a_real_joint");
+  auto inv = std::make_unique<FakeInvKin>(fake_inv_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
+
+  EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", real_ids, std::move(inv), *scene_graph, scene_state),
+               std::runtime_error);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
