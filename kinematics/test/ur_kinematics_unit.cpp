@@ -170,10 +170,10 @@ TEST(TesseractKinematicsUnit, URInvKinWrongJointCountThrowsUnit)  // NOLINT
   // Covers ur_inv_kin.cpp:240 — URInvKin throws when joint_ids.size() != 6.
   const std::vector<tesseract::common::JointId> five_joints{ "j1", "j2", "j3", "j4", "j5" };
   EXPECT_THROW(URInvKin(UR5Parameters,
-                       tesseract::common::LinkId("base_link"),
-                       tesseract::common::LinkId("tool0"),
-                       five_joints,
-                       "ur_solver"),
+                        tesseract::common::LinkId("base_link"),
+                        tesseract::common::LinkId("tool0"),
+                        five_joints,
+                        "ur_solver"),
                std::runtime_error);
 }
 

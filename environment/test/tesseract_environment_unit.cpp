@@ -6430,10 +6430,10 @@ TEST(TesseractEnvironmentUnit, EnvFindTcpOffsetByGroupTcpUnit)  // NOLINT
   // laser TCP in iiwa.srdf: xyz="1 .1 1" rpy="0 1.57 0"
   Eigen::Isometry3d expected = Eigen::Isometry3d::Identity();
   expected.translation() = Eigen::Vector3d(1.0, 0.1, 1.0);
-  expected.linear() = (Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
-                       Eigen::AngleAxisd(1.57, Eigen::Vector3d::UnitY()) *
-                       Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()))
-                          .toRotationMatrix();
+  expected.linear() =
+      (Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) * Eigen::AngleAxisd(1.57, Eigen::Vector3d::UnitY()) *
+       Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()))
+          .toRotationMatrix();
   EXPECT_TRUE(found_tcp.isApprox(expected, 1e-6));
 }
 
@@ -6486,8 +6486,8 @@ TEST(TesseractEnvironmentUnit, CheckTrajectoryByJointNamesUnit)  // NOLINT
   config.exit_condition = CollisionCheckExitType::ALL;
 
   std::vector<tesseract::collision::ContactResultMap> contacts_discrete;
-  auto r_discrete =
-      tesseract::environment::checkTrajectory(contacts_discrete, *discrete_manager, *state_solver, joint_names, traj, config);
+  auto r_discrete = tesseract::environment::checkTrajectory(
+      contacts_discrete, *discrete_manager, *state_solver, joint_names, traj, config);
   EXPECT_EQ(contacts_discrete.size(), static_cast<std::size_t>(traj.rows()));
   (void)r_discrete;
 
