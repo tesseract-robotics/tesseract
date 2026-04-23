@@ -162,6 +162,100 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
   runKinematicsFactoryTest(export_config_path);
 }
 
+TEST(TesseractKinematicsFactoryUnit, RopRepFactoryMissingPositionerJointUnit)  // NOLINT
+{
+  // Covers rop_factory.cpp:140 and rep_factory.cpp:138 — "positioner sample resolution
+  // missing joint" throw when the sample_res_map has the correct count but contains
+  // joint names that do not match the fwd_kin positioner joint ids. The sample names
+  // must still refer to real scene-graph joints (to pass the earlier getJoint check),
+  // so we pick abb-manipulator joints while the positioner fwd_kin reports the
+  // positioner_joint_* ids.
+  tesseract::common::GeneralResourceLocator locator;
+  std::filesystem::path file_path(__FILE__);
+  std::filesystem::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
+  KinematicsPluginFactory factory(config_path, locator);
+
+  const char* rop_config = R"(
+manipulator_reach: 2.0
+positioner_sample_resolution:
+  - name: joint_1
+    value: 0.1
+positioner:
+  class: KDLFwdKinChainFactory
+  config:
+    base_link: positioner_base_link
+    tip_link: positioner_tool0
+manipulator:
+  class: OPWInvKinFactory
+  config:
+    base_link: base_link
+    tip_link: tool0
+    params:
+      a1: 0.100
+      a2: -0.135
+      b: 0.00
+      c1: 0.615
+      c2: 0.705
+      c3: 0.755
+      c4: 0.086
+      offsets: [0, 0, -1.57079632679, 0, 0, 0]
+      sign_corrections: [1, 1, 1, 1, 1, 1]
+)";
+
+  const char* rep_config = R"(
+manipulator_reach: 2.0
+positioner_sample_resolution:
+  - name: joint_1
+    value: 0.1
+  - name: joint_2
+    value: 0.1
+positioner:
+  class: KDLFwdKinChainFactory
+  config:
+    base_link: positioner_base_link
+    tip_link: positioner_tool0
+manipulator:
+  class: OPWInvKinFactory
+  config:
+    base_link: base_link
+    tip_link: tool0
+    params:
+      a1: 0.100
+      a2: -0.135
+      b: 0.00
+      c1: 0.615
+      c2: 0.705
+      c3: 0.755
+      c4: 0.086
+      offsets: [0, 0, -1.57079632679, 0, 0, 0]
+      sign_corrections: [1, 1, 1, 1, 1, 1]
+)";
+
+  {
+    auto rop_sg = getSceneGraphABBOnPositioner(locator);
+    tesseract::scene_graph::KDLStateSolver ss(*rop_sg);
+    auto state = ss.getState();
+
+    tesseract::common::PluginInfo info;
+    info.class_name = "ROPInvKinFactory";
+    info.config = YAML::Load(rop_config);
+    // KinematicsPluginFactory::createInvKin wraps the throw and returns nullptr after logging,
+    // but the target throw inside ROPInvKinFactory::create is still executed (coverage hit).
+    EXPECT_EQ(factory.createInvKin("ROPInvKinFactory", info, *rop_sg, state), nullptr);
+  }
+
+  {
+    auto rep_sg = getSceneGraphABBExternalPositioner(locator);
+    tesseract::scene_graph::KDLStateSolver ss(*rep_sg);
+    auto state = ss.getState();
+
+    tesseract::common::PluginInfo info;
+    info.class_name = "REPInvKinFactory";
+    info.config = YAML::Load(rep_config);
+    EXPECT_EQ(factory.createInvKin("REPInvKinFactory", info, *rep_sg, state), nullptr);
+  }
+}
+
 TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 {
   tesseract::common::GeneralResourceLocator locator;
