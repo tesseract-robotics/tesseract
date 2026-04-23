@@ -87,6 +87,7 @@ install(
   COMPONENT geometry
   FILES_MATCHING
   PATTERN "*.h"
+  PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
 
 # ADD Examples
