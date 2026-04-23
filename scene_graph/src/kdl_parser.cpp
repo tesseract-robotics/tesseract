@@ -307,7 +307,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     : data_(data), joint_ids_(joint_ids), joint_values_(joint_values), floating_joint_values_(floating_joint_values)
   {
     for (const auto& [id, tf] : floating_joint_values)
-      data_.floating_joint_values.at(id) = tf;
+      data_.floating_joint_values[id] = tf;
   }
 
   template <class u, class g>
