@@ -6111,6 +6111,85 @@ TEST(TesseractEnvironmentUnit, EnvSetStateStringOverloads)  // NOLINT
   EXPECT_FALSE(group_joint_names.empty());
 }
 
+TEST(TesseractEnvironmentUnit, EnvJointIdOverloadsUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  auto env = getEnvironment();
+
+  // The IIWA fixture defines 7 active joints.
+  const std::vector<JointId> active_joint_ids = { JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
+                                                  JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
+                                                  JointId("joint_a7") };
+  Eigen::VectorXd jvals = Eigen::VectorXd::Zero(7);
+  jvals[0] = 0.1;
+  jvals[2] = -0.15;
+  const tesseract::common::JointIdTransformMap empty_floating;
+
+  // ID accessors.
+  const std::vector<JointId> all_joint_ids = env->getJointIds();
+  EXPECT_FALSE(all_joint_ids.empty());
+
+  const std::vector<LinkId> all_link_ids = env->getLinkIds();
+  EXPECT_FALSE(all_link_ids.empty());
+
+  const std::vector<LinkId> static_link_ids = env->getStaticLinkIds();
+  EXPECT_FALSE(static_link_ids.empty());
+
+  const std::vector<LinkId> static_link_ids_from_joints = env->getStaticLinkIds(active_joint_ids);
+  EXPECT_FALSE(static_link_ids_from_joints.empty());
+
+  // Id-keyed current-value accessors.
+  Eigen::VectorXd current_vals = env->getCurrentJointValues(active_joint_ids);
+  EXPECT_EQ(current_vals.size(), static_cast<Eigen::Index>(active_joint_ids.size()));
+
+  // IIWA has no floating joints; pass an empty id vector so SceneState::at() doesn't throw.
+  // Still exercises the ID-taking wrapper and its Implementation counterpart.
+  const std::vector<JointId> empty_joint_ids;
+  tesseract::common::JointIdTransformMap current_fj = env->getCurrentFloatingJointValues(empty_joint_ids);
+  EXPECT_TRUE(current_fj.empty());
+
+  // setState with vector<JointId> + values + floating.
+  env->setState(active_joint_ids, jvals, empty_floating);
+
+  // setState with JointValues map + floating (takes JointId keys via scene_graph::SceneState::JointValues).
+  tesseract::scene_graph::SceneState::JointValues id_map;
+  for (Eigen::Index i = 0; i < jvals.size(); ++i)
+    id_map[active_joint_ids[static_cast<std::size_t>(i)]] = jvals[i];
+  env->setState(id_map, empty_floating);
+
+  // setState(floating_joints) — IIWA has no floating joints so this is a no-op setState pass.
+  env->setState(empty_floating);
+
+  // getState overloads.
+  tesseract::scene_graph::SceneState s_from_ids = env->getState(active_joint_ids, jvals, empty_floating);
+  EXPECT_FALSE(s_from_ids.link_transforms.empty());
+
+  tesseract::scene_graph::SceneState s_from_map = env->getState(id_map, empty_floating);
+  EXPECT_FALSE(s_from_map.link_transforms.empty());
+
+  tesseract::scene_graph::SceneState s_floating_only = env->getState(empty_floating);
+  EXPECT_FALSE(s_floating_only.link_transforms.empty());
+
+  // getLinkTransforms — ID-keyed, with and without floating.
+  tesseract::common::LinkIdTransformMap tfs_ids_fj;
+  env->getLinkTransforms(tfs_ids_fj, active_joint_ids, jvals, empty_floating);
+  EXPECT_GT(tfs_ids_fj.size(), 0U);
+
+  tesseract::common::LinkIdTransformMap tfs_ids;
+  env->getLinkTransforms(tfs_ids, active_joint_ids, jvals);
+  EXPECT_GT(tfs_ids.size(), 0U);
+
+  // Group-level ID accessors. The IIWA test fixture registers a "manipulator" group.
+  const std::vector<JointId> group_joint_ids = env->getGroupJointIds("manipulator");
+  EXPECT_FALSE(group_joint_ids.empty());
+
+  auto jg = env->getJointGroup("manipulator", group_joint_ids);
+  ASSERT_NE(jg, nullptr);
+  EXPECT_FALSE(jg->getJointIds().empty());
+}
+
 namespace
 {
 class FakeMonitor : public tesseract::environment::EnvironmentMonitorInterface
