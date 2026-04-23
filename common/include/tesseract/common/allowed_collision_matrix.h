@@ -48,7 +48,7 @@ public:
   using ConstPtr = std::shared_ptr<const AllowedCollisionMatrix>;
 
   AllowedCollisionMatrix() = default;
-  AllowedCollisionMatrix(AllowedCollisionEntries entries);
+  AllowedCollisionMatrix(const AllowedCollisionEntries& entries);
   virtual ~AllowedCollisionMatrix() = default;
   AllowedCollisionMatrix(const AllowedCollisionMatrix&) = default;
   AllowedCollisionMatrix& operator=(const AllowedCollisionMatrix&) = default;
