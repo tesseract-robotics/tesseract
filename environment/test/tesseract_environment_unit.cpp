@@ -6364,6 +6364,142 @@ TEST(TesseractEnvironmentUnit, EnvSetActiveContinuousManagerMixedLinks)  // NOLI
   SUCCEED();
 }
 
+TEST(TesseractEnvironmentUnit, EnvApplyAddSceneGraphSrdfCalibrationUnit)  // NOLINT
+{
+  // Covers environment.cpp:126 — SRDF calibration_info -> ChangeJointOriginCommand loop.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraph(locator);
+  ASSERT_TRUE(scene_graph != nullptr);
+  auto srdf = getSRDFModel(*scene_graph, locator);
+  ASSERT_TRUE(srdf != nullptr);
+
+  // Inject a calibration entry for joint_a2 before init
+  Eigen::Isometry3d cal_tf = Eigen::Isometry3d::Identity();
+  cal_tf.translation() = Eigen::Vector3d(0.0, 0.0, 0.123);
+  srdf->calibration_info.joints[tesseract::common::JointId("joint_a2")] = cal_tf;
+
+  auto env = std::make_shared<Environment>();
+  ASSERT_TRUE(env->init(*scene_graph, srdf));
+
+  // The calibration command should have replaced joint_a2's origin with cal_tf
+  const auto sg_after = env->getSceneGraph();
+  auto j = sg_after->getJoint("joint_a2");
+  ASSERT_NE(j, nullptr);
+  EXPECT_TRUE(j->parent_to_joint_origin_transform.isApprox(cal_tf, 1e-6));
+}
+
+TEST(TesseractEnvironmentUnit, EnvCurrentFloatingJointValuesByNameUnit)  // NOLINT
+{
+  // Covers environment.cpp:599 — Implementation::getCurrentFloatingJointValues(names) wrapper.
+  using tesseract::common::JointId;
+  using tesseract::scene_graph::Joint;
+  using tesseract::scene_graph::JointType;
+  using tesseract::scene_graph::Link;
+  using tesseract::scene_graph::SceneGraph;
+
+  auto sg = std::make_shared<SceneGraph>();
+  sg->setName("env_floating_value_by_name");
+  sg->addLink(Link("base_link"));
+  sg->addLink(Link("end_link"));
+
+  Joint j("floating_1");
+  j.parent_link_id = "base_link";
+  j.child_link_id = "end_link";
+  j.type = JointType::FLOATING;
+  sg->addJoint(j);
+
+  auto env = std::make_shared<Environment>();
+  ASSERT_TRUE(env->init(*sg));
+
+  auto m = env->getCurrentFloatingJointValues(std::vector<std::string>{ "floating_1" });
+  EXPECT_EQ(m.size(), 1U);
+  ASSERT_EQ(m.count(JointId("floating_1")), 1U);
+  EXPECT_TRUE(m.at(JointId("floating_1")).isApprox(Eigen::Isometry3d::Identity(), 1e-6));
+}
+
+TEST(TesseractEnvironmentUnit, EnvFindTcpOffsetByGroupTcpUnit)  // NOLINT
+{
+  // Covers environment.cpp:893 — findTCPOffset via kinematics_information.group_tcps.
+  // iiwa.srdf defines group_tcps for "manipulator" with names "laser" and "welder".
+  auto env = getEnvironment();
+
+  tesseract::common::ManipulatorInfo manip_info("manipulator", LinkId{}, LinkId{});
+  manip_info.tcp_offset = "laser";
+  Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
+
+  // laser TCP in iiwa.srdf: xyz="1 .1 1" rpy="0 1.57 0"
+  Eigen::Isometry3d expected = Eigen::Isometry3d::Identity();
+  expected.translation() = Eigen::Vector3d(1.0, 0.1, 1.0);
+  expected.linear() = (Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
+                       Eigen::AngleAxisd(1.57, Eigen::Vector3d::UnitY()) *
+                       Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()))
+                          .toRotationMatrix();
+  EXPECT_TRUE(found_tcp.isApprox(expected, 1e-6));
+}
+
+TEST(TesseractEnvironmentUnit, EnvApplyModifyACMReplaceUnit)  // NOLINT
+{
+  // Covers environment.cpp:1882-1883 — ModifyAllowedCollisionsType::REPLACE branch.
+  auto env = getEnvironment();
+
+  // Confirm fixture already has some allowed collisions
+  auto acm = env->getAllowedCollisionMatrix();
+  ASSERT_FALSE(acm->getAllAllowedCollisions().empty());
+  ASSERT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));  // pre-seeded from iiwa srdf
+
+  // Build a replacement ACM with only one pair that was NOT previously allowed
+  tesseract::common::AllowedCollisionMatrix replacement;
+  replacement.addAllowedCollision("link_2", "link_7", "replace-unit-test");
+
+  auto cmd = std::make_shared<ModifyAllowedCollisionsCommand>(replacement, ModifyAllowedCollisionsType::REPLACE);
+  EXPECT_TRUE(env->applyCommand(cmd));
+
+  auto acm_after = env->getAllowedCollisionMatrix();
+  // Old entries cleared
+  EXPECT_FALSE(acm_after->isCollisionAllowed("base_link", "link_1"));
+  // New entry present
+  EXPECT_TRUE(acm_after->isCollisionAllowed("link_2", "link_7"));
+  EXPECT_EQ(acm_after->getAllAllowedCollisions().size(), 1U);
+}
+
+TEST(TesseractEnvironmentUnit, CheckTrajectoryByJointNamesUnit)  // NOLINT
+{
+  // Covers environment/src/utils.cpp:416 (continuous) and :795 (discrete) — string-name
+  // overloads of checkTrajectory that forward to the JointId version via toIds<JointId>.
+  auto env = getEnvironment();
+  env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
+  env->setActiveContinuousContactManager("BulletCastBVHManager");
+  auto discrete_manager = env->getDiscreteContactManager();
+  auto continuous_manager = env->getContinuousContactManager();
+  auto state_solver = env->getStateSolver();
+
+  const std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                 "joint_a5", "joint_a6", "joint_a7" };
+
+  tesseract::common::TrajArray traj(2, 7);
+  traj.row(0) = Eigen::VectorXd::Zero(7).transpose();
+  traj.row(1) = (Eigen::VectorXd::Ones(7) * 0.1).transpose();
+
+  tesseract::collision::CollisionCheckConfig config;
+  config.type = CollisionEvaluatorType::DISCRETE;
+  config.check_program_mode = CollisionCheckProgramType::ALL;
+  config.exit_condition = CollisionCheckExitType::ALL;
+
+  std::vector<tesseract::collision::ContactResultMap> contacts_discrete;
+  auto r_discrete =
+      tesseract::environment::checkTrajectory(contacts_discrete, *discrete_manager, *state_solver, joint_names, traj, config);
+  EXPECT_EQ(contacts_discrete.size(), static_cast<std::size_t>(traj.rows()));
+  (void)r_discrete;
+
+  config.type = CollisionEvaluatorType::CONTINUOUS;
+  std::vector<tesseract::collision::ContactResultMap> contacts_continuous;
+  auto r_continuous = tesseract::environment::checkTrajectory(
+      contacts_continuous, *continuous_manager, *state_solver, joint_names, traj, config);
+  // Continuous manager requires segments (N-1 results for N-row traj)
+  EXPECT_EQ(contacts_continuous.size(), static_cast<std::size_t>(traj.rows() - 1));
+  (void)r_continuous;
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
