@@ -184,7 +184,7 @@ private:
    *        (throwing via checkPairHashCollision otherwise) and update the margin.
    *        Single write path used by every bulk/merge/deserialization entry point.
    */
-  void insertEntryChecked(const LinkIdPair& key, PairMarginEntry entry);
+  void insertEntryChecked(const LinkIdPair& key, const PairMarginEntry& entry);
 
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
