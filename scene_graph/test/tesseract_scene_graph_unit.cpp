@@ -1475,13 +1475,13 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
   }
 }
 
-// Exercises the sub-tree builder when the provided floating_joint_values map is
-// non-empty. Covers two previously-untested lines in kdl_parser.cpp:
-//   - L310: kdl_sub_tree_builder constructor copy into data_.floating_joint_values
-//           (previously used .at() on the empty destination map, which threw).
-//   - L350: discover_vertex's FLOATING branch in parent_to_joint lookup.
-// buildTestSceneGraph() provides joint_3 as FLOATING (link_3 -> link_4), so we
-// just need to hand the parser a transform for it.
+// Exercises the sub-tree builder constructor when the provided
+// floating_joint_values map is non-empty. Covers kdl_parser.cpp:310 — the loop
+// that copies entries into data_.floating_joint_values (previously used .at()
+// on the empty destination map, which threw std::out_of_range).
+// buildTestSceneGraph()'s joint_3 is REVOLUTE, so this test does not exercise
+// the DFS FLOATING branch at L349-350; see KDLParserSubTreeFloatingJointDfsUnit
+// below for that.
 TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
@@ -1489,18 +1489,12 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
 
   std::vector<Joint::ConstPtr> active_joints = g.getActiveJoints();
 
-  // Subset mirrors the sibling KDLParserSubTreeUnit test (joint_1/2/4). The
-  // FLOATING joint_3 is not in the subset, but the DFS visits every vertex and
-  // executes the FLOATING branch at L349-351 / L356-357 unconditionally.
   const std::vector<JointId> subset{ JointId("joint_1"), JointId("joint_2"), JointId("joint_4") };
 
   std::unordered_map<JointId, double> joint_values;
   for (const auto& j : active_joints)
     joint_values[j->getId()] = 0.0;
 
-  // Supply a non-identity transform for joint_3. The constructor at L310 must
-  // copy it into data_.floating_joint_values, and discover_vertex at L350 must
-  // read it back when building the segment for link_4.
   tesseract::common::JointIdTransformMap floating;
   Eigen::Isometry3d fj_tf = Eigen::Isometry3d::Identity();
   fj_tf.translation().x() = 0.75;
@@ -1510,15 +1504,54 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
   // Pre-fix this call threw std::out_of_range from the .at() in the constructor.
   KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
 
-  // L310 coverage: the transform must have been copied into data.
   ASSERT_EQ(data.floating_joint_values.count(JointId("joint_3")), 1U);
   EXPECT_TRUE(data.floating_joint_values[JointId("joint_3")].isApprox(fj_tf));
-
-  // L350 coverage: if discover_vertex ran the FLOATING branch without throwing,
-  // the sub-tree now contains segments for every reachable link, including
-  // link_4 which hangs off the floating joint.
   EXPECT_FALSE(data.link_ids.empty());
   EXPECT_EQ(data.tree.getNrOfJoints(), subset.size());
+}
+
+// Exercises kdl_parser.cpp:349-350 — the DFS FLOATING branch in discover_vertex
+// that reads the transform back out of data_.floating_joint_values while
+// building the segment for a FLOATING joint's child link. Requires an actual
+// FLOATING joint in the graph, which buildTestSceneGraph() does not provide.
+TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointDfsUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+
+  // Minimal graph: base_link (root) --fixed--> link_1 --floating--> link_2.
+  SceneGraph g;
+  EXPECT_TRUE(g.addLink(Link("base_link")));
+  EXPECT_TRUE(g.addLink(Link("link_1")));
+  EXPECT_TRUE(g.addLink(Link("link_2")));
+
+  Joint j_fixed("j_fixed");
+  j_fixed.parent_link_id = "base_link";
+  j_fixed.child_link_id = "link_1";
+  j_fixed.type = JointType::FIXED;
+  EXPECT_TRUE(g.addJoint(j_fixed));
+
+  Joint j_float("j_float");
+  j_float.parent_link_id = "link_1";
+  j_float.child_link_id = "link_2";
+  j_float.type = JointType::FLOATING;
+  EXPECT_TRUE(g.addJoint(j_float));
+
+  // An empty active-joint subset means every joint (including the FLOATING one)
+  // is walked by the sub-tree builder as a fixed segment driven by the provided
+  // floating_joint_values transform.
+  const std::vector<JointId> subset;
+  const std::unordered_map<JointId, double> joint_values;
+
+  tesseract::common::JointIdTransformMap floating;
+  Eigen::Isometry3d fj_tf = Eigen::Isometry3d::Identity();
+  fj_tf.translation().x() = 0.5;
+  floating[JointId("j_float")] = fj_tf;
+
+  KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
+
+  EXPECT_EQ(data.base_link_id, LinkId("base_link"));
+  ASSERT_EQ(data.floating_joint_values.count(JointId("j_float")), 1U);
+  EXPECT_TRUE(data.floating_joint_values[JointId("j_float")].isApprox(fj_tf));
 }
 
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
