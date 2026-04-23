@@ -1213,7 +1213,7 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
     double new_velocity = 3.0;
     double new_acceleration = 4.0;
 
-    std::unordered_map<std::string, std::pair<double, double> > position_limit_map;
+    std::unordered_map<std::string, std::pair<double, double>> position_limit_map;
     position_limit_map["joint_a1"] = std::make_pair(new_lower, new_upper);
 
     std::unordered_map<std::string, double> velocity_limit_map;
@@ -6160,9 +6160,9 @@ public:
   {
     return true;
   }
-  bool applyCommands(const std::string& /*monitor_namespace*/,
-                     const std::vector<std::shared_ptr<const tesseract::environment::Command>>& /*commands*/)
-      const override
+  bool
+  applyCommands(const std::string& /*monitor_namespace*/,
+                const std::vector<std::shared_ptr<const tesseract::environment::Command>>& /*commands*/) const override
   {
     return true;
   }
@@ -6172,8 +6172,7 @@ public:
     return true;
   }
 
-  tesseract::scene_graph::SceneState
-  getEnvironmentState(const std::string& /*monitor_namespace*/) const override
+  tesseract::scene_graph::SceneState getEnvironmentState(const std::string& /*monitor_namespace*/) const override
   {
     return {};
   }

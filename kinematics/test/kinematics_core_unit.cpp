@@ -580,8 +580,7 @@ TEST(TesseractKinematicsUnit, JointGroupByJointIdAccessorsUnit)  // NOLINT
   tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
   const auto scene_state = ss.getState();
 
-  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                  "joint_a5", "joint_a6", "joint_a7" };
+  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6", "joint_a7" };
 
   // Construct JointGroup via the JointId overload.
   tesseract::kinematics::JointGroup jg("manipulator", joint_ids, *scene_graph, scene_state);
@@ -647,6 +646,48 @@ TEST(TesseractKinematicsUnit, JointGroupByJointIdAccessorsUnit)  // NOLINT
   Eigen::MatrixXd jac_at_point = jg.calcJacobian(q, jac_link, Eigen::Vector3d(0.05, 0.0, 0.0));
   EXPECT_EQ(jac_at_point.rows(), 6);
   EXPECT_EQ(jac_at_point.cols(), q.size());
+
+  // 4-arg calcJacobian with base == root — delegates to the 3-arg link_point overload.
+  Eigen::MatrixXd jac_at_point_with_base = jg.calcJacobian(q, base_link_id, jac_link, Eigen::Vector3d(0.05, 0.0, 0.0));
+  EXPECT_TRUE(jac_at_point_with_base.isApprox(jac_at_point, 1e-9));
+
+  // 4-arg calcJacobian with an active non-root base link.
+  const LinkId intermediate_base = active_link_ids.front();
+  ASSERT_NE(intermediate_base, base_link_id);
+  Eigen::MatrixXd jac_active_base = jg.calcJacobian(q, intermediate_base, jac_link, Eigen::Vector3d(0.05, 0.0, 0.0));
+  EXPECT_EQ(jac_active_base.rows(), 6);
+  EXPECT_EQ(jac_active_base.cols(), q.size());
+}
+
+TEST(TesseractKinematicsUnit, JointGroupCalcJacobian4ArgStaticBaseUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  const auto scene_state = ss.getState();
+
+  // Sub-group of IIWA joints: excluding joint_a1..joint_a3 leaves link_3 as a
+  // non-root static link in the group's sub-tree — the only configuration that
+  // exercises the static-base branch of the 4-arg calcJacobian.
+  std::vector<JointId> joint_ids{ "joint_a4", "joint_a5", "joint_a6", "joint_a7" };
+  tesseract::kinematics::JointGroup jg("sub_manipulator", joint_ids, *scene_graph, scene_state);
+
+  const LinkId static_base("link_3");
+  const LinkId tip("tool0");
+  ASSERT_FALSE(jg.isActiveLinkId(static_base));
+  ASSERT_TRUE(jg.isActiveLinkId(tip));
+
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(joint_ids.size()));
+  q[0] = 0.3;
+  q[2] = -0.2;
+
+  Eigen::MatrixXd jac = jg.calcJacobian(q, static_base, tip, Eigen::Vector3d(0.05, 0.0, 0.0));
+  EXPECT_EQ(jac.rows(), 6);
+  EXPECT_EQ(jac.cols(), q.size());
 }
 
 TEST(TesseractKinematicsUnit, KinematicGroupByJointIdAccessorsUnit)  // NOLINT
@@ -662,13 +703,12 @@ TEST(TesseractKinematicsUnit, KinematicGroupByJointIdAccessorsUnit)  // NOLINT
 
   const LinkId base_link_id("base_link");
   const LinkId tip_link_id("tool0");
-  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                  "joint_a5", "joint_a6", "joint_a7" };
+  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6", "joint_a7" };
 
   // Build an inverse kinematics solver and construct KinematicGroup via the JointId overload.
   tesseract::kinematics::KDLInvKinChainLMA::Config config;
-  auto inv_kin = std::make_unique<tesseract::kinematics::KDLInvKinChainLMA>(
-      *scene_graph, base_link_id, tip_link_id, config);
+  auto inv_kin =
+      std::make_unique<tesseract::kinematics::KDLInvKinChainLMA>(*scene_graph, base_link_id, tip_link_id, config);
 
   tesseract::kinematics::KinematicGroup kg("manipulator", joint_ids, std::move(inv_kin), *scene_graph, scene_state);
 
