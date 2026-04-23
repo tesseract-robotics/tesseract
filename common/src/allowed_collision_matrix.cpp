@@ -46,11 +46,11 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
   return true;
 }
 
-AllowedCollisionMatrix::AllowedCollisionMatrix(AllowedCollisionEntries entries)
+AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& entries)
 {
   lookup_table_.reserve(entries.size());
-  for (auto& [key, entry] : entries)
-    insertEntryChecked(key, std::move(entry));
+  for (const auto& [key, entry] : entries)
+    insertEntryChecked(key, entry);
 }
 
 void AllowedCollisionMatrix::insertEntryChecked(const LinkIdPair& key, ACMEntry entry)
