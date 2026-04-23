@@ -26,8 +26,24 @@
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/collision/discrete_contact_manager.h>
 
+#include <tesseract/common/schema_registration.h>
+#include <tesseract/common/property_tree.h>
+
+namespace
+{
+tesseract::common::PropertyTree fclDiscreteBVHManagerFactorySchema()
+{
+  return tesseract::common::PropertyTreeBuilder().build();
+}
+}  // namespace
+
 namespace tesseract::collision
 {
+tesseract::common::PropertyTree FCLDiscreteBVHManagerFactory::schema() const
+{
+  return fclDiscreteBVHManagerFactorySchema();
+}
+
 std::unique_ptr<tesseract::collision::DiscreteContactManager>
 FCLDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& /*config*/) const
 {
@@ -40,3 +56,7 @@ PLUGIN_ANCHOR_IMPL(FCLFactoriesAnchor)  // LCOV_EXCL_LINE
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(tesseract::collision::FCLDiscreteBVHManagerFactory, FCLDiscreteBVHManagerFactory)
+
+TESSERACT_SCHEMA_REGISTER(FCLDiscreteBVHManagerFactory, fclDiscreteBVHManagerFactorySchema);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::collision::DiscreteContactManagerFactory,
+                                       FCLDiscreteBVHManagerFactory);

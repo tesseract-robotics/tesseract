@@ -9,6 +9,7 @@
  * - Real-world configuration patterns (enums, nested structures)
  * - Fluent builder patterns for complex hierarchies
  * - GUI metadata for automatic UI generation
+ * - Schema composition via compose() for building layered schemas
  *
  * @section advanced_property_tree_features Advanced Features
  *
@@ -316,6 +317,70 @@ int main(int /*argc*/, char** /*argv*/)
     for (const auto& e : errors)
       std::cout << "      - " << e << "\n";
   }
+
+  // ========================================================================
+  // Example 6: Schema Composition with compose()
+  // ========================================================================
+  /// [compose_start]
+  std::cout << "\n========================================\n";
+  std::cout << " Example 6: Schema Composition\n";
+  std::cout << "========================================\n";
+
+  // Define a base schema with common fields
+  auto base_node_schema = PropertyTreeBuilder()
+                              .attribute(property_attribute::TYPE, property_type::CONTAINER)
+                              .string("namespace")
+                              .done()
+                              .boolean("conditional")
+                              .done()
+                              .container("inputs")
+                              .done()
+                              .container("outputs")
+                              .done()
+                              .build();
+
+  // Extend the base schema by composing it into a new builder and adding fields
+  auto composed_task_schema = PropertyTreeBuilder()
+                                  .attribute(property_attribute::TYPE, property_type::CONTAINER)
+                                  .compose(base_node_schema)  // pulls in namespace, conditional, inputs, outputs
+                                  .boolean("trigger_abort")
+                                  .done()
+                                  .build();
+
+  // Further extend for a concrete task type
+  auto remap_schema = PropertyTreeBuilder()
+                          .attribute(property_attribute::TYPE, property_type::CONTAINER)
+                          .compose(composed_task_schema)  // pulls in all task fields
+                          .boolean("copy")
+                          .done()
+                          .build();
+
+  // Merge config and validate
+  YAML::Node remap_config;
+  remap_config["namespace"] = "my_remap";
+  remap_config["conditional"] = true;
+  remap_config["copy"] = true;
+
+  remap_schema.mergeConfig(remap_config);
+  errors = remap_schema.validate();
+
+  std::cout << "  Remap task schema (composed from base):\n";
+  std::cout << "    Fields: ";
+  for (const auto& key : remap_schema.keys())
+    std::cout << key << " ";
+  std::cout << "\n";
+  std::cout << "    namespace: " << remap_schema.at("namespace").as<std::string>() << "\n";
+  std::cout << "    copy: " << std::boolalpha << remap_schema.at("copy").as<bool>() << "\n";
+
+  if (errors.empty())
+    std::cout << "    ✓ Composed schema valid\n";
+  else
+  {
+    std::cout << "    ✗ Validation errors:\n";
+    for (const auto& e : errors)
+      std::cout << "      - " << e << "\n";
+  }
+  /// [compose_end]
 
   std::cout << "\n========================================\n";
   std::cout << "         Example Complete\n";

@@ -34,10 +34,46 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/scene_state.h>
 
+#include <tesseract/common/schema_registration.h>
+#include <tesseract/common/property_tree.h>
+
 #include <console_bridge/console.h>
+
+namespace
+{
+tesseract::common::PropertyTree urInvKinFactorySchema()
+{
+  using namespace tesseract::common;
+  // clang-format off
+  return PropertyTreeBuilder()
+    .attribute(property_attribute::TYPE, property_type::CONTAINER)
+    .string("base_link").required().done()
+    .string("tip_link").required().done()
+    .beginOneOf()
+      .container("by_model")
+        .string("model").required()
+          .enumValues({"UR3", "UR5", "UR10", "UR3e", "UR5e", "UR10e"}).done()
+      .done()
+      .container("by_params")
+        .container("params").required()
+          .doubleNum("d1").required().done()
+          .doubleNum("a2").required().done()
+          .doubleNum("a3").required().done()
+          .doubleNum("d4").required().done()
+          .doubleNum("d5").required().done()
+          .doubleNum("d6").required().done()
+        .done()
+      .done()
+    .endOneOf()
+    .build();
+  // clang-format on
+}
+}  // namespace
 
 namespace tesseract::kinematics
 {
+tesseract::common::PropertyTree URInvKinFactory::schema() const { return urInvKinFactorySchema(); }
+
 std::unique_ptr<InverseKinematics> URInvKinFactory::create(const std::string& solver_name,
                                                            const tesseract::scene_graph::SceneGraph& scene_graph,
                                                            const tesseract::scene_graph::SceneState& /*scene_state*/,
@@ -139,3 +175,5 @@ PLUGIN_ANCHOR_IMPL(URFactoriesAnchor)
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_INV_KIN_PLUGIN(tesseract::kinematics::URInvKinFactory, URInvKinFactory);
+TESSERACT_SCHEMA_REGISTER(URInvKinFactory, urInvKinFactorySchema);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::kinematics::InvKinFactory, URInvKinFactory);
