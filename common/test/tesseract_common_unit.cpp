@@ -2971,7 +2971,7 @@ TEST(TesseractCommonUnit, AllowedCollisionMatrixInsertThrowsOnHashCollision)  //
   tesseract::common::AllowedCollisionEntries corrupt;
   const tesseract::common::LinkIdPair key("link1", "link2");
   corrupt[key] = tesseract::common::ACMEntry{ "other_a", "other_b", "conflict" };
-  tesseract::common::AllowedCollisionMatrix source(std::move(corrupt));
+  tesseract::common::AllowedCollisionMatrix source(corrupt);
 
   EXPECT_THROW(target.insertAllowedCollisionMatrix(source), std::runtime_error);  // NOLINT
 }
