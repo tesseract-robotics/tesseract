@@ -4859,6 +4859,33 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   EXPECT_NEAR(margin_data.getMaxCollisionMargin("link_x"), 0.1, 1e-12);
 }
 
+TEST(TesseractCommonUnit, JointStateByJointIdConstructorUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::JointState;
+
+  std::vector<JointId> ids{ JointId("joint_a"), JointId("joint_b"), JointId("joint_c") };
+  Eigen::VectorXd pos(3);
+  pos << 0.1, -0.2, 0.3;
+
+  JointState js(ids, pos);
+
+  // getJointIds() accessor.
+  const std::vector<JointId>& got_ids = js.getJointIds();
+  EXPECT_EQ(got_ids.size(), ids.size());
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    EXPECT_EQ(got_ids[i], ids[i]);
+
+  // Values preserved on the direct-ID path.
+  EXPECT_TRUE(js.position.isApprox(pos));
+
+  // String-name accessor stays consistent with the id-based constructor.
+  const std::vector<std::string> names = js.getJointNames();
+  EXPECT_EQ(names.size(), ids.size());
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    EXPECT_EQ(names[i], ids[i].name());
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
