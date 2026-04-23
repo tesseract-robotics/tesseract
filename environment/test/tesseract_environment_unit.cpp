@@ -6144,7 +6144,7 @@ TEST(TesseractEnvironmentUnit, EnvJointIdOverloadsUnit)  // NOLINT
   Eigen::VectorXd current_vals = env->getCurrentJointValues(active_joint_ids);
   EXPECT_EQ(current_vals.size(), static_cast<Eigen::Index>(active_joint_ids.size()));
 
-  // IIWA has no floating joints; pass an empty id vector so SceneState::at() doesn't throw.
+  // IIWA has no floating joints; pass an empty id vector so SceneState::getFloatingJointValues does not throw.
   // Still exercises the ID-taking wrapper and its Implementation counterpart.
   const std::vector<JointId> empty_joint_ids;
   tesseract::common::JointIdTransformMap current_fj = env->getCurrentFloatingJointValues(empty_joint_ids);
