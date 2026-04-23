@@ -1475,6 +1475,52 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
   }
 }
 
+// Exercises the sub-tree builder when the provided floating_joint_values map is
+// non-empty. Covers two previously-untested lines in kdl_parser.cpp:
+//   - L310: kdl_sub_tree_builder constructor copy into data_.floating_joint_values
+//           (previously used .at() on the empty destination map, which threw).
+//   - L350: discover_vertex's FLOATING branch in parent_to_joint lookup.
+// buildTestSceneGraph() provides joint_3 as FLOATING (link_3 -> link_4), so we
+// just need to hand the parser a transform for it.
+TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  SceneGraph g = buildTestSceneGraph();
+
+  std::vector<Joint::ConstPtr> active_joints = g.getActiveJoints();
+
+  // Subset mirrors the sibling KDLParserSubTreeUnit test (joint_1/2/4). The
+  // FLOATING joint_3 is not in the subset, but the DFS visits every vertex and
+  // executes the FLOATING branch at L349-351 / L356-357 unconditionally.
+  const std::vector<JointId> subset{ JointId("joint_1"), JointId("joint_2"), JointId("joint_4") };
+
+  std::unordered_map<JointId, double> joint_values;
+  for (const auto& j : active_joints)
+    joint_values[j->getId()] = 0.0;
+
+  // Supply a non-identity transform for joint_3. The constructor at L310 must
+  // copy it into data_.floating_joint_values, and discover_vertex at L350 must
+  // read it back when building the segment for link_4.
+  tesseract::common::JointIdTransformMap floating;
+  Eigen::Isometry3d fj_tf = Eigen::Isometry3d::Identity();
+  fj_tf.translation().x() = 0.75;
+  fj_tf.translation().y() = -0.25;
+  floating[JointId("joint_3")] = fj_tf;
+
+  // Pre-fix this call threw std::out_of_range from the .at() in the constructor.
+  KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
+
+  // L310 coverage: the transform must have been copied into data.
+  ASSERT_EQ(data.floating_joint_values.count(JointId("joint_3")), 1U);
+  EXPECT_TRUE(data.floating_joint_values[JointId("joint_3")].isApprox(fj_tf));
+
+  // L350 coverage: if discover_vertex ran the FLOATING branch without throwing,
+  // the sub-tree now contains segments for every reachable link, including
+  // link_4 which hangs off the floating joint.
+  EXPECT_FALSE(data.link_ids.empty());
+  EXPECT_EQ(data.tree.getNrOfJoints(), subset.size());
+}
+
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 {
   using namespace tesseract::scene_graph;
