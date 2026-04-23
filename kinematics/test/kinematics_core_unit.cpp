@@ -675,7 +675,7 @@ TEST(TesseractKinematicsUnit, JointGroupByJointIdAccessorsUnit)  // NOLINT
   }
 
   // calcJacobian — pick an active link id to ensure a non-trivial jacobian.
-  const LinkId jac_link = active_link_ids.back();
+  const LinkId& jac_link = active_link_ids.back();
   Eigen::MatrixXd jac = jg.calcJacobian(q, jac_link);
   EXPECT_EQ(jac.rows(), 6);
   EXPECT_EQ(jac.cols(), q.size());
@@ -696,7 +696,7 @@ TEST(TesseractKinematicsUnit, JointGroupByJointIdAccessorsUnit)  // NOLINT
   EXPECT_TRUE(jac_at_point_with_base.isApprox(jac_at_point, 1e-9));
 
   // 4-arg calcJacobian with an active non-root base link.
-  const LinkId intermediate_base = active_link_ids.front();
+  const LinkId& intermediate_base = active_link_ids.front();
   ASSERT_NE(intermediate_base, base_link_id);
   Eigen::MatrixXd jac_active_base = jg.calcJacobian(q, intermediate_base, jac_link, Eigen::Vector3d(0.05, 0.0, 0.0));
   EXPECT_EQ(jac_active_base.rows(), 6);
@@ -894,7 +894,7 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentAndNameAccessorsUnit)  // 
 
   // Missing-joint throw (joint_group.cpp:54).
   std::vector<JointId> with_bogus = joint_ids;
-  with_bogus.push_back(JointId("does_not_exist_in_graph"));
+  with_bogus.emplace_back("does_not_exist_in_graph");
   EXPECT_THROW(tesseract::kinematics::JointGroup("bad_group", with_bogus, *scene_graph, scene_state),
                std::runtime_error);
 }
