@@ -51,10 +51,7 @@ public:
   tesseract::common::LinkId getWorkingFrame() const override { return working_frame_; }
   std::vector<tesseract::common::LinkId> getTipLinkIds() const override { return tip_links_; }
   std::string getSolverName() const override { return "FakeInvKin"; }
-  tesseract::kinematics::InverseKinematics::UPtr clone() const override
-  {
-    return std::make_unique<FakeInvKin>(*this);
-  }
+  tesseract::kinematics::InverseKinematics::UPtr clone() const override { return std::make_unique<FakeInvKin>(*this); }
 
 private:
   std::vector<tesseract::common::JointId> joint_ids_;
@@ -835,17 +832,13 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
   {
     std::vector<JointId> reordered(joint_ids.rbegin(), joint_ids.rend());
     auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
-    EXPECT_NO_THROW(tesseract::kinematics::KinematicGroup("kg_reordered",
-                                                          reordered,
-                                                          std::move(inv),
-                                                          *scene_graph,
-                                                          scene_state));
+    EXPECT_NO_THROW(
+        tesseract::kinematics::KinematicGroup("kg_reordered", reordered, std::move(inv), *scene_graph, scene_state));
   }
 
   // Unknown working frame: exercises the working-frame link-transform lookup throw.
   {
-    auto inv =
-        std::make_unique<FakeInvKin>(joint_ids, LinkId("not_a_link"), std::vector<LinkId>{ tip_link_id });
+    auto inv = std::make_unique<FakeInvKin>(joint_ids, LinkId("not_a_link"), std::vector<LinkId>{ tip_link_id });
     EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", joint_ids, std::move(inv), *scene_graph, scene_state),
                  std::runtime_error);
   }
@@ -902,9 +895,8 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentAndNameAccessorsUnit)  // 
   // Missing-joint throw (joint_group.cpp:54).
   std::vector<JointId> with_bogus = joint_ids;
   with_bogus.push_back(JointId("does_not_exist_in_graph"));
-  EXPECT_THROW(
-      tesseract::kinematics::JointGroup("bad_group", with_bogus, *scene_graph, scene_state),
-      std::runtime_error);
+  EXPECT_THROW(tesseract::kinematics::JointGroup("bad_group", with_bogus, *scene_graph, scene_state),
+               std::runtime_error);
 }
 
 int main(int argc, char** argv)
