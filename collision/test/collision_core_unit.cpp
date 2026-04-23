@@ -147,6 +147,27 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
     config.acm.addAllowedCollision("a", "b", "never");
     EXPECT_NO_THROW(config.validate());  // NOLINT
   }
+
+  {  // Covers cereal_serialization.h:118 and :134 — the non-empty modify_object_enabled
+     // save/load loop bodies in ContactManagerConfig.
+    tesseract::collision::ContactManagerConfig config;
+    config.modify_object_enabled[tesseract::common::LinkId("link_a")] = true;
+    config.modify_object_enabled[tesseract::common::LinkId("link_b")] = false;
+    tesseract::common::testSerialization<tesseract::collision::ContactManagerConfig>(config, "ContactManagerConfig");
+  }
+}
+
+TEST(TesseractCoreUnit, ContactManagerConfigYamlDecodeNonMapModifyObjectEnabledUnit)  // NOLINT
+{
+  // Covers collision/core/yaml_extensions.h:283 — the `!n.IsMap()` negative branch in the
+  // ContactManagerConfig decoder (modify_object_enabled is present but not a map).
+  const std::string yaml_string = R"(
+    default_margin: 0.1
+    modify_object_enabled: [1, 2, 3]
+  )";
+  YAML::Node n = YAML::Load(yaml_string);
+  tesseract::collision::ContactManagerConfig cm;
+  EXPECT_FALSE(YAML::convert<tesseract::collision::ContactManagerConfig>::decode(n, cm));
 }
 
 TEST(TesseractCoreUnit, ContactManagerConfigYamlUnit)  // NOLINT
@@ -301,6 +322,8 @@ TEST(TesseractCoreUnit, isContactAllowedUnit)  // NOLINT
   EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "base_link", validator, false));
   EXPECT_FALSE(tesseract::collision::isContactAllowed("base_link", "link_2", validator, false));
   EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "link_1", validator, true));
+  // Covers collision/core/src/common.cpp:102 — non-allowed pair + verbose logging branch.
+  EXPECT_FALSE(tesseract::collision::isContactAllowed("base_link", "link_2", validator, true));
 }
 
 TEST(TesseractCoreUnit, scaleVerticesUnit)  // NOLINT
