@@ -48,9 +48,9 @@ void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const 
   insertEntryChecked(key, PairMarginEntry{ std::move(name1), std::move(name2), margin });
 }
 
-void CollisionMarginPairData::insertEntryChecked(const LinkIdPair& key, PairMarginEntry entry)
+void CollisionMarginPairData::insertEntryChecked(const LinkIdPair& key, const PairMarginEntry& entry)
 {
-  auto [it, inserted] = lookup_table_.try_emplace(key, std::move(entry));
+  auto [it, inserted] = lookup_table_.try_emplace(key, entry);
   if (!inserted)
   {
     checkPairHashCollision("MarginData", entry.name1, entry.name2, it->second.name1, it->second.name2);
