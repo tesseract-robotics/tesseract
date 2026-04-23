@@ -188,6 +188,20 @@ void checkPairHashCollision(const char* context,
  */
 void checkHashCollision(const char* context, const std::string& new_name, const std::string& existing_name);
 
+/** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
+template <typename Tag>
+constexpr std::size_t hash_value(const NameId<Tag>& id) noexcept
+{
+  return static_cast<std::size_t>(id.value());
+}
+
+/** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
+template <typename Tag>
+constexpr std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
+{
+  return p.hash();
+}
+
 /** @brief Convert a vector of strings to a vector of NameId<Tag> */
 template <typename IdT>
 inline std::vector<IdT> toIds(const std::vector<std::string>& names)
