@@ -858,6 +858,55 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
   }
 }
 
+TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentAndNameAccessorsUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  const auto scene_state = ss.getState();
+
+  const std::vector<JointId> joint_ids{ JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
+                                        JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
+                                        JointId("joint_a7") };
+
+  tesseract::kinematics::JointGroup jg_a("manipulator_a", joint_ids, *scene_graph, scene_state);
+
+  // String-name accessors (string overloads that go via toNames(ids)).
+  const std::vector<std::string> joint_names = jg_a.getJointNames();
+  EXPECT_EQ(joint_names.size(), joint_ids.size());
+  for (std::size_t i = 0; i < joint_ids.size(); ++i)
+    EXPECT_EQ(joint_names[i], joint_ids[i].name());
+
+  const std::vector<std::string> link_names = jg_a.getLinkNames();
+  EXPECT_FALSE(link_names.empty());
+  EXPECT_EQ(link_names.size(), jg_a.getLinkIds().size());
+
+  // Copy-assignment body (L142–147 in joint_group.cpp).
+  const std::vector<JointId> subset{ joint_ids[0], joint_ids[1], joint_ids[2] };
+  tesseract::kinematics::JointGroup jg_b("sub_manipulator", subset, *scene_graph, scene_state);
+  EXPECT_EQ(jg_b.numJoints(), static_cast<Eigen::Index>(subset.size()));
+
+  jg_b = jg_a;
+  EXPECT_EQ(jg_b.numJoints(), jg_a.numJoints());
+  EXPECT_EQ(jg_b.getJointIds(), jg_a.getJointIds());
+  EXPECT_EQ(jg_b.getLinkIds().size(), jg_a.getLinkIds().size());
+
+  // Self-assignment is a no-op.
+  jg_b = jg_b;  // NOLINT(clang-diagnostic-self-assign-overloaded)
+  EXPECT_EQ(jg_b.getJointIds(), joint_ids);
+
+  // Missing-joint throw (joint_group.cpp:54).
+  std::vector<JointId> with_bogus = joint_ids;
+  with_bogus.push_back(JointId("does_not_exist_in_graph"));
+  EXPECT_THROW(
+      tesseract::kinematics::JointGroup("bad_group", with_bogus, *scene_graph, scene_state),
+      std::runtime_error);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
