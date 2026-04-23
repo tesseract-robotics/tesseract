@@ -4886,6 +4886,43 @@ TEST(TesseractCommonUnit, JointStateByJointIdConstructorUnit)  // NOLINT
     EXPECT_EQ(names[i], ids[i].name());
 }
 
+TEST(TesseractCommonUnit, MarginDataYamlDecodeDuplicatePairUnit)  // NOLINT
+{
+  // Covers common/yaml_extensions.h:886-888 — the duplicate-pair (already-inserted) branch
+  // of the PairsCollisionMarginData decoder. LinkIdPair canonicalizes both permutations to
+  // the same key, so two YAML entries for the same pair trigger the !inserted branch. The
+  // checkPairHashCollision helper returns benignly when the names match (confirmed in
+  // common/src/types.cpp:32-43), so the subsequent margin update line executes.
+  const std::string yaml_string = R"(
+    [linkA, linkB]: 0.01
+    [linkB, linkA]: 0.02
+  )";
+  YAML::Node n = YAML::Load(yaml_string);
+  tesseract::common::PairsCollisionMarginData data;
+  ASSERT_TRUE(YAML::convert<tesseract::common::PairsCollisionMarginData>::decode(n, data));
+  ASSERT_EQ(data.size(), 1U);
+  const auto id1 = tesseract::common::LinkId("linkA");
+  const auto id2 = tesseract::common::LinkId("linkB");
+  EXPECT_NEAR(data.at(tesseract::common::LinkIdPair(id1, id2)).margin, 0.02, 1e-9);
+}
+
+TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
+{
+  // Covers common/yaml_extensions.h:963-965 — same duplicate-pair branch but for the
+  // AllowedCollisionEntries decoder; the second entry's reason string wins.
+  const std::string yaml_string = R"(
+    [linkA, linkB]: "first"
+    [linkB, linkA]: "second"
+  )";
+  YAML::Node n = YAML::Load(yaml_string);
+  tesseract::common::AllowedCollisionEntries data;
+  ASSERT_TRUE(YAML::convert<tesseract::common::AllowedCollisionEntries>::decode(n, data));
+  ASSERT_EQ(data.size(), 1U);
+  const auto id1 = tesseract::common::LinkId("linkA");
+  const auto id2 = tesseract::common::LinkId("linkB");
+  EXPECT_EQ(data.at(tesseract::common::LinkIdPair(id1, id2)).reason, "second");
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

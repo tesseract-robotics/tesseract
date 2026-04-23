@@ -5,6 +5,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 #include <console_bridge/console.h>
+#include <gtest/gtest.h>
 #include <tesseract/geometry/mesh_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -122,7 +123,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
     if (r.link_ids[0] != "plane_link")
       idx = 1;
 
-    const Eigen::Index tri_base = static_cast<Eigen::Index>(4 * r.subshape_id[static_cast<std::size_t>(idx)]);
+    const Eigen::Index tri_base = 4 * static_cast<Eigen::Index>(r.subshape_id[static_cast<std::size_t>(idx)]);
 
     mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[tri_base + 1])] = Eigen::Vector3i(255, 0, 0);
     mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[tri_base + 2])] = Eigen::Vector3i(255, 0, 0);
