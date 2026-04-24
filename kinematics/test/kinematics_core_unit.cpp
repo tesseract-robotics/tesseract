@@ -889,7 +889,10 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentAndNameAccessorsUnit)  // 
   EXPECT_EQ(jg_b.getLinkIds().size(), jg_a.getLinkIds().size());
 
   // Self-assignment is a no-op.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
   jg_b = jg_b;  // NOLINT(clang-diagnostic-self-assign-overloaded)
+#pragma GCC diagnostic pop
   EXPECT_EQ(jg_b.getJointIds(), joint_ids);
 
   // Missing-joint throw (joint_group.cpp:54).
