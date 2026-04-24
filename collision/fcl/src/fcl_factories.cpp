@@ -22,6 +22,7 @@
  * limitations under the License.
  */
 
+#include <cassert>
 #include <tesseract/collision/fcl/fcl_factories.h>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/collision/discrete_contact_manager.h>
