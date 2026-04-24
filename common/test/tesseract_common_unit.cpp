@@ -784,6 +784,8 @@ TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
     // Clang-tidy catches initialized arrays anyway, but check it just in case the caller isn't running clang-tidy
     std::array<int, 4> v1 = { 1, 2, 3, 6 };
     std::array<int, 4> v2;  // NOLINT
+    // Unit tests failed without clearing array because v2 was filled from stack memory that had the same values as v1
+    v2.fill(0);
     bool equal = tesseract::common::isIdenticalArray<int, 4>(v1, v2);
     EXPECT_FALSE(equal);
   }

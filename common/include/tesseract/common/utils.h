@@ -566,12 +566,17 @@ To numeric_cast(From value)
     {
       throw std::underflow_error("Attempted to cast negative value to unsigned type");
     }
+    if (static_cast<std::make_unsigned_t<From>>(value) > std::numeric_limits<To>::max())
+    {
+      throw std::overflow_error("Cast out of bounds");
+    }
   }
-
-  // 2. Standard range check for overflow/underflow
-  if (value < std::numeric_limits<To>::lowest() || value > std::numeric_limits<To>::max())
+  else
   {
-    throw std::overflow_error("Cast out of bounds");
+    if (value < std::numeric_limits<To>::lowest() || value > std::numeric_limits<To>::max())
+    {
+      throw std::overflow_error("Cast out of bounds");
+    }
   }
 
   return static_cast<To>(value);

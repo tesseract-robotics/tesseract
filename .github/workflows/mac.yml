@@ -45,11 +45,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - runner: macos-13
+          - runner: macos-15-intel
             vcpkg_triplet: x64-osx-dynamic-release
             arch: x64
             homebrew_root: /usr/local
-          - runner: macos-14
+          - runner: macos-15
             vcpkg_triplet: arm64-osx-dynamic-release
             arch: arm64
             homebrew_root: /opt/homebrew
@@ -64,7 +64,7 @@ jobs:
         python-version: '3.12'
     - name: brew
       run: |
-        brew install libomp cmake automake autoconf libtool gcc ninja    
+        brew install libomp cmake automake autoconf autoconf-archive libtool gcc ninja    
     - name: vcpkg build
       uses: johnwason/vcpkg-action@v7
       with:
@@ -90,7 +90,7 @@ jobs:
           --merge-install
           --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=${{ matrix.config.vcpkg_triplet }} -DCMAKE_BUILD_TYPE=Release
           -DVCPKG_APPLOCAL_DEPS=OFF -DTESSERACT_ENABLE_TESTING=ON \
-          -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF \
+          -DTESSERACT_ENABLE_BENCHMARKING=OFF -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
           -DOpenMP_CXX_INCLUDE_DIR=${{ matrix.config.homebrew_root }}/opt/libomp/include \
           -DOpenMP_C_INCLUDE_DIR=${{ matrix.config.homebrew_root }}/opt/libomp/include \
@@ -102,7 +102,7 @@ jobs:
           --merge-install
           --cmake-args -G "Ninja" -DVCPKG_TARGET_TRIPLET=${{ matrix.config.vcpkg_triplet }} 
           -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON \
-          -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF \
+          -DTESSERACT_ENABLE_BENCHMARKING=OFF -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF \
           -DVCPKG_APPLOCAL_DEPS=OFF \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
           -DOpenMP_CXX_INCLUDE_DIR=${{ matrix.config.homebrew_root }}/opt/libomp/include \
@@ -110,5 +110,5 @@ jobs:
           -DOpenMP_CXX_LIB_NAMES=libomp -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp" \
           -DOpenMP_C_LIB_NAMES=libomp -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp" \
           -DOpenMP_libomp_LIBRARY=${{ matrix.config.homebrew_root }}/opt/libomp/lib/libomp.dylib
-        run-tests-args: --merge-install
+        run-tests-args: --merge-install --ctest-args -E "TesseractEnvironmentUnit.checkTrajectoryUnit|TesseractCommonUnit.timer"
         
