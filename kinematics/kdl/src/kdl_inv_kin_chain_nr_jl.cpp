@@ -63,8 +63,8 @@ KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(
 }
 
 KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract::scene_graph::SceneGraph& scene_graph,
-                                         tesseract::common::LinkId base_link,
-                                         tesseract::common::LinkId tip_link,
+                                         const tesseract::common::LinkId& base_link,
+                                         const tesseract::common::LinkId& tip_link,
                                          Config kdl_config,
                                          std::string solver_name)
   : KDLInvKinChainNR_JL(scene_graph, { std::make_pair(base_link, tip_link) }, kdl_config, std::move(solver_name))
