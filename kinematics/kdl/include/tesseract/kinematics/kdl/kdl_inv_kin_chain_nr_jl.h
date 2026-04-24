@@ -85,8 +85,8 @@ public:
    * @param solver_name The solver name of the kinematic chain
    */
   KDLInvKinChainNR_JL(const tesseract::scene_graph::SceneGraph& scene_graph,
-                      tesseract::common::LinkId base_link,
-                      tesseract::common::LinkId tip_link,
+                      const tesseract::common::LinkId& base_link,
+                      const tesseract::common::LinkId& tip_link,
                       Config kdl_config,
                       std::string solver_name = KDL_INV_KIN_CHAIN_NR_JL_SOLVER_NAME);
 
