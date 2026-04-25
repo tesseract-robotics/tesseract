@@ -39,17 +39,17 @@ PropertyTree YAML::convert<Eigen::Isometry3d>::schema()
   return PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
       .container("position").required()
-          .doubleNum("x").required().done()
-          .doubleNum("y").required().done()
-          .doubleNum("z").required().done()
+          .float64("x").required().done()
+          .float64("y").required().done()
+          .float64("z").required().done()
       .done()
       .container("orientation").required()
-          .doubleNum("x").done()  // quaternion x
-          .doubleNum("y").done()  // quaternion y  (shared with rpy yaw)
-          .doubleNum("z").done()  // quaternion z
-          .doubleNum("w").done()  // quaternion w
-          .doubleNum("r").done()  // rpy roll
-          .doubleNum("p").done()  // rpy pitch
+          .float64("x").done()  // quaternion x
+          .float64("y").done()  // quaternion y  (shared with rpy yaw)
+          .float64("z").done()  // quaternion z
+          .float64("w").done()  // quaternion w
+          .float64("r").done()  // rpy roll
+          .float64("p").done()  // rpy pitch
       .done()
       .build();
   // clang-format on

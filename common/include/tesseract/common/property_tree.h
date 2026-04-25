@@ -63,12 +63,12 @@ std::string createMap(std::string_view key, std::string_view type);
 constexpr std::string_view BOOL{ "bool" };
 constexpr std::string_view CHAR{ "char" };
 constexpr std::string_view STRING{ "string" };
-constexpr std::string_view INT{ "int" };
-constexpr std::string_view UNSIGNED_INT{ "unsigned int" };
-constexpr std::string_view LONG_INT{ "long int" };
-constexpr std::string_view LONG_UNSIGNED_INT{ "long unsigned int" };
-constexpr std::string_view FLOAT{ "float" };
-constexpr std::string_view DOUBLE{ "double" };
+constexpr std::string_view INT32{ "int32" };
+constexpr std::string_view UINT32{ "uint32" };
+constexpr std::string_view INT64{ "int64" };
+constexpr std::string_view UINT64{ "uint64" };
+constexpr std::string_view FLOAT32{ "float32" };
+constexpr std::string_view FLOAT64{ "float64" };
 
 // Container of properties
 constexpr std::string_view CONTAINER{ "container" };
@@ -375,12 +375,12 @@ public:
   PropertyTreeBuilder& string(std::string_view name);
   PropertyTreeBuilder& character(std::string_view name);
   PropertyTreeBuilder& boolean(std::string_view name);
-  PropertyTreeBuilder& integer(std::string_view name);
-  PropertyTreeBuilder& unsignedInt(std::string_view name);
-  PropertyTreeBuilder& longInt(std::string_view name);
-  PropertyTreeBuilder& longUnsignedInt(std::string_view name);
-  PropertyTreeBuilder& floatNum(std::string_view name);
-  PropertyTreeBuilder& doubleNum(std::string_view name);
+  PropertyTreeBuilder& int32(std::string_view name);
+  PropertyTreeBuilder& uint32(std::string_view name);
+  PropertyTreeBuilder& int64(std::string_view name);
+  PropertyTreeBuilder& uint64(std::string_view name);
+  PropertyTreeBuilder& float32(std::string_view name);
+  PropertyTreeBuilder& float64(std::string_view name);
   PropertyTreeBuilder& eigenIsometry3d(std::string_view name);
   PropertyTreeBuilder& eigenVectorXd(std::string_view name);
   PropertyTreeBuilder& eigenVector2d(std::string_view name);

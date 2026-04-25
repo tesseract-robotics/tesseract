@@ -44,7 +44,7 @@ TESSERACT_SCHEMA_REGISTER(JointPositionConstraint,
   PropertyTreeBuilder()
     .container("jp_constraint")
     .string("joint").required().done()
-    .doubleNum("position").required().done()
+    .float64("position").required().done()
     .done()
     .build()
 );
@@ -279,7 +279,7 @@ Before using derived types, register the type relationships:
 TESSERACT_SCHEMA_REGISTER(BaseConstraint,
   PropertyTreeBuilder()
     .container("base_constraint")
-    .doubleNum("weight").defaultVal(1.0).done()
+    .float64("weight").defaultVal(1.0).done()
     .done()
     .build()
 );
@@ -288,10 +288,10 @@ TESSERACT_SCHEMA_REGISTER(BaseConstraint,
 TESSERACT_SCHEMA_REGISTER(JointPositionConstraint,
   PropertyTreeBuilder()
     .container("joint_position_constraint")
-    .doubleNum("weight").defaultVal(1.0).done()
+    .float64("weight").defaultVal(1.0).done()
     .string("joint").required().doc("Joint name").done()
-    .doubleNum("position").required().doc("Target position").done()
-    .doubleNum("tolerance").defaultVal(0.01).doc("Position tolerance").done()
+    .float64("position").required().doc("Target position").done()
+    .float64("tolerance").defaultVal(0.01).doc("Position tolerance").done()
     .done()
     .build()
 );
@@ -299,9 +299,9 @@ TESSERACT_SCHEMA_REGISTER(JointPositionConstraint,
 TESSERACT_SCHEMA_REGISTER(CollisionConstraint,
   PropertyTreeBuilder()
     .container("collision_constraint")
-    .doubleNum("weight").defaultVal(1.0).done()
+    .float64("weight").defaultVal(1.0).done()
     .string("constraint_type").required().enumValues({"USE_LIMITS", "PENALTY"}).done()
-    .doubleNum("safety_margin").defaultVal(0.05).done()
+    .float64("safety_margin").defaultVal(0.05).done()
     .done()
     .build()
 );

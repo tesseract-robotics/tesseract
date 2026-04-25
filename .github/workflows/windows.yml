@@ -7,7 +7,18 @@ on:
       - 'dev**'
   pull_request:
     paths:
-      - 'tesseract**'
+      - 'collision/**'
+      - 'common/**'
+      - 'geometry/**'
+      - 'environment/**'
+      - 'kinematics/**'
+      - 'srdf/**'
+      - 'state_solver/**'
+      - 'urdf/**'
+      - 'visualization/**'
+      - 'CMakeLists.txt'
+      - 'package.xml'
+      - '**.repos'
       - '.github/workflows/windows.yml'
       - '.github/workflows/windows_dependencies.repos'
   schedule:
