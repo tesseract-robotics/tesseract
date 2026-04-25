@@ -30,15 +30,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <vector>
 #include <memory>
-#include <map>
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
 #include <tesseract/common/any_poly.h>
 #include <tesseract/common/eigen_types.h>
+#include <tesseract/common/types.h>
 #include <tesseract/common/collision_margin_data.h>
 #include <tesseract/geometry/fwd.h>
 
@@ -87,7 +88,7 @@ struct ContactResult
   /** @brief A user defined type id that is added to the contact shapes */
   std::array<int, 2> type_id{ 0, 0 };
   /** @brief The two links that are in contact */
-  std::array<std::string, 2> link_names;
+  std::array<tesseract::common::LinkId, 2> link_ids;
   /** @brief The two shapes that are in contact. Each link can be made up of multiple shapes */
   std::array<int, 2> shape_id{ -1, -1 };
   /** @brief Some shapes like octomap and mesh have subshape (boxes and triangles) */
@@ -154,11 +155,15 @@ class ContactResultMap
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  using KeyType = std::pair<std::string, std::string>;
+  using KeyType = tesseract::common::LinkIdPair;
   using MappedType = ContactResultVector;
-  using ContainerType = tesseract::common::AlignedMap<KeyType, MappedType>;
-  using ConstReferenceType = typename tesseract::common::AlignedMap<KeyType, MappedType>::const_reference;
-  using ConstIteratorType = typename tesseract::common::AlignedMap<KeyType, MappedType>::const_iterator;
+  using ContainerType = std::unordered_map<KeyType,
+                                           MappedType,
+                                           tesseract::common::LinkIdPair::Hash,
+                                           std::equal_to<>,
+                                           Eigen::aligned_allocator<std::pair<const KeyType, MappedType>>>;
+  using ConstReferenceType = typename ContainerType::const_reference;
+  using ConstIteratorType = typename ContainerType::const_iterator;
   using PairType = typename std::pair<const KeyType, MappedType>;
   using FilterFn = std::function<void(PairType&)>;
 
@@ -196,7 +201,7 @@ public:
    * @param sub_segment_results The interpolated results to process
    * @param sub_segment_index The current sub segment index
    * @param sub_segment_last_index The last sub segment index
-   * @param active_link_names The active link names
+   * @param active_link_ids The set of active link IDs
    * @param segment_dt The segment dt
    * @param discrete If discrete contact checker was used
    * @param filter An option filter to exclude results
@@ -204,7 +209,7 @@ public:
   void addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
                                        long sub_segment_index,
                                        long sub_segment_last_index,
-                                       const std::vector<std::string>& active_link_names,
+                                       const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
                                        double segment_dt,
                                        bool discrete,
                                        const ContactResultMap::FilterFn& filter = nullptr);
@@ -440,9 +445,9 @@ struct ContactManagerConfig
   /** @brief Specifies how to combine the ContactAllowedValidator from acm with the one preset in the contact manager */
   ACMOverrideType acm_override_type{ ACMOverrideType::NONE };
 
-  /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the
+  /** @brief Each key is a link ID. Objects will be enabled/disabled based on the value. Objects that aren't in the
    * map are unmodified from the defaults*/
-  std::unordered_map<std::string, bool> modify_object_enabled;
+  std::unordered_map<tesseract::common::LinkId, bool> modify_object_enabled;
 
   /**
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins
@@ -594,8 +599,8 @@ struct ContactTrajectoryResults
   // LCOV_EXCL_STOP
 
   ContactTrajectoryResults() = default;
-  ContactTrajectoryResults(std::vector<std::string> j_names);
-  ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps);
+  ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids);
+  ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids, int num_steps);
 
   using UPtr = std::unique_ptr<ContactTrajectoryResults>;
 
@@ -629,7 +634,7 @@ struct ContactTrajectoryResults
   std::stringstream condensedSummary() const;
 
   std::vector<ContactTrajectoryStepResults> steps;
-  std::vector<std::string> joint_names;
+  std::vector<tesseract::common::JointId> joint_ids;
   int total_steps = 0;
 };
 

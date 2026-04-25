@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/state_solver/ofkt/ofkt_node.h>
 #include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/common/kinematic_limits.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::scene_graph
 {
@@ -76,72 +77,77 @@ public:
   int getRevision() const override final;
 
   void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                const tesseract::common::TransformMap& floating_joint_values = {}) override final;
-  void setState(const std::unordered_map<std::string, double>& joint_values,
-                const tesseract::common::TransformMap& floating_joint_values = {}) override final;
-  void setState(const std::vector<std::string>& joint_names,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+
+  void setState(const SceneState::JointValues& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+
+  void setState(const std::vector<tesseract::common::JointId>& joint_ids,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                const tesseract::common::TransformMap& floating_joint_values = {}) override final;
-  void setState(const tesseract::common::TransformMap& floating_joint_values) override final;
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+
+  void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
 
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                      const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const std::unordered_map<std::string, double>& joint_values,
-                      const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const std::vector<std::string>& joint_names,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
+  SceneState getState(const SceneState::JointValues& joint_values,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
+  SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                      const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const tesseract::common::TransformMap& floating_joint_values) const override final;
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
-  void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
-                         const std::vector<std::string>& joint_names,
+  SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
+
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<tesseract::common::JointId>& joint_ids,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                         const tesseract::common::TransformMap& floating_joint_values) const override final;
+                         const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
 
-  void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
-                         const std::vector<std::string>& joint_names,
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<tesseract::common::JointId>& joint_ids,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
 
   SceneState getState() const override final;
 
   SceneState getRandomState() const override final;
 
-  Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
-  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joints_values,
-                              const std::string& link_name,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
-                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const std::vector<tesseract::common::JointId>& joint_ids,
+              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
-  std::vector<std::string> getJointNames() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override final;
 
-  std::vector<std::string> getFloatingJointNames() const override final;
+  std::vector<tesseract::common::JointId> getFloatingJointIds() const override final;
 
-  std::vector<std::string> getActiveJointNames() const override final;
+  std::vector<tesseract::common::JointId> getActiveJointIds() const override final;
 
-  std::string getBaseLinkName() const override final;
+  tesseract::common::LinkId getBaseLinkId() const override final;
 
-  std::vector<std::string> getLinkNames() const override final;
+  std::vector<tesseract::common::LinkId> getLinkIds() const override final;
 
-  std::vector<std::string> getActiveLinkNames() const override final;
+  std::vector<tesseract::common::LinkId> getActiveLinkIds() const override final;
 
-  std::vector<std::string> getStaticLinkNames() const override final;
+  std::vector<tesseract::common::LinkId> getStaticLinkIds() const override final;
 
-  bool isActiveLinkName(const std::string& link_name) const override final;
+  bool isActiveLinkId(const tesseract::common::LinkId& link_id) const override final;
 
-  bool hasLinkName(const std::string& link_name) const override final;
+  bool hasLinkId(const tesseract::common::LinkId& link_id) const override final;
 
   tesseract::common::VectorIsometry3d getLinkTransforms() const override final;
 
-  Eigen::Isometry3d getLinkTransform(const std::string& link_name) const override final;
+  Eigen::Isometry3d getLinkTransform(const tesseract::common::LinkId& link_id) const override final;
 
-  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
-                                             const std::string& to_link_name) const override final;
+  Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
+                                             const tesseract::common::LinkId& to_link_id) const override final;
 
   tesseract::common::KinematicLimits getLimits() const override final;
 
@@ -149,23 +155,25 @@ public:
 
   bool moveLink(const Joint& joint) override final;
 
-  bool removeLink(const std::string& name) override final;
+  bool removeLink(const tesseract::common::LinkId& link_id) override final;
 
   bool replaceJoint(const Joint& joint) override final;
 
-  bool removeJoint(const std::string& name) override final;
+  bool removeJoint(const tesseract::common::JointId& joint_id) override final;
 
-  bool moveJoint(const std::string& name, const std::string& parent_link) override final;
+  bool moveJoint(const tesseract::common::JointId& joint_id,
+                 const tesseract::common::LinkId& parent_link_id) override final;
 
-  bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin) override final;
+  bool changeJointOrigin(const tesseract::common::JointId& joint_id,
+                         const Eigen::Isometry3d& new_origin) override final;
 
-  bool changeJointPositionLimits(const std::string& name, double lower, double upper) override final;
+  bool changeJointPositionLimits(const tesseract::common::JointId& joint_id, double lower, double upper) override final;
 
-  bool changeJointVelocityLimits(const std::string& name, double limit) override final;
+  bool changeJointVelocityLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
-  bool changeJointAccelerationLimits(const std::string& name, double limit) override final;
+  bool changeJointAccelerationLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
-  bool changeJointJerkLimits(const std::string& name, double limit) override final;
+  bool changeJointJerkLimits(const tesseract::common::JointId& joint_id, double limit) override final;
 
   bool insertSceneGraph(const SceneGraph& scene_graph,
                         const Joint& joint,
@@ -174,31 +182,43 @@ public:
   StateSolver::UPtr clone() const override final;
 
 private:
-  SceneState current_state_;                                         /**< Current state of the scene */
-  std::vector<std::string> joint_names_;                             /**< The link names */
-  std::vector<std::string> active_joint_names_;                      /**< The active joint names */
-  std::vector<std::string> floating_joint_names_;                    /**< The floating joint names */
-  std::vector<std::string> link_names_;                              /**< The link names */
-  std::unordered_map<std::string, std::unique_ptr<OFKTNode>> nodes_; /**< The joint name map to node */
-  std::unordered_map<std::string, OFKTNode*> link_map_;              /**< The link name map to node */
-  tesseract::common::KinematicLimits limits_;                        /**< The kinematic limits */
-  std::unique_ptr<OFKTNode> root_;                                   /**< The root node of the tree */
-  int revision_{ 0 };                                                /**< The revision number */
+  SceneState current_state_;                                   /**< Current state of the scene */
+  std::vector<tesseract::common::JointId> joint_ids_;          /**< All joint IDs in insertion order */
+  std::vector<tesseract::common::JointId> active_joint_ids_;   /**< The active joint IDs */
+  std::vector<tesseract::common::JointId> floating_joint_ids_; /**< The floating joint IDs */
+  std::vector<tesseract::common::LinkId> link_ids_;            /**< All link IDs in insertion order */
+  std::unordered_map<tesseract::common::JointId, std::unique_ptr<OFKTNode>> nodes_; /**< The joint ID map to node */
+  std::unordered_map<tesseract::common::LinkId, OFKTNode*> link_map_;               /**< The link ID map to node */
+  tesseract::common::KinematicLimits limits_;                                       /**< The kinematic limits */
+  std::unique_ptr<OFKTNode> root_;                                                  /**< The root node of the tree */
+  int revision_{ 0 };                                                               /**< The revision number */
 
   /** @brief The state solver can be accessed from multiple threads, need use mutex throughout */
   mutable std::shared_mutex mutex_;
 
   bool initHelper(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& prefix);
 
+  /**
+   * @brief Unlocked implementation of getState(JointValues). Caller must hold at least a shared lock.
+   */
+  SceneState getStateUnlocked(const SceneState::JointValues& joint_values,
+                              const tesseract::common::JointIdTransformMap& floating_joint_values) const;
+
+  /**
+   * @brief Apply floating joint transforms to current_state_ and propagate transforms from the root.
+   * Caller must hold a unique lock.
+   */
+  void applyFloatingAndUpdate(const tesseract::common::JointIdTransformMap& floating_joint_values);
+
   void clear();
 
-  /** @brief load the active link names */
-  void loadActiveLinkNamesRecursive(std::vector<std::string>& active_link_names,
-                                    const OFKTNode* node,
-                                    bool active) const;
+  /** @brief load the active link IDs */
+  void loadActiveLinkIdsRecursive(std::vector<tesseract::common::LinkId>& active_link_ids,
+                                  const OFKTNode* node,
+                                  bool active) const;
 
-  /** @brief load the static link names */
-  void loadStaticLinkNamesRecursive(std::vector<std::string>& static_link_names, const OFKTNode* node) const;
+  /** @brief load the static link IDs */
+  void loadStaticLinkIdsRecursive(std::vector<tesseract::common::LinkId>& static_link_ids, const OFKTNode* node) const;
 
   /**
    * @brief This update the local and world transforms
@@ -217,8 +237,8 @@ private:
    * @return True if update is required
    */
   static bool updateRequired(Eigen::Isometry3d& updated_parent_world_tf,
-                             const std::unordered_map<std::string, double>& joints,
-                             const tesseract::common::TransformMap& floating_joints,
+                             const SceneState::JointValues& joints,
+                             const tesseract::common::JointIdTransformMap& floating_joints,
                              const OFKTNode* node,
                              const Eigen::Isometry3d& parent_world_tf);
 
@@ -231,9 +251,9 @@ private:
    * @param parent_world_tf The nodes parent's world transformaiton
    * @param update_required Indicates if work transform update is required
    */
-  void update(tesseract::common::TransformMap& link_transform,
-              const std::unordered_map<std::string, double>& joints,
-              const tesseract::common::TransformMap& floating_joints,
+  void update(tesseract::common::LinkIdTransformMap& link_transform,
+              const SceneState::JointValues& joints,
+              const tesseract::common::JointIdTransformMap& floating_joints,
               const OFKTNode* node,
               const Eigen::Isometry3d& parent_world_tf,
               bool update_required) const;
@@ -255,9 +275,9 @@ private:
    * @param floating_joint_values The floating joint values
    * @return The calculated geometric jacobian
    */
-  Eigen::MatrixXd calcJacobianHelper(const std::unordered_map<std::string, double>& joints,
-                                     const std::string& link_name,
-                                     const tesseract::common::TransformMap& floating_joint_values = {}) const;
+  Eigen::MatrixXd calcJacobianHelper(const SceneState::JointValues& joints,
+                                     const tesseract::common::LinkId& link_id,
+                                     const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const;
 
   /**
    * @brief A helper function used for cloning the OFKTStateSolver
@@ -269,19 +289,19 @@ private:
   /**
    * @brief Add a node to the tree
    *
-   * The reason that joint_name, parent_link_name, child_link_name are required when joint is provided is to handle
+   * The reason that joint_id, parent_link_id, child_link_id are required when joint is provided is to handle
    * add a scene graph with a prefix.
    *
    * @param joint The joint being added to the tree
-   * @param joint_name The joints name
-   * @param parent_link_name The joints parent link name
-   * @param child_link_name The joints child link name
+   * @param joint_id The joint ID (possibly prefixed)
+   * @param parent_link_id The parent link ID (possibly prefixed)
+   * @param child_link_id The child link ID (possibly prefixed)
    * @param kinematic_joints The vector to store new kinematic joints added to the solver
    */
   void addNode(const Joint& joint,
-               const std::string& joint_name,
-               const std::string& parent_link_name,
-               const std::string& child_link_name,
+               const tesseract::common::JointId& joint_id,
+               const tesseract::common::LinkId& parent_link_id,
+               const tesseract::common::LinkId& child_link_id,
                std::vector<std::shared_ptr<const JointLimits>>& new_joint_limits);
 
   /**
@@ -293,9 +313,9 @@ private:
    * @param removed_active_joints_indices The removed active joint names indices container
    */
   void removeNode(OFKTNode* node,
-                  std::vector<std::string>& removed_links,
-                  std::vector<std::string>& removed_joints,
-                  std::vector<std::string>& removed_active_joints,
+                  std::vector<tesseract::common::LinkId>& removed_links,
+                  std::vector<tesseract::common::JointId>& removed_joints,
+                  std::vector<tesseract::common::JointId>& removed_active_joints,
                   std::vector<long>& removed_active_joints_indices);
 
   /**
@@ -319,9 +339,9 @@ private:
    * @param removed_active_joints The removed active joint names container
    * @param removed_active_joints_indices The removed active joint names indices container
    */
-  void removeJointHelper(const std::vector<std::string>& removed_links,
-                         const std::vector<std::string>& removed_joints,
-                         const std::vector<std::string>& removed_active_joints,
+  void removeJointHelper(const std::vector<tesseract::common::LinkId>& removed_links,
+                         const std::vector<tesseract::common::JointId>& removed_joints,
+                         const std::vector<tesseract::common::JointId>& removed_active_joints,
                          const std::vector<long>& removed_active_joints_indices);
 
   /**

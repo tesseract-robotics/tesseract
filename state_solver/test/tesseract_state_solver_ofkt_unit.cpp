@@ -180,12 +180,114 @@ TEST(TesseractStateSolverUnit, OFKTSetFloatingJointStateUnit)  // NOLINT
 TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT
 {
   OFKTStateSolver solver("test");
-  EXPECT_TRUE(solver.getLinkNames().size() == 1);
-  EXPECT_TRUE(solver.getLinkNames().at(0) == "test");
+  EXPECT_TRUE(solver.getLinkIds().size() == 1);
+  EXPECT_TRUE(solver.getLinkIds().at(0) == "test");
   EXPECT_TRUE(solver.getLinkTransform("test").isApprox(Eigen::Isometry3d::Identity(), 1e-6));
   EXPECT_TRUE(solver.getRevision() == 0);
   solver.setRevision(100);
   EXPECT_TRUE(solver.getRevision() == 100);
+}
+
+// =============================================================================
+// Phase 2 test additions — SceneState integer-keyed tests
+// =============================================================================
+
+TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
+
+  OFKTStateSolver solver(*scene_graph);
+
+  // getState() returns SceneState with LinkIdTransformMap
+  const auto& state = solver.getState();
+
+  // link_transforms is keyed by LinkId
+  EXPECT_TRUE(state.link_transforms.count("base_link") > 0);
+
+  // All link names should map to a LinkId entry in link_transforms
+  for (const auto& link_id : solver.getLinkIds())
+  {
+    auto id = LinkId(link_id);
+    EXPECT_TRUE(state.link_transforms.count(id) > 0) << "Missing LinkId entry for link: " << link_id.name();
+  }
+
+  // joints is keyed by JointId
+  for (const auto& joint_id : solver.getActiveJointIds())
+  {
+    auto jid = JointId(joint_id);
+    EXPECT_TRUE(state.joints.count(jid) > 0) << "Missing JointId entry for joint: " << joint_id.name();
+  }
+
+  // Verify getState(ids, values) also produces LinkIdTransformMap
+  auto ids = solver.getActiveJointIds();
+  Eigen::VectorXd values = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(ids.size()));
+  values[0] = 0.3;
+  auto new_state = solver.getState(ids, values);
+
+  for (const auto& link_id : solver.getLinkIds())
+  {
+    EXPECT_TRUE(new_state.link_transforms.count(link_id) > 0);
+  }
+}
+
+// Validates that KDLStateSolver::operator= rebuilds segment_id_cache_ using its own tree's
+// pointers, not stale ones from the source. If the cache kept source pointers, FK on the
+// clone would segfault or return garbage once the source is destroyed.
+TEST(TesseractStateSolverUnit, KDLSegmentIdCacheCopyUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
+
+  // Take a reference FK result from a throwaway solver for later comparison
+  tesseract::common::LinkIdTransformMap expected_transforms;
+  std::vector<JointId> active_ids;
+  Eigen::VectorXd values;
+  {
+    KDLStateSolver reference(*scene_graph);
+    active_ids = reference.getActiveJointIds();
+    values = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(active_ids.size()));
+    for (Eigen::Index i = 0; i < values.size(); ++i)
+      values[i] = 0.1 * static_cast<double>(i + 1);
+    expected_transforms = reference.getState(active_ids, values).link_transforms;
+  }
+
+  // Build clone via copy-construction, then destroy the source.
+  auto source = std::make_unique<KDLStateSolver>(*scene_graph);
+  auto clone_via_copy = std::make_unique<KDLStateSolver>(*source);
+  source.reset();  // freeing source's tree invalidates any stale pointers the clone might hold
+
+  // FK on the clone must succeed (no segment_id_cache_.at() throw) and match the reference.
+  SceneState clone_state;
+  ASSERT_NO_THROW(clone_state = clone_via_copy->getState(active_ids, values));  // NOLINT
+  EXPECT_EQ(clone_state.link_transforms.size(), expected_transforms.size());
+  for (const auto& [link_id, expected_tf] : expected_transforms)
+  {
+    ASSERT_TRUE(clone_state.link_transforms.count(link_id) > 0) << "Missing link: " << link_id.name();
+    EXPECT_TRUE(clone_state.link_transforms.at(link_id).isApprox(expected_tf, 1e-6))
+        << "Transform mismatch for link: " << link_id.name();
+  }
+
+  // Repeat via clone() (which internally uses copy-construction / operator=).
+  auto source2 = std::make_unique<KDLStateSolver>(*scene_graph);
+  StateSolver::UPtr clone_via_clone = source2->clone();
+  source2.reset();
+
+  SceneState clone2_state;
+  ASSERT_NO_THROW(clone2_state = clone_via_clone->getState(active_ids, values));  // NOLINT
+  EXPECT_EQ(clone2_state.link_transforms.size(), expected_transforms.size());
+  for (const auto& [link_id, expected_tf] : expected_transforms)
+  {
+    ASSERT_TRUE(clone2_state.link_transforms.count(link_id) > 0) << "Missing link: " << link_id.name();
+    EXPECT_TRUE(clone2_state.link_transforms.at(link_id).isApprox(expected_tf, 1e-6))
+        << "Transform mismatch for link: " << link_id.name();
+  }
 }
 
 int main(int argc, char** argv)

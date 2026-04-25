@@ -48,14 +48,14 @@ class ForwardKinematics;
  * @param change_base  The transform from the desired frame to the current base frame of the jacobian
  * @param kin          The kinematics object
  * @param joint_values The joint values for which to calculate the jacobian
- * @param link_name    The link_name for which the jacobian should be calculated
+ * @param link_id      The link id for which the jacobian should be calculated
  * @param link_point   The point on the link for which to calculate the jacobian
  */
 void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Isometry3d& change_base,
                        const ForwardKinematics& kin,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                       const std::string& link_name,
+                       const tesseract::common::LinkId& link_id,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point);
 
 /**
@@ -64,14 +64,14 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
  * @param change_base  The transform from the desired frame to the current base frame of the jacobian
  * @param joint_group  The joint group object
  * @param joint_values The joint values for which to calculate the jacobian
- * @param link_name    The link_name for which the jacobian should be calculated
+ * @param link_id      The link id for which the jacobian should be calculated
  * @param link_point   The point on the link for which to calculate the jacobian
  */
 void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Isometry3d& change_base,
                        const JointGroup& joint_group,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                       const std::string& link_name,
+                       const tesseract::common::LinkId& link_id,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point);
 
 /**
@@ -79,17 +79,17 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
  * @param jacobian (Return) The jacobian which gets filled out.
  * @param joint_group       The joint group object
  * @param joint_values      The joint values for which to calculate the jacobian
- * @param base_link_name    The link name for which the jacobian is calculated in
+ * @param base_link_id    The link id for which the jacobian is calculated in
  * @param base_link_offset  The offset on the base link for which to calculate the jacobian in
- * @param link_name         The link name for which the jacobian is calculated for
+ * @param link_id           The link id for which the jacobian is calculated for
  * @param link_offset       The offset on the link for which the jacobian is calcualted for
  */
 void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const JointGroup& joint_group,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                       const std::string& base_link_name,
+                       const tesseract::common::LinkId& base_link_id,
                        const Eigen::Isometry3d& base_link_offset,
-                       const std::string& link_name,
+                       const tesseract::common::LinkId& link_id,
                        const Eigen::Isometry3d& link_offset);
 
 /**

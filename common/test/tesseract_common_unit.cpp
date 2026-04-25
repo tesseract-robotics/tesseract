@@ -435,10 +435,10 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
   // Empty tcp
   tesseract::common::ManipulatorInfo manip_info;
   EXPECT_TRUE(manip_info.empty());
-  EXPECT_TRUE(manip_info.tcp_frame.empty());
+  EXPECT_FALSE(manip_info.tcp_frame.isValid());
   EXPECT_TRUE(manip_info.manipulator.empty());
   EXPECT_TRUE(manip_info.manipulator_ik_solver.empty());
-  EXPECT_TRUE(manip_info.working_frame.empty());
+  EXPECT_FALSE(manip_info.working_frame.isValid());
 
   tesseract::common::ManipulatorInfo manip_info_override("manipulator", "world", "tool0");
   manip_info_override.tcp_offset = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.0, 0.0, 0.25);
@@ -480,7 +480,7 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
   Eigen::VectorXd positons = Eigen::VectorXd::Constant(3, 5);
   tesseract::common::JointState joint_state(joint_names, positons);
-  EXPECT_TRUE(joint_state.joint_names == joint_names);
+  EXPECT_TRUE(joint_state.getJointNames() == joint_names);
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
@@ -501,7 +501,7 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(any_null == any_type);
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.joint_ids = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -624,7 +624,7 @@ TEST(TesseractCommonUnit, anySharedPtrUnit)  // NOLINT
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
 
   tesseract::common::JointState joint_state;
-  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
+  joint_state.joint_ids = { "joint_1", "joint_2", "joint_3" };
   joint_state.position = Eigen::VectorXd::Constant(3, 5);
   joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
   joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
@@ -2271,7 +2271,7 @@ TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
   }
 }
 
-TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
+TEST(TesseractCommonUnit, JointIdTransformMapYamlUnit)  // NOLINT
 {
   std::string yaml_string =
       R"(joints:
@@ -2299,7 +2299,7 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
   {  // valid string
     tesseract::common::GeneralResourceLocator locator;
     YAML::Node node = tesseract::common::loadYamlString(yaml_string, locator);
-    auto trans_map = node["joints"].as<tesseract::common::TransformMap>();
+    auto trans_map = node["joints"].as<tesseract::common::JointIdTransformMap>();
     EXPECT_EQ(trans_map.size(), 2);
     EXPECT_FALSE(trans_map.empty());
     EXPECT_TRUE(trans_map.find("joint_1") != trans_map.end());
@@ -2331,7 +2331,7 @@ TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
   {  // invalid string
     tesseract::common::GeneralResourceLocator locator;
     YAML::Node node = tesseract::common::loadYamlString(bad_yaml_string, locator);
-    EXPECT_ANY_THROW(node["joints"].as<tesseract::common::TransformMap>());  // NOLINT
+    EXPECT_ANY_THROW(node["joints"].as<tesseract::common::JointIdTransformMap>());  // NOLINT
   }
 }
 
@@ -2377,46 +2377,6 @@ TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
 
   cal_info.clear();
   EXPECT_TRUE(cal_info.empty());
-}
-
-TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT
-{
-  {
-    tesseract::common::LinkNamesPair p1 = tesseract::common::makeOrderedLinkPair("link_1", "link_2");
-    tesseract::common::LinkNamesPair p2 = tesseract::common::makeOrderedLinkPair("link_2", "link_1");
-
-    EXPECT_EQ(p1.first, p2.first);
-    EXPECT_EQ(p1.second, p2.second);
-
-    EXPECT_EQ(std::hash<tesseract::common::LinkNamesPair>()(p1), std::hash<tesseract::common::LinkNamesPair>()(p2));
-  }
-
-  {
-    tesseract::common::LinkNamesPair p1;
-    tesseract::common::makeOrderedLinkPair(p1, "link_1", "link_2");
-    tesseract::common::LinkNamesPair p2;
-    tesseract::common::makeOrderedLinkPair(p2, "link_2", "link_1");
-
-    EXPECT_EQ(p1.first, p2.first);
-    EXPECT_EQ(p1.second, p2.second);
-
-    EXPECT_EQ(std::hash<tesseract::common::LinkNamesPair>()(p1), std::hash<tesseract::common::LinkNamesPair>()(p2));
-  }
-
-  {
-    tesseract::common::LinkNamesPair p1 = tesseract::common::makeOrderedLinkPair("link_1", "link_2");
-    tesseract::common::LinkNamesPair p2 = tesseract::common::makeOrderedLinkPair("link_2", "link_1");
-
-    tesseract::common::LinkNamesPair mp1;
-    tesseract::common::makeOrderedLinkPair(mp1, "link_1", "link_2");
-    tesseract::common::LinkNamesPair mp2;
-    tesseract::common::makeOrderedLinkPair(mp2, "link_2", "link_1");
-
-    EXPECT_EQ(p1.first, mp1.first);
-    EXPECT_EQ(p1.second, mp1.second);
-    EXPECT_EQ(p2.first, mp2.first);
-    EXPECT_EQ(p2.second, mp2.second);
-  }
 }
 
 /** @brief Tests calcRotationalError which return angle between [-PI, PI]*/
@@ -2999,6 +2959,54 @@ TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT
   EXPECT_FALSE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
 }
 
+TEST(TesseractCommonUnit, AllowedCollisionMatrixInsertThrowsOnHashCollision)  // NOLINT
+{
+  // Seed the target with a real pair; its LinkIdPair key is K.
+  tesseract::common::AllowedCollisionMatrix target;
+  target.addAllowedCollision("link1", "link2", "seed");
+
+  // Build a source whose stored entry uses the same LinkIdPair key K but
+  // different stored names — simulating the outcome of a real hash collision
+  // without needing to synthesize one in std::hash<std::string>.
+  tesseract::common::AllowedCollisionEntries corrupt;
+  const tesseract::common::LinkIdPair key("link1", "link2");
+  corrupt[key] = tesseract::common::ACMEntry{ "other_a", "other_b", "conflict" };
+  tesseract::common::AllowedCollisionMatrix source(corrupt);
+
+  EXPECT_THROW(target.insertAllowedCollisionMatrix(source), std::runtime_error);  // NOLINT
+}
+
+TEST(TesseractCommonUnit, CollisionMarginPairDataApplyModifyThrowsOnHashCollision)  // NOLINT
+{
+  tesseract::common::CollisionMarginPairData target;
+  target.setCollisionMargin("link1", "link2", 0.01);
+
+  tesseract::common::PairsCollisionMarginData corrupt;
+  const tesseract::common::LinkIdPair key("link1", "link2");
+  corrupt[key] = tesseract::common::PairMarginEntry{ "other_a", "other_b", 0.02 };
+  tesseract::common::CollisionMarginPairData source(corrupt);
+
+  EXPECT_THROW(target.apply(source, tesseract::common::CollisionMarginPairOverrideType::MODIFY),  // NOLINT
+               std::runtime_error);
+}
+
+TEST(TesseractCommonUnit, CheckHashCollisionUnit)  // NOLINT
+{
+  EXPECT_NO_THROW(tesseract::common::checkHashCollision("LinkId", "foo", "foo"));                   // NOLINT
+  EXPECT_THROW(tesseract::common::checkHashCollision("LinkId", "foo", "bar"), std::runtime_error);  // NOLINT
+}
+
+TEST(TesseractCommonUnit, CheckPairHashCollisionUnit)  // NOLINT
+{
+  // Same order: no throw.
+  EXPECT_NO_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "a", "b"));  // NOLINT
+  // Swapped order: also no throw (check is order-independent).
+  EXPECT_NO_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "b", "a"));  // NOLINT
+  // Mismatch in either slot: throws.
+  EXPECT_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "a", "c"), std::runtime_error);  // NOLINT
+  EXPECT_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "x", "y"), std::runtime_error);  // NOLINT
+}
+
 TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
 {
   double tol = std::numeric_limits<double>::epsilon();
@@ -3085,10 +3093,8 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test construction with non default margin and pair margins
     double default_margin = 0.0254;
     double pair_margin = 0.5;
-    tesseract::common::PairsCollisionMarginData temp;
-    temp[std::make_pair("link_1", "link_2")] = pair_margin;
-
-    tesseract::common::CollisionMarginPairData pair_margins(temp);
+    tesseract::common::CollisionMarginPairData pair_margins;
+    pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
     tesseract::common::CollisionMarginData data(default_margin, pair_margins);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
@@ -3099,9 +3105,8 @@ TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
   {  // Test construction with default margin and pair margins
     double default_margin = 0.0;
     double pair_margin = 0.5;
-    tesseract::common::PairsCollisionMarginData temp;
-    temp[std::make_pair("link_1", "link_2")] = pair_margin;
-    tesseract::common::CollisionMarginPairData pair_margins(temp);
+    tesseract::common::CollisionMarginPairData pair_margins;
+    pair_margins.setCollisionMargin("link_1", "link_2", pair_margin);
     tesseract::common::CollisionMarginData data(pair_margins);
     EXPECT_NEAR(data.getDefaultCollisionMargin(), default_margin, tol);
     EXPECT_NEAR(data.getMaxCollisionMargin(), std::max(default_margin, pair_margin), tol);
@@ -3543,12 +3548,10 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataMaxCollisionMarginPerObjectUnit
   }
 
   {  // Test construction from PairsCollisionMarginData
-    tesseract::common::PairsCollisionMarginData temp;
-    temp[std::make_pair("link1", "link2")] = 0.7;
-    temp[std::make_pair("link1", "link3")] = 0.4;
-    temp[std::make_pair("link2", "link4")] = 0.6;
-
-    tesseract::common::CollisionMarginPairData data(temp);
+    tesseract::common::CollisionMarginPairData data;
+    data.setCollisionMargin("link1", "link2", 0.7);
+    data.setCollisionMargin("link1", "link3", 0.4);
+    data.setCollisionMargin("link2", "link4", 0.6);
 
     // link1 should have max margin of 0.7
     std::optional<double> result = data.getMaxCollisionMargin("link1");
@@ -3988,24 +3991,27 @@ TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
   ["base","tool0"]: 1.5
 )";
 
-  tesseract::common::PairsCollisionMarginData data_original;
-  data_original[std::make_pair("link1", "link2")] = 0.8;
-  data_original[std::make_pair("base", "tool0")] = 1.5;
+  tesseract::common::CollisionMarginPairData cmd_original;
+  cmd_original.setCollisionMargin("link1", "link2", 0.8);
+  cmd_original.setCollisionMargin("base", "tool0", 1.5);
+  const auto& data_original = cmd_original.getCollisionMargins();
+
+  auto make_key = [](const std::string& n1, const std::string& n2) { return tesseract::common::LinkIdPair(n1, n2); };
 
   {
     YAML::Node n(data_original);
     auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_DOUBLE_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
-    EXPECT_DOUBLE_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")).margin, 0.8);
+    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")).margin, 1.5);
   }
 
   {
     YAML::Node n = YAML::Load(yaml_string);
     auto data = n.as<tesseract::common::PairsCollisionMarginData>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_DOUBLE_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
-    EXPECT_DOUBLE_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+    EXPECT_DOUBLE_EQ(data.at(make_key("link1", "link2")).margin, 0.8);
+    EXPECT_DOUBLE_EQ(data.at(make_key("base", "tool0")).margin, 1.5);
   }
 
   {  // Failure: Is not map
@@ -4031,12 +4037,8 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairData)  // NOLINT
 )";
 
   tesseract::common::CollisionMarginPairData data_original;
-  {
-    tesseract::common::PairsCollisionMarginData pair_data;
-    pair_data[std::make_pair("link1", "link2")] = 0.8;
-    pair_data[std::make_pair("base", "tool0")] = 1.5;
-    data_original = tesseract::common::CollisionMarginPairData(pair_data);
-  }
+  data_original.setCollisionMargin("link1", "link2", 0.8);
+  data_original.setCollisionMargin("base", "tool0", 1.5);
 
   {
     YAML::Node n = YAML::Load(yaml_string);
@@ -4070,24 +4072,27 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionEntries)  // NOLINT
   ["base","tool0"]: "never"
 )";
 
-  tesseract::common::AllowedCollisionEntries data_original;
-  data_original[std::make_pair("link1", "link2")] = "adjacent";
-  data_original[std::make_pair("base", "tool0")] = "never";
+  tesseract::common::AllowedCollisionMatrix acm_original;
+  acm_original.addAllowedCollision("link1", "link2", "adjacent");
+  acm_original.addAllowedCollision("base", "tool0", "never");
+  const auto& data_original = acm_original.getAllAllowedCollisions();
+
+  auto make_key = [](const std::string& n1, const std::string& n2) { return tesseract::common::LinkIdPair(n1, n2); };
 
   {
     YAML::Node n(data_original);
     auto data = n.as<tesseract::common::AllowedCollisionEntries>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
-    EXPECT_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+    EXPECT_EQ(data.at(make_key("link1", "link2")).reason, "adjacent");
+    EXPECT_EQ(data.at(make_key("base", "tool0")).reason, "never");
   }
 
   {
     YAML::Node n = YAML::Load(yaml_string);
     auto data = n.as<tesseract::common::AllowedCollisionEntries>();
     EXPECT_EQ(data.size(), 2U);
-    EXPECT_EQ(data.at({ "link1", "link2" }), data_original[std::make_pair("link1", "link2")]);
-    EXPECT_EQ(data.at({ "base", "tool0" }), data_original[std::make_pair("base", "tool0")]);
+    EXPECT_EQ(data.at(make_key("link1", "link2")).reason, "adjacent");
+    EXPECT_EQ(data.at(make_key("base", "tool0")).reason, "never");
   }
 
   {  // Failure: Is not map
@@ -4114,10 +4119,10 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionMatrix)  // NOLINT
 
   tesseract::common::AllowedCollisionMatrix data_original;
   {
-    tesseract::common::AllowedCollisionEntries pair_data;
-    pair_data[std::make_pair("link1", "link2")] = "adjacent";
-    pair_data[std::make_pair("base", "tool0")] = "never";
-    data_original = tesseract::common::AllowedCollisionMatrix(pair_data);
+    tesseract::common::AllowedCollisionMatrix acm;
+    acm.addAllowedCollision("link1", "link2", "adjacent");
+    acm.addAllowedCollision("base", "tool0", "never");
+    data_original = acm;
   }
 
   {
@@ -4782,6 +4787,140 @@ TEST(TesseractCommonUnit, PlyIO_LoadNonexistentFile)  // NOLINT
   EXPECT_EQ(ret, 0);
   EXPECT_TRUE(verts.empty());
   EXPECT_EQ(faces.size(), 0);
+}
+
+// ======================== Three-tier overload tests ========================
+
+TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
+{
+  using namespace tesseract::common;
+
+  AllowedCollisionMatrix acm;
+  acm.addAllowedCollision("link_a", "link_b", "test_reason");
+
+  // Tier 3 (string) — already tested above, verify again
+  EXPECT_TRUE(acm.isCollisionAllowed("link_a", "link_b"));
+  EXPECT_TRUE(acm.isCollisionAllowed("link_b", "link_a"));  // order invariant
+
+  // Tier 1 (LinkId) — same result via integer lookup
+  const LinkId id_a = LinkId("link_a");
+  const LinkId id_b = LinkId("link_b");
+  EXPECT_TRUE(acm.isCollisionAllowed(id_a, id_b));
+  EXPECT_TRUE(acm.isCollisionAllowed(id_b, id_a));
+
+  // Non-existent pair
+  const LinkId id_c = LinkId("link_c");
+  EXPECT_FALSE(acm.isCollisionAllowed(id_a, id_c));
+  EXPECT_FALSE(acm.isCollisionAllowed("link_a", "link_c"));
+
+  // Entry values preserve original names
+  const auto& entries = acm.getAllAllowedCollisions();
+  EXPECT_EQ(entries.size(), 1);
+  const auto it = entries.find(LinkIdPair(id_a, id_b));
+  ASSERT_NE(it, entries.end());
+  // Names should be canonical (alphabetical within LinkIdPair ordering)
+  EXPECT_FALSE(it->second.name1.empty());
+  EXPECT_FALSE(it->second.name2.empty());
+  EXPECT_EQ(it->second.reason, "test_reason");
+}
+
+TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
+{
+  using namespace tesseract::common;
+
+  CollisionMarginData margin_data(0.05);
+  margin_data.setCollisionMargin("link_x", "link_y", 0.1);
+
+  // Tier 3 (string)
+  EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_y"), 0.1, 1e-12);
+  EXPECT_NEAR(margin_data.getCollisionMargin("link_y", "link_x"), 0.1, 1e-12);   // order invariant
+  EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_z"), 0.05, 1e-12);  // default
+
+  // Tier 1 (LinkId)
+  const LinkId id_x = LinkId("link_x");
+  const LinkId id_y = LinkId("link_y");
+  const LinkId id_z = LinkId("link_z");
+  EXPECT_NEAR(margin_data.getCollisionMargin(id_x, id_y), 0.1, 1e-12);
+  EXPECT_NEAR(margin_data.getCollisionMargin(id_y, id_x), 0.1, 1e-12);
+  EXPECT_NEAR(margin_data.getCollisionMargin(id_x, id_z), 0.05, 1e-12);
+
+  // Pair data entry values preserve names
+  const auto& pair_data = margin_data.getCollisionMarginPairData();
+  const auto& margins = pair_data.getCollisionMargins();
+  EXPECT_EQ(margins.size(), 1);
+  const auto it = margins.find(LinkIdPair(id_x, id_y));
+  ASSERT_NE(it, margins.end());
+  EXPECT_FALSE(it->second.name1.empty());
+  EXPECT_FALSE(it->second.name2.empty());
+  EXPECT_NEAR(it->second.margin, 0.1, 1e-12);
+
+  // Max margin tests with LinkId
+  EXPECT_NEAR(margin_data.getMaxCollisionMargin(id_x), 0.1, 1e-12);
+  EXPECT_NEAR(margin_data.getMaxCollisionMargin("link_x"), 0.1, 1e-12);
+}
+
+TEST(TesseractCommonUnit, JointStateByJointIdConstructorUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::JointState;
+
+  std::vector<JointId> ids{ JointId("joint_a"), JointId("joint_b"), JointId("joint_c") };
+  Eigen::VectorXd pos(3);
+  pos << 0.1, -0.2, 0.3;
+
+  JointState js(ids, pos);
+
+  // getJointIds() accessor.
+  const std::vector<JointId>& got_ids = js.getJointIds();
+  EXPECT_EQ(got_ids.size(), ids.size());
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    EXPECT_EQ(got_ids[i], ids[i]);
+
+  // Values preserved on the direct-ID path.
+  EXPECT_TRUE(js.position.isApprox(pos));
+
+  // String-name accessor stays consistent with the id-based constructor.
+  const std::vector<std::string> names = js.getJointNames();
+  EXPECT_EQ(names.size(), ids.size());
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    EXPECT_EQ(names[i], ids[i].name());
+}
+
+TEST(TesseractCommonUnit, MarginDataYamlDecodeDuplicatePairUnit)  // NOLINT
+{
+  // Covers common/yaml_extensions.h:886-888 — the duplicate-pair (already-inserted) branch
+  // of the PairsCollisionMarginData decoder. LinkIdPair canonicalizes both permutations to
+  // the same key, so two YAML entries for the same pair trigger the !inserted branch. The
+  // checkPairHashCollision helper returns benignly when the names match (confirmed in
+  // common/src/types.cpp:32-43), so the subsequent margin update line executes.
+  const std::string yaml_string = R"(
+    [linkA, linkB]: 0.01
+    [linkB, linkA]: 0.02
+  )";
+  YAML::Node n = YAML::Load(yaml_string);
+  tesseract::common::PairsCollisionMarginData data;
+  ASSERT_TRUE(YAML::convert<tesseract::common::PairsCollisionMarginData>::decode(n, data));
+  ASSERT_EQ(data.size(), 1U);
+  const auto id1 = tesseract::common::LinkId("linkA");
+  const auto id2 = tesseract::common::LinkId("linkB");
+  EXPECT_NEAR(data.at(tesseract::common::LinkIdPair(id1, id2)).margin, 0.02, 1e-9);
+}
+
+TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
+{
+  // Covers common/yaml_extensions.h:963-965 — same duplicate-pair branch but for the
+  // AllowedCollisionEntries decoder; the second entry's reason string wins.
+  const std::string yaml_string = R"(
+    [linkA, linkB]: "first"
+    [linkB, linkA]: "second"
+  )";
+  YAML::Node n = YAML::Load(yaml_string);
+  tesseract::common::AllowedCollisionEntries data;
+  ASSERT_TRUE(YAML::convert<tesseract::common::AllowedCollisionEntries>::decode(n, data));
+  ASSERT_EQ(data.size(), 1U);
+  const auto id1 = tesseract::common::LinkId("linkA");
+  const auto id2 = tesseract::common::LinkId("linkB");
+  EXPECT_EQ(data.at(tesseract::common::LinkIdPair(id1, id2)).reason, "second");
 }
 
 int main(int argc, char** argv)

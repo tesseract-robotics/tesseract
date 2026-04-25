@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/joint_group.h>
 #include <tesseract/kinematics/types.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::kinematics
 {
@@ -49,7 +50,7 @@ struct KinGroupIKInput
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  KinGroupIKInput(const Eigen::Isometry3d& p, std::string wf, std::string tl);
+  KinGroupIKInput(Eigen::Isometry3d p, tesseract::common::LinkId wf, tesseract::common::LinkId tl);
 
   KinGroupIKInput() = default;
 
@@ -60,13 +61,13 @@ struct KinGroupIKInput
    * @brief The link name the pose is relative to
    * @details The provided working frame must be listed in InverseKinematics::getWorkingFrames()
    */
-  std::string working_frame;
+  tesseract::common::LinkId working_frame;
 
   /**
    * @brief The tip link of the kinematic object to solve IK
-   * @details The provided tip link name must be listed in InverseKinematics::getTipLinkNames()
+   * @details The provided tip link name must be listed in InverseKinematics::getTipLinkIds()
    */
-  std::string tip_link_name;  // This defines the internal kinematic group the information belongs to
+  tesseract::common::LinkId tip_link_id;  // This defines the internal kinematic group the information belongs to
 };
 using KinGroupIKInputs = tesseract::common::AlignedVector<KinGroupIKInput>;
 
@@ -96,7 +97,7 @@ public:
    * @param scene_state The scene state
    */
   KinematicGroup(std::string name,
-                 std::vector<std::string> joint_names,
+                 const std::vector<tesseract::common::JointId>& joint_ids,
                  std::unique_ptr<InverseKinematics> inv_kin,
                  const tesseract::scene_graph::SceneGraph& scene_graph,
                  const tesseract::scene_graph::SceneState& scene_state);
@@ -155,9 +156,9 @@ public:
    * into the IK solver working frame. This function identifies all of these other possible working frames and performs
    * the appropriate transformations internally when solving IK.
    */
-  std::vector<std::string> getAllValidWorkingFrames() const;
+  std::vector<tesseract::common::LinkId> getAllValidWorkingFrames() const;
 
-  /** @brief Get the tip link name
+  /** @brief Get all possible tip link IDs
    * @details The inverse kinematics solver requires that all poses be solved for a set of tip link frames that
    * terminate a kinematic chain or tree. In the case of some closed-form IK solvers, this tip link must the tool flange
    * of the robot rather than another preferred link. If the desired tip link is a statically connected child of the
@@ -165,7 +166,7 @@ public:
    * link. This function identifies all possible tip links that can be used for IK (i.e. static child links of the IK
    * solver tip link(s)) and internally performs the appropriate transformations when solving IK
    */
-  std::vector<std::string> getAllPossibleTipLinkNames() const;
+  std::vector<tesseract::common::LinkId> getAllPossibleTipLinkIds() const;
 
   /**
    * @brief Get the inverse kinematics sovler
@@ -174,13 +175,12 @@ public:
   const InverseKinematics& getInverseKinematics() const;
 
 private:
-  std::vector<std::string> joint_names_;
   bool reorder_required_{ false };
   std::vector<Eigen::Index> inv_kin_joint_map_;
   std::unique_ptr<InverseKinematics> inv_kin_;
   Eigen::Isometry3d inv_to_fwd_base_{ Eigen::Isometry3d::Identity() };
-  std::vector<std::string> working_frames_;
-  std::unordered_map<std::string, std::string> inv_tip_links_map_;
+  std::vector<tesseract::common::LinkId> working_frames_;
+  std::unordered_map<tesseract::common::LinkId, tesseract::common::LinkId> inv_tip_links_map_;
 };
 
 }  // namespace tesseract::kinematics

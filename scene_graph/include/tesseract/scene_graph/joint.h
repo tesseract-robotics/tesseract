@@ -46,6 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::scene_graph
 {
@@ -245,7 +246,7 @@ public:
   using Ptr = std::shared_ptr<Joint>;
   using ConstPtr = std::shared_ptr<const Joint>;
 
-  Joint(std::string name);
+  Joint(common::JointId id);
   Joint() = default;
   ~Joint() = default;
   // Joints are non-copyable as their name must be unique
@@ -256,6 +257,8 @@ public:
   Joint& operator=(Joint&& other) = default;
 
   const std::string& getName() const;
+
+  const common::JointId& getId() const;
 
   /// The type of joint
   JointType type{ JointType::UNKNOWN };
@@ -268,15 +271,15 @@ public:
   ///            FLOATING    N/A
   ///            PLANAR      plane normal axis
   ///            FIXED       N/A
-  Eigen::Vector3d axis;
+  Eigen::Vector3d axis{ Eigen::Vector3d::UnitX() };
 
   /// child Link element
   ///   child link frame is the same as the Joint frame
-  std::string child_link_name;
+  common::LinkId child_link_id;
 
   /// parent Link element
   ///   origin specifies the transform from Parent Link to Joint Frame
-  std::string parent_link_name;
+  common::LinkId parent_link_id;
 
   /// transform from Parent Link frame to Joint frame
   Eigen::Isometry3d parent_to_joint_origin_transform{ Eigen::Isometry3d::Identity() };
@@ -306,13 +309,13 @@ public:
 
   /* Create a clone of current joint, with a new name. Child link name and parent link name are unchanged.
    * All underlying properties, such as dynamics, limits... are copied as well.*/
-  Joint clone(const std::string& name) const;
+  Joint clone(common::JointId id) const;
 
   bool operator==(const Joint& rhs) const;
   bool operator!=(const Joint& rhs) const;
 
 private:
-  std::string name_;
+  common::JointId id_;
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, Joint& obj);

@@ -60,65 +60,64 @@ public:
   /**
    * @brief Calculates the transform for each tip link in the kinematic group
    * @details
-   * This should return a transform for every link listed in getTipLinkNames()
+   * This should return a transform for every link listed in getTipLinkIds()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @return A map of tip link names and transforms
+   * @return A map of link IDs to transforms
    */
-  tesseract::common::TransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
+  tesseract::common::LinkIdTransformMap calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /**
    * @brief Calculates the Jacobian matrix for a given joint state in the reference frame of the specified link
    * @details
-   * This should be able to return a jacobian given any link listed in getTipLinkNames()
+   * This should be able to return a jacobian given any link listed in getTipLinkIds()
    * Throws an exception on failures (including uninitialized)
    * @param joint_angles Input vector of joint angles
-   * @param link_name The link name to calculate jacobian
+   * @param link_id The link id to calculate jacobian
    * @return The jacobian at the provided link
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                               const std::string& link_name) const;
+                               const tesseract::common::LinkId& link_id) const;
 
   /**
    * @brief Calculates the transform for each tip link in the kinematic group
    * @details
-   * This should return a transform for every link listed in getTipLinkNames()
+   * This should return a transform for every link listed in getTipLinkIds()
    * Throws an exception on failures (including uninitialized)
    * @param transforms(out) The object to populate with transforms
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
-   * @return A map of tip link names and transforms
    */
-  virtual void calcFwdKin(tesseract::common::TransformMap& transforms,
+  virtual void calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
    * @brief Calculates the Jacobian matrix for a given joint state in the reference frame of the specified link
    * @details
-   * This should be able to return a jacobian given any link listed in getTipLinkNames()
+   * This should be able to return a jacobian given any link listed in getTipLinkIds()
    * Throws an exception on failures (including uninitialized)
    * @param jacobian[out] The object to populate (assumes already the correct size)
    * @param joint_angles Input vector of joint angles
-   * @param link_name The link name to calculate jacobian
+   * @param link_id The link id to calculate jacobian
    * @return The jacobian at the provided link
    */
   virtual void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                            const std::string& link_name) const = 0;
+                            const tesseract::common::LinkId& link_id) const = 0;
 
-  /** @brief Get the robot base link name */
-  virtual std::string getBaseLinkName() const = 0;
-
-  /**
-   * @brief Get list of joint names for kinematic object
-   * @return A vector of joint names
-   */
-  virtual std::vector<std::string> getJointNames() const = 0;
+  /** @brief Get the robot base link id */
+  virtual tesseract::common::LinkId getBaseLinkId() const = 0;
 
   /**
-   * @brief Get list of tip link names for kinematic object
-   * @return A vector of link names
+   * @brief Get list of joint ids for kinematic object
+   * @return A vector of joint ids
    */
-  virtual std::vector<std::string> getTipLinkNames() const = 0;
+  virtual std::vector<tesseract::common::JointId> getJointIds() const = 0;
+
+  /**
+   * @brief Get list of tip link ids for kinematic object
+   * @return A vector of link ids
+   */
+  virtual std::vector<tesseract::common::LinkId> getTipLinkIds() const = 0;
 
   /**
    * @brief Number of joints in robot

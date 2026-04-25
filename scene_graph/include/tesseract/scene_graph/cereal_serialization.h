@@ -20,12 +20,56 @@
 namespace tesseract::scene_graph
 {
 template <class Archive>
-void serialize(Archive& ar, SceneState& obj)
+void save(Archive& ar, const SceneState& obj)
 {
-  ar(cereal::make_nvp("joints", obj.joints));
-  ar(cereal::make_nvp("floating_joints", obj.floating_joints));
-  ar(cereal::make_nvp("link_transforms", obj.link_transforms));
-  ar(cereal::make_nvp("joint_transforms", obj.joint_transforms));
+  // Save as string-keyed maps for backwards compatibility
+  std::unordered_map<std::string, double> joints_str;
+  for (const auto& [id, val] : obj.joints)
+    joints_str[id.name()] = val;
+
+  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> floating_joints_str;
+  for (const auto& [id, tf] : obj.floating_joints)
+    floating_joints_str[id.name()] = tf;
+
+  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> link_transforms_str;
+  for (const auto& [id, tf] : obj.link_transforms)
+    link_transforms_str[id.name()] = tf;
+
+  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
+  for (const auto& [id, tf] : obj.joint_transforms)
+    joint_transforms_str[id.name()] = tf;
+
+  ar(cereal::make_nvp("joints", joints_str));
+  ar(cereal::make_nvp("floating_joints", floating_joints_str));
+  ar(cereal::make_nvp("link_transforms", link_transforms_str));
+  ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
+}
+
+template <class Archive>
+void load(Archive& ar, SceneState& obj)
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  std::unordered_map<std::string, double> joints_str;
+  ar(cereal::make_nvp("joints", joints_str));
+  for (const auto& [key, val] : joints_str)
+    obj.joints[JointId(key)] = val;
+
+  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> floating_joints_str;
+  ar(cereal::make_nvp("floating_joints", floating_joints_str));
+  for (const auto& [key, tf] : floating_joints_str)
+    obj.floating_joints[JointId(key)] = tf;
+
+  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> link_transforms_str;
+  ar(cereal::make_nvp("link_transforms", link_transforms_str));
+  for (const auto& [key, tf] : link_transforms_str)
+    obj.link_transforms[LinkId(key)] = tf;
+
+  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
+  ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
+  for (const auto& [key, tf] : joint_transforms_str)
+    obj.joint_transforms[JointId(key)] = tf;
 }
 
 template <class Archive>
@@ -46,7 +90,7 @@ void serialize(Archive& ar, Inertial& obj)
   ar(cereal::make_nvp("ixz", obj.ixz));
   ar(cereal::make_nvp("iyy", obj.iyy));
   ar(cereal::make_nvp("iyz", obj.iyz));
-  ar(cereal::make_nvp("iyz", obj.izz));
+  ar(cereal::make_nvp("izz", obj.izz));
 }
 
 template <class Archive>
@@ -74,8 +118,7 @@ void serialize(Archive& ar, Link& obj)
   ar(cereal::make_nvp("collision", obj.collision));
   ar(cereal::make_nvp("visible", obj.visible));
   ar(cereal::make_nvp("collision_enabled", obj.collision_enabled));
-  ar(cereal::make_nvp("hash", obj.hash_));
-  ar(cereal::make_nvp("name", obj.name_));
+  ar(cereal::make_nvp("name", obj.id_));
 }
 
 template <class Archive>
@@ -126,15 +169,15 @@ void serialize(Archive& ar, Joint& obj)
 {
   ar(cereal::make_nvp("type", obj.type));
   ar(cereal::make_nvp("axis", obj.axis));
-  ar(cereal::make_nvp("child_link_name", obj.child_link_name));
-  ar(cereal::make_nvp("parent_link_name", obj.parent_link_name));
+  ar(cereal::make_nvp("child_link_name", obj.child_link_id));
+  ar(cereal::make_nvp("parent_link_name", obj.parent_link_id));
   ar(cereal::make_nvp("parent_to_joint_origin_transform", obj.parent_to_joint_origin_transform));
   ar(cereal::make_nvp("dynamics", obj.dynamics));
   ar(cereal::make_nvp("limits", obj.limits));
   ar(cereal::make_nvp("safety", obj.safety));
   ar(cereal::make_nvp("calibration", obj.calibration));
   ar(cereal::make_nvp("mimic", obj.mimic));
-  ar(cereal::make_nvp("name", obj.name_));
+  ar(cereal::make_nvp("name", obj.id_));
 }
 
 template <class Archive>
@@ -185,7 +228,7 @@ void serialize(Archive& ar, SceneGraph& obj)
 
     ar(cereal::make_nvp("acm", obj.acm_));
 
-    std::string root_link_name = obj.getRoot();
+    std::string root_link_name = obj.getRoot().name();
     ar(cereal::make_nvp("root_link_name", root_link_name));
   }
 }

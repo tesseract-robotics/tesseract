@@ -144,16 +144,16 @@ tesseract::common::JointState TrajectoryInterpolator::interpolate(const tesserac
                                                                   const tesseract::common::JointState& end,
                                                                   double f)
 {
-  assert(!start.joint_names.empty());
-  assert(!end.joint_names.empty());
+  assert(!start.joint_ids.empty());
+  assert(!end.joint_ids.empty());
   assert(start.position.rows() != 0);
   assert(end.position.rows() != 0);
   tesseract::common::JointState out;
   out.time = start.time + (end.time - start.time) * f;
-  out.joint_names = start.joint_names;
-  out.position.resize(static_cast<long>(out.joint_names.size()));
+  out.joint_ids = start.joint_ids;
+  out.position.resize(static_cast<long>(out.joint_ids.size()));
 
-  for (long i = 0; i < static_cast<long>(out.joint_names.size()); ++i)
+  for (long i = 0; i < static_cast<long>(out.joint_ids.size()); ++i)
     out.position[i] = start.position[i] + (end.position[i] - start.position[i]) * f;
 
   return out;

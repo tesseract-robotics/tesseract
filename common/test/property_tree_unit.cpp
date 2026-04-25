@@ -1431,7 +1431,7 @@ TEST(SchemaRegistry, YamlExtensionSchemasRegistered)  // NOLINT
   EXPECT_TRUE(reg->contains("tesseract::common::ContactManagersPluginInfo"));
   EXPECT_TRUE(reg->contains("tesseract::common::TaskComposerPluginInfo"));
   EXPECT_TRUE(reg->contains("tesseract::common::CalibrationInfo"));
-  EXPECT_TRUE(reg->contains("tesseract::common::TransformMap"));
+  EXPECT_TRUE(reg->contains("tesseract::common::JointIdTransformMap"));
   EXPECT_TRUE(reg->contains("tesseract::common::Toolpath"));
   EXPECT_TRUE(reg->contains("tesseract::common::CollisionMarginPairOverrideType"));
   EXPECT_TRUE(reg->contains("tesseract::common::PairsCollisionMarginData"));
@@ -1576,9 +1576,9 @@ TEST(YamlSchemas, TaskComposerPluginInfoStructure)  // NOLINT
   EXPECT_NE(schema.find("tasks"), nullptr);
 }
 
-TEST(YamlSchemas, TransformMapSchema)  // NOLINT
+TEST(YamlSchemas, JointIdTransformMapSchema)  // NOLINT
 {
-  auto schema = YAML::convert<tesseract::common::TransformMap>::schema();
+  auto schema = YAML::convert<tesseract::common::JointIdTransformMap>::schema();
   auto t = schema.getAttribute(TYPE);
   ASSERT_TRUE(t.has_value());
   EXPECT_EQ(t->as<std::string>(), createMap(EIGEN_ISOMETRY_3D));  // NOLINT

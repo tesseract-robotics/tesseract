@@ -12,14 +12,30 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::common
 {
-using AllowedCollisionEntries = std::unordered_map<tesseract::common::LinkNamesPair, std::string>;
+/** @brief Value stored in each ACM entry — names for serialization/display, reason for the allowance. */
+struct ACMEntry
+{
+  std::string name1;
+  std::string name2;
+  std::string reason;
+
+  bool operator==(const ACMEntry& other) const
+  {
+    return name1 == other.name1 && name2 == other.name2 && reason == other.reason;
+  }
+  bool operator!=(const ACMEntry& other) const { return !(*this == other); }
+};
+
+using AllowedCollisionEntries = std::unordered_map<LinkIdPair, ACMEntry>;
 
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
 
 class AllowedCollisionMatrix;
 
 template <class Archive>
-void serialize(Archive& ar, AllowedCollisionMatrix& obj);
+void save(Archive& ar, const AllowedCollisionMatrix& obj);
+template <class Archive>
+void load(Archive& ar, AllowedCollisionMatrix& obj);
 
 class AllowedCollisionMatrix
 {
@@ -41,42 +57,45 @@ public:
 
   /**
    * @brief Disable collision between two collision objects
-   * @param obj1 Collision object name
-   * @param obj2 Collision object name
-   * @param reason The reason for disabling collison
+   * @param link_id1 Collision object LinkId
+   * @param link_id2 Collision object LinkId
+   * @param reason The reason for disabling collision
    */
-  virtual void addAllowedCollision(const std::string& link_name1,
-                                   const std::string& link_name2,
-                                   const std::string& reason);
+  virtual void addAllowedCollision(const LinkId& link_id1, const LinkId& link_id2, const std::string& reason);
 
   /**
    * @brief Get all of the entries in the allowed collision matrix
-   * @return AllowedCollisionEntries an unordered map containing all allowed
-   *         collision entries. The keys of the unordered map are a std::pair
-   *         of the link names in the allowed collision pair.
+   * @return AllowedCollisionEntries keyed by LinkIdPair with ACMEntry values containing names and reason
    */
   const AllowedCollisionEntries& getAllAllowedCollisions() const;
 
   /**
    * @brief Remove disabled collision pair from allowed collision matrix
-   * @param obj1 Collision object name
-   * @param obj2 Collision object name
+   * @param link_id1 Collision object LinkId
+   * @param link_id2 Collision object LinkId
    */
-  virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
+  virtual void removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2);
 
   /**
-   * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
-   * @param link_name Collision object name
+   * @brief Remove disabled collision for any pair with link_id from allowed collision matrix
+   * @param link_id Collision object LinkId
    */
-  virtual void removeAllowedCollision(const std::string& link_name);
+  virtual void removeAllowedCollision(const LinkId& link_id);
 
   /**
-   * @brief This checks if two links are allowed to be in collision
-   * @param link_name1 First link name
-   * @param link_name2 Second link anme
+   * @brief This checks if a link pair is allowed to be in collision (hot-path primary).
+   * @param pair Canonically ordered link-id pair
    * @return True if allowed to be in collision, otherwise false
    */
-  virtual bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
+  virtual bool isCollisionAllowed(const LinkIdPair& pair) const;
+
+  /**
+   * @brief Convenience overload; forwards to the pair-based primary.
+   */
+  bool isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const
+  {
+    return isCollisionAllowed(LinkIdPair(link_id1, link_id2));
+  }
 
   /**
    * @brief Clears the list of allowed collisions, so that no collision will be
@@ -101,11 +120,21 @@ public:
 
 private:
   AllowedCollisionEntries lookup_table_;
+
+  /**
+   * @brief Insert an entry or, if the key already exists, verify the stored names match
+   *        (throwing via checkPairHashCollision otherwise) and update the reason.
+   *        Single write path used by every mutation entry point.
+   */
+  void insertEntryChecked(const LinkIdPair& key, ACMEntry entry);
+
   template <class Archive>
-  friend void ::tesseract::common::serialize(Archive& ar, AllowedCollisionMatrix& obj);
+  friend void ::tesseract::common::save(Archive& ar, const AllowedCollisionMatrix& obj);
+  template <class Archive>
+  friend void ::tesseract::common::load(Archive& ar, AllowedCollisionMatrix& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm);
 }  // namespace tesseract::common
 
-#endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H
+#endif  // TESSERACT_COMMON_ALLOWED_COLLISION_MATRIX_H

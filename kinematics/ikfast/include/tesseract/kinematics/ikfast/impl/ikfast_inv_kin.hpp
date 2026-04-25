@@ -26,24 +26,24 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <stdexcept>
 #include <console_bridge/console.h>
 #include <tesseract/kinematics/ikfast/external/ikfast.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/kinematics/ikfast/ikfast_inv_kin.h>
 #include <tesseract/kinematics/utils.h>
 
 namespace tesseract::kinematics
 {
-inline IKFastInvKin::IKFastInvKin(std::string base_link_name,
-                                  std::string tip_link_name,
-                                  std::vector<std::string> joint_names,
+inline IKFastInvKin::IKFastInvKin(tesseract::common::LinkId base_link_id,
+                                  tesseract::common::LinkId tip_link_id,
+                                  const std::vector<common::JointId>& joint_ids,
                                   std::string solver_name,
                                   std::vector<std::vector<double>> free_joint_states)
-  : base_link_name_(std::move(base_link_name))
-  , tip_link_name_(std::move(tip_link_name))
-  , joint_names_(std::move(joint_names))
+  : base_link_id_(std::move(base_link_id))
+  , tip_link_id_(std::move(tip_link_id))
+  , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
   , free_joint_states_(std::move(free_joint_states))
 {
@@ -58,9 +58,9 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
   if (this == &other)
     return *this;
 
-  base_link_name_ = other.base_link_name_;
-  tip_link_name_ = other.tip_link_name_;
-  joint_names_ = other.joint_names_;
+  base_link_id_ = other.base_link_id_;
+  tip_link_id_ = other.tip_link_id_;
+  joint_ids_ = other.joint_ids_;
   solver_name_ = other.solver_name_;
   free_joint_states_ = other.free_joint_states_;
 
@@ -68,14 +68,14 @@ inline IKFastInvKin& IKFastInvKin::operator=(const IKFastInvKin& other)
 }
 
 inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
-                                     const tesseract::common::TransformMap& tip_link_poses,
+                                     const tesseract::common::LinkIdTransformMap& tip_link_poses,
                                      const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);
-  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
-  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);
+  assert(tip_link_poses.find(tip_link_id_) != tip_link_poses.end());
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_id_).matrix().determinant()) < 1e-6);
 
-  const Eigen::Isometry3d& pose = tip_link_poses.at(tip_link_name_);
+  const Eigen::Isometry3d& pose = tip_link_poses.at(tip_link_id_);
 
   // Convert to ikfast data type
   Eigen::Transform<IkReal, 3, Eigen::Isometry> ikfast_tcp = pose.cast<IkReal>();
@@ -128,10 +128,10 @@ inline void IKFastInvKin::calcInvKin(IKSolutions& solutions,
 }
 
 inline Eigen::Index IKFastInvKin::numJoints() const { return static_cast<Eigen::Index>(GetNumJoints()); }
-inline std::vector<std::string> IKFastInvKin::getJointNames() const { return joint_names_; }
-inline std::string IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
-inline std::string IKFastInvKin::getWorkingFrame() const { return base_link_name_; }
-inline std::vector<std::string> IKFastInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
+inline std::vector<tesseract::common::JointId> IKFastInvKin::getJointIds() const { return joint_ids_; }
+inline tesseract::common::LinkId IKFastInvKin::getBaseLinkId() const { return base_link_id_; }
+inline tesseract::common::LinkId IKFastInvKin::getWorkingFrame() const { return base_link_id_; }
+inline std::vector<tesseract::common::LinkId> IKFastInvKin::getTipLinkIds() const { return { tip_link_id_ }; }
 inline std::string IKFastInvKin::getSolverName() const { return solver_name_; }
 
 inline std::vector<std::vector<double>>

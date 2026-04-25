@@ -24,9 +24,33 @@
 
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/utils.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
+void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                          const tesseract::common::VectorIsometry3d& poses)
+{
+  assert(names.size() == poses.size());
+  for (auto i = 0U; i < names.size(); ++i)
+    setCollisionObjectsTransform(tesseract::common::LinkId(names[i]), poses[i]);
+}
+
+void DiscreteContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
+}
+
+void DiscreteContactManager::setActiveCollisionObjects(const std::vector<std::string>& names)
+{
+  setActiveCollisionObjects(tesseract::common::toIds<tesseract::common::LinkId>(names));
+}
+
+std::vector<std::string> DiscreteContactManager::getActiveCollisionObjectNames() const
+{
+  return tesseract::common::toNames(getActiveCollisionObjectIds());
+}
+
 void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
   config.validate();

@@ -58,120 +58,138 @@ public:
   StateSolver::UPtr clone() const override;
 
   void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                const tesseract::common::TransformMap& floating_joint_values = {}) override final;
-  void setState(const std::unordered_map<std::string, double>& joint_values,
-                const tesseract::common::TransformMap& floating_joint_values = {}) override final;
-  void setState(const std::vector<std::string>& joint_names,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+
+  void setState(const SceneState::JointValues& joint_values,
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+
+  void setState(const std::vector<tesseract::common::JointId>& joint_ids,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                const tesseract::common::TransformMap& floating_joint_values = {}) override final;
-  void setState(const tesseract::common::TransformMap& floating_joint_values) override final;
+                const tesseract::common::JointIdTransformMap& floating_joint_values = {}) override final;
+
+  void setState(const tesseract::common::JointIdTransformMap& floating_joint_values) override final;
 
   SceneState getState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                      const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const std::unordered_map<std::string, double>& joint_values,
-                      const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const std::vector<std::string>& joint_names,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
+  SceneState getState(const SceneState::JointValues& joint_values,
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
+  SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                      const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  SceneState getState(const tesseract::common::TransformMap& floating_joint_values) const override final;
+                      const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
+
+  SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
 
   SceneState getState() const override final;
 
-  void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
-                         const std::vector<std::string>& joint_names,
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<tesseract::common::JointId>& joint_ids,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                         const tesseract::common::TransformMap& floating_joint_values) const override final;
+                         const tesseract::common::JointIdTransformMap& floating_joint_values) const override final;
 
-  void getLinkTransforms(tesseract::common::TransformMap& link_transforms,
-                         const std::vector<std::string>& joint_names,
+  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                         const std::vector<tesseract::common::JointId>& joint_ids,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
 
   SceneState getRandomState() const override final;
 
-  Eigen::MatrixXd getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
-  Eigen::MatrixXd getJacobian(const std::unordered_map<std::string, double>& joint_values,
-                              const std::string& link_name,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
-  Eigen::MatrixXd getJacobian(const std::vector<std::string>& joint_names,
-                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              const std::string& link_name,
-                              const tesseract::common::TransformMap& floating_joint_values = {}) const override final;
+  Eigen::MatrixXd
+  getJacobian(const std::vector<tesseract::common::JointId>& joint_ids,
+              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+              const tesseract::common::LinkId& link_id,
+              const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const override final;
 
-  std::vector<std::string> getJointNames() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override final;
 
-  std::vector<std::string> getFloatingJointNames() const override final;
+  std::vector<tesseract::common::JointId> getFloatingJointIds() const override final;
 
-  std::vector<std::string> getActiveJointNames() const override final;
+  std::vector<tesseract::common::JointId> getActiveJointIds() const override final;
 
-  std::string getBaseLinkName() const override final;
+  tesseract::common::LinkId getBaseLinkId() const override final;
 
-  std::vector<std::string> getLinkNames() const override final;
+  std::vector<tesseract::common::LinkId> getLinkIds() const override final;
 
-  std::vector<std::string> getActiveLinkNames() const override final;
+  std::vector<tesseract::common::LinkId> getActiveLinkIds() const override final;
 
-  std::vector<std::string> getStaticLinkNames() const override final;
+  std::vector<tesseract::common::LinkId> getStaticLinkIds() const override final;
 
-  bool isActiveLinkName(const std::string& link_name) const override final;
+  bool isActiveLinkId(const tesseract::common::LinkId& link_id) const override final;
 
-  bool hasLinkName(const std::string& link_name) const override final;
+  bool hasLinkId(const tesseract::common::LinkId& link_id) const override final;
 
   tesseract::common::VectorIsometry3d getLinkTransforms() const override final;
 
-  Eigen::Isometry3d getLinkTransform(const std::string& link_name) const override final;
+  Eigen::Isometry3d getLinkTransform(const tesseract::common::LinkId& link_id) const override final;
 
-  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
-                                             const std::string& to_link_name) const override final;
+  Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
+                                             const tesseract::common::LinkId& to_link_id) const override final;
 
   tesseract::common::KinematicLimits getLimits() const override final;
 
 private:
-  SceneState current_state_;                                   /**< Current state of the environment */
-  KDLTreeData data_;                                           /**< KDL tree data */
-  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;        /**< KDL Jacobian Solver */
-  std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
+  SceneState current_state_;                                                  /**< Current state of the environment */
+  KDLTreeData data_;                                                          /**< KDL tree data */
+  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;                       /**< KDL Jacobian Solver */
+  std::unordered_map<tesseract::common::JointId, unsigned int> joint_to_qnr_; /**< Map between joint ID and kdl q index
+                                                                               */
   std::vector<int> joint_qnr_;                /**< The kdl segment number corresponding to joint in joint names */
   KDL::JntArray kdl_jnt_array_;               /**< The kdl joint array */
   tesseract::common::KinematicLimits limits_; /**< The kinematic limits */
   mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
+  /** @brief Cached LinkId/JointId per KDL segment, avoiding per-FK constructor calls.
+   *  Keyed by pointer to KDL TreeElement (pointer-stable in std::map). */
+  struct SegmentIdCache
+  {
+    tesseract::common::LinkId link_id;
+    tesseract::common::JointId joint_id;
+  };
+  std::unordered_map<const KDL::TreeElementType*, SegmentIdCache> segment_id_cache_;
+  const KDL::TreeElementType* root_element_{ nullptr }; /**< Cached root element pointer for fast comparison */
+
   static thread_local KDL::JntArray kdl_joints_cache;    // NOLINT
   static thread_local KDL::Jacobian kdl_jacobian_cache;  // NOLINT
 
-  void calculateTransforms(tesseract::common::TransformMap& link_transforms,
+  void calculateTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                            const KDL::JntArray& q_in,
                            const KDL::SegmentMap::const_iterator& it,
                            const Eigen::Isometry3d& parent_frame) const;
 
-  void calculateTransformsHelper(tesseract::common::TransformMap& link_transforms,
+  void calculateTransformsHelper(tesseract::common::LinkIdTransformMap& link_transforms,
                                  const KDL::JntArray& q_in,
                                  const KDL::SegmentMap::const_iterator& it,
                                  const Eigen::Isometry3d& parent_frame) const;
 
-  void calculateTransforms(tesseract::common::TransformMap& link_transforms,
-                           tesseract::common::TransformMap& joint_transforms,
+  void calculateTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
+                           tesseract::common::JointIdTransformMap& joint_transforms,
                            const KDL::JntArray& q_in,
                            const KDL::SegmentMap::const_iterator& it,
                            const Eigen::Isometry3d& parent_frame) const;
 
-  void calculateTransformsHelper(tesseract::common::TransformMap& link_transforms,
-                                 tesseract::common::TransformMap& joint_transforms,
+  void calculateTransformsHelper(tesseract::common::LinkIdTransformMap& link_transforms,
+                                 tesseract::common::JointIdTransformMap& joint_transforms,
                                  const KDL::JntArray& q_in,
                                  const KDL::SegmentMap::const_iterator& it,
                                  const Eigen::Isometry3d& parent_frame) const;
 
-  bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
+  bool setJointValuesHelper(KDL::JntArray& q,
+                            const tesseract::common::JointId& joint_id,
+                            const double& joint_value) const;
 
-  bool calcJacobianHelper(KDL::Jacobian& jacobian, const KDL::JntArray& kdl_joints, const std::string& link_name) const;
+  bool calcJacobianHelper(KDL::Jacobian& jacobian,
+                          const KDL::JntArray& kdl_joints,
+                          const tesseract::common::LinkId& link_id) const;
 
   /** @brief Get an updated kdl joint array */
   void getKDLJntArray(KDL::JntArray& kdl_joints,
-                      const std::vector<std::string>& joint_names,
+                      const std::vector<tesseract::common::JointId>& joint_ids,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
-
-  void getKDLJntArray(KDL::JntArray& kdl_joints, const std::unordered_map<std::string, double>& joint_values) const;
 
   bool processKDLData(const tesseract::scene_graph::SceneGraph& scene_graph);
 };

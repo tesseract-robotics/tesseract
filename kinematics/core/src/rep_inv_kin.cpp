@@ -24,6 +24,7 @@
 
 #include <tesseract/kinematics/rep_inv_kin.h>
 #include <tesseract/kinematics/forward_kinematics.h>
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/scene_graph/scene_state.h>
@@ -32,6 +33,7 @@ namespace tesseract::kinematics
 {
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+using tesseract::common::LinkId;
 
 REPInvKin::REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
                      const tesseract::scene_graph::SceneState& scene_state,
@@ -47,13 +49,13 @@ REPInvKin::REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
 
-  std::vector<std::string> joint_names = positioner->getJointNames();
-  auto s = static_cast<Eigen::Index>(joint_names.size());
+  auto joint_ids = positioner->getJointIds();
+  auto s = static_cast<Eigen::Index>(joint_ids.size());
   Eigen::MatrixX2d positioner_limits;
   positioner_limits.resize(s, 2);
   for (Eigen::Index i = 0; i < s; ++i)
   {
-    auto joint = scene_graph.getJoint(joint_names[static_cast<std::size_t>(i)]);
+    auto joint = scene_graph.getJoint(joint_ids[static_cast<std::size_t>(i)]);
     positioner_limits(i, 0) = joint->limits->lower;
     positioner_limits(i, 1) = joint->limits->upper;
   }
@@ -120,20 +122,20 @@ void REPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
       throw std::runtime_error("Positioner sample resolution is not greater than zero");
   }
 
-  manip_base_to_positioner_base_ = scene_state.link_transforms.at(manipulator->getBaseLinkName()).inverse() *
-                                   scene_state.link_transforms.at(positioner->getBaseLinkName());
+  manip_base_to_positioner_base_ = scene_state.link_transforms.at(manipulator->getBaseLinkId()).inverse() *
+                                   scene_state.link_transforms.at(positioner->getBaseLinkId());
 
   solver_name_ = std::move(solver_name);
   manip_inv_kin_ = manipulator->clone();
   manip_reach_ = manipulator_reach;
   positioner_fwd_kin_ = positioner->clone();
-  working_frame_ = positioner_fwd_kin_->getTipLinkNames()[0];
-  manip_tip_link_ = manip_inv_kin_->getTipLinkNames()[0];
+  working_frame_ = positioner_fwd_kin_->getTipLinkIds()[0];
+  manip_tip_link_ = manip_inv_kin_->getTipLinkIds()[0];
   dof_ = positioner_fwd_kin_->numJoints() + manip_inv_kin_->numJoints();
 
-  joint_names_ = positioner_fwd_kin_->getJointNames();
-  const auto& manip_joints = manip_inv_kin_->getJointNames();
-  joint_names_.insert(joint_names_.end(), manip_joints.begin(), manip_joints.end());
+  joint_ids_ = positioner_fwd_kin_->getJointIds();
+  const auto& manip_joints = manip_inv_kin_->getJointIds();
+  joint_ids_.insert(joint_ids_.end(), manip_joints.begin(), manip_joints.end());
 
   // For the kinematics object to be sampled we need to create the joint values at the sampling resolution
   // The sampled joints results are stored in dof_range[joint index] to be used by the nested_ik function
@@ -163,7 +165,7 @@ REPInvKin& REPInvKin::operator=(const REPInvKin& other)
   manip_inv_kin_ = other.manip_inv_kin_->clone();
   positioner_fwd_kin_ = other.positioner_fwd_kin_->clone();
   manip_reach_ = other.manip_reach_;
-  joint_names_ = other.joint_names_;
+  joint_ids_ = other.joint_ids_;
   manip_base_to_positioner_base_ = other.manip_base_to_positioner_base_;
   working_frame_ = other.working_frame_;
   manip_tip_link_ = other.manip_tip_link_;
@@ -174,7 +176,7 @@ REPInvKin& REPInvKin::operator=(const REPInvKin& other)
 }
 
 void REPInvKin::calcInvKinHelper(IKSolutions& solutions,
-                                 const tesseract::common::TransformMap& tip_link_poses,
+                                 const tesseract::common::LinkIdTransformMap& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
@@ -184,7 +186,7 @@ void REPInvKin::calcInvKinHelper(IKSolutions& solutions,
 void REPInvKin::nested_ik(IKSolutions& solutions,
                           int loop_level,
                           const std::vector<Eigen::VectorXd>& dof_range,
-                          const tesseract::common::TransformMap& tip_link_poses,
+                          const tesseract::common::LinkIdTransformMap& tip_link_poses,
                           Eigen::VectorXd& positioner_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
@@ -202,11 +204,11 @@ void REPInvKin::nested_ik(IKSolutions& solutions,
 }
 
 void REPInvKin::ikAt(IKSolutions& solutions,
-                     const tesseract::common::TransformMap& tip_link_poses,
+                     const tesseract::common::LinkIdTransformMap& tip_link_poses,
                      Eigen::VectorXd& positioner_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::TransformMap positioner_poses;
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkIdTransformMap positioner_poses;
   positioner_poses.clear();
   positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
   Eigen::Isometry3d positioner_tf = positioner_poses[working_frame_];
@@ -216,7 +218,7 @@ void REPInvKin::ikAt(IKSolutions& solutions,
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
-  tesseract::common::TransformMap robot_target_poses;
+  tesseract::common::LinkIdTransformMap robot_target_poses;
   robot_target_poses[manip_tip_link_] = robot_target_pose;
 
   auto robot_dof = manip_inv_kin_->numJoints();
@@ -241,7 +243,7 @@ void REPInvKin::ikAt(IKSolutions& solutions,
 }
 
 void REPInvKin::calcInvKin(IKSolutions& solutions,
-                           const tesseract::common::TransformMap& tip_link_poses,
+                           const tesseract::common::LinkIdTransformMap& tip_link_poses,
                            const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   // NOLINTNEXTLINE(clang-analyzer-core.UndefinedBinaryOperatorResult)
@@ -251,15 +253,15 @@ void REPInvKin::calcInvKin(IKSolutions& solutions,
   calcInvKinHelper(solutions, tip_link_poses, seed);
 }
 
-std::vector<std::string> REPInvKin::getJointNames() const { return joint_names_; }
+std::vector<tesseract::common::JointId> REPInvKin::getJointIds() const { return joint_ids_; }
 
 Eigen::Index REPInvKin::numJoints() const { return dof_; }
 
-std::string REPInvKin::getBaseLinkName() const { return manip_inv_kin_->getBaseLinkName(); }
+tesseract::common::LinkId REPInvKin::getBaseLinkId() const { return manip_inv_kin_->getBaseLinkId(); }
 
-std::string REPInvKin::getWorkingFrame() const { return working_frame_; }
+tesseract::common::LinkId REPInvKin::getWorkingFrame() const { return working_frame_; }
 
-std::vector<std::string> REPInvKin::getTipLinkNames() const { return { manip_tip_link_ }; }
+std::vector<tesseract::common::LinkId> REPInvKin::getTipLinkIds() const { return { manip_tip_link_ }; }
 
 std::string REPInvKin::getSolverName() const { return solver_name_; }
 

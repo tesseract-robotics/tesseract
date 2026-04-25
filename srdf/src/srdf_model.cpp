@@ -24,7 +24,6 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <unordered_map>
 #include <vector>
 #include <utility>
 #include <console_bridge/console.h>
@@ -259,8 +258,8 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     for (const auto& pair : chain.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
       tinyxml2::XMLElement* xml_pair = doc.NewElement("chain");
-      xml_pair->SetAttribute("base_link", pair.first.c_str());
-      xml_pair->SetAttribute("tip_link", pair.second.c_str());
+      xml_pair->SetAttribute("base_link", pair.first.name().c_str());
+      xml_pair->SetAttribute("tip_link", pair.second.name().c_str());
       xml_group->InsertEndChild(xml_pair);
     }
     xml_root->InsertEndChild(xml_group);
@@ -270,10 +269,10 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", joint.first.c_str());
-    for (const auto& joint_name : joint.second)  // <chain base_link="base_link" tip_link="tool0" />
+    for (const auto& joint_id : joint.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
       tinyxml2::XMLElement* xml_joint = doc.NewElement("joint");
-      xml_joint->SetAttribute("name", joint_name.c_str());
+      xml_joint->SetAttribute("name", joint_id.name().c_str());
       xml_group->InsertEndChild(xml_joint);
     }
     xml_root->InsertEndChild(xml_group);
@@ -283,10 +282,10 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", link.first.c_str());
-    for (const auto& link_name : link.second)  // <chain base_link="base_link" tip_link="tool0" />
+    for (const auto& link_id : link.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
       tinyxml2::XMLElement* xml_link = doc.NewElement("link");
-      xml_link->SetAttribute("name", link_name.c_str());
+      xml_link->SetAttribute("name", link_id.name().c_str());
       xml_group->InsertEndChild(xml_link);
     }
     xml_root->InsertEndChild(xml_group);
@@ -303,7 +302,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
       for (const auto& joint : joint_state.second)
       {
         tinyxml2::XMLElement* xml_joint = doc.NewElement("joint");
-        xml_joint->SetAttribute("name", joint.first.c_str());
+        xml_joint->SetAttribute("name", joint.first.name().c_str());
         xml_joint->SetAttribute("value", joint.second);
         xml_group_state->InsertEndChild(xml_joint);
       }
@@ -320,7 +319,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     for (const auto& tcp : group_tcp.second)
     {
       tinyxml2::XMLElement* xml_tcp = doc.NewElement("tcp");
-      xml_tcp->SetAttribute("name", tcp.first.c_str());
+      xml_tcp->SetAttribute("name", tcp.first.name().c_str());
 
       std::stringstream xyz_string;
       xyz_string << tcp.second.translation().format(eigen_format);
@@ -373,14 +372,14 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   }
 
   // Write the ACM
-  const auto allowed_collision_entries = acm.getAllAllowedCollisions();
-  auto acm_keys = getAlphabeticalACMKeys(allowed_collision_entries);
-  for (const auto& key : acm_keys)
+  const auto& allowed_collision_entries = acm.getAllAllowedCollisions();
+  auto sorted_entries = getAlphabeticalACMEntries(allowed_collision_entries);
+  for (const auto& entry : sorted_entries)
   {
     tinyxml2::XMLElement* xml_acm_entry = doc.NewElement("disable_collisions");
-    xml_acm_entry->SetAttribute("link1", key.get().first.c_str());
-    xml_acm_entry->SetAttribute("link2", key.get().second.c_str());
-    xml_acm_entry->SetAttribute("reason", allowed_collision_entries.at(key.get()).c_str());
+    xml_acm_entry->SetAttribute("link1", entry.name1.c_str());
+    xml_acm_entry->SetAttribute("link2", entry.name2.c_str());
+    xml_acm_entry->SetAttribute("reason", entry.reason.c_str());
     xml_root->InsertEndChild(xml_acm_entry);
   }
 
@@ -388,12 +387,12 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   {
     tinyxml2::XMLElement* xml_cm_entry = doc.NewElement("collision_margins");
     xml_cm_entry->SetAttribute("default_margin", collision_margin_data->getDefaultCollisionMargin());
-    for (const auto& entry : collision_margin_data->getCollisionMarginPairData().getCollisionMargins())
+    for (const auto& [key, entry] : collision_margin_data->getCollisionMarginPairData().getCollisionMargins())
     {
       tinyxml2::XMLElement* xml_cm_pair_entry = doc.NewElement("pair_margin");
-      xml_cm_pair_entry->SetAttribute("link1", entry.first.first.c_str());
-      xml_cm_pair_entry->SetAttribute("link2", entry.first.second.c_str());
-      xml_cm_pair_entry->SetAttribute("margin", entry.second);
+      xml_cm_pair_entry->SetAttribute("link1", entry.name1.c_str());
+      xml_cm_pair_entry->SetAttribute("link2", entry.name2.c_str());
+      xml_cm_pair_entry->SetAttribute("margin", entry.margin);
       xml_cm_entry->InsertEndChild(xml_cm_pair_entry);
 
       xml_root->InsertEndChild(xml_cm_entry);

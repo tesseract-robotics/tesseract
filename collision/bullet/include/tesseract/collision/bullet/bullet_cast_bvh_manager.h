@@ -39,6 +39,11 @@
 #ifndef TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
 #define TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <unordered_set>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/collision/bullet/tesseract_collision_configuration.h>
@@ -62,54 +67,60 @@ public:
   BulletCastBVHManager(BulletCastBVHManager&&) = delete;
   BulletCastBVHManager& operator=(BulletCastBVHManager&&) = delete;
 
+  // Bring base class string overloads into scope (prevents name hiding by ID overloads)
+  using ContinuousContactManager::addCollisionObject;
+  using ContinuousContactManager::disableCollisionObject;
+  using ContinuousContactManager::enableCollisionObject;
+  using ContinuousContactManager::getActiveCollisionObjectNames;
+  using ContinuousContactManager::getCollisionObjectGeometries;
+  using ContinuousContactManager::getCollisionObjectGeometriesTransforms;
+  using ContinuousContactManager::hasCollisionObject;
+  using ContinuousContactManager::isCollisionObjectEnabled;
+  using ContinuousContactManager::removeCollisionObject;
+  using ContinuousContactManager::setActiveCollisionObjects;
+  using ContinuousContactManager::setCollisionObjectsTransform;
+
   std::string getName() const override final;
 
   ContinuousContactManager::UPtr clone() const override final;
 
-  bool addCollisionObject(const std::string& name,
+  bool addCollisionObject(const tesseract::common::LinkId& id,
                           const int& mask_id,
                           const CollisionShapesConst& shapes,
                           const tesseract::common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override final;
 
-  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override final;
+  const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const override final;
 
   const tesseract::common::VectorIsometry3d&
-  getCollisionObjectGeometriesTransforms(const std::string& name) const override final;
+  getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const override final;
 
-  bool hasCollisionObject(const std::string& name) const override final;
+  bool hasCollisionObject(const tesseract::common::LinkId& id) const override final;
 
-  bool removeCollisionObject(const std::string& name) override final;
+  bool removeCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool enableCollisionObject(const std::string& name) override final;
+  bool enableCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool disableCollisionObject(const std::string& name) override final;
+  bool disableCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool isCollisionObjectEnabled(const std::string& name) const override final;
+  bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const override final;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) override final;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const tesseract::common::VectorIsometry3d& poses) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) override final;
-
-  void setCollisionObjectsTransform(const std::string& name,
+  void setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                     const Eigen::Isometry3d& pose1,
                                     const Eigen::Isometry3d& pose2) override final;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const tesseract::common::VectorIsometry3d& pose1,
-                                    const tesseract::common::VectorIsometry3d& pose2) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
+                                    const tesseract::common::LinkIdTransformMap& pose2) override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::TransformMap& pose1,
-                                    const tesseract::common::TransformMap& pose2) override final;
+  const std::vector<tesseract::common::LinkId>& getCollisionObjects() const override final;
 
-  const std::vector<std::string>& getCollisionObjects() const override final;
+  void setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids) override final;
 
-  void setActiveCollisionObjects(const std::vector<std::string>& names) override final;
-
-  const std::vector<std::string>& getActiveCollisionObjects() const override final;
+  const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjectIds() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
 
@@ -123,8 +134,8 @@ public:
 
   void incrementCollisionMargin(double increment) override final;
 
-  void setCollisionMarginPair(const std::string& name1,
-                              const std::string& name2,
+  void setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                              const tesseract::common::LinkId& id2,
                               double collision_margin) override final;
 
   void setContactAllowedValidator(
@@ -143,9 +154,9 @@ public:
 private:
   std::string name_;
   /** @brief A list of the active collision objects */
-  std::vector<std::string> active_;
+  std::unordered_set<tesseract::common::LinkId> active_;
   /** @brief A list of the collision objects */
-  std::vector<std::string> collision_objects_;
+  std::vector<tesseract::common::LinkId> collision_objects_;
   /** @brief The bullet collision dispatcher used for getting object to object collison algorithm */
   std::unique_ptr<btCollisionDispatcher> dispatcher_;
   /** @brief The bullet collision dispatcher configuration information */

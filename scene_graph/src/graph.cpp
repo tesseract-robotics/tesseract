@@ -43,6 +43,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::scene_graph
 {
+using tesseract::common::JointId;
+using tesseract::common::LinkId;
 struct cycle_detector : public boost::dfs_visitor<>
 {
   cycle_detector(bool& ascyclic) : ascyclic_(ascyclic) {}
@@ -103,27 +105,27 @@ protected:
 
 struct children_detector : public boost::default_bfs_visitor
 {
-  children_detector(std::vector<std::string>& children) : children_(children) {}
+  children_detector(std::vector<LinkId>& children) : children_(children) {}
 
   template <class u, class g>
   void discover_vertex(u vertex, const g& graph)
   {
-    children_.push_back(boost::get(boost::vertex_link, graph)[vertex]->getName());
+    children_.push_back(boost::get(boost::vertex_link, graph)[vertex]->getId());
   }
 
 protected:
-  std::vector<std::string>& children_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  std::vector<LinkId>& children_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 struct adjacency_detector : public boost::default_bfs_visitor
 {
-  adjacency_detector(std::unordered_map<std::string, std::string>& adjacency_map,
+  adjacency_detector(std::unordered_map<LinkId, LinkId>& adjacency_map,
                      std::map<SceneGraph::Vertex, boost::default_color_type>& color_map,
-                     const std::string& base_link_name,
-                     const std::vector<std::string>& terminate_on_links)
+                     const LinkId& base_link_id,
+                     const std::vector<LinkId>& terminate_on_links)
     : adjacency_map_(adjacency_map)
     , color_map_(color_map)
-    , base_link_name_(base_link_name)
+    , base_link_id_(base_link_id)
     , terminate_on_links_(terminate_on_links)
   {
   }
@@ -133,8 +135,8 @@ struct adjacency_detector : public boost::default_bfs_visitor
   {
     for (auto vd : boost::make_iterator_range(adjacent_vertices(vertex, graph)))
     {
-      std::string adj_link = boost::get(boost::vertex_link, graph)[vd]->getName();
-      if (std::find(terminate_on_links_.begin(), terminate_on_links_.end(), adj_link) != terminate_on_links_.end())
+      LinkId adj_link_id = boost::get(boost::vertex_link, graph)[vd]->getId();
+      if (std::find(terminate_on_links_.begin(), terminate_on_links_.end(), adj_link_id) != terminate_on_links_.end())
         color_map_[vd] = boost::default_color_type::black_color;
     }
   }
@@ -142,17 +144,17 @@ struct adjacency_detector : public boost::default_bfs_visitor
   template <class u, class g>
   void discover_vertex(u vertex, const g& graph)
   {
-    std::string adj_link = boost::get(boost::vertex_link, graph)[vertex]->getName();
-    adjacency_map_[adj_link] = base_link_name_;
+    LinkId adj_link_id = boost::get(boost::vertex_link, graph)[vertex]->getId();
+    adjacency_map_[adj_link_id] = base_link_id_;
   }
 
 protected:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  std::unordered_map<std::string, std::string>& adjacency_map_;
+  std::unordered_map<LinkId, LinkId>& adjacency_map_;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   std::map<SceneGraph::Vertex, boost::default_color_type>& color_map_;
-  const std::string& base_link_name_;                   // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-  const std::vector<std::string>& terminate_on_links_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const LinkId& base_link_id_;                     // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  const std::vector<LinkId>& terminate_on_links_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 using UGraph =
@@ -241,19 +243,19 @@ const std::string& SceneGraph::getName() const
   return boost::get_property(static_cast<const Graph&>(*this), boost::graph_name);
 }
 
-bool SceneGraph::setRoot(const std::string& name)
+bool SceneGraph::setRoot(const common::LinkId& id)
 {
-  auto found = link_map_.find(name);
+  auto found = link_map_.find(id);
 
   if (found == link_map_.end())
     return false;
 
-  boost::set_property(static_cast<Graph&>(*this), boost::graph_root, name);
+  boost::set_property(static_cast<Graph&>(*this), boost::graph_root, id);
 
   return true;
 }
 
-const std::string& SceneGraph::getRoot() const
+const common::LinkId& SceneGraph::getRoot() const
 {
   return boost::get_property(static_cast<const Graph&>(*this), boost::graph_root);
 }
@@ -289,8 +291,12 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
 
 bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool replace_allowed)
 {
-  auto found = link_map_.find(link_ptr->getName());
+  auto found = link_map_.find(link_ptr->getId());
   bool link_exists = (found != link_map_.end());
+
+  if (link_exists)
+    common::checkHashCollision("LinkId", link_ptr->getName(), found->second.first->getName());
+
   if (link_exists && !replace_allowed)
     return false;
 
@@ -304,19 +310,19 @@ bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool repla
   {  // Adding a new link
     VertexProperty info(link_ptr);
     Vertex v = boost::add_vertex(info, static_cast<Graph&>(*this));
-    link_map_[link_ptr->getName()] = std::make_pair(link_ptr, v);
+    link_map_[link_ptr->getId()] = std::make_pair(link_ptr, v);
 
     // First link added set as root
     if (link_map_.size() == 1)
-      setRoot(link_ptr->getName());
+      setRoot(link_ptr->getId());
   }
 
   return true;
 }
 
-std::shared_ptr<const Link> SceneGraph::getLink(const std::string& name) const
+std::shared_ptr<const Link> SceneGraph::getLink(const common::LinkId& id) const
 {
-  auto found = link_map_.find(name);
+  auto found = link_map_.find(id);
   if (found == link_map_.end())
     return nullptr;
 
@@ -346,19 +352,26 @@ std::vector<std::shared_ptr<const Link>> SceneGraph::getLeafLinks() const
   return links;
 }
 
-bool SceneGraph::removeLink(const std::string& name, bool recursive)
+bool SceneGraph::removeLink(const common::LinkId& id, bool recursive)
 {
-  auto found = link_map_.find(name);
+  auto found = link_map_.find(id);
   if (found == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) from scene graph that does not exist.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) from scene graph that does not exist.", id.name().c_str());
     return false;
   }
 
-  std::vector<std::string> adjacent_link_names = getAdjacentLinkNames(name);
+  // Collect adjacent link IDs before clearing edges
+  std::vector<LinkId> adjacent_link_ids;
+  if (recursive)
+  {
+    Vertex v = found->second.second;
+    for (auto* vd : boost::make_iterator_range(adjacent_vertices(v, *this)))
+      adjacent_link_ids.push_back(boost::get(boost::vertex_link, *this)[vd]->getId());
+  }
 
   // Need to remove all inbound and outbound edges first
-  Vertex vertex = getVertex(name);
+  Vertex vertex = found->second.second;
   boost::clear_vertex(vertex, *this);
 
   // rebuild joint_map
@@ -368,22 +381,22 @@ bool SceneGraph::removeLink(const std::string& name, bool recursive)
   {
     Edge e = *ei;
     Joint::Ptr joint = boost::get(boost::edge_joint, *this)[e];
-    joint_map_[joint->getName()] = std::make_pair(joint, e);
+    joint_map_[joint->getId()] = std::make_pair(joint, e);
   }
 
   // Now remove vertex
   boost::remove_vertex(found->second.second, static_cast<Graph&>(*this));
-  link_map_.erase(name);
+  link_map_.erase(id);
 
   // Need to remove any reference to link in allowed collision matrix
-  removeAllowedCollision(name);
+  removeAllowedCollision(id);
 
   if (recursive)
   {
-    for (const auto& link_name : adjacent_link_names)
+    for (const auto& adj_id : adjacent_link_ids)
     {
-      if (getInboundJoints(link_name).empty())
-        removeLink(link_name, true);
+      if (getInboundJoints(adj_id).empty())
+        removeLink(adj_id, true);
     }
   }
 
@@ -392,43 +405,43 @@ bool SceneGraph::removeLink(const std::string& name, bool recursive)
 
 bool SceneGraph::moveLink(const Joint& joint)
 {
-  if (link_map_.find(joint.child_link_name) == link_map_.end())
+  if (link_map_.find(joint.child_link_id) == link_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that does not exist.",
-                           joint.child_link_name.c_str());
+                           joint.child_link_id.name().c_str());
     return false;
   }
 
-  if (link_map_.find(joint.parent_link_name) == link_map_.end())
+  if (link_map_.find(joint.parent_link_id) == link_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that parent link (%s) which does not exist.",
-                           joint.child_link_name.c_str(),
-                           joint.parent_link_name.c_str());
+                           joint.child_link_id.name().c_str(),
+                           joint.parent_link_id.name().c_str());
     return false;
   }
 
-  std::vector<tesseract::scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_name);
+  std::vector<tesseract::scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_id);
   for (const auto& joint : joints)
     removeJoint(joint->getName());
 
   return addJoint(joint);
 }
 
-void SceneGraph::setLinkVisibility(const std::string& name, bool visibility)
+void SceneGraph::setLinkVisibility(const common::LinkId& id, bool visibility)
 {
-  link_map_.at(name).first->visible = visibility;
+  link_map_.at(id).first->visible = visibility;
 }
 
-bool SceneGraph::getLinkVisibility(const std::string& name) const { return link_map_.at(name).first->visible; }
+bool SceneGraph::getLinkVisibility(const common::LinkId& id) const { return link_map_.at(id).first->visible; }
 
-void SceneGraph::setLinkCollisionEnabled(const std::string& name, bool enabled)
+void SceneGraph::setLinkCollisionEnabled(const common::LinkId& id, bool enabled)
 {
-  link_map_.at(name).first->collision_enabled = enabled;
+  link_map_.at(id).first->collision_enabled = enabled;
 }
 
-bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
+bool SceneGraph::getLinkCollisionEnabled(const common::LinkId& id) const
 {
-  return link_map_.at(name).first->collision_enabled;
+  return link_map_.at(id).first->collision_enabled;
 }
 
 bool SceneGraph::addJoint(const Joint& joint)
@@ -439,21 +452,24 @@ bool SceneGraph::addJoint(const Joint& joint)
 
 bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
 {
-  auto parent = link_map_.find(joint_ptr->parent_link_name);
-  auto child = link_map_.find(joint_ptr->child_link_name);
-  auto found = joint_map_.find(joint_ptr->getName());
+  auto parent = link_map_.find(joint_ptr->parent_link_id);
+  auto child = link_map_.find(joint_ptr->child_link_id);
+  auto found = joint_map_.find(joint_ptr->getId());
 
   if (parent == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Parent link (%s) does not exist in scene graph.", joint_ptr->parent_link_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Parent link (%s) does not exist in scene graph.", joint_ptr->parent_link_id.name().c_str());
     return false;
   }
 
   if (child == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Child link (%s) does not exist in scene graph.", joint_ptr->child_link_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Child link (%s) does not exist in scene graph.", joint_ptr->child_link_id.name().c_str());
     return false;
   }
+
+  if (found != joint_map_.end())
+    common::checkHashCollision("JointId", joint_ptr->getName(), found->second.first->getName());
 
   if (found != joint_map_.end())
   {
@@ -491,51 +507,52 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
   std::pair<Edge, bool> e =
       boost::add_edge(parent->second.second, child->second.second, info, static_cast<Graph&>(*this));
   assert(e.second == true);
-  joint_map_[joint_ptr->getName()] = std::make_pair(joint_ptr, e.first);
+  joint_map_[joint_ptr->getId()] = std::make_pair(joint_ptr, e.first);
 
   return true;
 }
 
-std::shared_ptr<const Joint> SceneGraph::getJoint(const std::string& name) const
+std::shared_ptr<const Joint> SceneGraph::getJoint(const common::JointId& id) const
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
   if (found == joint_map_.end())
     return nullptr;
 
   return found->second.first;
 }
 
-bool SceneGraph::removeJoint(const std::string& name, bool recursive)
+bool SceneGraph::removeJoint(const common::JointId& id, bool recursive)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
   if (found == joint_map_.end())
     return false;
 
   if (!recursive)
   {
     boost::remove_edge(found->second.second, static_cast<Graph&>(*this));
-    joint_map_.erase(name);
+    joint_map_.erase(id);
   }
   else
   {
-    if (getInboundJoints(found->second.first->child_link_name).size() == 1)
+    if (getInboundJoints(found->second.first->child_link_id).size() == 1)
     {
-      std::string child_link_name = found->second.first->child_link_name;
-      removeLink(child_link_name, true);
+      LinkId child_link_id = found->second.first->child_link_id;
+      removeLink(child_link_id, true);
     }
   }
 
   return true;
 }
 
-bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_link)
+bool SceneGraph::moveJoint(const common::JointId& id, const common::LinkId& parent_link_id)
 {
-  auto found_joint = joint_map_.find(name);
-  auto found_parent_link = link_map_.find(parent_link);
+  auto found_joint = joint_map_.find(id);
+  auto found_parent_link = link_map_.find(parent_link_id);
 
   if (found_joint == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) which does not exist in scene graph.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) which does not exist in scene graph.",
+                           id.name().c_str());
     return false;
   }
 
@@ -543,16 +560,16 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
   {
     CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) to parent link (%s) which does not exist in scene "
                            "graph.",
-                           name.c_str(),
-                           parent_link.c_str());
+                           id.name().c_str(),
+                           parent_link_id.name().c_str());
     return false;
   }
 
   Joint::Ptr joint = found_joint->second.first;
-  if (!removeJoint(name))
+  if (!removeJoint(id))
     return false;
 
-  joint->parent_link_name = parent_link;
+  joint->parent_link_id = parent_link_id;
   return addJointHelper(joint);
 }
 
@@ -579,14 +596,14 @@ std::vector<std::shared_ptr<const Joint>> SceneGraph::getActiveJoints() const
   return joints;
 }
 
-bool SceneGraph::changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin)
+bool SceneGraph::changeJointOrigin(const common::JointId& id, const Eigen::Isometry3d& new_origin)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
 
   if (found == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to change Joint origin with name (%s) which does not exist in scene graph.",
-                           name.c_str());
+                           id.name().c_str());
     return false;
   }
 
@@ -595,27 +612,26 @@ bool SceneGraph::changeJointOrigin(const std::string& name, const Eigen::Isometr
   joint->parent_to_joint_origin_transform = new_origin;
 
   // Update the edge value associated with the joint
-  Edge e = getEdge(name);
   double d = joint->parent_to_joint_origin_transform.translation().norm();
-  boost::put(boost::edge_weight_t(), *this, e, d);
+  boost::put(boost::edge_weight_t(), *this, found->second.second, d);
 
   return true;
 }
 
-bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& limits)
+bool SceneGraph::changeJointLimits(const common::JointId& id, const JointLimits& limits)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
 
   if (found == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to change Joint limit with name (%s) which does not exist in scene graph.",
-                           name.c_str());
+                           id.name().c_str());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint limits for a fixed or floating joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint limits for a fixed or floating joint type.", id.name().c_str());
     return false;
   }
 
@@ -632,20 +648,21 @@ bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& l
   return true;
 }
 
-bool SceneGraph::changeJointPositionLimits(const std::string& name, double lower, double upper)
+bool SceneGraph::changeJointPositionLimits(const common::JointId& id, double lower, double upper)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
 
   if (found == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits with name (%s) which does not exist in scene graph.",
-                           name.c_str());
+                           id.name().c_str());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits for a fixed or floating joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits for a fixed or floating joint type.",
+                           id.name().c_str());
     return false;
   }
 
@@ -655,20 +672,21 @@ bool SceneGraph::changeJointPositionLimits(const std::string& name, double lower
   return true;
 }
 
-bool SceneGraph::changeJointVelocityLimits(const std::string& name, double limit)
+bool SceneGraph::changeJointVelocityLimits(const common::JointId& id, double limit)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
 
   if (found == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit with name (%s) which does not exist in scene graph.",
-                           name.c_str());
+                           id.name().c_str());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit for a fixed or floating joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit for a fixed or floating joint type.",
+                           id.name().c_str());
     return false;
   }
 
@@ -676,22 +694,22 @@ bool SceneGraph::changeJointVelocityLimits(const std::string& name, double limit
   return true;
 }
 
-bool SceneGraph::changeJointAccelerationLimits(const std::string& name, double limit)
+bool SceneGraph::changeJointAccelerationLimits(const common::JointId& id, double limit)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
 
   if (found == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit with name (%s) which does not exist in scene "
                            "graph.",
-                           name.c_str());
+                           id.name().c_str());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
     CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit for a fixed or floating joint type.",
-                           name.c_str());
+                           id.name().c_str());
     return false;
   }
 
@@ -703,21 +721,21 @@ bool SceneGraph::changeJointAccelerationLimits(const std::string& name, double l
   return true;
 }
 
-bool SceneGraph::changeJointJerkLimits(const std::string& name, double limit)
+bool SceneGraph::changeJointJerkLimits(const common::JointId& id, double limit)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
 
   if (found == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("Tried to change Joint Jerk limit with name (%s) which does not exist in scene "
                            "graph.",
-                           name.c_str());
+                           id.name().c_str());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Jerk limit for a fixed or floating joint type.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint Jerk limit for a fixed or floating joint type.", id.name().c_str());
     return false;
   }
 
@@ -729,15 +747,15 @@ bool SceneGraph::changeJointJerkLimits(const std::string& name, double limit)
   return true;
 }
 
-std::shared_ptr<const JointLimits> SceneGraph::getJointLimits(const std::string& name)
+std::shared_ptr<const JointLimits> SceneGraph::getJointLimits(const common::JointId& id)
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
 
   if (found == joint_map_.end())
   {
     CONSOLE_BRIDGE_logWarn("SceneGraph::getJointLimits tried to find Joint with name (%s) which does not exist in "
                            "scene graph.",
-                           name.c_str());
+                           id.name().c_str());
     return nullptr;
   }
   return found->second.first->limits;
@@ -748,25 +766,25 @@ void SceneGraph::setAllowedCollisionMatrix(std::shared_ptr<tesseract::common::Al
   acm_ = std::move(acm);
 }
 
-void SceneGraph::addAllowedCollision(const std::string& link_name1,
-                                     const std::string& link_name2,
+void SceneGraph::addAllowedCollision(const common::LinkId& link_id1,
+                                     const common::LinkId& link_id2,
                                      const std::string& reason)
 {
-  acm_->addAllowedCollision(link_name1, link_name2, reason);
+  acm_->addAllowedCollision(link_id1, link_id2, reason);
 }
 
-void SceneGraph::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
+void SceneGraph::removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2)
 {
-  acm_->removeAllowedCollision(link_name1, link_name2);
+  acm_->removeAllowedCollision(link_id1, link_id2);
 }
 
-void SceneGraph::removeAllowedCollision(const std::string& link_name) { acm_->removeAllowedCollision(link_name); }
+void SceneGraph::removeAllowedCollision(const common::LinkId& link_id) { acm_->removeAllowedCollision(link_id); }
 
 void SceneGraph::clearAllowedCollisions() { acm_->clearAllowedCollisions(); }
 
-bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
+bool SceneGraph::isCollisionAllowed(const tesseract::common::LinkIdPair& pair) const
 {
-  return acm_->isCollisionAllowed(link_name1, link_name2);
+  return acm_->isCollisionAllowed(pair);
 }
 
 std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() const
@@ -776,24 +794,24 @@ std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> SceneGraph::get
 
 std::shared_ptr<tesseract::common::AllowedCollisionMatrix> SceneGraph::getAllowedCollisionMatrix() { return acm_; }
 
-std::shared_ptr<const Link> SceneGraph::getSourceLink(const std::string& joint_name) const
+std::shared_ptr<const Link> SceneGraph::getSourceLink(const common::JointId& id) const
 {
-  Edge e = getEdge(joint_name);
+  Edge e = getEdge(id);
   Vertex v = boost::source(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
 }
 
-std::shared_ptr<const Link> SceneGraph::getTargetLink(const std::string& joint_name) const
+std::shared_ptr<const Link> SceneGraph::getTargetLink(const common::JointId& id) const
 {
-  Edge e = getEdge(joint_name);
+  Edge e = getEdge(id);
   Vertex v = boost::target(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
 }
 
-std::vector<std::shared_ptr<const Joint>> SceneGraph::getInboundJoints(const std::string& link_name) const
+std::vector<std::shared_ptr<const Joint>> SceneGraph::getInboundJoints(const common::LinkId& id) const
 {
   std::vector<Joint::ConstPtr> joints;
-  Vertex vertex = getVertex(link_name);
+  Vertex vertex = getVertex(id);
 
   // Get incoming edges
   auto num_in_edges = static_cast<int>(boost::in_degree(vertex, *this));
@@ -810,12 +828,12 @@ std::vector<std::shared_ptr<const Joint>> SceneGraph::getInboundJoints(const std
   return joints;
 }
 
-std::vector<std::shared_ptr<const Joint>> SceneGraph::getOutboundJoints(const std::string& link_name) const
+std::vector<std::shared_ptr<const Joint>> SceneGraph::getOutboundJoints(const common::LinkId& id) const
 {
   std::vector<Joint::ConstPtr> joints;
-  Vertex vertex = getVertex(link_name);
+  Vertex vertex = getVertex(id);
 
-  // Get incoming edges
+  // Get outgoing edges
   auto num_out_edges = static_cast<int>(boost::out_degree(vertex, *this));
   if (num_out_edges == 0)
     return joints;
@@ -868,58 +886,57 @@ bool SceneGraph::isTree() const
   return tree;
 }
 
-std::vector<std::string> SceneGraph::getAdjacentLinkNames(const std::string& name) const
+std::vector<LinkId> SceneGraph::getAdjacentLinkIds(const LinkId& id) const
 {
-  std::vector<std::string> link_names;
-  Vertex v = getVertex(name);
+  std::vector<LinkId> link_ids;
+  Vertex v = getVertex(id);
   for (auto* vd : boost::make_iterator_range(adjacent_vertices(v, *this)))
-    link_names.push_back(boost::get(boost::vertex_link, *this)[vd]->getName());
+    link_ids.push_back(boost::get(boost::vertex_link, *this)[vd]->getId());
 
-  return link_names;
+  return link_ids;
 }
 
-std::vector<std::string> SceneGraph::getInvAdjacentLinkNames(const std::string& name) const
+std::vector<LinkId> SceneGraph::getInvAdjacentLinkIds(const LinkId& id) const
 {
-  std::vector<std::string> link_names;
-  Vertex v = getVertex(name);
+  std::vector<LinkId> link_ids;
+  Vertex v = getVertex(id);
   for (auto* vd : boost::make_iterator_range(inv_adjacent_vertices(v, *this)))
-    link_names.push_back(boost::get(boost::vertex_link, *this)[vd]->getName());
+    link_ids.push_back(boost::get(boost::vertex_link, *this)[vd]->getId());
 
-  return link_names;
+  return link_ids;
 }
 
-std::vector<std::string> SceneGraph::getLinkChildrenNames(const std::string& name) const
+std::vector<LinkId> SceneGraph::getLinkChildrenIds(const LinkId& id) const
 {
-  Vertex v = getVertex(name);
-  std::vector<std::string> child_link_names = getLinkChildrenHelper(v);
+  Vertex v = getVertex(id);
+  std::vector<LinkId> child_link_ids = getLinkChildrenHelper(v);
 
   // This always includes the start vertex, so must remove
-  child_link_names.erase(child_link_names.begin());
-  return child_link_names;
+  child_link_ids.erase(child_link_ids.begin());
+  return child_link_ids;
 }
 
-std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& name) const
+std::vector<LinkId> SceneGraph::getJointChildrenIds(const JointId& id) const
 {
   const auto& graph = static_cast<const Graph&>(*this);
-  Edge e = getEdge(name);
+  Edge e = getEdge(id);
   Vertex v = boost::target(e, graph);
   return getLinkChildrenHelper(v);  // NOLINT
 }
 
-std::vector<std::string> SceneGraph::getJointChildrenNames(const std::vector<std::string>& names) const
+std::vector<LinkId> SceneGraph::getJointChildrenIds(const std::vector<JointId>& ids) const
 {
-  std::set<std::string> link_names;
-  for (const auto& name : names)
+  std::set<LinkId> link_ids;
+  for (const auto& id : ids)
   {
-    std::vector<std::string> joint_children = getJointChildrenNames(name);
-    link_names.insert(joint_children.begin(), joint_children.end());
+    std::vector<LinkId> joint_children = getJointChildrenIds(id);
+    link_ids.insert(joint_children.begin(), joint_children.end());
   }
 
-  return std::vector<std::string>{ link_names.begin(), link_names.end() };
+  return std::vector<LinkId>{ link_ids.begin(), link_ids.end() };
 }
 
-std::unordered_map<std::string, std::string>
-SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
+std::unordered_map<LinkId, LinkId> SceneGraph::getAdjacencyMap(const std::vector<LinkId>& link_ids) const
 {
   std::map<Vertex, size_t> index_map;
   boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
@@ -932,11 +949,11 @@ SceneGraph::getAdjacencyMap(const std::vector<std::string>& link_names) const
   for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i, ++c)
     boost::put(prop_index_map, *i, c);
 
-  std::unordered_map<std::string, std::string> adjacency_map;
-  for (const auto& link_name : link_names)
+  std::unordered_map<LinkId, LinkId> adjacency_map;
+  for (const auto& link_id : link_ids)
   {
-    Vertex start_vertex = getVertex(link_name);
-    adjacency_detector vis(adjacency_map, color_map, link_name, link_names);
+    Vertex start_vertex = getVertex(link_id);
+    adjacency_detector vis(adjacency_map, color_map, link_id, link_ids);
 
     // NOLINTNEXTLINE
     boost::breadth_first_search(
@@ -979,7 +996,7 @@ void SceneGraph::saveDOT(const std::string& path) const
   dot_file << "}";
 }
 
-ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::string& tip) const
+ShortestPath SceneGraph::getShortestPath(const common::LinkId& root_id, const common::LinkId& tip_id) const
 {
   // Must copy to undirected graph because order does not matter for creating kinematics chains.
 
@@ -1000,8 +1017,8 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
   boost::copy_graph(*this, graph, boost::vertex_index_map(prop_index_map).vertex_copy(v_copier));
 
   // Search Graph
-  UGraph::vertex_descriptor s_root = getVertex(root);
-  UGraph::vertex_descriptor s_tip = getVertex(tip);
+  UGraph::vertex_descriptor s_root = getVertex(root_id);
+  UGraph::vertex_descriptor s_tip = getVertex(tip_id);
 
   auto prop_weight_map = boost::get(boost::edge_weight, graph);
 
@@ -1020,11 +1037,11 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
     UGraph::vertex_iterator i, iend;
     for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
     {
-      std::string name = boost::get(boost::vertex_link, graph)[*i]->getName();
-      if (name == root)
+      LinkId id = boost::get(boost::vertex_link, graph)[*i]->getId();
+      if (id == root_id)
         s_root = *i;
 
-      if (name == tip)
+      if (id == tip_id)
         s_tip = *i;
 
       boost::put(u_prop_index_map, *i, c);
@@ -1053,14 +1070,14 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
        s_tip = u, u = predicessor_map[s_tip])  // Set the current vertex to the current predecessor, and the predecessor
                                                // to one level up
   {
-    path.links.push_back(boost::get(boost::vertex_link, graph)[s_tip]->getName());
+    path.links.push_back(boost::get(boost::vertex_link, graph)[s_tip]->getId());
     const Joint::ConstPtr& joint = boost::get(boost::edge_joint, graph)[boost::edge(u, s_tip, graph).first];
 
-    path.joints.push_back(joint->getName());
+    path.joints.push_back(joint->getId());
     if (joint->type != JointType::FIXED && joint->type != JointType::FLOATING)
-      path.active_joints.push_back(joint->getName());
+      path.active_joints.push_back(joint->getId());
   }
-  path.links.push_back(root);
+  path.links.push_back(root_id);
   std::reverse(path.links.begin(), path.links.end());
   std::reverse(path.joints.begin(), path.joints.end());
   std::reverse(path.active_joints.begin(), path.active_joints.end());
@@ -1080,20 +1097,20 @@ ShortestPath SceneGraph::getShortestPath(const std::string& root, const std::str
   return path;
 }
 
-SceneGraph::Vertex SceneGraph::getVertex(const std::string& name) const
+SceneGraph::Vertex SceneGraph::getVertex(const common::LinkId& id) const
 {
-  auto found = link_map_.find(name);
+  auto found = link_map_.find(id);
   if (found == link_map_.end())
-    throw std::runtime_error("SceneGraph, vertex with name '" + name + "' does not exist!");
+    throw std::runtime_error("SceneGraph, vertex with name '" + id.name() + "' does not exist!");
 
   return found->second.second;
 }
 
-SceneGraph::Edge SceneGraph::getEdge(const std::string& name) const
+SceneGraph::Edge SceneGraph::getEdge(const common::JointId& id) const
 {
-  auto found = joint_map_.find(name);
+  auto found = joint_map_.find(id);
   if (found == joint_map_.end())
-    throw std::runtime_error("SceneGraph, edge with name '" + name + "' does not exist!");
+    throw std::runtime_error("SceneGraph, edge with name '" + id.name() + "' does not exist!");
 
   return found->second.second;
 }
@@ -1110,8 +1127,8 @@ tesseract::scene_graph::Joint clone_prefix(const tesseract::scene_graph::Joint::
                                            const std::string& prefix)
 {
   auto ret = joint->clone(prefix + joint->getName());
-  ret.child_link_name = prefix + joint->child_link_name;
-  ret.parent_link_name = prefix + joint->parent_link_name;
+  ret.child_link_id = LinkId(prefix + joint->child_link_id.name());
+  ret.parent_link_id = LinkId(prefix + joint->parent_link_id.name());
   return ret;
 }
 
@@ -1122,8 +1139,8 @@ clone_prefix(const tesseract::common::AllowedCollisionMatrix::ConstPtr& acm, con
     return std::make_shared<tesseract::common::AllowedCollisionMatrix>(*acm);
 
   auto new_acm = std::make_shared<tesseract::common::AllowedCollisionMatrix>();
-  for (const auto& entry : acm->getAllAllowedCollisions())
-    new_acm->addAllowedCollision(prefix + entry.first.first, prefix + entry.first.second, entry.second);
+  for (const auto& [key, entry] : acm->getAllAllowedCollisions())
+    new_acm->addAllowedCollision(prefix + entry.name1, prefix + entry.name2, entry.reason);
 
   return new_acm;
 }
@@ -1136,7 +1153,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
   // Verify that link names are unique
   for (const auto& link : scene_graph.getLinks())
   {
-    if (link_map_.find(prefix + link->getName()) != link_map_.end())
+    if (link_map_.find(LinkId(prefix + link->getName())) != link_map_.end())
     {
       CONSOLE_BRIDGE_logError("Failed to add inserted graph, link names are not unique: %s",
                               (prefix + link->getName()).c_str());
@@ -1147,7 +1164,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
   // Verify that joint names are unique
   for (const auto& joint : scene_graph.getJoints())
   {
-    if (joint_map_.find(prefix + joint->getName()) != joint_map_.end())
+    if (joint_map_.find(JointId(prefix + joint->getName())) != joint_map_.end())
     {
       CONSOLE_BRIDGE_logError("Failed to add inserted graph, joint names are not unique: %s",
                               (prefix + joint->getName()).c_str());
@@ -1194,14 +1211,13 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
                                   const Joint& joint,
                                   const std::string& prefix)
 {
-  std::string parent_link = joint.parent_link_name;
-  std::string child_link = joint.child_link_name;
+  std::string child_link = joint.child_link_id.name();
 
   // Assumes the joint already contains the prefix in the parent and child link names
   if (!prefix.empty())
     child_link.erase(0, prefix.length());
 
-  if (getLink(parent_link) == nullptr || scene_graph.getLink(child_link) == nullptr)
+  if (getLink(joint.parent_link_id) == nullptr || scene_graph.getLink(child_link) == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to add inserted graph, provided joint link names do not exist in inserted graph!");
     return false;
@@ -1230,7 +1246,7 @@ void SceneGraph::rebuildLinkAndJointMaps()
     for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i)
     {
       Link::Ptr link = boost::get(boost::vertex_link, *this)[*i];
-      link_map_[link->getName()] = std::make_pair(link, *i);
+      link_map_[link->getId()] = std::make_pair(link, *i);
     }
   }
 
@@ -1239,15 +1255,15 @@ void SceneGraph::rebuildLinkAndJointMaps()
     for (boost::tie(i, iend) = boost::edges(*this); i != iend; ++i)
     {
       Joint::Ptr joint = boost::get(boost::edge_joint, *this)[*i];
-      joint_map_[joint->getName()] = std::make_pair(joint, *i);
+      joint_map_[joint->getId()] = std::make_pair(joint, *i);
     }
   }
 }
 
-std::vector<std::string> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) const
+std::vector<LinkId> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) const
 {
   const auto& graph = static_cast<const Graph&>(*this);
-  std::vector<std::string> child_link_names;
+  std::vector<LinkId> child_link_ids;
 
   std::map<Vertex, size_t> index_map;
   boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
@@ -1260,14 +1276,14 @@ std::vector<std::string> SceneGraph::getLinkChildrenHelper(Vertex start_vertex) 
   for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
     boost::put(prop_index_map, *i, c);
 
-  children_detector vis(child_link_names);
+  children_detector vis(child_link_ids);
   // NOLINTNEXTLINE
   boost::breadth_first_search(
       graph,
       start_vertex,
       boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map).color_map(prop_color_map));
 
-  return child_link_names;
+  return child_link_ids;
 }
 
 bool SceneGraph::operator==(const SceneGraph& rhs) const
@@ -1283,9 +1299,9 @@ bool SceneGraph::operator==(const SceneGraph& rhs) const
 
   bool equal = true;
   equal &= pointersEqual(acm_, rhs.acm_);
-  equal &= isIdenticalMap<std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>>, std::pair<Link::Ptr, Vertex>>(
+  equal &= isIdenticalMap<std::unordered_map<LinkId, std::pair<Link::Ptr, Vertex>>, std::pair<Link::Ptr, Vertex>>(
       link_map_, rhs.link_map_, link_pair_equal);
-  equal &= isIdenticalMap<std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>>, std::pair<Joint::Ptr, Edge>>(
+  equal &= isIdenticalMap<std::unordered_map<JointId, std::pair<Joint::Ptr, Edge>>, std::pair<Joint::Ptr, Edge>>(
       joint_map_, rhs.joint_map_, joint_pair_equal);
 
   return equal;
@@ -1296,15 +1312,15 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 {
   os << "Links:" << "\n";
   for (const auto& l : path.links)
-    os << "  " << l << "\n";
+    os << "  " << l.name() << "\n";
 
   os << "Joints:" << "\n";
   for (const auto& j : path.joints)
-    os << "  " << j << "\n";
+    os << "  " << j.name() << "\n";
 
   os << "Active Joints:" << "\n";
   for (const auto& j : path.active_joints)
-    os << "  " << j << "\n";
+    os << "  " << j.name() << "\n";
   return os;
 }
 
