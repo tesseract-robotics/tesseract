@@ -81,7 +81,7 @@ void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, cons
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 {
-  const uint64_t id = link_id.value();
+  const NameIdValue id = link_id.value();
   for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
     if (it->first.first_id() == id || it->first.second_id() == id)
