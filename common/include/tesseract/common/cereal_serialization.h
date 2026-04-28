@@ -52,8 +52,8 @@ void save(Archive& ar, const OrderedIdPair<Tag>& pair)
 template <class Archive, typename Tag>
 void load(Archive& ar, OrderedIdPair<Tag>& pair)
 {
-  uint64_t first_id = 0;
-  uint64_t second_id = 0;
+  NameIdValue first_id = 0;
+  NameIdValue second_id = 0;
   ar(cereal::make_nvp("first_id", first_id));
   ar(cereal::make_nvp("second_id", second_id));
   pair = OrderedIdPair<Tag>(first_id, second_id);

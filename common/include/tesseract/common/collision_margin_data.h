@@ -174,7 +174,7 @@ private:
   std::optional<double> max_collision_margin_;
 
   /** @brief Stores the maximum collision margin for each object */
-  std::unordered_map<uint64_t, double> object_max_margins_;
+  std::unordered_map<NameIdValue, double> object_max_margins_;
 
   /** @brief Set the margin for a given contact pair without updating the max margins */
   void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);

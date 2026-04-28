@@ -39,6 +39,16 @@ namespace tesseract::common
 // Integer link/joint identity types
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Underlying numeric type for NameId hash values.
+ *
+ * Aliased so the width can be widened later without churning every public API
+ * and downstream caller. Note: hashes are produced by std::hash<std::string>,
+ * which returns std::size_t, so a wider NameIdValue alone does not widen the
+ * hash — a different hash function would also be required.
+ */
+using NameIdValue = std::uint64_t;
+
 struct LinkTag
 {
 };
@@ -49,7 +59,7 @@ struct JointTag
 /**
  * @brief Tagged integer identity type for links and joints.
  *
- * Wraps a uint64_t computed from the name via std::hash<std::string>.
+ * Wraps a NameIdValue computed from the name via std::hash<std::string>.
  * Distinct tag types (LinkTag, JointTag) prevent accidental cross-use.
  * IDs are runtime-only — never persisted. Deterministic within a single
  * process execution.
@@ -64,8 +74,8 @@ struct NameId
   {
     if (!name.empty())
     {
-      auto h = static_cast<uint64_t>(std::hash<std::string>{}(name));
-      value_ = (h == 0) ? uint64_t{ 1 } : h;
+      auto h = static_cast<NameIdValue>(std::hash<std::string>{}(name));
+      value_ = (h == 0) ? NameIdValue{ 1 } : h;
       name_ = name;
     }
   }
@@ -74,25 +84,25 @@ struct NameId
   NameId(const char* name) : NameId(name != nullptr ? std::string(name) : std::string{}) {}
 
   /** @brief The numeric hash of the name. Zero means invalid/default-constructed. */
-  constexpr uint64_t value() const noexcept { return value_; }
+  [[nodiscard]] constexpr NameIdValue value() const noexcept { return value_; }
 
   /** @brief Access the original name string. Empty for default-constructed (invalid) IDs. */
-  const std::string& name() const noexcept { return name_; }
+  [[nodiscard]] const std::string& name() const noexcept { return name_; }
 
-  constexpr bool isValid() const noexcept { return value_ != 0; }
+  [[nodiscard]] constexpr bool isValid() const noexcept { return value_ != 0; }
 
   constexpr bool operator==(const NameId& other) const noexcept { return value_ == other.value_; }
   constexpr bool operator!=(const NameId& other) const noexcept { return value_ != other.value_; }
+
+  /**
+   * @brief Order by hash value, NOT by name. This is hash-random — useful for ordered containers
+   *        (std::map / std::set keyed on NameId) but produces no human-meaningful ordering. If
+   *        you need lexicographic order, sort by name() explicitly.
+   */
   constexpr bool operator<(const NameId& other) const noexcept { return value_ < other.value_; }
 
-  /** @brief Identity hash — returns the raw value. */
-  struct Hash
-  {
-    constexpr std::size_t operator()(const NameId& id) const noexcept { return static_cast<std::size_t>(id.value_); }
-  };
-
 private:
-  uint64_t value_{ 0 };
+  NameIdValue value_{ 0 };
   std::string name_;
 };
 
@@ -105,7 +115,7 @@ inline const JointId INVALID_JOINT_ID{};
 /**
  * @brief Canonically ordered pair of id values with cached hash.
  *
- * Holds only the two uint64 id values (not the source NameId names) plus a
+ * Holds only the two NameIdValue id values (not the source NameId names) plus a
  * cached combined hash. The constructor guarantees first_id() <= second_id()
  * regardless of argument order, so OrderedIdPair(a, b) == OrderedIdPair(b, a).
  */
@@ -114,14 +124,14 @@ struct OrderedIdPair
 {
   OrderedIdPair() = default;
   OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b) : OrderedIdPair(a.value(), b.value()) {}
-  OrderedIdPair(uint64_t a, uint64_t b)
+  OrderedIdPair(NameIdValue a, NameIdValue b)
     : first_id_(a <= b ? a : b), second_id_(a <= b ? b : a), hash_(combineHash(first_id_, second_id_))
   {
   }
 
-  constexpr uint64_t first_id() const noexcept { return first_id_; }
-  constexpr uint64_t second_id() const noexcept { return second_id_; }
-  constexpr std::size_t hash() const noexcept { return hash_; }
+  [[nodiscard]] constexpr NameIdValue first_id() const noexcept { return first_id_; }
+  [[nodiscard]] constexpr NameIdValue second_id() const noexcept { return second_id_; }
+  [[nodiscard]] constexpr std::size_t hash() const noexcept { return hash_; }
 
   constexpr bool operator==(const OrderedIdPair& other) const noexcept
   {
@@ -136,17 +146,12 @@ struct OrderedIdPair
     return second_id_ < other.second_id_;
   }
 
-  struct Hash
-  {
-    constexpr std::size_t operator()(const OrderedIdPair& p) const noexcept { return p.hash(); }
-  };
-
 private:
-  uint64_t first_id_{ 0 };
-  uint64_t second_id_{ 0 };
+  NameIdValue first_id_{ 0 };
+  NameIdValue second_id_{ 0 };
   std::size_t hash_{ 0 };
 
-  static constexpr std::size_t combineHash(uint64_t f, uint64_t s) noexcept
+  static constexpr std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
   {
     auto h = static_cast<std::size_t>(f);
     h ^= static_cast<std::size_t>(s) + std::size_t{ 0x9e3779b9 } + (h << 6) + (h >> 2);
@@ -156,7 +161,8 @@ private:
 
 using LinkIdPair = OrderedIdPair<LinkTag>;
 
-static_assert(sizeof(LinkIdPair) == 24, "LinkIdPair must be two uint64 ids plus cached hash");
+static_assert(sizeof(LinkIdPair) == (2 * sizeof(NameIdValue)) + sizeof(std::size_t),
+              "LinkIdPair must be two NameIdValue ids plus cached pair hash");
 
 /** @brief Return the two names canonically ordered to match OrderedIdPair(a, b). */
 template <typename Tag>
@@ -169,9 +175,10 @@ inline std::pair<std::string, std::string> orderedPairNames(const NameId<Tag>& a
 /**
  * @brief Throw if the two canonicalized names do not match the stored pair's names.
  *
- * Since NameId hashes collapse a full string into 64 bits, two distinct link names can in theory
- * map to the same id. When that happens, every LinkIdPair-keyed map silently aliases the two
- * pairs. Call this at insertion time to surface such collisions as a clear runtime error.
+ * Since NameId hashes collapse a full string into a NameIdValue (size_t-bounded, currently 64
+ * bits), two distinct link names can in theory map to the same id. When that happens, every
+ * LinkIdPair-keyed map silently aliases the two pairs. Call this at insertion time to surface
+ * such collisions as a clear runtime error.
  */
 void checkPairHashCollision(const char* context,
                             const std::string& new_name1,
