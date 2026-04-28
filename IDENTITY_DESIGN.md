@@ -1,17 +1,19 @@
 # Identity Design: NameId, LinkId, JointId
 
-Runtime identity for links and joints in Tesseract is a tagged 64-bit hash, not a string. This document explains what that means, why it was done, how type safety and performance work out, and — most importantly — why hash collisions cannot silently corrupt data.
+Runtime identity for links and joints in Tesseract is a tagged integer hash (currently 64-bit), not a string. This document explains what that means, why it was done, how type safety and performance work out, and — most importantly — why hash collisions cannot silently corrupt data.
 
 ## The identity types
 
 All of identity lives in `common/include/tesseract/common/types.h`:
 
 ```cpp
+using NameIdValue = std::uint64_t;       // typedef so the width can be widened later
+
 template <typename Tag>
 struct NameId {
   NameId();                              // invalid (value == 0)
   NameId(const std::string&);            // hashes the name, retains it
-  uint64_t value() const noexcept;       // the hash
+  NameIdValue value() const noexcept;    // the hash
   const std::string& name() const;       // original string, for display / serialization
   bool isValid() const noexcept;         // value != 0
   bool operator==(const NameId&) const noexcept;  // value-based
@@ -31,6 +33,8 @@ using LinkIdPair = OrderedIdPair<LinkTag>;
 
 The source name is retained on the `NameId` so public APIs, error messages, and on-disk serialization continue to speak strings. The hash drives lookup and equality; the name stays available for everything that needs to address humans or files.
 
+The numeric type behind a `NameId` is exposed as `NameIdValue` rather than spelled `uint64_t` everywhere, so a future widening only requires changing the typedef and a different hash function — *not* every downstream caller. Note that `std::hash<std::string>` itself returns `std::size_t`, so widening `NameIdValue` past 64 bits is preparation only; producing a wider hash also requires switching off `std::hash<std::string>` to something like xxh128.
+
 ## Type safety
 
 `LinkId` and `JointId` are *distinct types* because `LinkTag` and `JointTag` are different. A link identity cannot flow into a joint-addressing API without an explicit conversion:
@@ -43,6 +47,8 @@ The previous string-based APIs could not distinguish — both link and joint loo
 
 The same tag scheme extends to `OrderedIdPair<Tag>`: `LinkIdPair` cannot be formed from `JointId`s by accident.
 
+Note one footgun: `NameId::operator<` orders by hash value, not by name. Ordered containers (`std::map`, `std::set`) work but produce no human-meaningful key order — sort by `name()` explicitly when display order matters.
+
 ## Performance
 
 The migration was motivated by profiling that showed string hashing and comparison dominating hot paths such as ACM queries and FK/IK state lookups. With string keys, every lookup paid:
@@ -53,13 +59,15 @@ The migration was motivated by profiling that showed string hashing and comparis
 
 With `NameId` keys:
 
-- `std::hash<NameId>` is the identity function — it returns the pre-computed 64-bit value
-- equality and probe comparisons are `uint64_t` compares
+- `std::hash<NameId>` is the identity function — it returns the pre-computed `NameIdValue`
+- equality and probe comparisons are `NameIdValue` compares
 - constructing a lookup key is free if you already hold a `NameId`
+
+Both standard (`std::hash<NameId>`) and boost (`hash_value` ADL) hash entry points are provided, so `NameId` works as a key in both `std::unordered_map` and `boost::unordered_flat_map` without spelling a hasher.
 
 Hash computation is front-loaded at `NameId` construction (once) and then amortized over every subsequent lookup. For structures like `SceneGraph::link_map_`, `SceneGraph::joint_map_`, `SceneState::joints`, `LinkIdTransformMap`, and the ACM, that ratio is very favorable.
 
-Per-pair storage is also smaller. `LinkIdPair` is 24 bytes — two `uint64_t` ids plus a cached `size_t` pair hash — regardless of name length. The old per-pair key was two `std::string`s with their attendant size and allocation overhead.
+Per-pair storage is also smaller. `LinkIdPair` is `2 * sizeof(NameIdValue) + sizeof(std::size_t)` bytes (24 bytes today) — two `NameIdValue` ids plus a cached `size_t` pair hash — regardless of name length. The old per-pair key was two `std::string`s with their attendant size and allocation overhead.
 
 The migration is not a universal win. Constructing a `NameId` from a string is *slightly* more expensive than constructing a `std::string` because it hashes. Code that builds an identity and never looks anything up (rare) pays without benefit. Parse-heavy paths (URDF/SRDF/YAML load) are dominated by parsing itself, so the extra hash is in the noise.
 
@@ -77,7 +85,7 @@ Users must not persist `NameId::value()`. It is a cache, not a key.
 
 ## Hash collision risk and prevention
 
-`std::hash<std::string>` mapping to 64 bits means collisions are mathematically possible, though astronomically rare for typical robot link/joint names. The design guarantees that a collision, if it ever occurred, would surface as a **loud, localized runtime error**, never as silent aliasing or dropped data.
+`std::hash<std::string>` produces a `std::size_t` (currently 64 bits on this platform), so collisions are mathematically possible, though astronomically rare for typical robot link/joint names. The design guarantees that a collision, if it ever occurred, would surface as a **loud, localized runtime error**, never as silent aliasing or dropped data.
 
 There are two layers of risk and two layers of defense.
 
@@ -126,14 +134,14 @@ Net: trajopt_common's pair-keyed container inherits the same single-point-of-enf
 **Gained**
 
 - Hot-path lookups (ACM, FK, IK, state queries) are faster — integer hash + integer compare instead of string hash + string compare.
-- `LinkIdPair` storage is a fixed 24 bytes regardless of name length.
+- `LinkIdPair` storage is a fixed `2 * sizeof(NameIdValue) + sizeof(std::size_t)` bytes (24 today) regardless of name length.
 - Compile-time separation of link and joint identity via tag types catches a class of mix-up bugs that the old string API could not.
 - Centralized collision detection — each ACM/margin container has exactly one private helper that every mutation path goes through. Future additions get safety by default.
 - End-to-end API consistency — the ID is the primary currency; strings are needed only at parse/serialize boundaries and for display.
 
 **Given up**
 
-- `sizeof(NameId)` is larger than `sizeof(std::string)` on typical standard libraries (an extra `uint64_t` alongside the string). For storage of a `NameId` outside a map, this is a small loss.
+- `sizeof(NameId)` is larger than `sizeof(std::string)` on typical standard libraries (an extra `NameIdValue` alongside the string). For storage of a `NameId` outside a map, this is a small loss.
 - Hash cost is paid at `NameId` construction rather than per lookup. Code that constructs a `NameId` and never looks anything up pays without benefit.
 - The on-disk format is still string-based, so entries carry both the `LinkIdPair` key *and* the names — a small amount of redundancy. This redundancy is also what makes collision detection possible, so it is a deliberate cost.
 - A new failure mode — `std::runtime_error` on hash collision during insertion — did not exist with string keys. Extremely unlikely to trigger in practice, but possible.
