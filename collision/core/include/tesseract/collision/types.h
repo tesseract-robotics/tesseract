@@ -159,7 +159,7 @@ public:
   using MappedType = ContactResultVector;
   using ContainerType = std::unordered_map<KeyType,
                                            MappedType,
-                                           tesseract::common::LinkIdPair::Hash,
+                                           std::hash<KeyType>,
                                            std::equal_to<>,
                                            Eigen::aligned_allocator<std::pair<const KeyType, MappedType>>>;
   using ConstReferenceType = typename ContainerType::const_reference;

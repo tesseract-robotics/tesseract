@@ -106,18 +106,19 @@ TEST(NameIdTest, LinkIdAndJointIdAreDistinctTypes)  // NOLINT
 
 // ======================== Hash ========================
 
-TEST(NameIdTest, IdentityHash)  // NOLINT
-{
-  const LinkId id = LinkId("test_link");
-  LinkId::Hash hasher;
-  EXPECT_EQ(hasher(id), id.value());
-}
-
 TEST(NameIdTest, StdHashSpecialization)  // NOLINT
 {
   const LinkId id = LinkId("test_link");
   std::hash<LinkId> hasher;
   EXPECT_EQ(hasher(id), id.value());
+}
+
+TEST(NameIdTest, BoostHashAdlHook)  // NOLINT
+{
+  // Calling hash_value unqualified exercises ADL — the same lookup boost::hash and
+  // boost::unordered_flat_map use to find the hook for NameId.
+  const LinkId id = LinkId("test_link");
+  EXPECT_EQ(hash_value(id), id.value());
 }
 
 TEST(NameIdTest, WorksInUnorderedSet)  // NOLINT
@@ -174,6 +175,14 @@ TEST(LinkIdPairTest, HashWorksInUnorderedMap)  // NOLINT
   // Lookup with reversed order should find same entry
   const LinkIdPair reversed = LinkIdPair(LinkId("b"), LinkId("a"));
   EXPECT_EQ(map.at(reversed), 42);
+}
+
+TEST(LinkIdPairTest, BoostHashAdlHook)  // NOLINT
+{
+  // Calling hash_value unqualified exercises ADL — the same lookup boost::hash and
+  // boost::unordered_flat_map use to find the hook for OrderedIdPair.
+  const LinkIdPair pair = LinkIdPair(LinkId("a"), LinkId("b"));
+  EXPECT_EQ(hash_value(pair), pair.hash());
 }
 
 TEST(LinkIdPairTest, SameLinkPair)  // NOLINT
