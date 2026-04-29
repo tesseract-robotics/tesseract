@@ -209,13 +209,13 @@ SceneGraph::UPtr SceneGraph::clone() const
 
   for (auto& link : getLinks())
   {
-    cloned_graph->addLink(link->clone(link->getName()));
-    cloned_graph->setLinkVisibility(link->getName(), getLinkVisibility(link->getName()));
-    cloned_graph->setLinkCollisionEnabled(link->getName(), getLinkCollisionEnabled(link->getName()));
+    cloned_graph->addLink(link->clone(link->getId()));
+    cloned_graph->setLinkVisibility(link->getId(), getLinkVisibility(link->getId()));
+    cloned_graph->setLinkCollisionEnabled(link->getId(), getLinkCollisionEnabled(link->getId()));
   }
 
   for (auto& joint : getJoints())
-    cloned_graph->addJoint(joint->clone(joint->getName()));
+    cloned_graph->addJoint(joint->clone(joint->getId()));
 
   cloned_graph->getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(*getAllowedCollisionMatrix());
 
@@ -268,13 +268,13 @@ bool SceneGraph::addLink(const Link& link, bool replace_allowed)
 
 bool SceneGraph::addLink(const Link& link, const Joint& joint)
 {
-  if (getLink(link.getName()) != nullptr)
+  if (getLink(link.getId()) != nullptr)
   {
     CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with same name as an existing link.", link.getName().c_str());
     return false;
   }
 
-  if (getJoint(joint.getName()) != nullptr)
+  if (getJoint(joint.getId()) != nullptr)
   {
     CONSOLE_BRIDGE_logWarn("Tried to add joint (%s) with same name as an existing joint.", joint.getName().c_str());
     return false;
@@ -422,7 +422,7 @@ bool SceneGraph::moveLink(const Joint& joint)
 
   std::vector<tesseract::scene_graph::Joint::ConstPtr> joints = getInboundJoints(joint.child_link_id);
   for (const auto& joint : joints)
-    removeJoint(joint->getName());
+    removeJoint(joint->getId());
 
   return addJoint(joint);
 }
@@ -1120,13 +1120,13 @@ namespace
 {
 tesseract::scene_graph::Link clone_prefix(const tesseract::scene_graph::Link::ConstPtr& link, const std::string& prefix)
 {
-  return link->clone(prefix + link->getName());
+  return link->clone(LinkId(prefix + link->getName()));
 }
 
 tesseract::scene_graph::Joint clone_prefix(const tesseract::scene_graph::Joint::ConstPtr& joint,
                                            const std::string& prefix)
 {
-  auto ret = joint->clone(prefix + joint->getName());
+  auto ret = joint->clone(JointId(prefix + joint->getName()));
   ret.child_link_id = LinkId(prefix + joint->child_link_id.name());
   ret.parent_link_id = LinkId(prefix + joint->parent_link_id.name());
   return ret;
@@ -1140,7 +1140,7 @@ clone_prefix(const tesseract::common::AllowedCollisionMatrix::ConstPtr& acm, con
 
   auto new_acm = std::make_shared<tesseract::common::AllowedCollisionMatrix>();
   for (const auto& [key, entry] : acm->getAllAllowedCollisions())
-    new_acm->addAllowedCollision(prefix + entry.name1, prefix + entry.name2, entry.reason);
+    new_acm->addAllowedCollision(LinkId(prefix + entry.name1), LinkId(prefix + entry.name2), entry.reason);
 
   return new_acm;
 }
@@ -1183,8 +1183,8 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
     }
 
     // Set link collision enabled and visibility
-    setLinkCollisionEnabled(new_link->getName(), scene_graph.getLinkCollisionEnabled(link->getName()));
-    setLinkVisibility(new_link->getName(), scene_graph.getLinkVisibility(link->getName()));
+    setLinkCollisionEnabled(new_link->getId(), scene_graph.getLinkCollisionEnabled(link->getId()));
+    setLinkVisibility(new_link->getId(), scene_graph.getLinkVisibility(link->getId()));
   }
 
   for (const auto& joint : scene_graph.getJoints())
@@ -1211,19 +1211,19 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
                                   const Joint& joint,
                                   const std::string& prefix)
 {
-  std::string child_link = joint.child_link_id.name();
+  std::string child_link_name = joint.child_link_id.name();
 
   // Assumes the joint already contains the prefix in the parent and child link names
   if (!prefix.empty())
-    child_link.erase(0, prefix.length());
+    child_link_name.erase(0, prefix.length());
 
-  if (getLink(joint.parent_link_id) == nullptr || scene_graph.getLink(child_link) == nullptr)
+  if (getLink(joint.parent_link_id) == nullptr || scene_graph.getLink(LinkId(child_link_name)) == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to add inserted graph, provided joint link names do not exist in inserted graph!");
     return false;
   }
 
-  if (getJoint(joint.getName()) != nullptr)
+  if (getJoint(joint.getId()) != nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to add inserted graph, provided joint name %s already exists!",
                             joint.getName().c_str());

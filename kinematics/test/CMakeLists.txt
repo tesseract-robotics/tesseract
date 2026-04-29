@@ -14,7 +14,7 @@ target_link_libraries(
           tesseract::common)
 target_compile_options(tesseract_kinematics_core_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                               ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_core_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_core_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_kinematics_core_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_kinematics_core_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -37,7 +37,7 @@ target_link_libraries(
           tesseract::common)
 target_compile_options(tesseract_kinematics_kdl_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_kdl_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_kdl_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_kinematics_kdl_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_kinematics_kdl_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -60,7 +60,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_opw_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_opw_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_opw_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_kinematics_opw_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_kinematics_opw_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -83,7 +83,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_ikfast_abb_irb2400 PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                        ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_ikfast_abb_irb2400 PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_ikfast_abb_irb2400 PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_cxx_version(tesseract_kinematics_ikfast_abb_irb2400 PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   tesseract_kinematics_ikfast_abb_irb2400
@@ -104,7 +104,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_ikfast_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                 ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_ikfast_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_ikfast_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_cxx_version(tesseract_kinematics_ikfast_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   tesseract_kinematics_ikfast_unit
@@ -126,7 +126,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                      ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_ikfast_7dof_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_cxx_version(tesseract_kinematics_ikfast_7dof_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   tesseract_kinematics_ikfast_7dof_unit
@@ -148,7 +148,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_rop_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_rop_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_rop_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_kinematics_rop_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_kinematics_rop_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -171,7 +171,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_rep_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_rep_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_rep_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_kinematics_rep_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_kinematics_rep_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -194,7 +194,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_ur_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                             ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_ur_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_ur_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_kinematics_ur_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_kinematics_ur_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -216,7 +216,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_kinematics_factory_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_kinematics_factory_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_compile_definitions(tesseract_kinematics_factory_unit PRIVATE PLUGIN_DIR="${CMAKE_CURRENT_BINARY_DIR}")
 
 target_clang_tidy(tesseract_kinematics_factory_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

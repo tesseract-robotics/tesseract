@@ -42,18 +42,18 @@ KDLFwdKinChainFactory::create(const std::string& solver_name,
                               const KinematicsPluginFactory& /*plugin_factory*/,
                               const YAML::Node& config) const
 {
-  std::string base_link;
-  std::string tip_link;
+  common::LinkId base_link;
+  common::LinkId tip_link;
 
   try
   {
     if (YAML::Node n = config["base_link"])
-      base_link = n.as<std::string>();
+      base_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLFwdKinChainFactory, missing 'base_link' entry");
 
     if (YAML::Node n = config["tip_link"])
-      tip_link = n.as<std::string>();
+      tip_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLFwdKinChainFactory, missing 'tip_link' entry");
   }
@@ -73,19 +73,19 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
                                  const KinematicsPluginFactory& /*plugin_factory*/,
                                  const YAML::Node& config) const
 {
-  std::string base_link;
-  std::string tip_link;
+  common::LinkId base_link;
+  common::LinkId tip_link;
   KDLInvKinChainLMA::Config kdl_config;
 
   try
   {
     if (YAML::Node n = config["base_link"])
-      base_link = n.as<std::string>();
+      base_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLInvKinChainLMAFactory, missing 'base_link' entry");
 
     if (YAML::Node n = config["tip_link"])
-      tip_link = n.as<std::string>();
+      tip_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLInvKinChainLMAFactory, missing 'tip_link' entry");
 
@@ -124,19 +124,19 @@ KDLInvKinChainNRFactory::create(const std::string& solver_name,
                                 const KinematicsPluginFactory& /*plugin_factory*/,
                                 const YAML::Node& config) const
 {
-  std::string base_link;
-  std::string tip_link;
+  common::LinkId base_link;
+  common::LinkId tip_link;
   KDLInvKinChainNR::Config kdl_config;
 
   try
   {
     if (YAML::Node n = config["base_link"])
-      base_link = n.as<std::string>();
+      base_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLInvKinChainNRFactory, missing 'base_link' entry");
 
     if (YAML::Node n = config["tip_link"])
-      tip_link = n.as<std::string>();
+      tip_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLInvKinChainNRFactory, missing 'tip_link' entry");
 
@@ -169,19 +169,19 @@ KDLInvKinChainNR_JLFactory::create(const std::string& solver_name,
                                    const KinematicsPluginFactory& /*plugin_factory*/,
                                    const YAML::Node& config) const
 {
-  std::string base_link;
-  std::string tip_link;
+  common::LinkId base_link;
+  common::LinkId tip_link;
   KDLInvKinChainNR_JL::Config kdl_config;
 
   try
   {
     if (YAML::Node n = config["base_link"])
-      base_link = n.as<std::string>();
+      base_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLInvKinChainNR_JLFactory, missing 'base_link' entry");
 
     if (YAML::Node n = config["tip_link"])
-      tip_link = n.as<std::string>();
+      tip_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLInvKinChainNR_JLFactory, missing 'tip_link' entry");
     // Optional configuration parameters

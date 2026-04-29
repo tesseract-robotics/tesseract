@@ -49,6 +49,19 @@ The same tag scheme extends to `OrderedIdPair<Tag>`: `LinkIdPair` cannot be form
 
 Note one footgun: `NameId::operator<` orders by hash value, not by name. Ordered containers (`std::map`, `std::set`) work but produce no human-meaningful key order — sort by `name()` explicitly when display order matters.
 
+## Implicit string conversion: implicit by default, explicit inside Tesseract
+
+`NameId(const std::string&)` and `NameId(const char*)` are convenience constructors. By default they are **implicit**, so tests, examples, and downstream user code can write `graph.getLink("base")` and let the string convert. The constructors are guarded by a `TESSERACT_NAMEID_EXPLICIT` macro in `types.h` that expands to `explicit` when `TESSERACT_NAMEID_NO_IMPLICIT` is defined and to nothing otherwise.
+
+Each of Tesseract's own production libraries adds `TESSERACT_NAMEID_NO_IMPLICIT` as a **PRIVATE** compile definition, so the constructors are explicit only in the libraries' own translation units. In practice this means:
+
+- Inside Tesseract source files (`*/src/*.cpp` for `common`, `geometry`, `scene_graph`, `state_solver_*`, `collision*`, `kinematics*`, `srdf`, `urdf`, `environment`, `visualization`), any string-to-id construction must be spelled out — `LinkId("base")` rather than `"base"`. The compiler surfaces every place an internal pathway is still going through strings, which is exactly what we want to migrate away from.
+- Tests, examples, and downstream consumers (including templates instantiated in their TUs) keep the convenience of implicit conversion. The library's public API remains string-friendly.
+
+`NameId` is a class template, so its constructors are inline and instantiated per TU. Differing explicit-ness across TUs is a compile-time check — the constructor bodies are identical, so there is no ABI/ODR impact.
+
+The CMake plumbing lives in `common/cmake/tesseract_macros.cmake` (variable `TESSERACT_COMPILE_DEFINITIONS_PRIVATE`) and is applied via `target_compile_definitions(<lib> PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})` on each production library. New libraries added to Tesseract should follow the same pattern.
+
 ## Performance
 
 The migration was motivated by profiling that showed string hashing and comparison dominating hot paths such as ACM queries and FK/IK state lookups. With string keys, every lookup paid:

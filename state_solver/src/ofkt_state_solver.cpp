@@ -838,13 +838,16 @@ bool OFKTStateSolver::insertSceneGraph(const SceneGraph& scene_graph, const Join
   if (root_ == nullptr)
     return false;  // LCOV_EXCL_LINE
 
-  std::string child_link = joint.child_link_id.name();
-
-  // Assumes the joint already contains the prefix in the parent and child link names
+  // Joint child_link_id was hashed with the prefix; the inserted scene_graph stores it without.
+  LinkId child_link_id = joint.child_link_id;
   if (!prefix.empty())
-    child_link.erase(0, prefix.length());
+  {
+    std::string child_link_name = joint.child_link_id.name();
+    child_link_name.erase(0, prefix.length());
+    child_link_id = LinkId(child_link_name);
+  }
 
-  if (link_map_.find(joint.parent_link_id) == link_map_.end() || scene_graph.getLink(child_link) == nullptr)
+  if (link_map_.find(joint.parent_link_id) == link_map_.end() || scene_graph.getLink(child_link_id) == nullptr)
   {
     CONSOLE_BRIDGE_logError("OFKTStateSolver, Failed to add inserted graph, provided joint link names do not exist in "
                             "inserted graph!");
@@ -1022,9 +1025,9 @@ bool OFKTStateSolver::initHelper(const tesseract::scene_graph::SceneGraph& scene
 
   assert(scene_graph.isTree());
 
-  const std::string root_name = prefix + scene_graph.getRoot().name();
+  const auto root = LinkId(prefix + scene_graph.getRoot().name());
 
-  root_ = std::make_unique<OFKTRootNode>(LinkId(root_name));
+  root_ = std::make_unique<OFKTRootNode>(root);
   link_map_[root_->getLinkId()] = root_.get();
   current_state_.link_transforms[root_->getLinkId()] = root_->getWorldTransformation();
   link_ids_.push_back(root_->getLinkId());
@@ -1044,7 +1047,7 @@ bool OFKTStateSolver::initHelper(const tesseract::scene_graph::SceneGraph& scene
 
   boost::depth_first_search(
       static_cast<const tesseract::scene_graph::Graph&>(scene_graph),
-      boost::visitor(builder).root_vertex(scene_graph.getVertex(root_name)).vertex_index_map(prop_index_map));
+      boost::visitor(builder).root_vertex(scene_graph.getVertex(root)).vertex_index_map(prop_index_map));
 
   // Populate Joint Limits
   addNewJointLimits(new_joints_limits);
