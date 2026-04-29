@@ -95,7 +95,7 @@ void runKinematicsFactoryTest(const std::filesystem::path& config_path)
     auto plugins = group_it->second["plugins"];
     for (auto solver_it = plugins.begin(); solver_it != plugins.end(); ++solver_it)
     {
-      const YAML::Node& plugin = solver_it->second;
+      YAML::Node plugin = solver_it->second;
       auto solver_name = solver_it->first.as<std::string>();
 
       tesseract::common::PluginInfo info;
@@ -121,7 +121,7 @@ void runKinematicsFactoryTest(const std::filesystem::path& config_path)
     auto plugins = group_it->second["plugins"];
     for (auto solver_it = plugins.begin(); solver_it != plugins.end(); ++solver_it)
     {
-      const YAML::Node& plugin = solver_it->second;
+      YAML::Node plugin = solver_it->second;
       auto solver_name = solver_it->first.as<std::string>();
 
       tesseract::common::PluginInfo info;
