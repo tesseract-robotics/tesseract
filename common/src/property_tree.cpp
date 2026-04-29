@@ -1215,7 +1215,7 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
     for (auto it = map_node.begin(); it != map_node.end(); ++it)
     {
       auto key = it->first.as<std::string>();
-      const YAML::Node& value_node = it->second;
+      YAML::Node value_node = it->second;
 
       std::string actual_value_type = map_value_type;
       bool has_type_field = false;
