@@ -87,7 +87,7 @@ void load(Archive& ar, AllowedCollisionMatrix& obj)
   std::map<std::pair<std::string, std::string>, std::string> compat;
   ar(cereal::make_nvp("lookup_table", compat));
   for (const auto& [names, reason] : compat)
-    obj.addAllowedCollision(names.first, names.second, reason);
+    obj.addAllowedCollision(LinkId(names.first), LinkId(names.second), reason);
 }
 
 template <class Archive>
@@ -112,7 +112,7 @@ void load(Archive& ar, CollisionMarginPairData& obj)
   std::map<std::pair<std::string, std::string>, double> compat;
   ar(cereal::make_nvp("lookup_table", compat));
   for (const auto& [names, margin] : compat)
-    obj.setCollisionMargin(names.first, names.second, margin);
+    obj.setCollisionMargin(LinkId(names.first), LinkId(names.second), margin);
 }
 
 template <class Archive>

@@ -27,9 +27,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -51,17 +51,17 @@ public:
    *
    *        Parent joint and all child components (links/joints) should be removed
    *
-   * @param name Name of the link to be removed
+   * @param link_id Id of the link to be removed
    */
-  RemoveLinkCommand(std::string link_name);
+  RemoveLinkCommand(common::LinkId link_id);
 
-  const std::string& getLinkName() const;
+  const common::LinkId& getLinkId() const;
 
   bool operator==(const RemoveLinkCommand& rhs) const;
   bool operator!=(const RemoveLinkCommand& rhs) const;
 
 private:
-  std::string link_name_;
+  common::LinkId link_id_;
 
   template <class Archive>
   friend void ::tesseract::environment::serialize(Archive& ar, RemoveLinkCommand& obj);

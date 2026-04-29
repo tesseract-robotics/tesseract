@@ -24,33 +24,35 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/change_joint_velocity_limits_command.h>
 
-#include <string>
 #include <cassert>
 
 namespace tesseract::environment
 {
 ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand()
-  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS){};
+  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS) {};
 
-ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand(std::string joint_name, double limit)
-  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(std::move(joint_name), limit) })
+ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand(common::JointId joint_id, double limit)
+  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(std::move(joint_id), limit) })
 {
   assert(limit > 0);
 }
 
-ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand(std::unordered_map<std::string, double> limits)
+ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand(std::unordered_map<common::JointId, double> limits)
   : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_(std::move(limits))
 {
   assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second > 0; }));
 }
 
-const std::unordered_map<std::string, double>& ChangeJointVelocityLimitsCommand::getLimits() const { return limits_; }
+const std::unordered_map<common::JointId, double>& ChangeJointVelocityLimitsCommand::getLimits() const
+{
+  return limits_;
+}
 
 bool ChangeJointVelocityLimitsCommand::operator==(const ChangeJointVelocityLimitsCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract::common::isIdenticalMap<std::unordered_map<std::string, double>, double>(limits_, rhs.limits_);
+  equal &= tesseract::common::isIdenticalMap<std::unordered_map<common::JointId, double>, double>(limits_, rhs.limits_);
   return equal;
 }
 bool ChangeJointVelocityLimitsCommand::operator!=(const ChangeJointVelocityLimitsCommand& rhs) const

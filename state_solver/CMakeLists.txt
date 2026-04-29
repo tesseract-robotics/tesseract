@@ -11,7 +11,7 @@ target_link_libraries(
             tesseract::scene_graph
             console_bridge::console_bridge)
 target_compile_options(state_solver INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(state_solver INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(state_solver INTERFACE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(state_solver ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(state_solver INTERFACE VERSION ${TESSERACT_CXX_VERSION})
 target_include_directories(state_solver INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -30,7 +30,8 @@ target_link_libraries(
          console_bridge::console_bridge)
 target_compile_options(state_solver_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(state_solver_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(state_solver_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(state_solver_kdl PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(state_solver_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(state_solver_kdl ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(state_solver_kdl PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -54,7 +55,8 @@ target_link_libraries(
          console_bridge::console_bridge)
 target_compile_options(state_solver_ofkt PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(state_solver_ofkt PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(state_solver_ofkt PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(state_solver_ofkt PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(state_solver_ofkt PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(state_solver_ofkt ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(state_solver_ofkt PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

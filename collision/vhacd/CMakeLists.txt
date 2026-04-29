@@ -12,7 +12,8 @@ target_link_libraries(
          console_bridge::console_bridge)
 target_compile_options(collision_vhacd_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(collision_vhacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(collision_vhacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(collision_vhacd_convex_decomposition PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(collision_vhacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_cxx_version(collision_vhacd_convex_decomposition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 # target_clang_tidy(collision_vhacd_convex_decomposition ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 
@@ -42,7 +43,8 @@ if(NOT MSVC)
             Threads::Threads)
   target_compile_options(create_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-  target_compile_definitions(create_convex_decomposition PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+  target_compile_definitions(create_convex_decomposition PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE}
+                                                                 ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
   target_cxx_version(create_convex_decomposition PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 
   list(APPEND PACKAGE_LIBRARIES create_convex_decomposition)

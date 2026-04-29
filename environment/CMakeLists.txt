@@ -47,7 +47,8 @@ target_link_libraries(
 target_link_libraries(environment PRIVATE tesseract::collision_bullet)
 target_compile_options(environment PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(environment PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(environment PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(environment PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(environment PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(environment ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(environment PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

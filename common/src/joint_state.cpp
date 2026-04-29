@@ -27,11 +27,6 @@
 
 namespace tesseract::common
 {
-JointState::JointState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
-  : joint_ids(toIds<JointId>(joint_names)), position(position)
-{
-}
-
 JointState::JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Eigen::VectorXd>& position)
   : joint_ids(std::move(joint_ids)), position(position)
 {

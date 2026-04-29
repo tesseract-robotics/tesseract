@@ -83,7 +83,7 @@ tesseract::common::CollisionMarginData::Ptr parseCollisionMargins(const tesserac
       std::throw_with_nested(std::runtime_error("parseCollisionMargins: failed to parse link pair 'margin' "
                                                 "attribute."));
 
-    margin_data->setCollisionMargin(link1_name, link2_name, link_pair_margin);
+    margin_data->setCollisionMargin(common::LinkId(link1_name), common::LinkId(link2_name), link_pair_margin);
   }
 
   return margin_data;

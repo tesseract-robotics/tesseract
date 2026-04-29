@@ -62,9 +62,9 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
         const YAML::Node& joint = *it;
         std::array<double, 3> values{ 0, 0, 0 };
 
-        std::string joint_name;
+        common::JointId joint_id;
         if (YAML::Node n = joint["name"])
-          joint_name = n.as<std::string>();
+          joint_id = common::JointId(n.as<std::string>());
         else
           throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' missing 'name' entry!");
 
@@ -73,7 +73,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
         else
           throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' missing 'value' entry!");
 
-        auto jnt = scene_graph.getJoint(joint_name);
+        auto jnt = scene_graph.getJoint(joint_id);
         if (jnt == nullptr)
           throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' failed to find joint in scene "
                                    "graph!");
@@ -96,7 +96,7 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
         if (values[1] > values[2])
           throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
 
-        sample_res_map[common::JointId(joint_name)] = values;
+        sample_res_map[joint_id] = values;
       }
     }
     else

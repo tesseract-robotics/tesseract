@@ -24,25 +24,23 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/move_joint_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 MoveJointCommand::MoveJointCommand() : Command(CommandType::MOVE_JOINT) {}
 
-MoveJointCommand::MoveJointCommand(std::string joint_name, std::string parent_link)
-  : Command(CommandType::MOVE_JOINT), joint_name_(std::move(joint_name)), parent_link_(std::move(parent_link))
+MoveJointCommand::MoveJointCommand(common::JointId joint_id, common::LinkId parent_link)
+  : Command(CommandType::MOVE_JOINT), joint_id_(std::move(joint_id)), parent_link_(std::move(parent_link))
 {
 }
 
-const std::string& MoveJointCommand::getJointName() const { return joint_name_; }
-const std::string& MoveJointCommand::getParentLink() const { return parent_link_; }
+const common::JointId& MoveJointCommand::getJointId() const { return joint_id_; }
+const common::LinkId& MoveJointCommand::getParentLink() const { return parent_link_; }
 
 bool MoveJointCommand::operator==(const MoveJointCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= joint_name_ == rhs.joint_name_;
+  equal &= joint_id_ == rhs.joint_id_;
   equal &= parent_link_ == rhs.parent_link_;
   return equal;
 }

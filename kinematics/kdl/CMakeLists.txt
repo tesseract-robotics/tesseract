@@ -19,7 +19,8 @@ target_link_libraries(
          console_bridge::console_bridge)
 target_compile_options(kinematics_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(kinematics_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(kinematics_kdl PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(kinematics_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(kinematics_kdl ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(kinematics_kdl PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -45,7 +46,8 @@ target_link_libraries(
          console_bridge::console_bridge)
 target_compile_options(kinematics_kdl_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_kdl_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(kinematics_kdl_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(kinematics_kdl_factories PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(kinematics_kdl_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(kinematics_kdl_factories ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(kinematics_kdl_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

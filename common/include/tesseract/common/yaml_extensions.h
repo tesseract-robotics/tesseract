@@ -726,7 +726,7 @@ struct convert<tesseract::common::JointIdTransformMap>
       return false;
 
     for (const auto& pair : node)
-      rhs[pair.first.as<std::string>()] = pair.second.as<Eigen::Isometry3d>();
+      rhs[tesseract::common::JointId(pair.first.as<std::string>())] = pair.second.as<Eigen::Isometry3d>();
 
     return true;
   }

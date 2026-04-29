@@ -462,11 +462,11 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
   if (!scene_graph.isTree())
     throw std::runtime_error("parseSubSceneGraph: currently only works if the scene graph is a tree.");
 
-  const std::string& root_name = scene_graph.getRoot().name();
-  const Link::ConstPtr& root_link = scene_graph.getLink(root_name);
+  const auto& root = scene_graph.getRoot();
+  const Link::ConstPtr& root_link = scene_graph.getLink(root);
 
   KDLTreeData data;
-  data.tree = KDL::Tree(root_name);
+  data.tree = KDL::Tree(root.name());
 
   // warn if root link has inertia. KDL does not support this
   if (root_link->inertial)
@@ -474,7 +474,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
     CONSOLE_BRIDGE_logWarn("The root link %s has an inertia specified in the URDF, but KDL does not "
                            "support a root link with an inertia.  As a workaround, you can add an extra "
                            "dummy link to your URDF.",
-                           root_name.c_str());
+                           root.name().c_str());
   }
 
   kdl_tree_builder builder(data);
@@ -489,7 +489,7 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
 
   boost::depth_first_search(
       static_cast<const Graph&>(scene_graph),
-      boost::visitor(builder).root_vertex(scene_graph.getVertex(root_name)).vertex_index_map(prop_index_map));
+      boost::visitor(builder).root_vertex(scene_graph.getVertex(root)).vertex_index_map(prop_index_map));
 
   assert(data.link_ids.size() == scene_graph.getLinks().size());
   assert(data.active_joint_ids.size() <= scene_graph.getJoints().size());
