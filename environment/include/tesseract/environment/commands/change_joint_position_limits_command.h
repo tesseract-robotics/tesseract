@@ -27,10 +27,10 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -49,25 +49,25 @@ public:
 
   /**
    * @brief Changes the position limits associated with a joint
-   * @param joint_name Name of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @param limits New position limits to be set as the joint limits
    */
-  ChangeJointPositionLimitsCommand(std::string joint_name, double lower, double upper);
+  ChangeJointPositionLimitsCommand(common::JointId joint_id, double lower, double upper);
 
   /**
    * @brief Changes the position limits associated with one or more joints
-   * @param limits A map of joint names to new position limits.
+   * @param limits A map of joint ids to new position limits.
    * For each limit pair, first is the lower limit second is the upper limit
    */
-  ChangeJointPositionLimitsCommand(std::unordered_map<std::string, std::pair<double, double>> limits);
+  ChangeJointPositionLimitsCommand(std::unordered_map<common::JointId, std::pair<double, double>> limits);
 
-  const std::unordered_map<std::string, std::pair<double, double>>& getLimits() const;
+  const std::unordered_map<common::JointId, std::pair<double, double>>& getLimits() const;
 
   bool operator==(const ChangeJointPositionLimitsCommand& rhs) const;
   bool operator!=(const ChangeJointPositionLimitsCommand& rhs) const;
 
 private:
-  std::unordered_map<std::string, std::pair<double, double>> limits_;
+  std::unordered_map<common::JointId, std::pair<double, double>> limits_;
 
   template <class Archive>
   friend void ::tesseract::environment::serialize(Archive& ar, ChangeJointPositionLimitsCommand& obj);

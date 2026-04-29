@@ -28,7 +28,9 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/uuid/uuid.hpp>
 #include <Eigen/Core>
+#include <utility>
 #include <vector>
+#include <type_traits>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/any_poly.h>
@@ -40,7 +42,16 @@ class JointState
 {
 public:
   JointState() = default;
-  JointState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& position);
+
+  // Backwards-compat overload taking joint names; templated only so brace-init-list `{"j1","j2"}` continues to deduce
+  // to the JointId vector form below (template arg deduction fails for braced lists in non-template parameters).
+  template <typename T,
+            std::enable_if_t<std::is_same_v<std::decay_t<T>, std::vector<std::string>>, int> = 0>
+  JointState(const T& joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
+    : joint_ids(toIds<JointId>(joint_names)), position(position)
+  {
+  }
+
   JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Eigen::VectorXd>& position);
 
   /** @brief The joint IDs corresponding to the position vector. */

@@ -27,9 +27,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -48,19 +48,19 @@ public:
 
   /**
    * @brief Set a links visibility
-   * @param name The name of the link
+   * @param link_id The id of the link
    * @param visibility True if should be visible, otherwise false
    */
-  ChangeLinkVisibilityCommand(std::string link_name, bool enabled);
+  ChangeLinkVisibilityCommand(common::LinkId link_id, bool enabled);
 
-  const std::string& getLinkName() const;
+  const common::LinkId& getLinkId() const;
   bool getEnabled() const;
 
   bool operator==(const ChangeLinkVisibilityCommand& rhs) const;
   bool operator!=(const ChangeLinkVisibilityCommand& rhs) const;
 
 private:
-  std::string link_name_;
+  common::LinkId link_id_;
   bool enabled_{ false };
 
   template <class Archive>

@@ -33,6 +33,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+// ---------------------------------------------------------------------------
+// Implicit-conversion toggle for NameId string constructors.
+//
+// By default the constructors taking std::string / const char* are implicit,
+// which is convenient for tests and downstream users. Tesseract's own
+// production libraries set TESSERACT_NAMEID_NO_IMPLICIT (via target_compile_-
+// definitions PRIVATE) to make the constructors explicit in their own TUs,
+// forcing internal call sites to either avoid string-keyed paths entirely or
+// be explicit about when they construct an id from a string. Templates are
+// instantiated per-TU, so the differing explicit-ness across TUs is a
+// compile-time check only — it has no ABI/ODR impact.
+// ---------------------------------------------------------------------------
+#ifdef TESSERACT_NAMEID_NO_IMPLICIT
+#define TESSERACT_NAMEID_EXPLICIT explicit
+#else
+#define TESSERACT_NAMEID_EXPLICIT
+#endif
+
 namespace tesseract::common
 {
 // ---------------------------------------------------------------------------
@@ -70,7 +88,7 @@ struct NameId
   NameId() = default;
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  NameId(const std::string& name)
+  TESSERACT_NAMEID_EXPLICIT NameId(const std::string& name)
   {
     if (!name.empty())
     {
@@ -81,7 +99,7 @@ struct NameId
   }
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  NameId(const char* name) : NameId(name != nullptr ? std::string(name) : std::string{}) {}
+  TESSERACT_NAMEID_EXPLICIT NameId(const char* name) : NameId(name != nullptr ? std::string(name) : std::string{}) {}
 
   /** @brief The numeric hash of the name. Zero means invalid/default-constructed. */
   [[nodiscard]] constexpr NameIdValue value() const noexcept { return value_; }

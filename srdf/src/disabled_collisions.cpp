@@ -73,7 +73,7 @@ tesseract::common::AllowedCollisionMatrix parseDisabledCollisions(const tesserac
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'reason'!"));
     // LCOV_EXCL_STOP
 
-    acm.addAllowedCollision(link1_name, link2_name, reason);
+    acm.addAllowedCollision(common::LinkId(link1_name), common::LinkId(link2_name), reason);
   }
 
   return acm;

@@ -1432,7 +1432,7 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
   // Mutate base_link_id to flip one of the boolean AND-chain terms.
   {
     KDLTreeData mutated = b;
-    mutated.base_link_id = LinkId("mutated_base");
+    mutated.base_link_id = "mutated_base";
     EXPECT_FALSE(a == mutated);
     EXPECT_TRUE(a != mutated);
   }
@@ -1549,7 +1549,7 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointDfsUnit)  // NOLINT
 
   KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
 
-  EXPECT_EQ(data.base_link_id, LinkId("base_link"));
+  EXPECT_EQ(data.base_link_id, "base_link");
   ASSERT_EQ(data.floating_joint_values.count(JointId("j_float")), 1U);
   EXPECT_TRUE(data.floating_joint_values[JointId("j_float")].isApprox(fj_tf));
 }
