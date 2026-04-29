@@ -1,7 +1,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "kinematics_test_utils.h"
@@ -58,8 +57,7 @@ TEST(TesseractKinematicsUnit, KdlParseSceneGraphSinglePairOverloadUnit)  // NOLI
   auto scene_graph = getSceneGraphIIWA(locator);
 
   tesseract::kinematics::KDLChainData results;
-  EXPECT_TRUE(tesseract::kinematics::parseSceneGraph(
-      results, *scene_graph, tesseract::common::LinkId("base_link"), tesseract::common::LinkId("tool0")));
+  EXPECT_TRUE(tesseract::kinematics::parseSceneGraph(results, *scene_graph, "base_link", "tool0"));
   EXPECT_FALSE(results.joint_ids.empty());
 }
 

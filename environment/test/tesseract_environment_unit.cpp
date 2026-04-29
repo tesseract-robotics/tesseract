@@ -655,7 +655,7 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   // Remove allowed collision
   auto cmd_remove_link = std::make_shared<RemoveAllowedCollisionLinkCommand>(l1);
   EXPECT_EQ(cmd_remove_link->getType(), CommandType::REMOVE_ALLOWED_COLLISION_LINK);
-  EXPECT_EQ(cmd_remove_link->getLinkName(), l1);
+  EXPECT_EQ(cmd_remove_link->getLinkId(), l1);
 
   EXPECT_TRUE(env->applyCommand(cmd_remove_link));
   EXPECT_EQ(callback_counter, 6);
@@ -751,7 +751,7 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     auto cmd = std::make_shared<RemoveLinkCommand>(link_name1);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_LINK);
-    EXPECT_EQ(cmd->getLinkName(), link_name1);
+    EXPECT_EQ(cmd->getLinkId(), link_name1);
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
@@ -784,7 +784,7 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     auto cmd = std::make_shared<RemoveLinkCommand>(link_name1);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_LINK);
-    EXPECT_EQ(cmd->getLinkName(), link_name1);
+    EXPECT_EQ(cmd->getLinkId(), link_name1);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
   EXPECT_EQ(env->getRevision(), 6);
@@ -795,7 +795,7 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     auto cmd = std::make_shared<RemoveLinkCommand>(link_name2);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_LINK);
-    EXPECT_EQ(cmd->getLinkName(), link_name2);
+    EXPECT_EQ(cmd->getLinkId(), link_name2);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
   EXPECT_EQ(env->getRevision(), 6);
@@ -806,7 +806,7 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     auto cmd = std::make_shared<RemoveJointCommand>(joint_name1);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_JOINT);
-    EXPECT_EQ(cmd->getJointName(), joint_name1);
+    EXPECT_EQ(cmd->getJointId(), joint_name1);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
   EXPECT_EQ(env->getRevision(), 6);
@@ -817,7 +817,7 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     auto cmd = std::make_shared<RemoveJointCommand>("joint_" + link_name1);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_JOINT);
-    EXPECT_EQ(cmd->getJointName(), "joint_" + link_name1);
+    EXPECT_EQ(cmd->getJointId(), "joint_" + link_name1);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
   EXPECT_EQ(env->getRevision(), 6);
@@ -845,10 +845,8 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
   auto env = getEnvironment();
 
   tesseract::common::JointTrajectory trajectory;
-  trajectory.push_back(
-      tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
-  trajectory.push_back(
-      tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Ones(2)));
+  trajectory.push_back(tesseract::common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
+  trajectory.push_back(tesseract::common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Ones(2)));
 
   std::string link_name = "traj_link";
   std::string parent_link_name = "base_link";
@@ -857,8 +855,8 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
     auto cmd = std::make_shared<AddTrajectoryLinkCommand>(link_name, parent_link_name, trajectory, false, method);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::ADD_TRAJECTORY_LINK);
-    EXPECT_TRUE(cmd->getLinkName() == link_name);
-    EXPECT_TRUE(cmd->getParentLinkName() == parent_link_name);
+    EXPECT_TRUE(cmd->getLinkId() == link_name);
+    EXPECT_TRUE(cmd->getParentLinkId() == parent_link_name);
     EXPECT_TRUE(!cmd->getTrajectory().empty());
     EXPECT_TRUE(cmd->replaceAllowed() == false);
     EXPECT_EQ(cmd->getMethod(), method);
@@ -886,7 +884,7 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
     auto cmd = std::make_shared<RemoveLinkCommand>(link_name);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_LINK);
-    EXPECT_EQ(cmd->getLinkName(), link_name);
+    EXPECT_EQ(cmd->getLinkId(), link_name);
     EXPECT_TRUE(env->applyCommand(cmd));
   }
 
@@ -915,7 +913,7 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
     auto cmd = std::make_shared<RemoveLinkCommand>(link_name);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_LINK);
-    EXPECT_EQ(cmd->getLinkName(), link_name);
+    EXPECT_EQ(cmd->getLinkId(), link_name);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
   EXPECT_EQ(env->getRevision(), 5);
@@ -926,7 +924,7 @@ void runEnvAddandRemoveTrajectoryLink(AddTrajectoryLinkCommand::Method method)
     auto cmd = std::make_shared<RemoveJointCommand>("joint_" + link_name);
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::REMOVE_JOINT);
-    EXPECT_EQ(cmd->getJointName(), "joint_" + link_name);
+    EXPECT_EQ(cmd->getJointId(), "joint_" + link_name);
     EXPECT_FALSE(env->applyCommand(cmd));
   }
   EXPECT_EQ(env->getRevision(), 5);
@@ -952,12 +950,11 @@ void runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method method)
   // ID set between states so the !isIdentical branch at environment.cpp:1407 is
   // taken in addition to the joint_ids.empty() path.
   tesseract::common::JointTrajectory trajectory;
+  trajectory.push_back(tesseract::common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
   trajectory.push_back(
-      tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
-  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3" },
-                                                     Eigen::VectorXd::Constant(3, 0.25)));
-  trajectory.push_back(tesseract::common::JointState(std::vector<std::string>{ "joint_a1", "joint_a2", "joint_a3" },
-                                                     Eigen::VectorXd::Constant(3, 0.5)));
+      tesseract::common::JointState({ "joint_a1", "joint_a2", "joint_a3" }, Eigen::VectorXd::Constant(3, 0.25)));
+  trajectory.push_back(
+      tesseract::common::JointState({ "joint_a1", "joint_a2", "joint_a3" }, Eigen::VectorXd::Constant(3, 0.5)));
 
   const std::string link_name = "traj_link_multi";
   const std::string parent_link_name = "base_link";
@@ -965,8 +962,8 @@ void runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method method)
   auto cmd = std::make_shared<AddTrajectoryLinkCommand>(link_name, parent_link_name, trajectory, false, method);
   EXPECT_TRUE(cmd != nullptr);
   EXPECT_EQ(cmd->getType(), CommandType::ADD_TRAJECTORY_LINK);
-  EXPECT_EQ(cmd->getLinkName(), link_name);
-  EXPECT_EQ(cmd->getParentLinkName(), parent_link_name);
+  EXPECT_EQ(cmd->getLinkId(), link_name);
+  EXPECT_EQ(cmd->getParentLinkId(), parent_link_name);
   EXPECT_EQ(cmd->getMethod(), method);
   EXPECT_EQ(cmd->getTrajectory().size(), 3U);
   ASSERT_TRUE(env->applyCommand(cmd));
@@ -1213,13 +1210,13 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointLimitsCommandUnit)  // NOLINT
     double new_velocity = 3.0;
     double new_acceleration = 4.0;
 
-    std::unordered_map<std::string, std::pair<double, double>> position_limit_map;
+    std::unordered_map<tesseract::common::JointId, std::pair<double, double>> position_limit_map;
     position_limit_map["joint_a1"] = std::make_pair(new_lower, new_upper);
 
-    std::unordered_map<std::string, double> velocity_limit_map;
+    std::unordered_map<tesseract::common::JointId, double> velocity_limit_map;
     velocity_limit_map["joint_a1"] = new_velocity;
 
-    std::unordered_map<std::string, double> acceleration_limit_map;
+    std::unordered_map<tesseract::common::JointId, double> acceleration_limit_map;
     acceleration_limit_map["joint_a1"] = new_acceleration;
 
     int revision = env->getRevision();
@@ -1302,7 +1299,7 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOriginCommandUnit)  // NOLINT
 
   auto cmd = std::make_shared<ChangeJointOriginCommand>(joint_name1, new_origin);
   EXPECT_EQ(cmd->getType(), CommandType::CHANGE_JOINT_ORIGIN);
-  EXPECT_EQ(cmd->getJointName(), joint_name1);
+  EXPECT_EQ(cmd->getJointId(), joint_name1);
   EXPECT_TRUE(new_origin.isApprox(cmd->getOrigin()));
   EXPECT_TRUE(env->applyCommand(cmd));
   EXPECT_EQ(env->getCommandHistory().back(), cmd);
@@ -1334,7 +1331,7 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkOriginCommandUnit)  // NOLINT
 
   auto cmd = std::make_shared<ChangeLinkOriginCommand>(link_name, new_origin);
   EXPECT_EQ(cmd->getType(), CommandType::CHANGE_LINK_ORIGIN);
-  EXPECT_EQ(cmd->getLinkName(), link_name);
+  EXPECT_EQ(cmd->getLinkId(), link_name);
   EXPECT_TRUE(new_origin.isApprox(cmd->getOrigin()));
   EXPECT_ANY_THROW(env->applyCommand(cmd));  // NOLINT
 }
@@ -1356,7 +1353,7 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOL
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::CHANGE_LINK_COLLISION_ENABLED);
     EXPECT_EQ(cmd->getEnabled(), false);
-    EXPECT_EQ(cmd->getLinkName(), link_name);
+    EXPECT_EQ(cmd->getLinkId(), link_name);
     EXPECT_TRUE(env->applyCommand(cmd));
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
   }
@@ -1371,7 +1368,7 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOL
     EXPECT_TRUE(cmd != nullptr);
     EXPECT_EQ(cmd->getType(), CommandType::CHANGE_LINK_COLLISION_ENABLED);
     EXPECT_EQ(cmd->getEnabled(), true);
-    EXPECT_EQ(cmd->getLinkName(), link_name);
+    EXPECT_EQ(cmd->getLinkId(), link_name);
     EXPECT_TRUE(env->applyCommand(cmd));
     EXPECT_EQ(env->getCommandHistory().back(), cmd);
   }
@@ -1398,7 +1395,7 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkVisibilityCommandUnit)  // NOLINT
   EXPECT_TRUE(cmd != nullptr);
   EXPECT_EQ(cmd->getType(), CommandType::CHANGE_LINK_VISIBILITY);
   EXPECT_EQ(cmd->getEnabled(), false);
-  EXPECT_EQ(cmd->getLinkName(), link_name);
+  EXPECT_EQ(cmd->getLinkId(), link_name);
   EXPECT_TRUE(env->applyCommand(cmd));
   EXPECT_EQ(env->getCommandHistory().back(), cmd);
 
@@ -1714,7 +1711,7 @@ TEST(TesseractEnvironmentUnit, EnvMoveJointCommandUnit)  // NOLINT
   auto cmd = std::make_shared<MoveJointCommand>(joint_name1, "tool0");
   EXPECT_TRUE(cmd != nullptr);
   EXPECT_EQ(cmd->getType(), CommandType::MOVE_JOINT);
-  EXPECT_EQ(cmd->getJointName(), joint_name1);
+  EXPECT_EQ(cmd->getJointId(), joint_name1);
   EXPECT_EQ(cmd->getParentLink(), "tool0");
   EXPECT_TRUE(env->applyCommand(cmd));
   EXPECT_EQ(env->getCommandHistory().back(), cmd);
@@ -6376,7 +6373,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyAddSceneGraphSrdfCalibrationUnit)  // NOL
   // Inject a calibration entry for joint_a2 before init
   Eigen::Isometry3d cal_tf = Eigen::Isometry3d::Identity();
   cal_tf.translation() = Eigen::Vector3d(0.0, 0.0, 0.123);
-  srdf->calibration_info.joints[tesseract::common::JointId("joint_a2")] = cal_tf;
+  srdf->calibration_info.joints["joint_a2"] = cal_tf;
 
   auto env = std::make_shared<Environment>();
   ASSERT_TRUE(env->init(*scene_graph, srdf));

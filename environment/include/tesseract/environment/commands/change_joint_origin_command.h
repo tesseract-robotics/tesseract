@@ -27,10 +27,10 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -56,19 +56,19 @@ public:
    *
    * Note: This is the origin as in the "origin" tag in the URDF. This is the location of the
    * joint in the frame of the parent link.
-   * @param joint_name Name of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @param new_origin New transform to be set as the origin
    */
-  ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin);
+  ChangeJointOriginCommand(common::JointId joint_id, const Eigen::Isometry3d& origin);
 
-  const std::string& getJointName() const;
+  const common::JointId& getJointId() const;
   const Eigen::Isometry3d& getOrigin() const;
 
   bool operator==(const ChangeJointOriginCommand& rhs) const;
   bool operator!=(const ChangeJointOriginCommand& rhs) const;
 
 private:
-  std::string joint_name_;
+  common::JointId joint_id_;
   Eigen::Isometry3d origin_;
 
   template <class Archive>

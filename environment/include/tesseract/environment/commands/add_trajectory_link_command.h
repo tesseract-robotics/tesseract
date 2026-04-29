@@ -89,20 +89,20 @@ public:
    *        This command should attach the link to the parent link with a fixed joint
    *        with a joint name of joint_{link name}".
    *
-   * @param link_name The link name
-   * @param parent_link_name The parent link name
+   * @param link_id The link id
+   * @param parent_link_if The parent link id
    * @param trajectory The trajectory to used for generating link
    * @param replace_allowed If true then if the link exists it will be replaced, otherwise if false it will fail.
    * @param method Specifies how the trajectory is represented as a collision object in the environment.
    */
-  AddTrajectoryLinkCommand(std::string link_name,
-                           std::string parent_link_name,
+  AddTrajectoryLinkCommand(common::LinkId link_id,
+                           common::LinkId parent_link_id,
                            tesseract::common::JointTrajectory trajectory,
                            bool replace_allowed = false,
                            Method method = Method::PER_STATE_OBJECTS);
 
-  const std::string& getLinkName() const;
-  const std::string& getParentLinkName() const;
+  const common::LinkId& getLinkId() const;
+  const common::LinkId& getParentLinkId() const;
   const tesseract::common::JointTrajectory& getTrajectory() const;
   bool replaceAllowed() const;
   AddTrajectoryLinkCommand::Method getMethod() const;
@@ -111,8 +111,8 @@ public:
   bool operator!=(const AddTrajectoryLinkCommand& rhs) const;
 
 private:
-  std::string link_name_;
-  std::string parent_link_name_;
+  common::LinkId link_id_;
+  common::LinkId parent_link_id_;
   tesseract::common::JointTrajectory trajectory_;
   bool replace_allowed_{ false };
   Method method_{ Method::PER_STATE_OBJECTS };

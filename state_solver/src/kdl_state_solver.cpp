@@ -358,7 +358,7 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
     joint_qnr_[j] = static_cast<int>(seg.second.q_nr);
 
     // Store joint limits.
-    const auto& sj = scene_graph.getJoint(jnt.getName());
+    const auto& sj = scene_graph.getJoint(JointId(jnt.getName()));
     limits_.joint_limits(static_cast<long>(j), 0) = sj->limits->lower;
     limits_.joint_limits(static_cast<long>(j), 1) = sj->limits->upper;
     limits_.velocity_limits(static_cast<long>(j), 0) = -sj->limits->velocity;

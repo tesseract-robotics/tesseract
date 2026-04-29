@@ -9,7 +9,8 @@ target_link_libraries(
          console_bridge::console_bridge)
 target_compile_options(kinematics_ur PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_ur PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(kinematics_ur PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(kinematics_ur PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
+target_compile_definitions(kinematics_ur PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
 target_clang_tidy(kinematics_ur ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(kinematics_ur PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -26,7 +27,8 @@ set_target_properties(kinematics_ur_factory PROPERTIES OUTPUT_NAME tesseract_kin
 target_link_libraries(kinematics_ur_factory PUBLIC kinematics_ur tesseract::scene_graph console_bridge::console_bridge)
 target_compile_options(kinematics_ur_factory PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_ur_factory PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(kinematics_ur_factory PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(kinematics_ur_factory PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(kinematics_ur_factory PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(kinematics_ur_factory ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(kinematics_ur_factory PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

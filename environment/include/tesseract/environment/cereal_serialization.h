@@ -61,8 +61,8 @@ template <class Archive>
 void serialize(Archive& ar, AddTrajectoryLinkCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("link_name", obj.link_name_));
-  ar(cereal::make_nvp("parent_link_name", obj.parent_link_name_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));
+  ar(cereal::make_nvp("parent_link_name", obj.parent_link_id_));
   ar(cereal::make_nvp("trajectory", obj.trajectory_));
   ar(cereal::make_nvp("replace_allowed", obj.replace_allowed_));
   ar(cereal::make_nvp("method", obj.method_));
@@ -88,7 +88,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeJointOriginCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("joint_name", obj.joint_name_));
+  ar(cereal::make_nvp("joint_name", obj.joint_id_));
   ar(cereal::make_nvp("origin", obj.origin_));
 }
 
@@ -110,7 +110,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeLinkCollisionEnabledCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("link_name", obj.link_name_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));
   ar(cereal::make_nvp("enabled", obj.enabled_));
 }
 
@@ -118,7 +118,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeLinkOriginCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("link_name", obj.link_name_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));
   ar(cereal::make_nvp("origin", obj.origin_));
 }
 
@@ -126,7 +126,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeLinkVisibilityCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("link_name", obj.link_name_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));
   ar(cereal::make_nvp("enabled", obj.enabled_));
 }
 
@@ -142,7 +142,7 @@ template <class Archive>
 void serialize(Archive& ar, MoveJointCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("joint_name", obj.joint_name_));
+  ar(cereal::make_nvp("joint_name", obj.joint_id_));
   ar(cereal::make_nvp("parent_link", obj.parent_link_));
 }
 
@@ -157,21 +157,21 @@ template <class Archive>
 void serialize(Archive& ar, RemoveAllowedCollisionLinkCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("link_name", obj.link_name_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));
 }
 
 template <class Archive>
 void serialize(Archive& ar, RemoveJointCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("joint_name", obj.joint_name_));
+  ar(cereal::make_nvp("joint_name", obj.joint_id_));
 }
 
 template <class Archive>
 void serialize(Archive& ar, RemoveLinkCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("link_name", obj.link_name_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));
 }
 
 template <class Archive>

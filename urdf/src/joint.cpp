@@ -51,7 +51,7 @@ tesseract::scene_graph::Joint::Ptr parseJoint(const tinyxml2::XMLElement* xml_el
     std::throw_with_nested(std::runtime_error("Joint: Missing or failed parsing attribute 'name'!"));
 
   // create joint
-  auto j = std::make_shared<tesseract::scene_graph::Joint>(joint_name);
+  auto j = std::make_shared<tesseract::scene_graph::Joint>(common::JointId(joint_name));
 
   // get joint origin
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
