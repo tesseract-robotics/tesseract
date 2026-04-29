@@ -344,7 +344,7 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
-  const LinkId tool0 = LinkId("tool0");
+  const LinkId tool0 = "tool0";
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);

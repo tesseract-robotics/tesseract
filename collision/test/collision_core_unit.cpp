@@ -151,8 +151,8 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
   {  // Covers cereal_serialization.h:118 and :134 — the non-empty modify_object_enabled
      // save/load loop bodies in ContactManagerConfig.
     tesseract::collision::ContactManagerConfig config;
-    config.modify_object_enabled[tesseract::common::LinkId("link_a")] = true;
-    config.modify_object_enabled[tesseract::common::LinkId("link_b")] = false;
+    config.modify_object_enabled["link_a"] = true;
+    config.modify_object_enabled["link_b"] = false;
     tesseract::common::testSerialization<tesseract::collision::ContactManagerConfig>(config, "ContactManagerConfig");
   }
 }

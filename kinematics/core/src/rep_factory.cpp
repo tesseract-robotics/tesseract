@@ -71,7 +71,7 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
         else
           throw std::runtime_error("REPInvKinFactory, 'positioner_sample_resolution' missing 'value' entry!");
 
-        auto jnt = scene_graph.getJoint(joint_name);
+        auto jnt = scene_graph.getJoint(common::JointId(joint_name));
         if (jnt == nullptr)
           throw std::runtime_error("REPInvKinFactory, 'positioner_sample_resolution' failed to find joint in scene "
                                    "graph!");

@@ -22,7 +22,8 @@ target_link_libraries(
          octomap)
 target_compile_options(collision PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(collision PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(collision PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(collision PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(collision PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_compile_definitions(collision
                            PRIVATE TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH="${TESSERACT_CONTACT_MANAGERS_PLUGIN_PATH}")
 target_cxx_version(collision PUBLIC VERSION ${TESSERACT_CXX_VERSION})

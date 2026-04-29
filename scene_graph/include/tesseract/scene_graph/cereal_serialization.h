@@ -205,7 +205,7 @@ void serialize(Archive& ar, SceneGraph& obj)
 
     std::string root_link_name;
     ar(cereal::make_nvp("root_link_name", root_link_name));
-    obj.setRoot(root_link_name);
+    obj.setRoot(tesseract::common::LinkId(root_link_name));
   }
   else
   {
