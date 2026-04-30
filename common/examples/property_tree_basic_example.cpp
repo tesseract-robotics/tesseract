@@ -91,14 +91,14 @@ int main(int /*argc*/, char** /*argv*/)
   auto schema = PropertyTreeBuilder()
                     .attribute(TYPE, CONTAINER)
                     .string("name").required().doc("Robot name").label("Robot Name").done()
-                    .integer("dof").required().doc("Degrees of freedom").minimum(1).maximum(20).done()
-                    .doubleNum("speed").doc("Max speed (units/sec)").defaultVal(1.0)
+                    .int32("dof").required().doc("Degrees of freedom").minimum(1).maximum(20).done()
+                    .float64("speed").doc("Max speed (units/sec)").defaultVal(1.0)
                       .minimum(0.0).maximum(10.0).done()
                     .container("workspace").doc("Work envelope")
-                      .doubleNum("x_min").required().done()
-                      .doubleNum("x_max").required().done()
-                      .doubleNum("y_min").required().done()
-                      .doubleNum("y_max").required().done()
+                      .float64("x_min").required().done()
+                      .float64("x_max").required().done()
+                      .float64("y_min").required().done()
+                      .float64("y_max").required().done()
                       .done()
                     .build();
   // clang-format on
@@ -133,7 +133,7 @@ int main(int /*argc*/, char** /*argv*/)
   {
     std::cout << "✓ Validation passed!\n";
     std::cout << "  Robot name: " << schema_copy.at("name").as<std::string>() << "\n";
-    std::cout << "  DOF: " << schema_copy.at("dof").as<int>() << "\n";
+    std::cout << "  DOF: " << schema_copy.at("dof").as<int32_t>() << "\n";
     std::cout << "  Speed: " << schema_copy.at("speed").as<double>() << " (default applied)\n";
     std::cout << "  Workspace X: [" << schema_copy.at("workspace").at("x_min").as<double>() << ", "
               << schema_copy.at("workspace").at("x_max").as<double>() << "]\n";
@@ -237,9 +237,9 @@ int main(int /*argc*/, char** /*argv*/)
   if (doc_attr)
     std::cout << "  Doc: " << doc_attr->as<std::string>() << "\n";
   if (min_attr)
-    std::cout << "  Minimum: " << min_attr->as<int>() << "\n";
+    std::cout << "  Minimum: " << min_attr->as<int32_t>() << "\n";
   if (max_attr)
-    std::cout << "  Maximum: " << max_attr->as<int>() << "\n";
+    std::cout << "  Maximum: " << max_attr->as<int32_t>() << "\n";
 
   std::cout << "\n========================================\n";
   std::cout << "         Example Complete\n";

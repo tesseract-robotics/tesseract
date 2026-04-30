@@ -128,8 +128,8 @@ auto schema = PropertyTreeBuilder()
     .build();
 @endcode
 
-Type methods: `container`, `string`, `character`, `boolean`, `integer`, `unsignedInt`,
-`longInt`, `longUnsignedInt`, `floatNum`, `doubleNum`, `customType`
+Type methods: `container`, `string`, `character`, `boolean`, `int32`, `uint32`,
+`int64`, `uint64`, `float32`, `float64`, `customType`
 
 Attribute setters: `doc`, `required`, `defaultVal`, `enumValues`, `minimum`, `maximum`,
 `label`, `placeholder`, `group`, `readOnly`, `hidden`, `validator`, `attribute`
@@ -193,11 +193,11 @@ When merging config into a oneOf schema, PropertyTree:
 auto shape_schema = PropertyTreeBuilder()
     .attribute(TYPE, ONEOF)
     .container("circle")
-        .doubleNum("radius").required().minimum(0.0).done()
+        .float64("radius").required().minimum(0.0).done()
         .done()
     .container("rectangle")
-        .doubleNum("width").required().minimum(0.0).done()
-        .doubleNum("height").required().minimum(0.0).done()
+        .float64("width").required().minimum(0.0).done()
+        .float64("height").required().minimum(0.0).done()
         .done()
     .build();
 
