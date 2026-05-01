@@ -78,6 +78,32 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphABB(const tesseract
   return tesseract::urdf::parseURDFFile(path, locator);
 }
 
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  using namespace tesseract::scene_graph;
+
+  auto sg = getSceneGraphABB(locator);
+
+  // Append a single-revolute tool positioner: tool0 -> tool_tip, axis z, 0.1m offset along z.
+  sg->addLink(Link("tool_tip"));
+
+  Joint j("tool_joint");
+  j.type = JointType::REVOLUTE;
+  j.parent_link_name = "tool0";
+  j.child_link_name = "tool_tip";
+  j.axis = Eigen::Vector3d::UnitZ();
+  j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.1);
+  j.limits = std::make_shared<JointLimits>();
+  j.limits->lower = -M_PI;
+  j.limits->upper = M_PI;
+  j.limits->velocity = 2.0;
+  j.limits->acceleration = 1.0;
+  sg->addJoint(j);
+
+  return sg;
+}
+
 inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphIIWA7(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = locator.locateResource("package://tesseract/support/urdf/iiwa7.urdf")->getFilePath();
