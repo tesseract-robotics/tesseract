@@ -209,6 +209,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/common/utils.h>
+#include <tesseract/common/types.h>
 
 using namespace tesseract::scene_graph;
 
@@ -248,26 +249,26 @@ int main(int /*argc*/, char** /*argv*/)
   //! [build_scene_graph_create_joints]
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1.parent_link_name = "link_1";
-  joint_1.child_link_name = "link_2";
+  joint_1.parent_link_id = "link_1";
+  joint_1.child_link_id = "link_2";
   joint_1.type = JointType::FIXED;
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = "link_2";
-  joint_2.child_link_name = "link_3";
+  joint_2.parent_link_id = "link_2";
+  joint_2.child_link_id = "link_3";
   joint_2.type = JointType::PLANAR;
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_name = "link_3";
-  joint_3.child_link_name = "link_4";
+  joint_3.parent_link_id = "link_3";
+  joint_3.child_link_id = "link_4";
   joint_3.type = JointType::FLOATING;
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_4.parent_link_name = "link_2";
-  joint_4.child_link_name = "link_5";
+  joint_4.parent_link_id = "link_2";
+  joint_4.child_link_id = "link_5";
   joint_4.type = JointType::REVOLUTE;
   //! [build_scene_graph_create_joints]
 
@@ -279,27 +280,27 @@ int main(int /*argc*/, char** /*argv*/)
   //! [build_scene_graph_add_joints]
 
   //! [build_scene_graph_adjacent_links]
-  std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
+  std::vector<tesseract::common::LinkId> adjacent_links = g.getAdjacentLinkIds("link_3");
   for (const auto& adj : adjacent_links)
-    CONSOLE_BRIDGE_logInform(adj.c_str());
+    CONSOLE_BRIDGE_logInform(adj.name().c_str());
   //! [build_scene_graph_adjacent_links]
 
   //! [build_scene_graph_inv_adjacent_links]
-  std::vector<std::string> inv_adjacent_links = g.getInvAdjacentLinkNames("link_3");
+  std::vector<tesseract::common::LinkId> inv_adjacent_links = g.getInvAdjacentLinkIds("link_3");
   for (const auto& inv_adj : inv_adjacent_links)
-    CONSOLE_BRIDGE_logInform(inv_adj.c_str());
+    CONSOLE_BRIDGE_logInform(inv_adj.name().c_str());
   //! [build_scene_graph_inv_adjacent_links]
 
   //! [build_scene_graph_link_children]
-  std::vector<std::string> child_link_names = g.getLinkChildrenNames("link_2");
-  for (const auto& child_link : child_link_names)
-    CONSOLE_BRIDGE_logInform(child_link.c_str());
+  std::vector<tesseract::common::LinkId> child_link_ids = g.getLinkChildrenIds("link_2");
+  for (const auto& child_link : child_link_ids)
+    CONSOLE_BRIDGE_logInform(child_link.name().c_str());
   //! [build_scene_graph_link_children]
 
   //! [build_scene_graph_joint_children]
-  child_link_names = g.getJointChildrenNames("joint_1");
-  for (const auto& child_link : child_link_names)
-    CONSOLE_BRIDGE_logInform(child_link.c_str());
+  child_link_ids = g.getJointChildrenIds("joint_1");
+  for (const auto& child_link : child_link_ids)
+    CONSOLE_BRIDGE_logInform(child_link.name().c_str());
   //! [build_scene_graph_joint_children]
 
   //! [build_scene_graph_save_dot]
@@ -332,8 +333,8 @@ int main(int /*argc*/, char** /*argv*/)
   //! [build_scene_graph_add_cycle]
   Joint joint_5("joint_5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5.parent_link_name = "link_5";
-  joint_5.child_link_name = "link_4";
+  joint_5.parent_link_id = "link_5";
+  joint_5.child_link_id = "link_4";
   joint_5.type = JointType::CONTINUOUS;
   g.addJoint(joint_5);
   //! [build_scene_graph_add_cycle]

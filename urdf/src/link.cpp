@@ -51,7 +51,7 @@ parseLink(const tinyxml2::XMLElement* xml_element,
   if (tesseract::common::QueryStringAttribute(xml_element, "name", link_name) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Link: Missing or failed parsing attribute 'name'!"));
 
-  auto l = std::make_shared<tesseract::scene_graph::Link>(link_name);
+  auto l = std::make_shared<tesseract::scene_graph::Link>(common::LinkId(link_name));
 
   // get inertia if it exists
   const tinyxml2::XMLElement* inertial = xml_element->FirstChildElement("inertial");

@@ -29,7 +29,7 @@ macro(add_gtest test_name test_file)
             octomath
             ${LIBFCL_LIBRARIES})
   target_compile_options(${test_name} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-  target_compile_definitions(${test_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+  target_compile_definitions(${test_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
   target_cxx_version(${test_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_clang_tidy(${test_name} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_code_coverage(

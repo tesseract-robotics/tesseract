@@ -81,7 +81,7 @@ gz::msgs::Material convert(const Eigen::Vector4d& rgba)
 bool toMsg(gz::msgs::Scene& scene_msg,
            EntityManager& entity_manager,
            const tesseract_scene_graph::SceneGraph& scene_graph,
-           const tesseract_common::TransformMap& link_transforms)
+           const tesseract_common::LinkIdTransformMap& link_transforms)
 {
   scene_msg.set_name("scene");
   gz::msgs::Model* model = scene_msg.add_model();
@@ -92,8 +92,7 @@ bool toMsg(gz::msgs::Scene& scene_msg,
     gz::msgs::Link* link_msg = model->add_link();
     link_msg->set_name(link->getName());
     link_msg->set_id(static_cast<unsigned>(entity_manager.addLink(link->getName())));
-    link_msg->mutable_pose()->CopyFrom(
-        gz::msgs::Convert(gz::math::eigen3::convert(link_transforms.at(link->getName()))));
+    link_msg->mutable_pose()->CopyFrom(gz::msgs::Convert(gz::math::eigen3::convert(link_transforms.at(link->getId()))));
 
     int cnt = 0;
     for (const auto& vs : link->visual)

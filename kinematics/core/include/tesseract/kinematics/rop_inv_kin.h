@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/fwd.h>
 #include <tesseract/kinematics/inverse_kinematics.h>
 
@@ -102,23 +103,23 @@ public:
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract::common::TransformMap& tip_link_poses,
+                  const tesseract::common::LinkIdTransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
-  std::vector<std::string> getJointNames() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override final;
   Eigen::Index numJoints() const override final;
-  std::string getBaseLinkName() const override final;
-  std::string getWorkingFrame() const override final;
-  std::vector<std::string> getTipLinkNames() const override final;
+  tesseract::common::LinkId getBaseLinkId() const override final;
+  tesseract::common::LinkId getWorkingFrame() const override final;
+  std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
 private:
-  std::vector<std::string> joint_names_;
+  std::vector<tesseract::common::JointId> joint_ids_;
   InverseKinematics::UPtr manip_inv_kin_;
   std::unique_ptr<ForwardKinematics> positioner_fwd_kin_;
-  std::string manip_tip_link_;
-  std::string positioner_tip_link_;
+  tesseract::common::LinkId manip_tip_link_;
+  tesseract::common::LinkId positioner_tip_link_;
   double manip_reach_{ 0 };
   Eigen::Index dof_{ -1 };
   Eigen::Isometry3d positioner_to_robot_{ Eigen::Isometry3d::Identity() };
@@ -136,18 +137,18 @@ private:
 
   /** @brief calcFwdKin helper function */
   void calcInvKinHelper(IKSolutions& solutions,
-                        const tesseract::common::TransformMap& tip_link_poses,
+                        const tesseract::common::LinkIdTransformMap& tip_link_poses,
                         const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void nested_ik(IKSolutions& solutions,
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
-                 const tesseract::common::TransformMap& tip_link_poses,
+                 const tesseract::common::LinkIdTransformMap& tip_link_poses,
                  Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void ikAt(IKSolutions& solutions,
-            const tesseract::common::TransformMap& tip_link_poses,
+            const tesseract::common::LinkIdTransformMap& tip_link_poses,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };

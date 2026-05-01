@@ -44,7 +44,8 @@ target_link_libraries(
 target_link_libraries(urdf PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(urdf PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(urdf PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(urdf PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(urdf PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(urdf PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 
 target_link_libraries(urdf PRIVATE ${PCL_IO_LIBRARIES})
 target_include_directories(urdf PRIVATE ${PCL_INCLUDE_DIRS})

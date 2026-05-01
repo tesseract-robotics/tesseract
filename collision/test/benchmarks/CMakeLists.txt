@@ -5,7 +5,7 @@ macro(add_benchmark benchmark_name benchmark_file)
   target_compile_definitions(${benchmark_name} PRIVATE BENCHMARK_ARGS="${BENCHMARK_ARGS}")
   target_compile_options(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-  target_compile_definitions(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+  target_compile_definitions(${benchmark_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
   target_cxx_version(${benchmark_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_link_libraries(
     ${benchmark_name}
@@ -48,7 +48,7 @@ target_link_libraries(
           ${OCTOMAP_LIBRARIES}
           ${LIBFCL_LIBRARIES})
 target_compile_options(tesseract_collision_profile PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-target_compile_definitions(tesseract_collision_profile INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_collision_profile INTERFACE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_cxx_version(tesseract_collision_profile PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_clang_tidy(tesseract_collision_profile ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_code_coverage(

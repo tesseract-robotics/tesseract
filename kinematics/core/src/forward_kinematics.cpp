@@ -31,19 +31,19 @@
 
 namespace tesseract::kinematics
 {
-tesseract::common::TransformMap
+tesseract::common::LinkIdTransformMap
 ForwardKinematics::calcFwdKin(const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
-  tesseract::common::TransformMap transforms;
+  tesseract::common::LinkIdTransformMap transforms;
   calcFwdKin(transforms, joint_angles);
   return transforms;
 }  // LCOV_EXCL_LINE
 
 Eigen::MatrixXd ForwardKinematics::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                                const std::string& link_name) const
+                                                const tesseract::common::LinkId& link_id) const
 {
   Eigen::MatrixXd jacobian(6, numJoints());
-  calcJacobian(jacobian, joint_angles, link_name);
+  calcJacobian(jacobian, joint_angles, link_id);
   return jacobian;
 }
 }  // namespace tesseract::kinematics

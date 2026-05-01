@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract/scene_graph/kdl_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract/kinematics/kdl/kdl_utils.h>
 
@@ -38,9 +39,10 @@ using Eigen::VectorXd;
 
 thread_local KDL::JntArray KDLFwdKinChain::kdl_joints_cache;  // NOLINT
 
-KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                               const std::vector<std::pair<std::string, std::string>>& chains,
-                               std::string solver_name)
+KDLFwdKinChain::KDLFwdKinChain(
+    const tesseract::scene_graph::SceneGraph& scene_graph,
+    const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
+    std::string solver_name)
   : solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
@@ -54,8 +56,8 @@ KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_g
 }
 
 KDLFwdKinChain::KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                               const std::string& base_link,
-                               const std::string& tip_link,
+                               const tesseract::common::LinkId& base_link,
+                               const tesseract::common::LinkId& tip_link,
                                std::string solver_name)
   : KDLFwdKinChain(scene_graph, { std::make_pair(base_link, tip_link) }, std::move(solver_name))
 {
@@ -77,7 +79,7 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& other)
   return *this;
 }
 
-void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::TransformMap& transforms,
+void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::LinkIdTransformMap& transforms,
                                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   if (joint_angles.rows() != kdl_data_.robot_chain.getNrOfJoints())
@@ -94,11 +96,11 @@ void KDLFwdKinChain::calcFwdKinHelperAll(tesseract::common::TransformMap& transf
     fk_solver_->JntToCart(kdl_joints_cache, kdl_pose);
   }
 
-  Eigen::Isometry3d& pose = transforms[kdl_data_.tip_link_name];
+  Eigen::Isometry3d& pose = transforms[kdl_data_.tip_link_id];
   KDLToEigen(kdl_pose, pose);
 }
 
-void KDLFwdKinChain::calcFwdKin(tesseract::common::TransformMap& transforms,
+void KDLFwdKinChain::calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                                 const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(joint_angles.size() == numJoints());
@@ -133,11 +135,11 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
 
 void KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                  const std::string& link_name) const
+                                  const tesseract::common::LinkId& link_id) const
 {
   assert(joint_angles.size() == numJoints());
 
-  int segment_nr = kdl_data_.segment_index.at(link_name);
+  int segment_nr = kdl_data_.segment_index.at(link_id);
   KDL::Jacobian kdl_jacobian;
 
   if (!calcJacobianHelper(kdl_jacobian, joint_angles, segment_nr))
@@ -146,13 +148,13 @@ void KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   KDLToEigen(kdl_jacobian, jacobian);
 }
 
-std::vector<std::string> KDLFwdKinChain::getJointNames() const { return kdl_data_.joint_names; }
+std::vector<tesseract::common::JointId> KDLFwdKinChain::getJointIds() const { return kdl_data_.joint_ids; }
 
-Eigen::Index KDLFwdKinChain::numJoints() const { return static_cast<Eigen::Index>(kdl_data_.joint_names.size()); }
+Eigen::Index KDLFwdKinChain::numJoints() const { return static_cast<Eigen::Index>(kdl_data_.joint_ids.size()); }
 
-std::string KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.base_link_name; }
+tesseract::common::LinkId KDLFwdKinChain::getBaseLinkId() const { return kdl_data_.base_link_id; }
 
-std::vector<std::string> KDLFwdKinChain::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
+std::vector<tesseract::common::LinkId> KDLFwdKinChain::getTipLinkIds() const { return { kdl_data_.tip_link_id }; }
 
 std::string KDLFwdKinChain::getSolverName() const { return solver_name_; }
 

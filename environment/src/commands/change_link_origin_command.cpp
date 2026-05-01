@@ -24,26 +24,24 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/change_link_origin_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 ChangeLinkOriginCommand::ChangeLinkOriginCommand() : Command(CommandType::CHANGE_LINK_ORIGIN) {}
 
 // NOLINTNEXTLINE(modernize-pass-by-value)
-ChangeLinkOriginCommand::ChangeLinkOriginCommand(std::string link_name, const Eigen::Isometry3d& origin)
-  : Command(CommandType::CHANGE_LINK_ORIGIN), link_name_(std::move(link_name)), origin_(origin)
+ChangeLinkOriginCommand::ChangeLinkOriginCommand(common::LinkId link_id, const Eigen::Isometry3d& origin)
+  : Command(CommandType::CHANGE_LINK_ORIGIN), link_id_(std::move(link_id)), origin_(origin)
 {
 }
 
-const std::string& ChangeLinkOriginCommand::getLinkName() const { return link_name_; }
+const common::LinkId& ChangeLinkOriginCommand::getLinkId() const { return link_id_; }
 const Eigen::Isometry3d& ChangeLinkOriginCommand::getOrigin() const { return origin_; }
 
 bool ChangeLinkOriginCommand::operator==(const ChangeLinkOriginCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= link_name_ == rhs.link_name_;
+  equal &= link_id_ == rhs.link_id_;
   equal &= origin_.isApprox(rhs.origin_, 1e-5);
   return equal;
 }

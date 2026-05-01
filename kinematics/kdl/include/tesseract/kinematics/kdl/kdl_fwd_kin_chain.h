@@ -71,8 +71,8 @@ public:
    * @param solver_name The solver name of the kinematic chain
    */
   KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                 const std::string& base_link,
-                 const std::string& tip_link,
+                 const tesseract::common::LinkId& base_link,
+                 const tesseract::common::LinkId& tip_link,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
   /**
@@ -83,19 +83,19 @@ public:
    * @param solver_name The solver name of the kinematic chain
    */
   KDLFwdKinChain(const tesseract::scene_graph::SceneGraph& scene_graph,
-                 const std::vector<std::pair<std::string, std::string> >& chains,
+                 const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
                  std::string solver_name = KDL_FWD_KIN_CHAIN_SOLVER_NAME);
 
-  void calcFwdKin(tesseract::common::TransformMap& transforms,
+  void calcFwdKin(tesseract::common::LinkIdTransformMap& transforms,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override final;
 
   void calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                    const std::string& joint_link_name) const override final;
+                    const tesseract::common::LinkId& link_id) const override final;
 
-  std::string getBaseLinkName() const override final;
-  std::vector<std::string> getJointNames() const override final;
-  std::vector<std::string> getTipLinkNames() const override final;
+  tesseract::common::LinkId getBaseLinkId() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override final;
+  std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   Eigen::Index numJoints() const override final;
   std::string getSolverName() const override final;
   ForwardKinematics::UPtr clone() const override final;
@@ -111,7 +111,7 @@ private:
   static thread_local KDL::JntArray kdl_joints_cache;  // NOLINT
 
   /** @brief calcFwdKin helper function */
-  void calcFwdKinHelperAll(tesseract::common::TransformMap& transforms,
+  void calcFwdKinHelperAll(tesseract::common::LinkIdTransformMap& transforms,
                            const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcJacobian helper function */

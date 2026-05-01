@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -50,16 +51,16 @@ public:
 
   ChangeLinkOriginCommand();
 
-  ChangeLinkOriginCommand(std::string link_name, const Eigen::Isometry3d& origin);
+  ChangeLinkOriginCommand(common::LinkId link_id, const Eigen::Isometry3d& origin);
 
-  const std::string& getLinkName() const;
+  const common::LinkId& getLinkId() const;
   const Eigen::Isometry3d& getOrigin() const;
 
   bool operator==(const ChangeLinkOriginCommand& rhs) const;
   bool operator!=(const ChangeLinkOriginCommand& rhs) const;
 
 private:
-  std::string link_name_;
+  common::LinkId link_id_;
   Eigen::Isometry3d origin_{ Eigen::Isometry3d::Identity() };
 
   template <class Archive>

@@ -5,6 +5,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 #include <console_bridge/console.h>
+#include <gtest/gtest.h>
 #include <tesseract/geometry/mesh_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -80,10 +81,12 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "octomap_link", "plane_link" };
-  checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  std::vector<tesseract::common::LinkId> active_link_ids{ "octomap_link", "plane_link" };
+  checker.setActiveCollisionObjects(active_link_ids);
+  const auto& check_active_link_id_set = checker.getActiveCollisionObjectIds();
+  std::vector<tesseract::common::LinkId> check_active_link_ids(check_active_link_id_set.begin(),
+                                                               check_active_link_id_set.end());
+  EXPECT_TRUE(tesseract::common::isIdentical<tesseract::common::LinkId>(active_link_ids, check_active_link_ids, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -93,7 +96,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   checker.setCollisionMarginPair("octomap_link", "plane_link", 0.1);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["octomap_link"] = Eigen::Isometry3d::Identity();
   location["plane_link"] = Eigen::Isometry3d::Identity();
   location["plane_link"].translation() = Eigen::Vector3d(0, 0, 0);
@@ -117,15 +120,14 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   for (auto& r : result_vector)
   {
     int idx = 0;
-    if (r.link_names[0] != "plane_link")
+    if (r.link_ids[0] != "plane_link")
       idx = 1;
 
-    mesh_vertices_color[static_cast<std::size_t>(
-        (*mesh_triangles)[4 * r.subshape_id[static_cast<std::size_t>(idx)] + 1])] = Eigen::Vector3i(255, 0, 0);
-    mesh_vertices_color[static_cast<std::size_t>(
-        (*mesh_triangles)[4 * r.subshape_id[static_cast<std::size_t>(idx)] + 2])] = Eigen::Vector3i(255, 0, 0);
-    mesh_vertices_color[static_cast<std::size_t>(
-        (*mesh_triangles)[4 * r.subshape_id[static_cast<std::size_t>(idx)] + 3])] = Eigen::Vector3i(255, 0, 0);
+    const Eigen::Index tri_base = 4 * static_cast<Eigen::Index>(r.subshape_id[static_cast<std::size_t>(idx)]);
+
+    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[tri_base + 1])] = Eigen::Vector3i(255, 0, 0);
+    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[tri_base + 2])] = Eigen::Vector3i(255, 0, 0);
+    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[tri_base + 3])] = Eigen::Vector3i(255, 0, 0);
   }
 
   tesseract::common::writeSimplePlyFile(

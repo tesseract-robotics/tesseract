@@ -121,8 +121,8 @@ PropertyTree YAML::convert<tesseract::common::TaskComposerPluginInfo>::schema()
   // clang-format on
 }
 
-// ================================ TransformMap ================================
-PropertyTree YAML::convert<tesseract::common::TransformMap>::schema()
+// ================================ JointIdTransformMap ================================
+PropertyTree YAML::convert<tesseract::common::JointIdTransformMap>::schema()
 {
   return PropertyTreeBuilder().attribute(TYPE, createMap(EIGEN_ISOMETRY_3D)).build();
 }
@@ -133,7 +133,7 @@ PropertyTree YAML::convert<tesseract::common::CalibrationInfo>::schema()
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
-      .customType("joints", "tesseract::common::TransformMap").required().done()
+      .customType("joints", "tesseract::common::JointIdTransformMap").required().done()
       .build();
   // clang-format on
 }
@@ -233,7 +233,8 @@ TESSERACT_SCHEMA_REGISTER(tesseract::common::ContactManagersPluginInfo,
 TESSERACT_SCHEMA_REGISTER(tesseract::common::TaskComposerPluginInfo,
                           YAML::convert<tesseract::common::TaskComposerPluginInfo>::schema)
 TESSERACT_SCHEMA_REGISTER(tesseract::common::CalibrationInfo, YAML::convert<tesseract::common::CalibrationInfo>::schema)
-TESSERACT_SCHEMA_REGISTER(tesseract::common::TransformMap, YAML::convert<tesseract::common::TransformMap>::schema)
+TESSERACT_SCHEMA_REGISTER(tesseract::common::JointIdTransformMap,
+                          YAML::convert<tesseract::common::JointIdTransformMap>::schema)
 TESSERACT_SCHEMA_REGISTER(tesseract::common::Toolpath, YAML::convert<tesseract::common::Toolpath>::schema)
 TESSERACT_SCHEMA_REGISTER(tesseract::common::CollisionMarginPairOverrideType,
                           YAML::convert<tesseract::common::CollisionMarginPairOverrideType>::schema)

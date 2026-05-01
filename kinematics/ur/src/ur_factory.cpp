@@ -44,20 +44,20 @@ std::unique_ptr<InverseKinematics> URInvKinFactory::create(const std::string& so
                                                            const KinematicsPluginFactory& /*plugin_factory*/,
                                                            const YAML::Node& config) const
 {
-  std::string base_link;
-  std::string tip_link;
+  common::LinkId base_link;
+  common::LinkId tip_link;
   tesseract::kinematics::URParameters params;
   tesseract::scene_graph::ShortestPath path;
 
   try
   {
     if (YAML::Node n = config["base_link"])
-      base_link = n.as<std::string>();
+      base_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("URInvKinFactory, missing 'base_link' entry");
 
     if (YAML::Node n = config["tip_link"])
-      tip_link = n.as<std::string>();
+      tip_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("URInvKinFactory, missing 'tip_link' entry");
 

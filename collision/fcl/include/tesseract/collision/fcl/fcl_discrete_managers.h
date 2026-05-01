@@ -40,6 +40,11 @@
 #ifndef TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 #define TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <unordered_set>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/fcl/fcl_utils.h>
 
@@ -61,43 +66,53 @@ public:
   FCLDiscreteBVHManager(FCLDiscreteBVHManager&&) = delete;
   FCLDiscreteBVHManager& operator=(FCLDiscreteBVHManager&&) = delete;
 
+  // Bring base class string overloads into scope (prevents name hiding by ID overloads)
+  using DiscreteContactManager::addCollisionObject;
+  using DiscreteContactManager::disableCollisionObject;
+  using DiscreteContactManager::enableCollisionObject;
+  using DiscreteContactManager::getActiveCollisionObjectNames;
+  using DiscreteContactManager::getCollisionObjectGeometries;
+  using DiscreteContactManager::getCollisionObjectGeometriesTransforms;
+  using DiscreteContactManager::hasCollisionObject;
+  using DiscreteContactManager::isCollisionObjectEnabled;
+  using DiscreteContactManager::removeCollisionObject;
+  using DiscreteContactManager::setActiveCollisionObjects;
+  using DiscreteContactManager::setCollisionObjectsTransform;
+
   std::string getName() const override final;
 
   DiscreteContactManager::UPtr clone() const override final;
 
-  bool addCollisionObject(const std::string& name,
+  bool addCollisionObject(const tesseract::common::LinkId& id,
                           const int& mask_id,
                           const CollisionShapesConst& shapes,
                           const tesseract::common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override final;
 
-  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override final;
+  const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const override final;
 
   const tesseract::common::VectorIsometry3d&
-  getCollisionObjectGeometriesTransforms(const std::string& name) const override final;
+  getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const override final;
 
-  bool hasCollisionObject(const std::string& name) const override final;
+  bool hasCollisionObject(const tesseract::common::LinkId& id) const override final;
 
-  bool removeCollisionObject(const std::string& name) override final;
+  bool removeCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool enableCollisionObject(const std::string& name) override final;
+  bool enableCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool disableCollisionObject(const std::string& name) override final;
+  bool disableCollisionObject(const tesseract::common::LinkId& id) override final;
 
-  bool isCollisionObjectEnabled(const std::string& name) const override final;
+  bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const override final;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) override final;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const tesseract::common::VectorIsometry3d& poses) override final;
+  void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
-  void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) override final;
+  const std::vector<tesseract::common::LinkId>& getCollisionObjects() const override final;
 
-  const std::vector<std::string>& getCollisionObjects() const override final;
+  void setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids) override final;
 
-  void setActiveCollisionObjects(const std::vector<std::string>& names) override final;
-
-  const std::vector<std::string>& getActiveCollisionObjects() const override final;
+  const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjectIds() const override final;
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override final;
 
@@ -109,8 +124,8 @@ public:
 
   void setDefaultCollisionMargin(double default_collision_margin) override final;
 
-  void setCollisionMarginPair(const std::string& name1,
-                              const std::string& name2,
+  void setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                              const tesseract::common::LinkId& id2,
                               double collision_margin) override final;
 
   void incrementCollisionMargin(double increment) override final;
@@ -138,9 +153,9 @@ private:
   std::unique_ptr<fcl::BroadPhaseCollisionManagerd> dynamic_manager_;
 
   fcl_internal::Link2COW link2cow_; /**< @brief A map of all (static and active) collision objects being managed */
-  std::vector<std::string> active_; /**< @brief A list of the active collision objects */
-  std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
-  CollisionMarginData collision_margin_data_;  /**< @brief The contact distance threshold */
+  std::unordered_set<tesseract::common::LinkId> active_;     /**< @brief A list of the active collision objects */
+  std::vector<tesseract::common::LinkId> collision_objects_; /**< @brief A list of the collision objects */
+  CollisionMarginData collision_margin_data_;                /**< @brief The contact distance threshold */
   std::shared_ptr<const tesseract::common::ContactAllowedValidator> validator_; /**< @brief The is allowed collision
                                                                                   function */
   std::size_t fcl_co_count_{ 0 }; /**< @brief The number fcl collision objects */

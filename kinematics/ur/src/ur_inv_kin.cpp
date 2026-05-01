@@ -39,6 +39,7 @@
 #include <tesseract/kinematics/utils.h>
 
 #include <cassert>
+#include <utility>
 
 static const std::vector<Eigen::Index> REDUNDANT_CAPABLE_JOINTS{ 0, 1, 2, 3, 4, 5 };
 
@@ -225,18 +226,18 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
 // LCOV_EXCL_STOP
 
 URInvKin::URInvKin(URParameters params,
-                   std::string base_link_name,
-                   std::string tip_link_name,
-                   std::vector<std::string> joint_names,
+                   tesseract::common::LinkId base_link_id,
+                   tesseract::common::LinkId tip_link_id,
+                   const std::vector<common::JointId>& joint_ids,
                    std::string solver_name)
   : params_(params)
-  , base_link_name_(std::move(base_link_name))
-  , tip_link_name_(std::move(tip_link_name))
-  , joint_names_(std::move(joint_names))
+  , base_link_id_(std::move(base_link_id))
+  , tip_link_id_(std::move(tip_link_id))
+  , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
 {
-  if (joint_names_.size() != 6)
-    throw std::runtime_error("OPWInvKin, only support six joints!");
+  if (joint_ids_.size() != 6)
+    throw std::runtime_error("URInvKin, only support six joints!");
 }
 
 InverseKinematics::UPtr URInvKin::clone() const { return std::make_unique<URInvKin>(*this); }
@@ -248,9 +249,9 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
   if (this == &other)
     return *this;
 
-  base_link_name_ = other.base_link_name_;
-  tip_link_name_ = other.tip_link_name_;
-  joint_names_ = other.joint_names_;
+  base_link_id_ = other.base_link_id_;
+  tip_link_id_ = other.tip_link_id_;
+  joint_ids_ = other.joint_ids_;
   params_ = other.params_;
   solver_name_ = other.solver_name_;
 
@@ -258,15 +259,15 @@ URInvKin& URInvKin::operator=(const URInvKin& other)
 }
 
 void URInvKin::calcInvKin(IKSolutions& solutions,
-                          const tesseract::common::TransformMap& tip_link_poses,
+                          const tesseract::common::LinkIdTransformMap& tip_link_poses,
                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   assert(tip_link_poses.size() == 1);
-  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());
-  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);  // NOLINT
+  assert(tip_link_poses.find(tip_link_id_) != tip_link_poses.end());
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_id_).matrix().determinant()) < 1e-6);  // NOLINT
 
   Eigen::Isometry3d base_offset = Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitZ());
-  Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_link_name_);
+  Eigen::Isometry3d corrected_pose = base_offset.inverse() * tip_link_poses.at(tip_link_id_);
 
   // Do the analytic IK
   // NOLINTNEXTLINE
@@ -290,10 +291,10 @@ void URInvKin::calcInvKin(IKSolutions& solutions,
 }
 
 Eigen::Index URInvKin::numJoints() const { return 6; }
-std::vector<std::string> URInvKin::getJointNames() const { return joint_names_; }
-std::string URInvKin::getBaseLinkName() const { return base_link_name_; }
-std::string URInvKin::getWorkingFrame() const { return base_link_name_; }
-std::vector<std::string> URInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
+std::vector<tesseract::common::JointId> URInvKin::getJointIds() const { return joint_ids_; }
+tesseract::common::LinkId URInvKin::getBaseLinkId() const { return base_link_id_; }
+tesseract::common::LinkId URInvKin::getWorkingFrame() const { return base_link_id_; }
+std::vector<tesseract::common::LinkId> URInvKin::getTipLinkIds() const { return { tip_link_id_ }; }
 std::string URInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract::kinematics

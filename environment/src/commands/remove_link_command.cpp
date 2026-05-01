@@ -24,24 +24,22 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/remove_link_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 RemoveLinkCommand::RemoveLinkCommand() : Command(CommandType::REMOVE_LINK) {}
 
-RemoveLinkCommand::RemoveLinkCommand(std::string link_name)
-  : Command(CommandType::REMOVE_LINK), link_name_(std::move(link_name))
+RemoveLinkCommand::RemoveLinkCommand(common::LinkId link_id)
+  : Command(CommandType::REMOVE_LINK), link_id_(std::move(link_id))
 {
 }
 
-const std::string& RemoveLinkCommand::getLinkName() const { return link_name_; }
+const common::LinkId& RemoveLinkCommand::getLinkId() const { return link_id_; }
 
 bool RemoveLinkCommand::operator==(const RemoveLinkCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= link_name_ == rhs.link_name_;
+  equal &= link_id_ == rhs.link_id_;
   return equal;
 }
 bool RemoveLinkCommand::operator!=(const RemoveLinkCommand& rhs) const { return !operator==(rhs); }

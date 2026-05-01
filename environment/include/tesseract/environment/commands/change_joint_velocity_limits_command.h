@@ -27,10 +27,10 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -49,24 +49,24 @@ public:
 
   /**
    * @brief Changes the velocity limits associated with a joint
-   * @param joint_name Name of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @param limits New velocity limits to be set as the joint limits
    */
-  ChangeJointVelocityLimitsCommand(std::string joint_name, double limit);
+  ChangeJointVelocityLimitsCommand(common::JointId joint_id, double limit);
 
   /**
    * @brief Changes the velocity limits associated with a joint
    * @param limits A map of joint names to new velocity limits
    */
-  ChangeJointVelocityLimitsCommand(std::unordered_map<std::string, double> limits);
+  ChangeJointVelocityLimitsCommand(std::unordered_map<common::JointId, double> limits);
 
-  const std::unordered_map<std::string, double>& getLimits() const;
+  const std::unordered_map<common::JointId, double>& getLimits() const;
 
   bool operator==(const ChangeJointVelocityLimitsCommand& rhs) const;
   bool operator!=(const ChangeJointVelocityLimitsCommand& rhs) const;
 
 private:
-  std::unordered_map<std::string, double> limits_;
+  std::unordered_map<common::JointId, double> limits_;
 
   template <class Archive>
   friend void ::tesseract::environment::serialize(Archive& ar, ChangeJointVelocityLimitsCommand& obj);
