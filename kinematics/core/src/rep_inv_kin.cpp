@@ -53,7 +53,12 @@ REPInvKin::REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   positioner_limits.resize(s, 2);
   for (Eigen::Index i = 0; i < s; ++i)
   {
-    auto joint = scene_graph.getJoint(joint_names[static_cast<std::size_t>(i)]);
+    const auto& name = joint_names[static_cast<std::size_t>(i)];
+    auto joint = scene_graph.getJoint(name);
+    if (joint == nullptr)
+      throw std::runtime_error("Positioner joint '" + name + "' not found in scene graph");
+    if (joint->limits == nullptr)
+      throw std::runtime_error("Positioner joint '" + name + "' has no limits");
     positioner_limits(i, 0) = joint->limits->lower;
     positioner_limits(i, 1) = joint->limits->upper;
   }
