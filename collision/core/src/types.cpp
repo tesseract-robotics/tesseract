@@ -24,6 +24,7 @@
 
 #include <tesseract/collision/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <cassert>
 #include <iomanip>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

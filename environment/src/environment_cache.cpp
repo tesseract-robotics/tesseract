@@ -27,6 +27,7 @@
 #include <tesseract/kinematics/joint_group.h>
 #include <tesseract/kinematics/kinematic_group.h>
 
+#include <cassert>
 #include <mutex>
 
 namespace tesseract::environment

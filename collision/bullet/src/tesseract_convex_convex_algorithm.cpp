@@ -26,6 +26,7 @@ software.
 #include <tesseract/collision/bullet/tesseract_gjk_pair_detector.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <cassert>
 #include <BulletCollision/NarrowPhaseCollision/btDiscreteCollisionDetectorInterface.h>
 #include <BulletCollision/BroadphaseCollision/btBroadphaseInterface.h>
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
