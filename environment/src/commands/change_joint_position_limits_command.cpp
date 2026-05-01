@@ -29,7 +29,7 @@
 namespace tesseract::environment
 {
 ChangeJointPositionLimitsCommand::ChangeJointPositionLimitsCommand()
-  : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS) {};
+  : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS){};
 
 ChangeJointPositionLimitsCommand::ChangeJointPositionLimitsCommand(common::JointId joint_id, double lower, double upper)
   : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS)
