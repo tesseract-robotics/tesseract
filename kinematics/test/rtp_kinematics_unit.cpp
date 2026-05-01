@@ -422,6 +422,57 @@ kinematic_plugins:
   EXPECT_EQ(loaded->numJoints(), 7);
 }
 
+TEST(TesseractKinematicsUnit, RTPInvKinFactoryRejectsBadReach)  // NOLINT
+{
+  // Regression: a non-positive manipulator_reach must be reported as a load
+  // failure, not propagate as an uncaught ctor exception out of the factory.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  const std::string yaml_str = R"(
+kinematic_plugins:
+  search_libraries:
+    - tesseract_kinematics_factories
+  inv_kin_plugins:
+    rtp_manipulator:
+      default: RTPInvKin
+      plugins:
+        RTPInvKin:
+          class: RTPInvKinFactory
+          config:
+            manipulator_reach: -1.0
+            tool_sample_resolution:
+              - name: tool_joint
+                value: 0.1
+            tool_positioner:
+              class: KDLFwdKinChainFactory
+              config:
+                base_link: tool0
+                tip_link: tool_tip
+            manipulator:
+              class: OPWInvKinFactory
+              config:
+                base_link: base_link
+                tip_link: tool0
+                params:
+                  a1: 0.100
+                  a2: -0.135
+                  b: 0.00
+                  c1: 0.615
+                  c2: 0.705
+                  c3: 0.755
+                  c4: 0.086
+                  offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                  sign_corrections: [1, 1, 1, 1, 1, 1]
+)";
+
+  KinematicsPluginFactory factory(YAML::Load(yaml_str), locator);
+  auto loaded = factory.createInvKin("rtp_manipulator", "RTPInvKin", *scene_graph, scene_state);
+  EXPECT_EQ(loaded, nullptr);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

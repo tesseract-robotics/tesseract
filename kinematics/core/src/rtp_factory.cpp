@@ -156,26 +156,26 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
     {
       throw std::runtime_error("RTPInvKinFactory, missing 'manipulator' entry!");
     }
+
+    if (m_reach_explicit.has_value())
+    {
+      return std::make_unique<RTPInvKin>(scene_graph,
+                                         scene_state,
+                                         std::move(inv_kin),
+                                         *m_reach_explicit,
+                                         std::move(fwd_kin),
+                                         sample_range,
+                                         sample_res,
+                                         solver_name);
+    }
+    return std::make_unique<RTPInvKin>(
+        scene_graph, scene_state, std::move(inv_kin), std::move(fwd_kin), sample_range, sample_res, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("RTPInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  if (m_reach_explicit.has_value())
-  {
-    return std::make_unique<RTPInvKin>(scene_graph,
-                                       scene_state,
-                                       std::move(inv_kin),
-                                       *m_reach_explicit,
-                                       std::move(fwd_kin),
-                                       sample_range,
-                                       sample_res,
-                                       solver_name);
-  }
-  return std::make_unique<RTPInvKin>(
-      scene_graph, scene_state, std::move(inv_kin), std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(RTPInvKinFactoriesAnchor)
