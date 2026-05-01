@@ -203,6 +203,11 @@ KDLInvKinChainNR_JL::UPtr makeKDLNRJL(const Fixture& f)
 /// Benchmarks RTPInvKin::calcInvKin over the fixed target set.
 /// `state.range(0)` encodes the tool sample resolution in milliradians so the
 /// benchmark label shows the resolution clearly.
+///
+/// The seed passed here is `t.ground_truth`, while BM_KDL_NR_JL_WARM uses
+/// `t.seed_warm`. This is intentional for OPW (the inner solver is closed-form
+/// and ignores the seed) but the comparison would become apples-to-oranges if
+/// the inner manipulator solver were swapped to a seed-dependent one.
 void BM_RTP_INV_KIN(benchmark::State& state, const Fixture* f)
 {
   const double tool_res_rad = static_cast<double>(state.range(0)) * 1e-3;
