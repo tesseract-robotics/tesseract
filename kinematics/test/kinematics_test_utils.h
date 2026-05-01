@@ -105,6 +105,52 @@ getSceneGraphABBWithToolPositioner(const tesseract::common::ResourceLocator& loc
 }
 
 inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithActiveJointBeforeToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  using namespace tesseract::scene_graph;
+
+  auto sg = getSceneGraphABB(locator);
+
+  // Insert an active revolute joint between tool0 (manipulator tip) and a pivot link, then put
+  // the tool positioner's chain on the far side of that pivot. This violates the rigid-attachment
+  // contract between the manipulator tip and the tool positioner's base.
+  sg->addLink(Link("tool_pivot"));
+  sg->addLink(Link("tool_tip"));
+
+  {
+    Joint j("bad_extra_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool0";
+    j.child_link_name = "tool_pivot";
+    j.axis = Eigen::Vector3d::UnitZ();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI;
+    j.limits->upper = M_PI;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("tool_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool_pivot";
+    j.child_link_name = "tool_tip";
+    j.axis = Eigen::Vector3d::UnitZ();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI;
+    j.limits->upper = M_PI;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  return sg;
+}
+
+inline tesseract::scene_graph::SceneGraph::UPtr
 getSceneGraphABBWithMultiJointToolPositioner(const tesseract::common::ResourceLocator& locator)
 {
   using namespace tesseract::scene_graph;

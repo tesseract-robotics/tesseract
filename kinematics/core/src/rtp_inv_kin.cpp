@@ -206,6 +206,25 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
       throw std::runtime_error("Tool sample range minimum is greater than maximum");
   }
 
+  // The static-offset model below assumes the tool positioner's base is rigidly attached to the
+  // manipulator tip. If an active joint sits between them, sampling the tool kinematics no longer
+  // produces a deterministic wrist target and IK results would silently be wrong.
+  const std::string manip_tip = manipulator->getTipLinkNames()[0];
+  const std::string tool_base = tool_positioner->getBaseLinkName();
+  if (manip_tip != tool_base)
+  {
+    if (scene_graph.getLink(tool_base) == nullptr)
+      throw std::runtime_error("Tool positioner base link '" + tool_base + "' not found in scene graph");
+    const auto path = scene_graph.getShortestPath(manip_tip, tool_base);
+    if (path.links.size() < 2)
+      throw std::runtime_error("Tool positioner base link '" + tool_base +
+                               "' is not connected to manipulator tip link '" + manip_tip + "'");
+    if (!path.active_joints.empty())
+      throw std::runtime_error("Tool positioner base link '" + tool_base +
+                               "' must be rigidly attached to manipulator tip link '" + manip_tip +
+                               "'; found active joint '" + path.active_joints.front() + "' on path");
+  }
+
   // Static offset from the manipulator tip to the tool positioner's base link (usually identity
   // because the tool chain begins at the manipulator tip, but allow any fixed transform).
   manip_tip_to_tool_base_ = scene_state.link_transforms.at(manipulator->getTipLinkNames()[0]).inverse() *

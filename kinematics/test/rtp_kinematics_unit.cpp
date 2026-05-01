@@ -656,6 +656,29 @@ kinematic_plugins:
   EXPECT_EQ(loaded, nullptr);
 }
 
+TEST(TesseractKinematicsUnit, RTPInvKinRejectsActiveJointBetweenManipTipAndToolBase)  // NOLINT
+{
+  // The manip-tip ↔ tool-base link gap is bridged by an active revolute joint, which violates the
+  // static-offset assumption used internally. The ctor must reject this configuration.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithActiveJointBeforeToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto opw_kin = makeOPWInvKin(*scene_graph);
+  // Tool positioner is on the far side of the bad active joint.
+  auto tool_kin = std::make_unique<KDLFwdKinChain>(*scene_graph, "tool_pivot", "tool_tip");
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
+
+  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+      *scene_graph,
+      scene_state,
+      std::move(opw_kin),
+      2.0,
+      std::move(tool_kin),
+      tool_resolution));
+}
+
 TEST(TesseractKinematicsUnit, RTPInvKinMultiJointToolFKRoundtrip)  // NOLINT
 {
   // Exercises the nested_ik recursion at depth >= 2 by using a 2-joint tool positioner.
