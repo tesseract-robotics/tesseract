@@ -4,6 +4,7 @@ add_library(
   src/inverse_kinematics.cpp
   src/rop_inv_kin.cpp
   src/rep_inv_kin.cpp
+  src/rtp_inv_kin.cpp
   src/joint_group.cpp
   src/kinematic_group.cpp
   src/kinematics_plugin_factory.cpp
