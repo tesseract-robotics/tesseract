@@ -195,10 +195,15 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (tool_sample_resolution.size() != tool_positioner->numJoints())
     throw std::runtime_error("Tool sample resolution must be same size as tool positioner number of joints");
 
+  if (tool_sample_range.rows() != tool_positioner->numJoints())
+    throw std::runtime_error("Tool sample range must have one row per tool positioner joint");
+
   for (long i = 0; i < tool_sample_resolution.size(); ++i)
   {
     if (!(tool_sample_resolution(i) > 0))
       throw std::runtime_error("Tool sample resolution is not greater than zero");
+    if (tool_sample_range(i, 0) > tool_sample_range(i, 1))
+      throw std::runtime_error("Tool sample range minimum is greater than maximum");
   }
 
   // Static offset from the manipulator tip to the tool positioner's base link (usually identity

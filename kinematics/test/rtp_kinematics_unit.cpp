@@ -128,6 +128,12 @@ TEST(TesseractKinematicsUnit, RTPInvKinConstructorValidation)  // NOLINT
   {  // Auto-reach ctor: null tool positioner
     EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(*scene_graph, scene_state, opw_kin->clone(), nullptr, tool_resolution));
   }
+  {  // Inverted tool sample range (min > max)
+    Eigen::MatrixX2d bad_range(1, 2);
+    bad_range << 1.0, -1.0;
+    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), bad_range, tool_resolution));  // NOLINT
+  }
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinAutoReachMatchesExplicit)  // NOLINT
