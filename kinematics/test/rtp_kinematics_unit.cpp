@@ -116,6 +116,18 @@ TEST(TesseractKinematicsUnit, RTPInvKinConstructorValidation)  // NOLINT
     EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), neg_res));  // NOLINT
   }
+  {  // Auto-reach ctor: empty scene graph
+    tesseract::scene_graph::SceneGraph empty_sg;
+    EXPECT_ANY_THROW(
+        std::make_unique<RTPInvKin>(empty_sg, scene_state, opw_kin->clone(), tool_kin->clone(), tool_resolution));
+  }
+  {  // Auto-reach ctor: null manipulator
+    EXPECT_ANY_THROW(
+        std::make_unique<RTPInvKin>(*scene_graph, scene_state, nullptr, tool_kin->clone(), tool_resolution));
+  }
+  {  // Auto-reach ctor: null tool positioner
+    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(*scene_graph, scene_state, opw_kin->clone(), nullptr, tool_resolution));
+  }
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinAutoReachMatchesExplicit)  // NOLINT
