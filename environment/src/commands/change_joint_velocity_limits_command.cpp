@@ -29,7 +29,7 @@
 namespace tesseract::environment
 {
 ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand()
-  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS) {};
+  : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS){};
 
 ChangeJointVelocityLimitsCommand::ChangeJointVelocityLimitsCommand(common::JointId joint_id, double limit)
   : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(std::move(joint_id), limit) })
