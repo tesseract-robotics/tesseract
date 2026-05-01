@@ -15,10 +15,6 @@
     uri: https://github.com/flexible-collision-library/fcl.git
     version: 0.6.1
 - git:
-    local-name: octomap
-    uri: https://github.com/OctoMap/octomap.git
-    version: v1.9.8
-- git:
     local-name: cereal
     uri: https://github.com/Levi-Armstrong/cereal.git
     version: catkin
