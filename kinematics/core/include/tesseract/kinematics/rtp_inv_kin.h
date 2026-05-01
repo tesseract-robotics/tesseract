@@ -49,6 +49,9 @@ class ForwardKinematics;
  * Base link and working frame are both the manipulator base. Tip link reported from
  * getTipLinkNames() is the tool chain tip (i.e. the frame the target pose is for).
  * Joint order in the returned solution vector: manipulator joints, then tool joints.
+ *
+ * @note The manipulator must have exactly one tip link; the constructor rejects multi-tip
+ * manipulators since the static-offset model uses a single manipulator-tip→tool-base transform.
  */
 class RTPInvKin : public InverseKinematics
 {

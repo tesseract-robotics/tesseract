@@ -656,6 +656,57 @@ kinematic_plugins:
   EXPECT_EQ(loaded, nullptr);
 }
 
+namespace
+{
+/** @brief Minimal stub IK exposing two tip link names — used to verify RTP rejects multi-tip manipulators. */
+class TwoTipStubInvKin : public InverseKinematics
+{
+public:
+  void calcInvKin(IKSolutions& /*solutions*/,
+                  const tesseract::common::TransformMap& /*tip_link_poses*/,
+                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const override
+  {
+  }
+  std::vector<std::string> getJointNames() const override { return { "joint_1" }; }
+  Eigen::Index numJoints() const override { return 1; }
+  std::string getBaseLinkName() const override { return "base_link"; }
+  std::string getWorkingFrame() const override { return "base_link"; }
+  std::vector<std::string> getTipLinkNames() const override { return { "tip_a", "tip_b" }; }
+  std::string getSolverName() const override { return "TwoTipStub"; }
+  InverseKinematics::UPtr clone() const override { return std::make_unique<TwoTipStubInvKin>(*this); }
+};
+}  // namespace
+
+TEST(TesseractKinematicsUnit, RTPInvKinRejectsMultiTipManipulator)  // NOLINT
+{
+  // RTP's static-offset model requires a single manipulator tip; a multi-tip manipulator would
+  // silently use only the first tip and discard the rest. The ctor must reject this.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto tool_kin = makeToolFwdKin(*scene_graph);
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
+
+  // Explicit-reach ctor.
+  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+      *scene_graph,
+      scene_state,
+      std::make_unique<TwoTipStubInvKin>(),
+      2.0,
+      tool_kin->clone(),
+      tool_resolution));
+
+  // Auto-reach ctor.
+  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+      *scene_graph,
+      scene_state,
+      std::make_unique<TwoTipStubInvKin>(),
+      tool_kin->clone(),
+      tool_resolution));
+}
+
 TEST(TesseractKinematicsUnit, RTPInvKinRejectsActiveJointBetweenManipTipAndToolBase)  // NOLINT
 {
   // The manip-tip ↔ tool-base link gap is bridged by an active revolute joint, which violates the
