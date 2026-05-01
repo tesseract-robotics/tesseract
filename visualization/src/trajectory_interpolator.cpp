@@ -26,6 +26,8 @@
 
 #include <tesseract/visualization/trajectory_interpolator.h>
 
+#include <cassert>
+
 namespace tesseract::visualization
 {
 TrajectoryInterpolator::TrajectoryInterpolator(tesseract::common::JointTrajectory trajectory)
