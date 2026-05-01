@@ -7,8 +7,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <Eigen/Core>
 #include <unordered_map>
-#include <tesseract/common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract/common/types.h>
 
 namespace tesseract::common
 {
@@ -21,7 +22,9 @@ struct ACMEntry
 
   bool operator==(const ACMEntry& other) const
   {
-    return name1 == other.name1 && name2 == other.name2 && reason == other.reason;
+    const bool names_match =
+        (name1 == other.name1 && name2 == other.name2) || (name1 == other.name2 && name2 == other.name1);
+    return names_match && reason == other.reason;
   }
   bool operator!=(const ACMEntry& other) const { return !(*this == other); }
 };

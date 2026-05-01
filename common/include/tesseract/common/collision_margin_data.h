@@ -76,8 +76,9 @@ struct PairMarginEntry
 
   bool operator==(const PairMarginEntry& other) const
   {
-    return name1 == other.name1 && name2 == other.name2 &&
-           tesseract::common::almostEqualRelativeAndAbs(margin, other.margin, 1e-5);
+    const bool names_match =
+        (name1 == other.name1 && name2 == other.name2) || (name1 == other.name2 && name2 == other.name1);
+    return names_match && tesseract::common::almostEqualRelativeAndAbs(margin, other.margin, 1e-5);
   }
   bool operator!=(const PairMarginEntry& other) const { return !(*this == other); }
 };
