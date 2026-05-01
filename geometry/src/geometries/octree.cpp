@@ -45,7 +45,7 @@ OctreeSubType Octree::getSubType() const { return sub_type_; }
 
 bool Octree::getPruned() const { return pruned_; }
 
-Geometry::Ptr Octree::clone() const { return std::make_shared<Octree>(octree_, sub_type_); }
+Geometry::Ptr Octree::clone() const { return std::make_shared<Octree>(octree_, sub_type_, pruned_, binary_octree_); }
 
 long Octree::calcNumSubShapes() const
 {

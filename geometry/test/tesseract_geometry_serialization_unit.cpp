@@ -155,6 +155,39 @@ TEST(TesseractGeometrySerializeUnit, Octree)  // NOLINT
   }
 }
 
+TEST(TesseractGeometrySerializeUnit, OctreeCloneBinaryFlag)  // NOLINT
+{
+  // binary_octree_ has no public getter, but it controls whether cereal
+  // emits the OcTree payload via writeBinary (compact) or write (text).
+  // A clone that drops binary_octree_ produces a different serialized
+  // blob than the original.
+  struct TestPointCloud
+  {
+    struct point
+    {
+      point(double x, double y, double z) : x(x), y(y), z(z) {}
+      double x;
+      double y;
+      double z;
+    };
+    std::vector<point> points;
+  };
+
+  TestPointCloud pc;
+  pc.points.emplace_back(.5, 0.5, 0.5);
+  pc.points.emplace_back(-.5, -0.5, -0.5);
+  pc.points.emplace_back(-.5, 0.5, 0.5);
+
+  auto octree = createOctree(pc, 1, false, true);
+  auto orig = std::make_shared<Octree>(std::move(octree), OctreeSubType::BOX, /*pruned=*/false, /*binary_octree=*/true);
+  auto cloned = std::static_pointer_cast<Octree>(orig->clone());
+  cloned->setUUID(orig->getUUID());
+
+  auto orig_str = tesseract::common::Serialization::toArchiveStringXML<std::shared_ptr<Octree>>(orig, "octree");
+  auto clone_str = tesseract::common::Serialization::toArchiveStringXML<std::shared_ptr<Octree>>(cloned, "octree");
+  EXPECT_EQ(orig_str, clone_str);
+}
+
 TEST(TesseractGeometrySerializeUnit, Plane)  // NOLINT
 {
   auto object = std::make_shared<Plane>(1.1, 2, 3.3, 4);

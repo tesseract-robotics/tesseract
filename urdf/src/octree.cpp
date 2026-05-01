@@ -61,7 +61,7 @@ tesseract::geometry::Octree::Ptr parseOctree(const tinyxml2::XMLElement* xml_ele
   if (prune)
     tesseract::geometry::Octree::prune(*ot);
 
-  auto geom = std::make_shared<tesseract::geometry::Octree>(ot, shape_type);
+  auto geom = std::make_shared<tesseract::geometry::Octree>(ot, shape_type, prune);
   if (geom == nullptr)
     std::throw_with_nested(std::runtime_error("Octree: Error creating octree geometry type from octomap::octree!"));
 
