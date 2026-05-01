@@ -26,7 +26,7 @@
 
 namespace tesseract::environment
 {
-ChangeJointOriginCommand::ChangeJointOriginCommand() : Command(CommandType::CHANGE_JOINT_ORIGIN) {};
+ChangeJointOriginCommand::ChangeJointOriginCommand() : Command(CommandType::CHANGE_JOINT_ORIGIN){};
 
 // NOLINTNEXTLINE(modernize-pass-by-value)
 ChangeJointOriginCommand::ChangeJointOriginCommand(common::JointId joint_id, const Eigen::Isometry3d& origin)
