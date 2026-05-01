@@ -45,8 +45,7 @@ public:
 
   // Backwards-compat overload taking joint names; templated only so brace-init-list `{"j1","j2"}` continues to deduce
   // to the JointId vector form below (template arg deduction fails for braced lists in non-template parameters).
-  template <typename T,
-            std::enable_if_t<std::is_same_v<std::decay_t<T>, std::vector<std::string>>, int> = 0>
+  template <typename T, std::enable_if_t<std::is_same_v<std::decay_t<T>, std::vector<std::string>>, int> = 0>
   JointState(const T& joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
     : joint_ids(toIds<JointId>(joint_names)), position(position)
   {

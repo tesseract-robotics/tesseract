@@ -29,7 +29,7 @@
 namespace tesseract::environment
 {
 ChangeJointAccelerationLimitsCommand::ChangeJointAccelerationLimitsCommand()
-  : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS) {};
+  : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS){};
 
 ChangeJointAccelerationLimitsCommand::ChangeJointAccelerationLimitsCommand(common::JointId joint_id, double limit)
   : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_({ std::make_pair(std::move(joint_id), limit) })
