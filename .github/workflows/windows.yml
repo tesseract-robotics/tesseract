@@ -9,18 +9,20 @@ on:
     paths:
       - 'collision/**'
       - 'common/**'
-      - 'geometry/**'
       - 'environment/**'
+      - 'geometry/**'
       - 'kinematics/**'
+      - 'scene_graph/**'
       - 'srdf/**'
       - 'state_solver/**'
+      - 'support/**'
       - 'urdf/**'
       - 'visualization/**'
       - 'CMakeLists.txt'
       - 'package.xml'
-      - '**.repos'
       - '.github/workflows/windows.yml'
       - '.github/workflows/windows_dependencies.repos'
+      - '**.repos'
   schedule:
     - cron: '0 5 * * *'
 
