@@ -46,7 +46,7 @@ void serialize(Archive& ar, Inertial& obj)
   ar(cereal::make_nvp("ixz", obj.ixz));
   ar(cereal::make_nvp("iyy", obj.iyy));
   ar(cereal::make_nvp("iyz", obj.iyz));
-  ar(cereal::make_nvp("iyz", obj.izz));
+  ar(cereal::make_nvp("izz", obj.izz));
 }
 
 template <class Archive>
