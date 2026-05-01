@@ -11,10 +11,6 @@
     uri: https://github.com/Jmeyer1292/opw_kinematics.git
     version: 0.5.3
 - git:
-    local-name: octomap
-    uri: https://github.com/OctoMap/octomap.git
-    version: v1.9.8
-- git:
     local-name: cereal
     uri: https://github.com/Levi-Armstrong/cereal.git
     version: catkin
