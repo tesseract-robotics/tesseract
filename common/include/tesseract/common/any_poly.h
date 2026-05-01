@@ -32,7 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
-#include <tesseract/common/serialization.h>
 
 namespace tesseract::common
 {
