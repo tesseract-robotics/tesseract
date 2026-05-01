@@ -90,13 +90,14 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   auto start_time = std::chrono::high_resolution_clock::now();
 
-#pragma omp parallel for num_threads(num_threads) shared(location)
+  const auto& const_location = location;
+#pragma omp parallel for num_threads(num_threads) shared(const_location)
   for (long i = 0; i < num_threads; ++i)  // NOLINT
   {
     const int tn = omp_get_thread_num();
     CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, num_threads);
     const DiscreteContactManager::Ptr& manager = contact_manager[static_cast<size_t>(tn)];
-    for (const auto& co : location)
+    for (const auto& co : const_location)
     {
       if (tn == 0)
       {
