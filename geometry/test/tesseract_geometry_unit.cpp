@@ -747,6 +747,19 @@ TEST(TesseractGeometryUnit, Octree)  // NOLINT
   EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *geom_clone));
 }
 
+TEST(TesseractGeometryUnit, OctreeClonePreservesPrunedFlag)  // NOLINT
+{
+  using T = tesseract::geometry::Octree;
+
+  tesseract::geometry::PointCloud pc;
+  auto octree = tesseract::geometry::createOctree(pc, 0.01, false);
+  auto geom = std::make_shared<T>(std::move(octree), tesseract::geometry::OctreeSubType::BOX, /*pruned=*/true);
+  ASSERT_TRUE(geom->getPruned());
+
+  auto geom_clone = std::static_pointer_cast<T>(geom->clone());
+  EXPECT_TRUE(geom_clone->getPruned());
+}
+
 TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
 {
   using namespace tesseract::geometry;

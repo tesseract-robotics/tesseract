@@ -61,6 +61,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     EXPECT_TRUE(geom->getSubType() == tesseract::geometry::OctreeSubType::BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
+    EXPECT_TRUE(geom->getPruned());
   }
 
   {
@@ -77,6 +78,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     EXPECT_TRUE(geom->getSubType() == tesseract::geometry::OctreeSubType::SPHERE_INSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
+    EXPECT_TRUE(geom->getPruned());
   }
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
