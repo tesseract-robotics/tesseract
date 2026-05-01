@@ -104,6 +104,52 @@ getSceneGraphABBWithToolPositioner(const tesseract::common::ResourceLocator& loc
   return sg;
 }
 
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithMultiJointToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  using namespace tesseract::scene_graph;
+
+  auto sg = getSceneGraphABB(locator);
+
+  // Two-revolute tool positioner: tool0 -> tool_mid -> tool_tip.
+  // tool_joint_1: tool0 -> tool_mid, axis Y, 0.05m offset along Z.
+  // tool_joint_2: tool_mid -> tool_tip, axis X, 0.05m offset along Z.
+  sg->addLink(Link("tool_mid"));
+  sg->addLink(Link("tool_tip"));
+
+  {
+    Joint j("tool_joint_1");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool0";
+    j.child_link_name = "tool_mid";
+    j.axis = Eigen::Vector3d::UnitY();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI_2;
+    j.limits->upper = M_PI_2;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("tool_joint_2");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool_mid";
+    j.child_link_name = "tool_tip";
+    j.axis = Eigen::Vector3d::UnitX();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI_2;
+    j.limits->upper = M_PI_2;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  return sg;
+}
+
 inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphIIWA7(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = locator.locateResource("package://tesseract/support/urdf/iiwa7.urdf")->getFilePath();

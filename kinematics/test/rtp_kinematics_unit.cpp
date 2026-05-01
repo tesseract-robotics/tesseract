@@ -1,4 +1,6 @@
 #include <tesseract/common/macros.h>
+#include <set>
+#include <utility>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
@@ -652,6 +654,135 @@ kinematic_plugins:
   KinematicsPluginFactory factory(YAML::Load(yaml_str), locator);
   auto loaded = factory.createInvKin("rtp_manipulator", "RTPInvKin", *scene_graph, scene_state);
   EXPECT_EQ(loaded, nullptr);
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinMultiJointToolFKRoundtrip)  // NOLINT
+{
+  // Exercises the nested_ik recursion at depth >= 2 by using a 2-joint tool positioner.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithMultiJointToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto opw_kin = makeOPWInvKin(*scene_graph);
+  auto tool_kin = std::make_unique<KDLFwdKinChain>(*scene_graph, "tool0", "tool_tip");
+
+  // Sweep both tool joints on a coarse grid.
+  Eigen::MatrixX2d tool_range(2, 2);
+  tool_range << -0.4, 0.4, -0.4, 0.4;
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(2, 0.2);
+
+  auto rtp = std::make_unique<RTPInvKin>(
+      *scene_graph, scene_state, std::move(opw_kin), 2.0, std::move(tool_kin), tool_range, tool_resolution);
+
+  EXPECT_EQ(rtp->numJoints(), 8);
+
+  // Pick a known config whose tool joint values fall on the sweep grid.
+  auto full_fwd_kin = KDLFwdKinChain(*scene_graph, "base_link", "tool_tip");
+  Eigen::VectorXd q(8);
+  q << 0.1, -0.2, 0.3, 0.0, 0.5, 0.0, 0.2, -0.2;
+  tesseract::common::TransformMap fwd_poses;
+  full_fwd_kin.calcFwdKin(fwd_poses, q);
+  Eigen::Isometry3d target_pose = fwd_poses.at("tool_tip");
+
+  tesseract::common::TransformMap target;
+  target["tool_tip"] = target_pose;
+
+  IKSolutions solutions;
+  Eigen::VectorXd seed = Eigen::VectorXd::Zero(8);
+  rtp->calcInvKin(solutions, target, seed);
+
+  ASSERT_FALSE(solutions.empty());
+
+  // Every reported solution must be a valid FK roundtrip (proves both tool joints are applied).
+  const double tol = 1e-4;
+  std::size_t valid = 0;
+  for (const auto& sol : solutions)
+  {
+    ASSERT_EQ(sol.size(), 8);
+    tesseract::common::TransformMap check_poses;
+    full_fwd_kin.calcFwdKin(check_poses, sol);
+    Eigen::Isometry3d check = check_poses.at("tool_tip");
+
+    if ((check.translation() - target_pose.translation()).norm() < tol &&
+        Eigen::Quaterniond(check.linear()).angularDistance(Eigen::Quaterniond(target_pose.linear())) < tol)
+      ++valid;
+  }
+  EXPECT_EQ(valid, solutions.size());
+
+  // The grid step is 0.2; the chosen tool config (0.2, -0.2) lands exactly on a grid point. At
+  // least one solution should match it. This proves the recursion visits both joint dimensions.
+  bool found_grid_match = false;
+  for (const auto& sol : solutions)
+  {
+    if (std::abs(sol(6) - 0.2) < 0.05 && std::abs(sol(7) - (-0.2)) < 0.05)
+    {
+      found_grid_match = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(found_grid_match);
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinMultiJointToolSolutionCount)  // NOLINT
+{
+  // The Cartesian product of grid samples is exercised: confirm the solution count is bounded
+  // above by N1 * N2 * 8 (OPW max branches) and below by 1 for a reachable target.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithMultiJointToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  Eigen::MatrixX2d tool_range(2, 2);
+  tool_range << -0.4, 0.4, -0.4, 0.4;
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(2, 0.2);
+
+  auto rtp = std::make_unique<RTPInvKin>(*scene_graph,
+                                         scene_state,
+                                         makeOPWInvKin(*scene_graph),
+                                         2.0,
+                                         std::make_unique<KDLFwdKinChain>(*scene_graph, "tool0", "tool_tip"),
+                                         tool_range,
+                                         tool_resolution);
+
+  // LinSpaced on [-0.4, 0.4] with step 0.2 yields ceil(0.8/0.2) + 1 = 5 samples per joint.
+  const std::size_t n_per_joint = 5;
+  const std::size_t opw_max_branches = 8;
+  const std::size_t upper_bound = n_per_joint * n_per_joint * opw_max_branches;
+
+  auto full_fwd_kin = KDLFwdKinChain(*scene_graph, "base_link", "tool_tip");
+  Eigen::VectorXd q(8);
+  q << 0.0, 0.2, -0.3, 0.0, 0.5, 0.0, 0.0, 0.0;
+  tesseract::common::TransformMap fwd_poses;
+  full_fwd_kin.calcFwdKin(fwd_poses, q);
+
+  tesseract::common::TransformMap target;
+  target["tool_tip"] = fwd_poses.at("tool_tip");
+
+  IKSolutions solutions;
+  rtp->calcInvKin(solutions, target, Eigen::VectorXd::Zero(8));
+
+  EXPECT_GT(solutions.size(), 0U);
+  EXPECT_LE(solutions.size(), upper_bound);
+
+  // Confirm both tool dimensions were swept: collect distinct (q6, q7) pairs returned.
+  std::set<std::pair<int, int>> distinct_grid_cells;
+  for (const auto& sol : solutions)
+  {
+    int g1 = static_cast<int>(std::round(sol(6) / 0.2));
+    int g2 = static_cast<int>(std::round(sol(7) / 0.2));
+    distinct_grid_cells.emplace(g1, g2);
+  }
+  // If the recursion only swept one dimension, all distinct pairs would share the same value in
+  // one coordinate. Require at least two unique values along each dimension.
+  std::set<int> g1_vals, g2_vals;
+  for (const auto& [g1, g2] : distinct_grid_cells)
+  {
+    g1_vals.insert(g1);
+    g2_vals.insert(g2);
+  }
+  EXPECT_GE(g1_vals.size(), 2U);
+  EXPECT_GE(g2_vals.size(), 2U);
 }
 
 int main(int argc, char** argv)
