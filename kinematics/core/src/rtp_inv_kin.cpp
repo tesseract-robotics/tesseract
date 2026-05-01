@@ -4,6 +4,7 @@
  */
 
 #include <tesseract/kinematics/rtp_inv_kin.h>
+#include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/forward_kinematics.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
@@ -62,6 +63,70 @@ RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
        scene_state,
        std::move(manipulator),
        manipulator_reach,
+       std::move(tool_positioner),
+       tool_sample_range,
+       tool_sample_resolution,
+       std::move(solver_name));
+}
+
+RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneState& scene_state,
+                     InverseKinematics::UPtr manipulator,
+                     std::unique_ptr<ForwardKinematics> tool_positioner,
+                     const Eigen::VectorXd& tool_sample_resolution,
+                     std::string solver_name)
+{
+  if (tool_positioner == nullptr)
+    throw std::runtime_error("Provided tool positioner is a nullptr");
+  if (manipulator == nullptr)
+    throw std::runtime_error("Provided manipulator is a nullptr");
+  if (manipulator->getTipLinkNames().empty())
+    throw std::runtime_error("Provided manipulator has no tip links");
+
+  std::vector<std::string> joint_names = tool_positioner->getJointNames();
+  auto s = static_cast<Eigen::Index>(joint_names.size());
+  Eigen::MatrixX2d tool_limits;
+  tool_limits.resize(s, 2);
+  for (Eigen::Index i = 0; i < s; ++i)
+  {
+    auto joint = scene_graph.getJoint(joint_names[static_cast<std::size_t>(i)]);
+    tool_limits(i, 0) = joint->limits->lower;
+    tool_limits(i, 1) = joint->limits->upper;
+  }
+
+  const double auto_reach =
+      computeChainReachUpperBound(scene_graph, manipulator->getBaseLinkName(), manipulator->getTipLinkNames()[0]);
+
+  init(scene_graph,
+       scene_state,
+       std::move(manipulator),
+       auto_reach,
+       std::move(tool_positioner),
+       tool_limits,
+       tool_sample_resolution,
+       std::move(solver_name));
+}
+
+RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneState& scene_state,
+                     InverseKinematics::UPtr manipulator,
+                     std::unique_ptr<ForwardKinematics> tool_positioner,
+                     const Eigen::MatrixX2d& tool_sample_range,
+                     const Eigen::VectorXd& tool_sample_resolution,
+                     std::string solver_name)
+{
+  if (manipulator == nullptr)
+    throw std::runtime_error("Provided manipulator is a nullptr");
+  if (manipulator->getTipLinkNames().empty())
+    throw std::runtime_error("Provided manipulator has no tip links");
+
+  const double auto_reach =
+      computeChainReachUpperBound(scene_graph, manipulator->getBaseLinkName(), manipulator->getTipLinkNames()[0]);
+
+  init(scene_graph,
+       scene_state,
+       std::move(manipulator),
+       auto_reach,
        std::move(tool_positioner),
        tool_sample_range,
        tool_sample_resolution,

@@ -82,6 +82,30 @@ public:
             const Eigen::VectorXd& tool_sample_resolution,
             std::string solver_name = DEFAULT_RTP_INV_KIN_SOLVER_NAME);
 
+  /**
+   * @brief Construct RTP inverse kinematics, auto-deriving manipulator_reach.
+   *
+   * manipulator_reach is computed as computeChainReachUpperBound() over the manipulator's
+   * base->tip chain in @p scene_graph. Tool sample range defaults to full tool-joint limits.
+   */
+  RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            std::unique_ptr<ForwardKinematics> tool_positioner,
+            const Eigen::VectorXd& tool_sample_resolution,
+            std::string solver_name = DEFAULT_RTP_INV_KIN_SOLVER_NAME);
+
+  /**
+   * @brief Construct RTP inverse kinematics, auto-deriving manipulator_reach, explicit tool range.
+   */
+  RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            std::unique_ptr<ForwardKinematics> tool_positioner,
+            const Eigen::MatrixX2d& tool_sample_range,
+            const Eigen::VectorXd& tool_sample_resolution,
+            std::string solver_name = DEFAULT_RTP_INV_KIN_SOLVER_NAME);
+
   void calcInvKin(IKSolutions& solutions,
                   const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;

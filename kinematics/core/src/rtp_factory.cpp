@@ -10,6 +10,8 @@
 
 #include <console_bridge/console.h>
 
+#include <optional>
+
 namespace tesseract::kinematics
 {
 std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& solver_name,
@@ -20,16 +22,14 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
 {
   ForwardKinematics::UPtr fwd_kin;
   InverseKinematics::UPtr inv_kin;
-  double m_reach{ 0 };
+  std::optional<double> m_reach_explicit;
   Eigen::MatrixX2d sample_range;
   Eigen::VectorXd sample_res;
 
   try
   {
     if (YAML::Node n = config["manipulator_reach"])
-      m_reach = n.as<double>();
-    else
-      throw std::runtime_error("RTPInvKinFactory, missing 'manipulator_reach' entry!");
+      m_reach_explicit = n.as<double>();
 
     std::map<std::string, std::array<double, 3>> sample_res_map;
     if (YAML::Node sample_res_node = config["tool_sample_resolution"])
@@ -144,14 +144,19 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
     return nullptr;
   }
 
-  return std::make_unique<RTPInvKin>(scene_graph,
-                                     scene_state,
-                                     std::move(inv_kin),
-                                     m_reach,
-                                     std::move(fwd_kin),
-                                     sample_range,
-                                     sample_res,
-                                     solver_name);
+  if (m_reach_explicit.has_value())
+  {
+    return std::make_unique<RTPInvKin>(scene_graph,
+                                       scene_state,
+                                       std::move(inv_kin),
+                                       *m_reach_explicit,
+                                       std::move(fwd_kin),
+                                       sample_range,
+                                       sample_res,
+                                       solver_name);
+  }
+  return std::make_unique<RTPInvKin>(
+      scene_graph, scene_state, std::move(inv_kin), std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(RTPInvKinFactoriesAnchor)
