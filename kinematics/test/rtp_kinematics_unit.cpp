@@ -13,6 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/kinematic_group.h>
 #include <tesseract/state_solver/kdl/kdl_state_solver.h>
+#include <tesseract/common/yaml_utils.h>
 #include <opw_kinematics/opw_parameters.h>
 
 using namespace tesseract::kinematics::test_suite;
@@ -420,6 +421,159 @@ kinematic_plugins:
   auto loaded = factory.createInvKin("rtp_manipulator", "RTPInvKin", *scene_graph, scene_state);
   ASSERT_NE(loaded, nullptr);
   EXPECT_EQ(loaded->numJoints(), 7);
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinFactoryFailureMatrix)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  const std::string yaml_str = R"(
+kinematic_plugins:
+  search_libraries:
+    - tesseract_kinematics_factories
+  inv_kin_plugins:
+    rtp_manipulator:
+      default: RTPInvKin
+      plugins:
+        RTPInvKin:
+          class: RTPInvKinFactory
+          config:
+            manipulator_reach: 2.0
+            tool_sample_resolution:
+              - name: tool_joint
+                value: 0.1
+            tool_positioner:
+              class: KDLFwdKinChainFactory
+              config:
+                base_link: tool0
+                tip_link: tool_tip
+            manipulator:
+              class: OPWInvKinFactory
+              config:
+                base_link: base_link
+                tip_link: tool0
+                params:
+                  a1: 0.100
+                  a2: -0.135
+                  b: 0.00
+                  c1: 0.615
+                  c2: 0.705
+                  c3: 0.755
+                  c4: 0.086
+                  offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                  sign_corrections: [1, 1, 1, 1, 1, 1]
+)";
+
+  // Sanity: the unmodified yaml must produce a valid solver.
+  {
+    KinematicsPluginFactory factory(YAML::Load(yaml_str), locator);
+    EXPECT_NE(factory.createInvKin("rtp_manipulator", "RTPInvKin", *scene_graph, scene_state), nullptr);
+  }
+
+  auto load_failure_expected = [&](const YAML::Node& config) {
+    KinematicsPluginFactory factory(config, locator);
+    EXPECT_EQ(factory.createInvKin("rtp_manipulator", "RTPInvKin", *scene_graph, scene_state), nullptr);
+  };
+
+  {  // Missing config block
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"];
+    plugin.remove("config");
+    load_failure_expected(config);
+  }
+  {  // Non-positive manipulator_reach
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["manipulator_reach"] = -1.0;
+    load_failure_expected(config);
+  }
+  {  // Missing tool_sample_resolution
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    auto cfg = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"];
+    cfg.remove("tool_sample_resolution");
+    load_failure_expected(config);
+  }
+  {  // tool_sample_resolution entry missing 'name'
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["tool_sample_resolution"][0]
+              .remove("name");
+    load_failure_expected(config);
+  }
+  {  // tool_sample_resolution entry missing 'value'
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["tool_sample_resolution"][0]
+              .remove("value");
+    load_failure_expected(config);
+  }
+  {  // tool_sample_resolution joint name not in scene graph
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["tool_sample_resolution"][0]["name"] = "joint_does_not_exist";
+    load_failure_expected(config);
+  }
+  {  // tool_sample_resolution min below joint lower limit
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["tool_sample_resolution"][0]["min"] = -10000.0;
+    load_failure_expected(config);
+  }
+  {  // tool_sample_resolution max above joint upper limit
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["tool_sample_resolution"][0]["max"] = 10000.0;
+    load_failure_expected(config);
+  }
+  {  // tool_sample_resolution min greater than max
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    auto entry = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+                       ["tool_sample_resolution"][0];
+    entry["min"] = 0.5;
+    entry["max"] = 0.1;
+    load_failure_expected(config);
+  }
+  {  // Missing tool_positioner
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    auto cfg = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"];
+    cfg.remove("tool_positioner");
+    load_failure_expected(config);
+  }
+  {  // tool_positioner missing class entry
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    auto pos = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+                     ["tool_positioner"];
+    pos.remove("class");
+    load_failure_expected(config);
+  }
+  {  // tool_positioner with unregistered class
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["tool_positioner"]["class"] = "DoesNotExistFactory";
+    load_failure_expected(config);
+  }
+  {  // Missing manipulator
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    auto cfg = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"];
+    cfg.remove("manipulator");
+    load_failure_expected(config);
+  }
+  {  // manipulator missing class entry
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    auto manip = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+                       ["manipulator"];
+    manip.remove("class");
+    load_failure_expected(config);
+  }
+  {  // manipulator with unregistered class
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["manipulator"]
+          ["class"] = "DoesNotExistFactory";
+    load_failure_expected(config);
+  }
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinFactoryRejectsBadReach)  // NOLINT
