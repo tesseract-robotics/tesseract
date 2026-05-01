@@ -156,6 +156,15 @@ TEST(TesseractKinematicsUnit, RTPInvKinAutoReachMatchesExplicit)  // NOLINT
   rtp_explicit->calcInvKin(s_explicit, target, Eigen::VectorXd::Zero(7));
   EXPECT_FALSE(s_auto.empty());
   EXPECT_EQ(s_auto.size(), s_explicit.size());
+
+  // Bounded-reach check: an undersized explicit reach must filter the same target out via the
+  // reach gate. If auto-reach silently degenerated to "always accept" this third arm would still
+  // produce solutions, masking the bug.
+  auto rtp_undersized =
+      std::make_unique<RTPInvKin>(*scene_graph, scene_state, opw_kin->clone(), 0.3, tool_kin->clone(), tool_resolution);
+  IKSolutions s_undersized;
+  rtp_undersized->calcInvKin(s_undersized, target, Eigen::VectorXd::Zero(7));
+  EXPECT_TRUE(s_undersized.empty());
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinSingleSampleRoundtrip)  // NOLINT
