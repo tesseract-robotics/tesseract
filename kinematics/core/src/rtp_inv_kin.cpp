@@ -216,7 +216,19 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
 
 InverseKinematics::UPtr RTPInvKin::clone() const { return std::make_unique<RTPInvKin>(*this); }
 
-RTPInvKin::RTPInvKin(const RTPInvKin& other) { *this = other; }
+RTPInvKin::RTPInvKin(const RTPInvKin& other)
+  : joint_names_(other.joint_names_)
+  , manip_inv_kin_(other.manip_inv_kin_->clone())
+  , tool_fwd_kin_(other.tool_fwd_kin_->clone())
+  , manip_tip_link_(other.manip_tip_link_)
+  , tool_tip_link_(other.tool_tip_link_)
+  , manip_reach_(other.manip_reach_)
+  , manip_tip_to_tool_base_(other.manip_tip_to_tool_base_)
+  , dof_(other.dof_)
+  , dof_range_(other.dof_range_)
+  , solver_name_(other.solver_name_)
+{
+}
 
 RTPInvKin& RTPInvKin::operator=(const RTPInvKin& other)
 {
