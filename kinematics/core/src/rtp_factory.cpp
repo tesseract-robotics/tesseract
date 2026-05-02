@@ -72,6 +72,8 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
         auto jnt = scene_graph.getJoint(joint_name);
         if (jnt == nullptr)
           throw std::runtime_error("RTPInvKinFactory, 'tool_sample_resolution' failed to find joint in scene graph!");
+        if (jnt->limits == nullptr)
+          throw std::runtime_error("RTPInvKinFactory, joint '" + joint_name + "' has no limits!");
 
         values[1] = jnt->limits->lower;
         values[2] = jnt->limits->upper;
