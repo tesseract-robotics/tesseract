@@ -251,7 +251,7 @@ void ROPInvKin::ikAt(IKSolutions& solutions,
   TESSERACT_THREAD_LOCAL tesseract::common::TransformMap positioner_poses;
   positioner_poses.clear();
   positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
-  Eigen::Isometry3d positioner_tf = positioner_poses[positioner_tip_link_] * positioner_to_robot_;
+  Eigen::Isometry3d positioner_tf = positioner_poses.at(positioner_tip_link_) * positioner_to_robot_;
   Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * tip_link_poses.at(manip_tip_link_);
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;

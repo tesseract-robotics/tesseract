@@ -293,7 +293,7 @@ void RTPInvKin::ikAt(IKSolutions& solutions,
   TESSERACT_THREAD_LOCAL tesseract::common::TransformMap tool_poses;
   tool_poses.clear();
   tool_fwd_kin_->calcFwdKin(tool_poses, tool_pose);
-  Eigen::Isometry3d tool_tf = tool_poses[tool_tip_link_];
+  Eigen::Isometry3d tool_tf = tool_poses.at(tool_tip_link_);
 
   // T_manip_tip = T_target_tool_tip * (T_manip_tip_to_tool_base * T_tool_base_to_tool_tip(q_tool))^-1
   Eigen::Isometry3d robot_target_pose =

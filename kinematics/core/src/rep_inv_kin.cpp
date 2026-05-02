@@ -248,7 +248,7 @@ void REPInvKin::ikAt(IKSolutions& solutions,
   TESSERACT_THREAD_LOCAL tesseract::common::TransformMap positioner_poses;
   positioner_poses.clear();
   positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
-  Eigen::Isometry3d positioner_tf = positioner_poses[working_frame_];
+  Eigen::Isometry3d positioner_tf = positioner_poses.at(working_frame_);
 
   Eigen::Isometry3d robot_target_pose =
       manip_base_to_positioner_base_ * positioner_tf * tip_link_poses.at(manip_tip_link_);
