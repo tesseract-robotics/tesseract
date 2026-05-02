@@ -271,13 +271,10 @@ void REPInvKin::ikAt(IKSolutions& solutions,
 
   for (const auto& robot_solution : robot_solution_set)
   {
-    /** @brief Making this thread_local does not help */
-    Eigen::VectorXd full_sol;
-    full_sol.resize(positioner_dof + robot_dof);
-
+    solutions.emplace_back(positioner_dof + robot_dof);
+    Eigen::VectorXd& full_sol = solutions.back();
     full_sol.head(positioner_dof) = positioner_pose;
     full_sol.tail(robot_dof) = robot_solution;
-    solutions.push_back(full_sol);
   }
 }
 

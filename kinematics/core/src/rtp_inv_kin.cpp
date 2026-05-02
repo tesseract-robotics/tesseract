@@ -318,11 +318,10 @@ void RTPInvKin::ikAt(IKSolutions& solutions,
 
   for (const auto& robot_solution : robot_solution_set)
   {
-    Eigen::VectorXd full_sol;
-    full_sol.resize(robot_dof + tool_dof);
+    solutions.emplace_back(robot_dof + tool_dof);
+    Eigen::VectorXd& full_sol = solutions.back();
     full_sol.head(robot_dof) = robot_solution;
     full_sol.tail(tool_dof) = tool_pose;
-    solutions.push_back(full_sol);
   }
 }
 
