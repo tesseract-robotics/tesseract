@@ -162,15 +162,15 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
     {
       throw std::runtime_error("REPInvKinFactory, missing 'manipulator' entry!");
     }
+
+    return std::make_unique<REPInvKin>(
+        scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("REPInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<REPInvKin>(
-      scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(REPInvKinFactoriesAnchor)
