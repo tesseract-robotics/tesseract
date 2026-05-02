@@ -27,6 +27,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <cmath>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -1259,8 +1260,16 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
 /**
  * @brief Add a revolute joint between an existing parent link and a new child link.
  * @details Convenience for test fixtures that build small chains. The child link is created with
- *          name @p child and added to the graph; a revolute joint named @p name connects parent→child
+ *          name @p child and added to the graph; a revolute joint named @p name connects parent->child
  *          with the given @p axis, @p offset, and joint limits.
+ * @param sg     Scene graph to mutate (must already contain @p parent).
+ * @param name   Name for the new revolute joint.
+ * @param parent Existing parent link name.
+ * @param child  Name for the new child link (created by this function).
+ * @param axis   Joint rotation axis in the child link frame.
+ * @param offset Transform from parent joint origin to child (default: Identity).
+ * @param lower  Lower joint limit in radians (default: -pi).
+ * @param upper  Upper joint limit in radians (default: +pi).
  */
 inline void addRevoluteChild(tesseract::scene_graph::SceneGraph& sg,
                              const std::string& name,
