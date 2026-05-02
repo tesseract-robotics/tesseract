@@ -303,7 +303,8 @@ void RTPInvKin::ikAt(IKSolutions& solutions,
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
-  tesseract::common::TransformMap robot_target_poses;
+  TESSERACT_THREAD_LOCAL tesseract::common::TransformMap robot_target_poses;
+  robot_target_poses.clear();
   robot_target_poses[manip_tip_link_] = robot_target_pose;
 
   auto robot_dof = manip_inv_kin_->numJoints();
