@@ -23,6 +23,7 @@
  */
 
 #include <tesseract/kinematics/rop_inv_kin.h>
+#include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/forward_kinematics.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
@@ -47,21 +48,7 @@ ROPInvKin::ROPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
 
-  std::vector<std::string> joint_names = positioner->getJointNames();
-  auto s = static_cast<Eigen::Index>(joint_names.size());
-  Eigen::MatrixX2d positioner_limits;
-  positioner_limits.resize(s, 2);
-  for (Eigen::Index i = 0; i < s; ++i)
-  {
-    const auto& name = joint_names[static_cast<std::size_t>(i)];
-    auto joint = scene_graph.getJoint(name);
-    if (joint == nullptr)
-      throw std::runtime_error("Positioner joint '" + name + "' not found in scene graph");
-    if (joint->limits == nullptr)
-      throw std::runtime_error("Positioner joint '" + name + "' has no limits");
-    positioner_limits(i, 0) = joint->limits->lower;
-    positioner_limits(i, 1) = joint->limits->upper;
-  }
+  Eigen::MatrixX2d positioner_limits = gatherJointLimits(scene_graph, positioner->getJointNames());
 
   init(scene_graph,
        scene_state,
@@ -144,20 +131,7 @@ void ROPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   const auto& manip_joints = manip_inv_kin_->getJointNames();
   joint_names_.insert(joint_names_.end(), manip_joints.begin(), manip_joints.end());
 
-  // For the kinematics object to be sampled we need to create the joint values at the sampling resolution
-  // The sampled joints results are stored in dof_range[joint index] to be used by the nested_ik function
-  auto positioner_num_joints = static_cast<int>(positioner_fwd_kin_->numJoints());
-  dof_range_.reserve(static_cast<std::size_t>(positioner_num_joints));
-  for (int d = 0; d < positioner_num_joints; ++d)
-  {
-    // given the sampling resolution for the joint calculate the number of samples such that the resolution is not
-    // exceeded.
-    int cnt = static_cast<int>(std::ceil(std::abs(poitioner_sample_range(d, 1) - poitioner_sample_range(d, 0)) /
-                                         positioner_sample_resolution(d))) +
-              1;
-    dof_range_.emplace_back(
-        Eigen::VectorXd::LinSpaced(cnt, poitioner_sample_range(d, 0), poitioner_sample_range(d, 1)));
-  }
+  dof_range_ = buildSampleGrid(poitioner_sample_range, positioner_sample_resolution);
 }
 
 InverseKinematics::UPtr ROPInvKin::clone() const { return std::make_unique<ROPInvKin>(*this); }

@@ -48,21 +48,7 @@ RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
 
-  std::vector<std::string> joint_names = tool_positioner->getJointNames();
-  auto s = static_cast<Eigen::Index>(joint_names.size());
-  Eigen::MatrixX2d tool_limits;
-  tool_limits.resize(s, 2);
-  for (Eigen::Index i = 0; i < s; ++i)
-  {
-    const auto& name = joint_names[static_cast<std::size_t>(i)];
-    auto joint = scene_graph.getJoint(name);
-    if (joint == nullptr)
-      throw std::runtime_error("Tool positioner joint '" + name + "' not found in scene graph");
-    if (joint->limits == nullptr)
-      throw std::runtime_error("Tool positioner joint '" + name + "' has no limits");
-    tool_limits(i, 0) = joint->limits->lower;
-    tool_limits(i, 1) = joint->limits->upper;
-  }
+  Eigen::MatrixX2d tool_limits = gatherJointLimits(scene_graph, tool_positioner->getJointNames());
 
   init(scene_graph,
        scene_state,
@@ -109,21 +95,7 @@ RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
 
-  std::vector<std::string> joint_names = tool_positioner->getJointNames();
-  auto s = static_cast<Eigen::Index>(joint_names.size());
-  Eigen::MatrixX2d tool_limits;
-  tool_limits.resize(s, 2);
-  for (Eigen::Index i = 0; i < s; ++i)
-  {
-    const auto& name = joint_names[static_cast<std::size_t>(i)];
-    auto joint = scene_graph.getJoint(name);
-    if (joint == nullptr)
-      throw std::runtime_error("Tool positioner joint '" + name + "' not found in scene graph");
-    if (joint->limits == nullptr)
-      throw std::runtime_error("Tool positioner joint '" + name + "' has no limits");
-    tool_limits(i, 0) = joint->limits->lower;
-    tool_limits(i, 1) = joint->limits->upper;
-  }
+  Eigen::MatrixX2d tool_limits = gatherJointLimits(scene_graph, tool_positioner->getJointNames());
 
   const double auto_reach =
       computeChainReachUpperBound(scene_graph, manipulator->getBaseLinkName(), manipulator->getTipLinkNames()[0]);
@@ -246,16 +218,7 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   const auto& tool_joints = tool_fwd_kin_->getJointNames();
   joint_names_.insert(joint_names_.end(), tool_joints.begin(), tool_joints.end());
 
-  auto tool_num_joints = static_cast<int>(tool_fwd_kin_->numJoints());
-  dof_range_.reserve(static_cast<std::size_t>(tool_num_joints));
-  for (int d = 0; d < tool_num_joints; ++d)
-  {
-    int cnt = static_cast<int>(std::ceil(std::abs(tool_sample_range(d, 1) - tool_sample_range(d, 0)) /
-                                         tool_sample_resolution(d))) +
-              1;
-    dof_range_.emplace_back(
-        Eigen::VectorXd::LinSpaced(cnt, tool_sample_range(d, 0), tool_sample_range(d, 1)));
-  }
+  dof_range_ = buildSampleGrid(tool_sample_range, tool_sample_resolution);
 }
 
 InverseKinematics::UPtr RTPInvKin::clone() const { return std::make_unique<RTPInvKin>(*this); }
