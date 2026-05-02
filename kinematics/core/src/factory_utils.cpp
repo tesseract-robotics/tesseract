@@ -4,6 +4,22 @@
 
 namespace tesseract::kinematics
 {
+namespace
+{
+// Build "<prefix><sep><tag><tail>" with += accumulation; avoids the temporary-string
+// allocations that operator+ chains incur (per performance-inefficient-string-concatenation).
+std::string concat4(const std::string& prefix, const char* sep, const std::string& tag, const char* tail)
+{
+  std::string msg;
+  msg.reserve(prefix.size() + tag.size() + 32);
+  msg += prefix;
+  msg += sep;
+  msg += tag;
+  msg += tail;
+  return msg;
+}
+}  // namespace
+
 tesseract::common::PluginInfo parsePluginInfo(const YAML::Node& sub_node,
                                               const std::string& error_prefix,
                                               const std::string& block_label)
@@ -12,7 +28,7 @@ tesseract::common::PluginInfo parsePluginInfo(const YAML::Node& sub_node,
   if (YAML::Node n = sub_node["class"])
     info.class_name = n.as<std::string>();
   else
-    throw std::runtime_error(error_prefix + ", '" + block_label + "' missing 'class' entry!");
+    throw std::runtime_error(concat4(error_prefix, ", '", block_label, "' missing 'class' entry!"));
 
   if (YAML::Node n = sub_node["config"])
     info.config = n;
@@ -37,18 +53,18 @@ parseSampleResolutionMap(const YAML::Node& sample_res_node,
     if (YAML::Node n = joint["name"])
       joint_name = n.as<std::string>();
     else
-      throw std::runtime_error(error_prefix + ", '" + block_label + "' missing 'name' entry!");
+      throw std::runtime_error(concat4(error_prefix, ", '", block_label, "' missing 'name' entry!"));
 
     if (YAML::Node n = joint["value"])
       values[0] = n.as<double>();
     else
-      throw std::runtime_error(error_prefix + ", '" + block_label + "' missing 'value' entry!");
+      throw std::runtime_error(concat4(error_prefix, ", '", block_label, "' missing 'value' entry!"));
 
     auto jnt = scene_graph.getJoint(joint_name);
     if (jnt == nullptr)
-      throw std::runtime_error(error_prefix + ", '" + block_label + "' failed to find joint in scene graph!");
+      throw std::runtime_error(concat4(error_prefix, ", '", block_label, "' failed to find joint in scene graph!"));
     if (jnt->limits == nullptr)
-      throw std::runtime_error(error_prefix + ", joint '" + joint_name + "' has no limits!");
+      throw std::runtime_error(concat4(error_prefix, ", joint '", joint_name, "' has no limits!"));
 
     values[1] = jnt->limits->lower;
     values[2] = jnt->limits->upper;
