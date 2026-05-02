@@ -7,6 +7,21 @@
 `KDLInvKinChainNR_JL` (Newton-Raphson with joint-limit clamping) solving
 the same 7-DOF IK on the ABB IRB2400 + tool positioner fixture.
 
+### When to use which
+
+The two solvers produce fundamentally different solution sets:
+- RTP enumerates all manipulator branches at every tool-joint sample.
+- KDL-NR-JL returns at most one solution, seed-dependent.
+
+Two views on the same data:
+- **Per-call time** (the main row): what a planner sees per IK query. KDL
+  wins when one solution is enough.
+- **`sec_per_valid_sol`**: cost amortized across all returned solutions.
+  RTP wins by orders of magnitude here because it enumerates.
+
+Neither view alone is "the" answer — pick based on whether your planner
+consumes a single solution per target or wants to choose among many.
+
 ### Running
 
 ```bash
@@ -60,10 +75,6 @@ change the noise magnitude, edit `NOISE_SIGMA_RAD` and rebuild.
 
 ### Caveats
 
-The two solvers produce fundamentally different solution sets:
-- RTP enumerates all manipulator branches at every tool-joint sample.
-- KDL-NR-JL returns at most one solution, seed-dependent.
-
 `RTPInvKin`'s `manipulator_reach` argument is an early-exit filter on
 `‖target tool0 pose‖` — tool_joint samples beyond that radius are rejected
 before OPW is called. This benchmark uses the auto-reach `RTPInvKin`
@@ -72,12 +83,3 @@ base→tip chain via `computeChainReachUpperBound`. For ABB IRB2400 that
 bound is ~2.20 m, comfortably above the peak `‖tool0‖ ≈ 2.1 m` observed
 under random joint sampling, so the filter never fires on reachable
 targets.
-
-Two views on the same data:
-- **Per-call time** (the main row): what a planner sees per IK query. KDL
-  wins when one solution is enough.
-- **`sec_per_valid_sol`**: cost amortized across all returned solutions.
-  RTP wins by orders of magnitude here because it enumerates.
-
-Neither view alone is "the" answer — pick based on whether your planner
-consumes a single solution per target or wants to choose among many.
