@@ -619,29 +619,14 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundBranchedTree)  // NOLINT
   using namespace tesseract::scene_graph;
   SceneGraph sg("test");
   sg.addLink(Link("root"));
-  sg.addLink(Link("hub"));
-  sg.addLink(Link("tip_a"));
-  sg.addLink(Link("tip_b"));
 
-  auto add_revolute = [&](const std::string& name,
-                          const std::string& parent,
-                          const std::string& child,
-                          const Eigen::Vector3d& offset) {
-    Joint j(name);
-    j.type = JointType::REVOLUTE;
-    j.parent_link_name = parent;
-    j.child_link_name = child;
-    j.parent_to_joint_origin_transform.translation() = offset;
-    j.axis = Eigen::Vector3d::UnitZ();
-    j.limits = std::make_shared<JointLimits>();
-    j.limits->lower = -M_PI;
-    j.limits->upper = M_PI;
-    sg.addJoint(j);
-  };
-
-  add_revolute("j_root_hub", "root", "hub", Eigen::Vector3d(1.0, 0.0, 0.0));    // norm = 1.0
-  add_revolute("j_hub_a", "hub", "tip_a", Eigen::Vector3d(0.0, 2.0, 0.0));      // norm = 2.0
-  add_revolute("j_hub_b", "hub", "tip_b", Eigen::Vector3d(0.0, 0.0, 100.0));    // norm = 100.0 (unrelated branch)
+  namespace ts = tesseract::kinematics::test_suite;
+  ts::addRevoluteChild(sg, "j_root_hub", "root", "hub", Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(1.0, 0.0, 0.0)));    // norm = 1.0
+  ts::addRevoluteChild(sg, "j_hub_a", "hub", "tip_a", Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(0.0, 2.0, 0.0)));    // norm = 2.0
+  ts::addRevoluteChild(sg, "j_hub_b", "hub", "tip_b", Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(0.0, 0.0, 100.0)));  // norm = 100.0 (unrelated branch)
 
   EXPECT_NEAR(tesseract::kinematics::computeChainReachUpperBound(sg, "root", "tip_a"), 1.0 + 2.0, 1e-12);
   EXPECT_NEAR(tesseract::kinematics::computeChainReachUpperBound(sg, "root", "tip_b"), 1.0 + 100.0, 1e-12);

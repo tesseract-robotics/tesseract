@@ -1256,5 +1256,33 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
   }
 }
 
+/**
+ * @brief Add a revolute joint between an existing parent link and a new child link.
+ * @details Convenience for test fixtures that build small chains. The child link is created with
+ *          name @p child and added to the graph; a revolute joint named @p name connects parent→child
+ *          with the given @p axis, @p offset, and joint limits.
+ */
+inline void addRevoluteChild(tesseract::scene_graph::SceneGraph& sg,
+                             const std::string& name,
+                             const std::string& parent,
+                             const std::string& child,
+                             const Eigen::Vector3d& axis,
+                             const Eigen::Isometry3d& offset = Eigen::Isometry3d::Identity(),
+                             double lower = -M_PI,
+                             double upper = M_PI)
+{
+  sg.addLink(tesseract::scene_graph::Link(child));
+  tesseract::scene_graph::Joint j(name);
+  j.parent_link_name = parent;
+  j.child_link_name = child;
+  j.type = tesseract::scene_graph::JointType::REVOLUTE;
+  j.axis = axis;
+  j.parent_to_joint_origin_transform = offset;
+  j.limits = std::make_shared<tesseract::scene_graph::JointLimits>();
+  j.limits->lower = lower;
+  j.limits->upper = upper;
+  sg.addJoint(j);
+}
+
 }  // namespace tesseract::kinematics::test_suite
 #endif  // TESSERACT_KINEMATICS_KIN_TEST_SUITE_H
