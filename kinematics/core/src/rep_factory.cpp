@@ -28,6 +28,7 @@
 #include <tesseract/scene_graph/joint.h>
 
 #include <console_bridge/console.h>
+#include <optional>
 
 namespace tesseract::kinematics
 {
@@ -39,17 +40,15 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
 {
   ForwardKinematics::UPtr fwd_kin;
   InverseKinematics::UPtr inv_kin;
-  double m_reach{ 0 };
+  std::optional<double> m_reach_explicit;
   Eigen::MatrixX2d sample_range;
   Eigen::VectorXd sample_res;
 
   try
   {
-    // Get Reach
+    // Get Reach (optional: when omitted, the ctor will derive it from the chain)
     if (YAML::Node n = config["manipulator_reach"])
-      m_reach = n.as<double>();
-    else
-      throw std::runtime_error("REPInvKinFactory, missing 'manipulator_reach' entry!");
+      m_reach_explicit = n.as<double>();
 
     // Get positioner sample resolution
     std::map<std::string, std::array<double, 3>> sample_res_map;
@@ -163,8 +162,19 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
       throw std::runtime_error("REPInvKinFactory, missing 'manipulator' entry!");
     }
 
+    if (m_reach_explicit.has_value())
+    {
+      return std::make_unique<REPInvKin>(scene_graph,
+                                          scene_state,
+                                          std::move(inv_kin),
+                                          *m_reach_explicit,
+                                          std::move(fwd_kin),
+                                          sample_range,
+                                          sample_res,
+                                          solver_name);
+    }
     return std::make_unique<REPInvKin>(
-        scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
+        scene_graph, scene_state, std::move(inv_kin), std::move(fwd_kin), sample_range, sample_res, solver_name);
   }
   catch (const std::exception& e)
   {

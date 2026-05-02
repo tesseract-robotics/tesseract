@@ -1066,14 +1066,14 @@ TEST(TesseractKinematicsFactoryUnit, LoadREPKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
-  {  // missing manipulator_reach
+  {  // Auto-reach: manipulator_reach omitted → ctor derives reach from chain
     YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["REPInvKin"];
     plugin["config"].remove("manipulator_reach");
 
     KinematicsPluginFactory factory(config, locator);
     auto inv_kin = factory.createInvKin("manipulator", "REPInvKin", *scene_graph, scene_state);
-    EXPECT_TRUE(inv_kin == nullptr);
+    EXPECT_TRUE(inv_kin != nullptr);
   }
   {  // missing positioner_sample_resolution
     YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
@@ -1256,14 +1256,14 @@ TEST(TesseractKinematicsFactoryUnit, LoadROPKinematicsUnit)  // NOLINT
     auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
-  {  // missing manipulator_reach
+  {  // Auto-reach: manipulator_reach omitted → ctor derives reach from chain
     YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["ROPInvKin"];
     plugin["config"].remove("manipulator_reach");
 
     KinematicsPluginFactory factory(config, locator);
     auto inv_kin = factory.createInvKin("manipulator", "ROPInvKin", *scene_graph, scene_state);
-    EXPECT_TRUE(inv_kin == nullptr);
+    EXPECT_TRUE(inv_kin != nullptr);
   }
   {  // missing positioner_sample_resolution
     YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
