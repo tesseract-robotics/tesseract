@@ -720,6 +720,56 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundABBIRB2400FKSampled)  // NOLIN
   EXPECT_GT(observed_max, 1.5) << "Did not sample a representative workspace (max=" << observed_max << ")";
 }
 
+TEST(KinematicsUtils, GatherJointLimits)  // NOLINT
+{
+  auto sg = std::make_shared<tesseract::scene_graph::SceneGraph>();
+  sg->setName("test");
+  sg->addLink(tesseract::scene_graph::Link("base"));
+
+  // Joint A with limits [-1, 2]
+  tesseract::scene_graph::Joint ja("a");
+  ja.parent_link_name = "base";
+  ja.child_link_name = "l1";
+  ja.type = tesseract::scene_graph::JointType::REVOLUTE;
+  ja.axis = Eigen::Vector3d::UnitZ();
+  ja.limits = std::make_shared<tesseract::scene_graph::JointLimits>();
+  ja.limits->lower = -1.0;
+  ja.limits->upper = 2.0;
+  sg->addLink(tesseract::scene_graph::Link("l1"));
+  sg->addJoint(ja);
+
+  // Joint B with limits [-3, 0.5]
+  tesseract::scene_graph::Joint jb("b");
+  jb.parent_link_name = "l1";
+  jb.child_link_name = "l2";
+  jb.type = tesseract::scene_graph::JointType::REVOLUTE;
+  jb.axis = Eigen::Vector3d::UnitZ();
+  jb.limits = std::make_shared<tesseract::scene_graph::JointLimits>();
+  jb.limits->lower = -3.0;
+  jb.limits->upper = 0.5;
+  sg->addLink(tesseract::scene_graph::Link("l2"));
+  sg->addJoint(jb);
+
+  Eigen::MatrixX2d limits = tesseract::kinematics::gatherJointLimits(*sg, { "a", "b" });
+  ASSERT_EQ(limits.rows(), 2);
+  EXPECT_DOUBLE_EQ(limits(0, 0), -1.0);
+  EXPECT_DOUBLE_EQ(limits(0, 1), 2.0);
+  EXPECT_DOUBLE_EQ(limits(1, 0), -3.0);
+  EXPECT_DOUBLE_EQ(limits(1, 1), 0.5);
+
+  // Missing joint → throws
+  EXPECT_THROW(tesseract::kinematics::gatherJointLimits(*sg, { "missing" }), std::runtime_error);
+
+  // Joint without limits → throws
+  tesseract::scene_graph::Joint jc("c");
+  jc.parent_link_name = "l2";
+  jc.child_link_name = "l3";
+  jc.type = tesseract::scene_graph::JointType::FIXED;  // FIXED has no limits
+  sg->addLink(tesseract::scene_graph::Link("l3"));
+  sg->addJoint(jc);
+  EXPECT_THROW(tesseract::kinematics::gatherJointLimits(*sg, { "c" }), std::runtime_error);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

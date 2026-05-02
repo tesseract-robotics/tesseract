@@ -29,6 +29,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
+#include <string>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>
@@ -412,6 +414,16 @@ inline void harmonizeTowardMedian(Eigen::Ref<VectorX<FloatType>> qs,
 double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& scene_graph,
                                    const std::string& base_link_name,
                                    const std::string& tip_link_name);
+
+/**
+ * @brief Look up each named joint in @p scene_graph and return their position limits as a (N,2) matrix.
+ * @details Column 0 is the lower limit, column 1 the upper. Used by compound IK solvers (RTP/REP/ROP)
+ *          to derive a default sampling range from joint limits when the caller did not supply one.
+ * @throws std::runtime_error if any joint name is missing from @p scene_graph or if any matched
+ *         joint has a null `limits` member.
+ */
+Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                   const std::vector<std::string>& joint_names);
 
 }  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_UTILS_H

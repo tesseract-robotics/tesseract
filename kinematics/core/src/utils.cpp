@@ -335,4 +335,23 @@ double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& sce
   }
   return bound;
 }
+
+Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                   const std::vector<std::string>& joint_names)
+{
+  const auto n = static_cast<Eigen::Index>(joint_names.size());
+  Eigen::MatrixX2d limits(n, 2);
+  for (Eigen::Index i = 0; i < n; ++i)
+  {
+    const auto& name = joint_names[static_cast<std::size_t>(i)];
+    auto joint = scene_graph.getJoint(name);
+    if (joint == nullptr)
+      throw std::runtime_error("gatherJointLimits: joint '" + name + "' not found in scene graph");
+    if (joint->limits == nullptr)
+      throw std::runtime_error("gatherJointLimits: joint '" + name + "' has no limits");
+    limits(i, 0) = joint->limits->lower;
+    limits(i, 1) = joint->limits->upper;
+  }
+  return limits;
+}
 }  // namespace tesseract::kinematics
