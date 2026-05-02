@@ -78,6 +78,67 @@ REPInvKin::REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
        std::move(solver_name));
 }
 
+REPInvKin::REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneState& scene_state,
+                     InverseKinematics::UPtr manipulator,
+                     std::unique_ptr<ForwardKinematics> positioner,
+                     const Eigen::VectorXd& positioner_sample_resolution,
+                     std::string solver_name)
+{
+  if (positioner == nullptr)
+    throw std::runtime_error("Provided positioner is a nullptr");
+  if (manipulator == nullptr)
+    throw std::runtime_error("Provided manipulator is a nullptr");
+  if (manipulator->getTipLinkNames().size() != 1)
+    throw std::runtime_error("REPInvKin requires a manipulator with exactly one tip link");
+  if (!scene_graph.getLink(scene_graph.getRoot()))
+    throw std::runtime_error("The scene graph has an invalid root.");
+
+  Eigen::MatrixX2d positioner_limits = gatherJointLimits(scene_graph, positioner->getJointNames());
+
+  const double auto_reach =
+      computeChainReachUpperBound(scene_graph, manipulator->getBaseLinkName(), manipulator->getTipLinkNames()[0]);
+
+  init(scene_graph,
+       scene_state,
+       std::move(manipulator),
+       auto_reach,
+       std::move(positioner),
+       positioner_limits,
+       positioner_sample_resolution,
+       std::move(solver_name));
+}
+
+REPInvKin::REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+                     const tesseract::scene_graph::SceneState& scene_state,
+                     InverseKinematics::UPtr manipulator,
+                     std::unique_ptr<ForwardKinematics> positioner,
+                     const Eigen::MatrixX2d& positioner_sample_range,
+                     const Eigen::VectorXd& positioner_sample_resolution,
+                     std::string solver_name)
+{
+  if (positioner == nullptr)
+    throw std::runtime_error("Provided positioner is a nullptr");
+  if (manipulator == nullptr)
+    throw std::runtime_error("Provided manipulator is a nullptr");
+  if (manipulator->getTipLinkNames().size() != 1)
+    throw std::runtime_error("REPInvKin requires a manipulator with exactly one tip link");
+  if (!scene_graph.getLink(scene_graph.getRoot()))
+    throw std::runtime_error("The scene graph has an invalid root.");
+
+  const double auto_reach =
+      computeChainReachUpperBound(scene_graph, manipulator->getBaseLinkName(), manipulator->getTipLinkNames()[0]);
+
+  init(scene_graph,
+       scene_state,
+       std::move(manipulator),
+       auto_reach,
+       std::move(positioner),
+       positioner_sample_range,
+       positioner_sample_resolution,
+       std::move(solver_name));
+}
+
 void REPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
                      const tesseract::scene_graph::SceneState& scene_state,
                      InverseKinematics::UPtr manipulator,
