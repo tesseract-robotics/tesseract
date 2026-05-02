@@ -24,6 +24,7 @@
 #include <tesseract/kinematics/rtp_factory.h>
 #include <tesseract/kinematics/rtp_inv_kin.h>
 #include <tesseract/kinematics/forward_kinematics.h>
+#include <tesseract/kinematics/factory_utils.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
 
@@ -53,48 +54,8 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
     std::map<std::string, std::array<double, 3>> sample_res_map;
     if (YAML::Node sample_res_node = config["tool_sample_resolution"])
     {
-      for (auto it = sample_res_node.begin(); it != sample_res_node.end(); ++it)
-      {
-        const YAML::Node& joint = *it;
-        std::array<double, 3> values{ 0, 0, 0 };
-
-        std::string joint_name;
-        if (YAML::Node n = joint["name"])
-          joint_name = n.as<std::string>();
-        else
-          throw std::runtime_error("RTPInvKinFactory, 'tool_sample_resolution' missing 'name' entry!");
-
-        if (YAML::Node n = joint["value"])
-          values[0] = n.as<double>();
-        else
-          throw std::runtime_error("RTPInvKinFactory, 'tool_sample_resolution' missing 'value' entry!");
-
-        auto jnt = scene_graph.getJoint(joint_name);
-        if (jnt == nullptr)
-          throw std::runtime_error("RTPInvKinFactory, 'tool_sample_resolution' failed to find joint in scene graph!");
-        if (jnt->limits == nullptr)
-          throw std::runtime_error("RTPInvKinFactory, joint '" + joint_name + "' has no limits!");
-
-        values[1] = jnt->limits->lower;
-        values[2] = jnt->limits->upper;
-
-        if (YAML::Node min = joint["min"])
-          values[1] = min.as<double>();
-
-        if (YAML::Node max = joint["max"])
-          values[2] = max.as<double>();
-
-        if (values[1] < jnt->limits->lower)
-          throw std::runtime_error("RTPInvKinFactory, sample range minimum is less than joint minimum!");
-
-        if (values[2] > jnt->limits->upper)
-          throw std::runtime_error("RTPInvKinFactory, sample range maximum is greater than joint maximum!");
-
-        if (values[1] > values[2])
-          throw std::runtime_error("RTPInvKinFactory, sample range is not valid!");
-
-        sample_res_map[joint_name] = values;
-      }
+      sample_res_map = parseSampleResolutionMap(sample_res_node, scene_graph,
+                                                "RTPInvKinFactory", "tool_sample_resolution");
     }
     else
     {
@@ -103,19 +64,10 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
 
     if (YAML::Node tool = config["tool_positioner"])
     {
-      tesseract::common::PluginInfo p_info;
-      if (YAML::Node n = tool["class"])
-        p_info.class_name = n.as<std::string>();
-      else
-        throw std::runtime_error("RTPInvKinFactory, 'tool_positioner' missing 'class' entry!");
-
-      if (YAML::Node n = tool["config"])
-        p_info.config = n;
-
+      auto p_info = parsePluginInfo(tool, "RTPInvKinFactory", "tool_positioner");
       fwd_kin = plugin_factory.createFwdKin(p_info.class_name, p_info, scene_graph, scene_state);
       if (fwd_kin == nullptr)
         throw std::runtime_error("RTPInvKinFactory, failed to create tool forward kinematics!");
-
       if (sample_res_map.size() != static_cast<std::size_t>(fwd_kin->numJoints()))
         throw std::runtime_error("RTPInvKinFactory, tool sample resolution has incorrect number of joints!");
     }
@@ -141,15 +93,7 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
 
     if (YAML::Node manipulator = config["manipulator"])
     {
-      tesseract::common::PluginInfo m_info;
-      if (YAML::Node n = manipulator["class"])
-        m_info.class_name = n.as<std::string>();
-      else
-        throw std::runtime_error("RTPInvKinFactory, 'manipulator' missing 'class' entry!");
-
-      if (YAML::Node n = manipulator["config"])
-        m_info.config = n;
-
+      auto m_info = parsePluginInfo(manipulator, "RTPInvKinFactory", "manipulator");
       inv_kin = plugin_factory.createInvKin(m_info.class_name, m_info, scene_graph, scene_state);
       if (inv_kin == nullptr)
         throw std::runtime_error("RTPInvKinFactory, failed to create manipulator inverse kinematics!");
