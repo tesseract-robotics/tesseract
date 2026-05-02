@@ -425,5 +425,20 @@ double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& sce
 Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& scene_graph,
                                    const std::vector<std::string>& joint_names);
 
+/**
+ * @brief Build a per-joint sample grid by uniformly subdividing each row of @p range using @p resolution.
+ * @details For each joint i, returns `LinSpaced(cnt, range(i,0), range(i,1))` where
+ *          `cnt = ceil(|range(i,1) - range(i,0)| / resolution(i)) + 1`. The number of samples is
+ *          chosen so the actual step never exceeds the requested resolution.
+ *
+ * Used by compound IK solvers (RTP/REP/ROP) to discretise the auxiliary positioner / tool chain.
+ *
+ * @param range      (N,2) matrix; column 0 is the lower bound, column 1 the upper, per joint.
+ * @param resolution (N,) vector; per-joint maximum step size. Must be > 0 elementwise.
+ * @return Vector of N Eigen::VectorXd, each containing the sample points for one joint.
+ */
+std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range,
+                                             const Eigen::VectorXd& resolution);
+
 }  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_UTILS_H

@@ -27,6 +27,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Dense>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <cmath>
+
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/joint_group.h>
 #include <tesseract/kinematics/forward_kinematics.h>
@@ -354,4 +356,19 @@ Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& sce
   }
   return limits;
 }
+
+std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range,
+                                             const Eigen::VectorXd& resolution)
+{
+  const auto n = static_cast<Eigen::Index>(range.rows());
+  std::vector<Eigen::VectorXd> grid;
+  grid.reserve(static_cast<std::size_t>(n));
+  for (Eigen::Index d = 0; d < n; ++d)
+  {
+    int cnt = static_cast<int>(std::ceil(std::abs(range(d, 1) - range(d, 0)) / resolution(d))) + 1;
+    grid.emplace_back(Eigen::VectorXd::LinSpaced(cnt, range(d, 0), range(d, 1)));
+  }
+  return grid;
+}
+
 }  // namespace tesseract::kinematics

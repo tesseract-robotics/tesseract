@@ -770,6 +770,39 @@ TEST(KinematicsUtils, GatherJointLimits)  // NOLINT
   EXPECT_THROW(tesseract::kinematics::gatherJointLimits(*sg, { "c" }), std::runtime_error);
 }
 
+TEST(KinematicsUtils, BuildSampleGrid)  // NOLINT
+{
+  Eigen::MatrixX2d range(2, 2);
+  range << 0.0, 1.0,
+           -1.0, 1.0;
+  Eigen::VectorXd res(2);
+  res << 0.5, 1.0;
+
+  auto grid = tesseract::kinematics::buildSampleGrid(range, res);
+  ASSERT_EQ(grid.size(), 2u);
+  // Joint 0: range 1.0, res 0.5 → ceil(1.0/0.5) + 1 = 3 samples (0, 0.5, 1)
+  ASSERT_EQ(grid[0].size(), 3);
+  EXPECT_DOUBLE_EQ(grid[0](0), 0.0);
+  EXPECT_DOUBLE_EQ(grid[0](1), 0.5);
+  EXPECT_DOUBLE_EQ(grid[0](2), 1.0);
+  // Joint 1: range 2.0, res 1.0 → ceil(2.0/1.0) + 1 = 3 samples (-1, 0, 1)
+  ASSERT_EQ(grid[1].size(), 3);
+  EXPECT_DOUBLE_EQ(grid[1](0), -1.0);
+  EXPECT_DOUBLE_EQ(grid[1](1), 0.0);
+  EXPECT_DOUBLE_EQ(grid[1](2), 1.0);
+
+  // Resolution larger than range → still produces 2 samples (endpoints)
+  Eigen::MatrixX2d narrow(1, 2);
+  narrow << 0.0, 0.1;
+  Eigen::VectorXd coarse(1);
+  coarse << 1.0;
+  auto narrow_grid = tesseract::kinematics::buildSampleGrid(narrow, coarse);
+  ASSERT_EQ(narrow_grid.size(), 1u);
+  EXPECT_EQ(narrow_grid[0].size(), 2);
+  EXPECT_DOUBLE_EQ(narrow_grid[0](0), 0.0);
+  EXPECT_DOUBLE_EQ(narrow_grid[0](1), 0.1);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
