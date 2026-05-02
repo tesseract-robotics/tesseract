@@ -316,11 +316,9 @@ void RTPInvKin::ikAt(IKSolutions& solutions,
   TESSERACT_THREAD_LOCAL tesseract::common::TransformMap tool_poses;
   tool_poses.clear();
   tool_fwd_kin_->calcFwdKin(tool_poses, tool_pose);
-  Eigen::Isometry3d tool_tf = tool_poses[tool_tip_link_];  // in tool_base frame
+  Eigen::Isometry3d tool_tf = tool_poses[tool_tip_link_];
 
-  // Target tool-tip pose (in manip base frame, since working_frame == manip base)
-  // maps to a manip-tip target via the inverse of the tool-chain pose:
-  //   T_manip_tip = T_target_tool_tip * (T_manip_tip_to_tool_base * T_tool_base_to_tool_tip(q_tool))^-1
+  // T_manip_tip = T_target_tool_tip * (T_manip_tip_to_tool_base * T_tool_base_to_tool_tip(q_tool))^-1
   Eigen::Isometry3d robot_target_pose =
       tip_link_poses.at(tool_tip_link_) * (manip_tip_to_tool_base_ * tool_tf).inverse();
 

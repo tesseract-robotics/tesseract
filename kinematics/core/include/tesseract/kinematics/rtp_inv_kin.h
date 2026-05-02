@@ -73,6 +73,10 @@ public:
 
   /**
    * @brief Construct RTP inverse kinematics using full tool-joint limits as the sample range.
+   * @throws std::runtime_error if any input is null/invalid: scene graph root, manipulator,
+   *         tool positioner, single-tip-link requirement, manipulator_reach > 0, tool joints
+   *         missing or lacking limits, or tool-positioner base not rigidly attached to the
+   *         manipulator tip.
    */
   RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
             const tesseract::scene_graph::SceneState& scene_state,
@@ -84,6 +88,9 @@ public:
 
   /**
    * @brief Construct RTP inverse kinematics with an explicit sample range per tool joint.
+   * @throws std::runtime_error on the same conditions as the full-limits ctor, plus when
+   *         @p tool_sample_range has the wrong row count, contains an inverted [min,max]
+   *         pair, or @p tool_sample_resolution has a non-positive entry.
    */
   RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
             const tesseract::scene_graph::SceneState& scene_state,
@@ -99,6 +106,9 @@ public:
    *
    * manipulator_reach is computed as computeChainReachUpperBound() over the manipulator's
    * base->tip chain in @p scene_graph. Tool sample range defaults to full tool-joint limits.
+   * @throws std::runtime_error on the same conditions as the explicit-reach ctor, and on
+   *         anything propagated from computeChainReachUpperBound() (e.g. mimic joint or a
+   *         joint without limits on the manipulator chain).
    */
   RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
             const tesseract::scene_graph::SceneState& scene_state,
@@ -109,6 +119,7 @@ public:
 
   /**
    * @brief Construct RTP inverse kinematics, auto-deriving manipulator_reach, explicit tool range.
+   * @throws std::runtime_error on the same conditions as the explicit-range + auto-reach ctors.
    */
   RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
             const tesseract::scene_graph::SceneState& scene_state,
