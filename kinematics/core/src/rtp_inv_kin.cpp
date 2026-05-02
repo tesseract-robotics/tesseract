@@ -278,7 +278,7 @@ void RTPInvKin::nested_ik(IKSolutions& solutions,
                           Eigen::VectorXd& tool_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  if (loop_level >= tool_fwd_kin_->numJoints())
+  if (loop_level >= static_cast<Eigen::Index>(dof_range.size()))
   {
     ikAt(solutions, target_tool_tip, tool_pose, seed);
     return;

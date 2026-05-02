@@ -234,7 +234,7 @@ void REPInvKin::nested_ik(IKSolutions& solutions,
                           Eigen::VectorXd& positioner_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  if (loop_level >= static_cast<int>(positioner_fwd_kin_->numJoints()))
+  if (loop_level >= static_cast<int>(dof_range.size()))
   {
     ikAt(solutions, target_manip_tip, positioner_pose, seed);
     return;
