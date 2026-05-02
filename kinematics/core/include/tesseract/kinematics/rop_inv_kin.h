@@ -149,6 +149,7 @@ private:
   std::string positioner_tip_link_;
   double manip_reach_{ 0 };
   Eigen::Index dof_{ -1 };
+  std::size_t grid_size_{ 1 };  /**< @brief Cached product of dof_range_[i].size(); upper-bounds inner-loop iteration count */
   Eigen::Isometry3d positioner_to_robot_{ Eigen::Isometry3d::Identity() };
   std::vector<Eigen::VectorXd> dof_range_;
   std::string solver_name_{ DEFAULT_ROP_INV_KIN_SOLVER_NAME }; /**< @brief Name of this solver */

@@ -219,6 +219,10 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   joint_names_.insert(joint_names_.end(), tool_joints.begin(), tool_joints.end());
 
   dof_range_ = buildSampleGrid(tool_sample_range, tool_sample_resolution);
+
+  grid_size_ = 1;
+  for (const auto& d : dof_range_)
+    grid_size_ *= static_cast<std::size_t>(d.size());
 }
 
 InverseKinematics::UPtr RTPInvKin::clone() const { return std::make_unique<RTPInvKin>(*this); }
@@ -232,6 +236,7 @@ RTPInvKin::RTPInvKin(const RTPInvKin& other)
   , manip_reach_(other.manip_reach_)
   , manip_tip_to_tool_base_(other.manip_tip_to_tool_base_)
   , dof_(other.dof_)
+  , grid_size_(other.grid_size_)
   , dof_range_(other.dof_range_)
   , solver_name_(other.solver_name_)
 {
@@ -250,6 +255,7 @@ RTPInvKin& RTPInvKin::operator=(const RTPInvKin& other)
   joint_names_ = other.joint_names_;
   manip_tip_to_tool_base_ = other.manip_tip_to_tool_base_;
   dof_ = other.dof_;
+  grid_size_ = other.grid_size_;
   dof_range_ = other.dof_range_;
   solver_name_ = other.solver_name_;
   return *this;
@@ -259,6 +265,7 @@ void RTPInvKin::calcInvKinHelper(IKSolutions& solutions,
                                  const tesseract::common::TransformMap& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
+  solutions.reserve(grid_size_);
   const Eigen::Isometry3d& target_tool_tip = tip_link_poses.at(tool_tip_link_);
   Eigen::VectorXd tool_pose(tool_fwd_kin_->numJoints());
   nested_ik(solutions, 0, dof_range_, target_tool_tip, tool_pose, seed);

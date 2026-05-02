@@ -192,6 +192,10 @@ void ROPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   joint_names_.insert(joint_names_.end(), manip_joints.begin(), manip_joints.end());
 
   dof_range_ = buildSampleGrid(poitioner_sample_range, positioner_sample_resolution);
+
+  grid_size_ = 1;
+  for (const auto& d : dof_range_)
+    grid_size_ *= static_cast<std::size_t>(d.size());
 }
 
 InverseKinematics::UPtr ROPInvKin::clone() const { return std::make_unique<ROPInvKin>(*this); }
@@ -210,6 +214,7 @@ ROPInvKin& ROPInvKin::operator=(const ROPInvKin& other)
   manip_reach_ = other.manip_reach_;
   joint_names_ = other.joint_names_;
   dof_ = other.dof_;
+  grid_size_ = other.grid_size_;
   dof_range_ = other.dof_range_;
 
   return *this;
@@ -219,6 +224,7 @@ void ROPInvKin::calcInvKinHelper(IKSolutions& solutions,
                                  const tesseract::common::TransformMap& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
+  solutions.reserve(grid_size_);
   const Eigen::Isometry3d& target_manip_tip = tip_link_poses.at(manip_tip_link_);
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
   nested_ik(solutions, 0, dof_range_, target_manip_tip, positioner_pose, seed);

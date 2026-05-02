@@ -150,6 +150,7 @@ private:
   double manip_reach_{ 0 };
   Eigen::Isometry3d manip_tip_to_tool_base_;
   Eigen::Index dof_{ -1 };
+  std::size_t grid_size_{ 1 };  /**< @brief Cached product of dof_range_[i].size(); upper-bounds inner-loop iteration count */
   std::vector<Eigen::VectorXd> dof_range_;
   std::string solver_name_{ DEFAULT_RTP_INV_KIN_SOLVER_NAME }; /**< @brief Name of this solver */
 
