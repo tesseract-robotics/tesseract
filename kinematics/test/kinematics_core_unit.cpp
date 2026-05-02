@@ -4,6 +4,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
+#include <tesseract/kinematics/kdl/kdl_inv_kin_chain_lma.h>
+#include <tesseract/kinematics/rop_inv_kin.h>
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
@@ -786,6 +788,43 @@ TEST(KinematicsUtils, BuildSampleGrid)  // NOLINT
   EXPECT_EQ(narrow_grid[0].size(), 2);
   EXPECT_DOUBLE_EQ(narrow_grid[0](0), 0.0);
   EXPECT_DOUBLE_EQ(narrow_grid[0](1), 0.1);
+}
+
+TEST(ROPInvKin, AutoReachCtor)  // NOLINT
+{
+  // Build a minimal scene: a linear positioner under a 2R manipulator with limits.
+  // Verifying only that construction succeeds without an explicit reach value.
+  auto sg = std::make_shared<tesseract::scene_graph::SceneGraph>();
+  sg->setName("test");
+  sg->addLink(tesseract::scene_graph::Link("world"));
+  sg->setRoot("world");
+
+  namespace ts = tesseract::kinematics::test_suite;
+  ts::addRevoluteChild(*sg, "positioner_j1", "world", "positioner_tip",
+                       Eigen::Vector3d::UnitZ());
+  ts::addRevoluteChild(*sg, "robot_j1", "positioner_tip", "robot_link1",
+                       Eigen::Vector3d::UnitZ(),
+                       Eigen::Translation3d(0, 0, 0.5) * Eigen::Isometry3d::Identity());
+  ts::addRevoluteChild(*sg, "robot_j2", "robot_link1", "robot_tip",
+                       Eigen::Vector3d::UnitY(),
+                       Eigen::Translation3d(0.4, 0, 0) * Eigen::Isometry3d::Identity());
+
+  tesseract::scene_graph::SceneState scene_state;
+  scene_state.link_transforms["world"] = Eigen::Isometry3d::Identity();
+  scene_state.link_transforms["positioner_tip"] = Eigen::Translation3d(0, 0, 0) * Eigen::Isometry3d::Identity();
+  scene_state.link_transforms["robot_link1"] = Eigen::Translation3d(0, 0, 0.5) * Eigen::Isometry3d::Identity();
+  scene_state.link_transforms["robot_tip"] = Eigen::Translation3d(0.4, 0, 0.5) * Eigen::Isometry3d::Identity();
+
+  auto positioner = std::make_unique<tesseract::kinematics::KDLFwdKinChain>(*sg, "world", "positioner_tip");
+  auto manip = std::make_unique<tesseract::kinematics::KDLInvKinChainLMA>(
+      *sg, "positioner_tip", "robot_tip", tesseract::kinematics::KDLInvKinChainLMA::Config{});
+
+  Eigen::VectorXd res(1);
+  res << 0.5;
+
+  // No manipulator_reach argument: must derive from chain.
+  EXPECT_NO_THROW(tesseract::kinematics::ROPInvKin(*sg, scene_state, std::move(manip),
+                                                    std::move(positioner), res));
 }
 
 int main(int argc, char** argv)

@@ -101,6 +101,34 @@ public:
             const Eigen::VectorXd& positioner_sample_resolution,
             std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
+  /**
+   * @brief Construct ROP inverse kinematics, auto-deriving manipulator_reach.
+   *
+   * @details manipulator_reach is computed via computeChainReachUpperBound() over the manipulator's
+   * base->tip chain in @p scene_graph. Positioner sample range defaults to full positioner-joint limits.
+   * @throws std::runtime_error on the same conditions as the explicit-reach ctor, plus any propagated
+   *         from computeChainReachUpperBound() (e.g. a mimic joint or a joint without limits on the
+   *         manipulator chain).
+   */
+  ROPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            std::unique_ptr<ForwardKinematics> positioner,
+            const Eigen::VectorXd& positioner_sample_resolution,
+            std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
+
+  /**
+   * @brief Construct ROP inverse kinematics, auto-deriving manipulator_reach, explicit positioner range.
+   * @throws std::runtime_error on the same conditions as the explicit-range + auto-reach ctors.
+   */
+  ROPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            std::unique_ptr<ForwardKinematics> positioner,
+            const Eigen::MatrixX2d& positioner_sample_range,
+            const Eigen::VectorXd& positioner_sample_resolution,
+            std::string solver_name = DEFAULT_ROP_INV_KIN_SOLVER_NAME);
+
   void calcInvKin(IKSolutions& solutions,
                   const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
