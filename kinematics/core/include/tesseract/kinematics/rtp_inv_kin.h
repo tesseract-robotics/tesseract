@@ -169,12 +169,12 @@ private:
   void nested_ik(IKSolutions& solutions,
                  Eigen::Index loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
-                 const tesseract::common::TransformMap& tip_link_poses,
+                 const Eigen::Isometry3d& target_tool_tip,
                  Eigen::VectorXd& tool_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void ikAt(IKSolutions& solutions,
-            const tesseract::common::TransformMap& tip_link_poses,
+            const Eigen::Isometry3d& target_tool_tip,
             Eigen::VectorXd& tool_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };

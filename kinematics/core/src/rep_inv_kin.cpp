@@ -216,32 +216,33 @@ void REPInvKin::calcInvKinHelper(IKSolutions& solutions,
                                  const tesseract::common::TransformMap& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
+  const Eigen::Isometry3d& target_manip_tip = tip_link_poses.at(manip_tip_link_);
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
-  nested_ik(solutions, 0, dof_range_, tip_link_poses, positioner_pose, seed);
+  nested_ik(solutions, 0, dof_range_, target_manip_tip, positioner_pose, seed);
 }
 
 void REPInvKin::nested_ik(IKSolutions& solutions,
                           int loop_level,
                           const std::vector<Eigen::VectorXd>& dof_range,
-                          const tesseract::common::TransformMap& tip_link_poses,
+                          const Eigen::Isometry3d& target_manip_tip,
                           Eigen::VectorXd& positioner_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= static_cast<int>(positioner_fwd_kin_->numJoints()))
   {
-    ikAt(solutions, tip_link_poses, positioner_pose, seed);
+    ikAt(solutions, target_manip_tip, positioner_pose, seed);
     return;
   }
 
   for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
   {
     positioner_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
-    nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, positioner_pose, seed);
+    nested_ik(solutions, loop_level + 1, dof_range, target_manip_tip, positioner_pose, seed);
   }
 }
 
 void REPInvKin::ikAt(IKSolutions& solutions,
-                     const tesseract::common::TransformMap& tip_link_poses,
+                     const Eigen::Isometry3d& target_manip_tip,
                      Eigen::VectorXd& positioner_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
@@ -251,7 +252,7 @@ void REPInvKin::ikAt(IKSolutions& solutions,
   Eigen::Isometry3d positioner_tf = positioner_poses.at(working_frame_);
 
   Eigen::Isometry3d robot_target_pose =
-      manip_base_to_positioner_base_ * positioner_tf * tip_link_poses.at(manip_tip_link_);
+      manip_base_to_positioner_base_ * positioner_tf * target_manip_tip;
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 

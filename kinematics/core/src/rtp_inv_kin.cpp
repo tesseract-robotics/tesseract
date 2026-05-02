@@ -259,20 +259,21 @@ void RTPInvKin::calcInvKinHelper(IKSolutions& solutions,
                                  const tesseract::common::TransformMap& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
+  const Eigen::Isometry3d& target_tool_tip = tip_link_poses.at(tool_tip_link_);
   Eigen::VectorXd tool_pose(tool_fwd_kin_->numJoints());
-  nested_ik(solutions, 0, dof_range_, tip_link_poses, tool_pose, seed);
+  nested_ik(solutions, 0, dof_range_, target_tool_tip, tool_pose, seed);
 }
 
 void RTPInvKin::nested_ik(IKSolutions& solutions,
                           Eigen::Index loop_level,
                           const std::vector<Eigen::VectorXd>& dof_range,
-                          const tesseract::common::TransformMap& tip_link_poses,
+                          const Eigen::Isometry3d& target_tool_tip,
                           Eigen::VectorXd& tool_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= tool_fwd_kin_->numJoints())
   {
-    ikAt(solutions, tip_link_poses, tool_pose, seed);
+    ikAt(solutions, target_tool_tip, tool_pose, seed);
     return;
   }
 
@@ -281,12 +282,12 @@ void RTPInvKin::nested_ik(IKSolutions& solutions,
   for (Eigen::Index i = 0; i < n; ++i)
   {
     tool_pose(loop_level) = samples(i);
-    nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, tool_pose, seed);
+    nested_ik(solutions, loop_level + 1, dof_range, target_tool_tip, tool_pose, seed);
   }
 }
 
 void RTPInvKin::ikAt(IKSolutions& solutions,
-                     const tesseract::common::TransformMap& tip_link_poses,
+                     const Eigen::Isometry3d& target_tool_tip,
                      Eigen::VectorXd& tool_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
@@ -297,7 +298,7 @@ void RTPInvKin::ikAt(IKSolutions& solutions,
 
   // T_manip_tip = T_target_tool_tip * (T_manip_tip_to_tool_base * T_tool_base_to_tool_tip(q_tool))^-1
   Eigen::Isometry3d robot_target_pose =
-      tip_link_poses.at(tool_tip_link_) * (manip_tip_to_tool_base_ * tool_tf).inverse();
+      target_tool_tip * (manip_tip_to_tool_base_ * tool_tf).inverse();
 
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;

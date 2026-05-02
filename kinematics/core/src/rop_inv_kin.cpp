@@ -219,32 +219,33 @@ void ROPInvKin::calcInvKinHelper(IKSolutions& solutions,
                                  const tesseract::common::TransformMap& tip_link_poses,
                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
+  const Eigen::Isometry3d& target_manip_tip = tip_link_poses.at(manip_tip_link_);
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
-  nested_ik(solutions, 0, dof_range_, tip_link_poses, positioner_pose, seed);
+  nested_ik(solutions, 0, dof_range_, target_manip_tip, positioner_pose, seed);
 }
 
 void ROPInvKin::nested_ik(IKSolutions& solutions,
                           int loop_level,
                           const std::vector<Eigen::VectorXd>& dof_range,
-                          const tesseract::common::TransformMap& tip_link_poses,
+                          const Eigen::Isometry3d& target_manip_tip,
                           Eigen::VectorXd& positioner_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= positioner_fwd_kin_->numJoints())
   {
-    ikAt(solutions, tip_link_poses, positioner_pose, seed);
+    ikAt(solutions, target_manip_tip, positioner_pose, seed);
     return;
   }
 
   for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
   {
     positioner_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
-    nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, positioner_pose, seed);
+    nested_ik(solutions, loop_level + 1, dof_range, target_manip_tip, positioner_pose, seed);
   }
 }
 
 void ROPInvKin::ikAt(IKSolutions& solutions,
-                     const tesseract::common::TransformMap& tip_link_poses,
+                     const Eigen::Isometry3d& target_manip_tip,
                      Eigen::VectorXd& positioner_pose,
                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
@@ -252,7 +253,7 @@ void ROPInvKin::ikAt(IKSolutions& solutions,
   positioner_poses.clear();
   positioner_fwd_kin_->calcFwdKin(positioner_poses, positioner_pose);
   Eigen::Isometry3d positioner_tf = positioner_poses.at(positioner_tip_link_) * positioner_to_robot_;
-  Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * tip_link_poses.at(manip_tip_link_);
+  Eigen::Isometry3d robot_target_pose = positioner_tf.inverse() * target_manip_tip;
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
 
