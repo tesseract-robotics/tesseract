@@ -22,6 +22,7 @@
  * limitations under the License.
  */
 
+#include <cassert>
 #include <tesseract/kinematics/rtp_inv_kin.h>
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/forward_kinematics.h>
@@ -205,6 +206,12 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   tool_fwd_kin_ = std::move(tool_positioner);
   manip_reach_ = manipulator_reach;
   dof_ = manip_inv_kin_->numJoints() + tool_fwd_kin_->numJoints();
+
+  // Internal invariants the public ctors are expected to honor; these catch bugs that bypass
+  // the throw checks above (e.g. a future ctor that forgets to call gatherJointLimits correctly).
+  assert(tool_sample_resolution.size() == tool_fwd_kin_->numJoints());                           // NOLINT
+  assert(tool_sample_range.rows() == tool_fwd_kin_->numJoints());                                // NOLINT
+  assert(dof_ == manip_inv_kin_->numJoints() + tool_fwd_kin_->numJoints());                      // NOLINT
 
   // Joint order: manipulator first, tool second.
   joint_names_ = manip_inv_kin_->getJointNames();
