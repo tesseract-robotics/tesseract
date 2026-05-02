@@ -100,6 +100,29 @@ public:
             const Eigen::VectorXd& positioner_sample_resolution,
             std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
 
+  /**
+   * @brief Construct REP inverse kinematics, auto-deriving manipulator_reach.
+   * @throws std::runtime_error on the same conditions as the explicit-reach ctor, plus any
+   *         propagated from computeChainReachUpperBound().
+   */
+  REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            std::unique_ptr<ForwardKinematics> positioner,
+            const Eigen::VectorXd& positioner_sample_resolution,
+            std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
+
+  /**
+   * @brief Construct REP inverse kinematics, auto-deriving manipulator_reach, explicit positioner range.
+   */
+  REPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
+            const tesseract::scene_graph::SceneState& scene_state,
+            InverseKinematics::UPtr manipulator,
+            std::unique_ptr<ForwardKinematics> positioner,
+            const Eigen::MatrixX2d& positioner_sample_range,
+            const Eigen::VectorXd& positioner_sample_resolution,
+            std::string solver_name = DEFAULT_REP_INV_KIN_SOLVER_NAME);
+
   void calcInvKin(IKSolutions& solutions,
                   const tesseract::common::TransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
@@ -121,6 +144,7 @@ private:
   double manip_reach_{ 0 };
   Eigen::Isometry3d manip_base_to_positioner_base_;
   Eigen::Index dof_{ -1 };
+  std::size_t grid_size_{ 1 };  /**< @brief Cached product of dof_range_[i].size(); upper-bounds inner-loop iteration count */
   std::vector<Eigen::VectorXd> dof_range_;
   std::string solver_name_{ DEFAULT_REP_INV_KIN_SOLVER_NAME }; /**< @brief Name of this solver */
 
@@ -141,12 +165,12 @@ private:
   void nested_ik(IKSolutions& solutions,
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
-                 const tesseract::common::TransformMap& tip_link_poses,
+                 const Eigen::Isometry3d& target_manip_tip,
                  Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void ikAt(IKSolutions& solutions,
-            const tesseract::common::TransformMap& tip_link_poses,
+            const Eigen::Isometry3d& target_manip_tip,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };
