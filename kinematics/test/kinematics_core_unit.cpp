@@ -668,17 +668,10 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundABBIRB2400FKSampled)  // NOLIN
   // Build FK to produce tool0 poses for random joint configs.
   auto fwd = std::make_unique<tesseract::kinematics::KDLFwdKinChain>(*scene_graph, base_link, tip_link);
 
-  // Gather joint limits along the manipulator chain.
+  // Gather joint limits along the manipulator chain via shared helper.
   const auto joint_names = fwd->getJointNames();
-  Eigen::MatrixX2d limits(static_cast<Eigen::Index>(joint_names.size()), 2);
-  for (std::size_t i = 0; i < joint_names.size(); ++i)
-  {
-    const auto j = scene_graph->getJoint(joint_names[i]);
-    ASSERT_NE(j, nullptr);
-    ASSERT_NE(j->limits, nullptr);
-    limits(static_cast<Eigen::Index>(i), 0) = j->limits->lower;
-    limits(static_cast<Eigen::Index>(i), 1) = j->limits->upper;
-  }
+  Eigen::MatrixX2d limits =
+      tesseract::kinematics::test_suite::getTargetLimits(*scene_graph, joint_names).joint_limits;
 
   std::mt19937 rng(0xC0FFEE);  // deterministic
   constexpr int kNumSamples = 10000;
