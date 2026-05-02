@@ -163,15 +163,15 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
     {
       throw std::runtime_error("ROPInvKinFactory, missing 'manipulator' entry!");
     }
+
+    return std::make_unique<ROPInvKin>(
+        scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("ROPInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<ROPInvKin>(
-      scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(ROPInvKinFactoriesAnchor)
