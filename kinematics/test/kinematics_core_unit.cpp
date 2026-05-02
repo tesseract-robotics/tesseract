@@ -779,7 +779,7 @@ TEST(KinematicsUtils, BuildSampleGrid)  // NOLINT
   res << 0.5, 1.0;
 
   auto grid = tesseract::kinematics::buildSampleGrid(range, res);
-  ASSERT_EQ(grid.size(), 2u);
+  ASSERT_EQ(grid.size(), 2U);
   // Joint 0: range 1.0, res 0.5 → ceil(1.0/0.5) + 1 = 3 samples (0, 0.5, 1)
   ASSERT_EQ(grid[0].size(), 3);
   EXPECT_DOUBLE_EQ(grid[0](0), 0.0);
@@ -797,7 +797,7 @@ TEST(KinematicsUtils, BuildSampleGrid)  // NOLINT
   Eigen::VectorXd coarse(1);
   coarse << 1.0;
   auto narrow_grid = tesseract::kinematics::buildSampleGrid(narrow, coarse);
-  ASSERT_EQ(narrow_grid.size(), 1u);
+  ASSERT_EQ(narrow_grid.size(), 1U);
   EXPECT_EQ(narrow_grid[0].size(), 2);
   EXPECT_DOUBLE_EQ(narrow_grid[0](0), 0.0);
   EXPECT_DOUBLE_EQ(narrow_grid[0](1), 0.1);
