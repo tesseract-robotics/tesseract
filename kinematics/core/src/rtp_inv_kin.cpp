@@ -45,9 +45,6 @@ RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (tool_positioner == nullptr)
     throw std::runtime_error("Provided tool positioner is a nullptr");
 
-  if (!scene_graph.getLink(scene_graph.getRoot()))
-    throw std::runtime_error("The scene graph has an invalid root.");
-
   Eigen::MatrixX2d tool_limits = gatherJointLimits(scene_graph, tool_positioner->getJointNames());
 
   init(scene_graph,
@@ -92,8 +89,6 @@ RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
     throw std::runtime_error("Provided manipulator is a nullptr");
   if (manipulator->getTipLinkNames().size() != 1)
     throw std::runtime_error("RTPInvKin requires a manipulator with exactly one tip link");
-  if (!scene_graph.getLink(scene_graph.getRoot()))
-    throw std::runtime_error("The scene graph has an invalid root.");
 
   Eigen::MatrixX2d tool_limits = gatherJointLimits(scene_graph, tool_positioner->getJointNames());
 
@@ -124,8 +119,6 @@ RTPInvKin::RTPInvKin(const tesseract::scene_graph::SceneGraph& scene_graph,
     throw std::runtime_error("Provided manipulator is a nullptr");
   if (manipulator->getTipLinkNames().size() != 1)
     throw std::runtime_error("RTPInvKin requires a manipulator with exactly one tip link");
-  if (!scene_graph.getLink(scene_graph.getRoot()))
-    throw std::runtime_error("The scene graph has an invalid root.");
 
   const double auto_reach =
       computeChainReachUpperBound(scene_graph, manipulator->getBaseLinkName(), manipulator->getTipLinkNames()[0]);
