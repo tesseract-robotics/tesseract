@@ -257,21 +257,23 @@ void RTPInvKin::calcInvKinHelper(IKSolutions& solutions,
 }
 
 void RTPInvKin::nested_ik(IKSolutions& solutions,
-                          int loop_level,
+                          Eigen::Index loop_level,
                           const std::vector<Eigen::VectorXd>& dof_range,
                           const tesseract::common::TransformMap& tip_link_poses,
                           Eigen::VectorXd& tool_pose,
                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  if (loop_level >= static_cast<int>(tool_fwd_kin_->numJoints()))
+  if (loop_level >= tool_fwd_kin_->numJoints())
   {
     ikAt(solutions, tip_link_poses, tool_pose, seed);
     return;
   }
 
-  for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
+  const Eigen::VectorXd& samples = dof_range[static_cast<std::size_t>(loop_level)];
+  const Eigen::Index n = samples.size();
+  for (Eigen::Index i = 0; i < n; ++i)
   {
-    tool_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
+    tool_pose(loop_level) = samples(i);
     nested_ik(solutions, loop_level + 1, dof_range, tip_link_poses, tool_pose, seed);
   }
 }

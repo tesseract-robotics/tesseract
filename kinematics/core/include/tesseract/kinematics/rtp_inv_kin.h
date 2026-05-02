@@ -167,7 +167,7 @@ private:
                         const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   void nested_ik(IKSolutions& solutions,
-                 int loop_level,
+                 Eigen::Index loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
                  const tesseract::common::TransformMap& tip_link_poses,
                  Eigen::VectorXd& tool_pose,
