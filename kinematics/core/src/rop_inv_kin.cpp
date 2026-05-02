@@ -26,7 +26,6 @@
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/forward_kinematics.h>
 #include <tesseract/scene_graph/graph.h>
-#include <tesseract/scene_graph/joint.h>
 #include <tesseract/scene_graph/scene_state.h>
 
 namespace tesseract::kinematics
