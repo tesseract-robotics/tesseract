@@ -48,6 +48,9 @@ constexpr double NOISE_SIGMA_RAD = 0.1;
 /// Bump if you ever need to regenerate the target distribution.
 constexpr std::uint64_t TARGET_RNG_SEED = 0xB1A5EDU;
 
+/// Tool-tip link name in the ABB IRB2400 + tool positioner fixture.
+constexpr const char* TOOL_TIP_LINK = "tool_tip";
+
 opw_kinematics::Parameters<double> abbIrb2400OpwParameters()
 {
   opw_kinematics::Parameters<double> p;
@@ -71,7 +74,7 @@ InverseKinematics::UPtr makeOpwInvKinABB(const tesseract::scene_graph::SceneGrap
 
 std::unique_ptr<ForwardKinematics> makeToolFwdKinABB(const tesseract::scene_graph::SceneGraph& sg)
 {
-  return std::make_unique<KDLFwdKinChain>(sg, "tool0", "tool_tip");
+  return std::make_unique<KDLFwdKinChain>(sg, "tool0", TOOL_TIP_LINK);
 }
 
 /// Returns true iff `sol` is inside joint limits and FK(sol) reproduces `target_pose`
@@ -97,7 +100,7 @@ bool isValidSolution(const Eigen::VectorXd& sol,
 
   tesseract::common::TransformMap fwd;
   full_fk.calcFwdKin(fwd, sol);
-  const auto tip = fwd.at("tool_tip");
+  const auto tip = fwd.at(TOOL_TIP_LINK);
 
   if ((tip.translation() - target_pose.translation()).norm() > pos_tol)
     return false;
@@ -110,7 +113,7 @@ bool isValidSolution(const Eigen::VectorXd& sol,
 
 struct Target
 {
-  tesseract::common::TransformMap tip_link_poses;  ///< keyed by "tool_tip"
+  tesseract::common::TransformMap tip_link_poses;  ///< keyed by TOOL_TIP_LINK
   Eigen::VectorXd ground_truth;                    ///< 7-DOF joint vector that produced the target
   Eigen::VectorXd seed_warm;                       ///< ground_truth + N(0, NOISE_SIGMA_RAD), clamped to limits
 };
@@ -122,7 +125,7 @@ struct Target
 /// where the previous-step solution is close but not exact.
 std::vector<Target> buildRandomTargets(const tesseract::scene_graph::SceneGraph& sg)
 {
-  KDLFwdKinChain full_fk(sg, "base_link", "tool_tip");
+  KDLFwdKinChain full_fk(sg, "base_link", TOOL_TIP_LINK);
   const auto limits = getTargetLimits(sg, full_fk.getJointNames());
   const Eigen::Index ndof = limits.joint_limits.rows();
 
@@ -154,7 +157,7 @@ std::vector<Target> buildRandomTargets(const tesseract::scene_graph::SceneGraph&
     Target t;
     t.ground_truth = q;
     t.seed_warm = q_noisy;
-    t.tip_link_poses["tool_tip"] = fwd.at("tool_tip");
+    t.tip_link_poses[TOOL_TIP_LINK] = fwd.at(TOOL_TIP_LINK);
     out.push_back(std::move(t));
   }
   return out;
@@ -197,7 +200,7 @@ RTPInvKin::UPtr makeRTP(const Fixture& f, double tool_resolution_rad)
 KDLInvKinChainNR_JL::UPtr makeKDLNRJL(const Fixture& f)
 {
   KDLInvKinChainNR_JL::Config config;  // KDL defaults
-  return std::make_unique<KDLInvKinChainNR_JL>(*f.scene_graph, "base_link", "tool_tip", config);
+  return std::make_unique<KDLInvKinChainNR_JL>(*f.scene_graph, "base_link", TOOL_TIP_LINK, config);
 }
 
 /// Benchmarks RTPInvKin::calcInvKin over the fixed target set.
@@ -326,9 +329,9 @@ void selfCheck(const Fixture& f)
 
 #ifndef NDEBUG
   // Full-chain FK and limits used by the per-solution validator below.
-  KDLFwdKinChain full_fk(*f.scene_graph, "base_link", "tool_tip");
+  KDLFwdKinChain full_fk(*f.scene_graph, "base_link", TOOL_TIP_LINK);
   const auto limits = getTargetLimits(*f.scene_graph, full_fk.getJointNames());
-  const auto tool_tip_pose = target0.tip_link_poses.at("tool_tip");
+  const auto tool_tip_pose = target0.tip_link_poses.at(TOOL_TIP_LINK);
 #endif  // NDEBUG
 
   auto rtp = makeRTP(f, 0.1);
