@@ -3,4 +3,4 @@ channels:
   - conda-forge
 dependencies:
   - conda-smithy
-  - conda-build
+  - rattler-build

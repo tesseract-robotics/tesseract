@@ -22,6 +22,7 @@
  * limitations under the License.
  */
 
+#include <cassert>
 #include <tesseract/collision/fcl/fcl_collision_object_wrapper.h>
 
 namespace tesseract::collision::fcl_internal
