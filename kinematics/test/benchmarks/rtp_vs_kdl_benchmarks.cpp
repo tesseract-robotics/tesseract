@@ -192,11 +192,8 @@ RTPInvKin::UPtr makeRTP(const Fixture& f, double tool_resolution_rad)
 {
   Eigen::VectorXd resolution = Eigen::VectorXd::Constant(1, tool_resolution_rad);
   // manipulator_reach is auto-derived from the manipulator's base->tip chain.
-  return std::make_unique<RTPInvKin>(*f.scene_graph,
-                                     f.scene_state,
-                                     makeOpwInvKinABB(*f.scene_graph),
-                                     makeToolFwdKinABB(*f.scene_graph),
-                                     resolution);
+  return std::make_unique<RTPInvKin>(
+      *f.scene_graph, f.scene_state, makeOpwInvKinABB(*f.scene_graph), makeToolFwdKinABB(*f.scene_graph), resolution);
 }
 
 KDLInvKinChainNR_JL::UPtr makeKDLNRJL(const Fixture& f)
@@ -247,8 +244,8 @@ void BM_RTP_INV_KIN(benchmark::State& state, const Fixture* f)
   // so you can read the RTP-vs-KDL cost ratio directly.
   state.counters["valid_sols_per_sec"] =
       benchmark::Counter(static_cast<double>(total_solutions), benchmark::Counter::kIsRate);
-  state.counters["sec_per_valid_sol"] = benchmark::Counter(
-      static_cast<double>(total_solutions), benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  state.counters["sec_per_valid_sol"] = benchmark::Counter(static_cast<double>(total_solutions),
+                                                           benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
 }
 
 /// Benchmarks KDLInvKinChainNR_JL with a perturbed seed (realistic planning conditions).
@@ -281,8 +278,8 @@ void BM_KDL_NR_JL_WARM(benchmark::State& state, const Fixture* f)
       benchmark::Counter(static_cast<double>(total_successes) / static_cast<double>(total_calls));
   state.counters["valid_sols_per_sec"] =
       benchmark::Counter(static_cast<double>(total_solutions), benchmark::Counter::kIsRate);
-  state.counters["sec_per_valid_sol"] = benchmark::Counter(
-      static_cast<double>(total_solutions), benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  state.counters["sec_per_valid_sol"] = benchmark::Counter(static_cast<double>(total_solutions),
+                                                           benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
 }
 
 /// Benchmarks KDLInvKinChainNR_JL with a zero seed (worst-case: no prior knowledge).
@@ -317,8 +314,8 @@ void BM_KDL_NR_JL_COLD(benchmark::State& state, const Fixture* f)
       benchmark::Counter(static_cast<double>(total_successes) / static_cast<double>(total_calls));
   state.counters["valid_sols_per_sec"] =
       benchmark::Counter(static_cast<double>(total_solutions), benchmark::Counter::kIsRate);
-  state.counters["sec_per_valid_sol"] = benchmark::Counter(
-      static_cast<double>(total_solutions), benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  state.counters["sec_per_valid_sol"] = benchmark::Counter(static_cast<double>(total_solutions),
+                                                           benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
 }
 
 /// Always-on sanity guards executed before RunSpecifiedBenchmarks.
@@ -355,8 +352,8 @@ void selfCheck(const Fixture& f)
       fail("RTP returned no solutions for a reachable target");
 #ifndef NDEBUG
     for (const auto& s : sols)
-      assert(isValidSolution(s, full_fk, tool_tip_pose, limits) &&
-             "RTP returned a solution outside limits or not matching the target pose");
+      assert(isValidSolution(s, full_fk, tool_tip_pose, limits) && "RTP returned a solution outside limits or not "
+                                                                   "matching the target pose");
 #endif  // NDEBUG
   }
 
@@ -370,8 +367,8 @@ void selfCheck(const Fixture& f)
       fail("KDL-NR-JL returned no solutions for a ground-truth-seeded target");
 #ifndef NDEBUG
     for (const auto& s : sols)
-      assert(isValidSolution(s, full_fk, tool_tip_pose, limits) &&
-             "KDL-NR-JL returned a solution outside limits or not matching the target pose");
+      assert(isValidSolution(s, full_fk, tool_tip_pose, limits) && "KDL-NR-JL returned a solution outside limits or "
+                                                                   "not matching the target pose");
 #endif  // NDEBUG
   }
   {
@@ -382,8 +379,8 @@ void selfCheck(const Fixture& f)
            "if this trips, lower NOISE_SIGMA_RAD");
 #ifndef NDEBUG
     for (const auto& s : sols)
-      assert(isValidSolution(s, full_fk, tool_tip_pose, limits) &&
-             "KDL-NR-JL returned an invalid solution from the perturbed seed");
+      assert(isValidSolution(s, full_fk, tool_tip_pose, limits) && "KDL-NR-JL returned an invalid solution from the "
+                                                                   "perturbed seed");
 #endif  // NDEBUG
   }
 }

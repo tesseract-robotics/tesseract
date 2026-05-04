@@ -283,24 +283,22 @@ double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& sce
     throw std::runtime_error("computeChainReachUpperBound: base link '" + base_link_name +
                              "' not found in scene graph");
   if (scene_graph.getLink(tip_link_name) == nullptr)
-    throw std::runtime_error("computeChainReachUpperBound: tip link '" + tip_link_name +
-                             "' not found in scene graph");
+    throw std::runtime_error("computeChainReachUpperBound: tip link '" + tip_link_name + "' not found in scene graph");
 
   if (base_link_name == tip_link_name)
     return 0.0;
 
   const auto path = scene_graph.getShortestPath(base_link_name, tip_link_name);
   if (path.joints.empty())
-    throw std::runtime_error("computeChainReachUpperBound: no path from '" + base_link_name + "' to '" +
-                             tip_link_name + "'");
+    throw std::runtime_error("computeChainReachUpperBound: no path from '" + base_link_name + "' to '" + tip_link_name +
+                             "'");
 
   double bound = 0.0;
   for (const auto& joint_name : path.joints)
   {
     const auto joint = scene_graph.getJoint(joint_name);
     if (joint == nullptr)
-      throw std::runtime_error("computeChainReachUpperBound: joint '" + joint_name +
-                               "' missing from scene graph");
+      throw std::runtime_error("computeChainReachUpperBound: joint '" + joint_name + "' missing from scene graph");
 
     bound += joint->parent_to_joint_origin_transform.translation().norm();
 
@@ -319,8 +317,7 @@ double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& sce
           throw std::runtime_error("computeChainReachUpperBound: prismatic joint '" + joint_name +
                                    "' is a mimic joint (unsupported)");
         if (joint->limits == nullptr)
-          throw std::runtime_error("computeChainReachUpperBound: prismatic joint '" + joint_name +
-                                   "' has no limits");
+          throw std::runtime_error("computeChainReachUpperBound: prismatic joint '" + joint_name + "' has no limits");
         if (!std::isfinite(joint->limits->lower) || !std::isfinite(joint->limits->upper))
           throw std::runtime_error("computeChainReachUpperBound: prismatic joint '" + joint_name +
                                    "' has non-finite limits");
@@ -357,8 +354,7 @@ Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& sce
   return limits;
 }
 
-std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range,
-                                             const Eigen::VectorXd& resolution)
+std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range, const Eigen::VectorXd& resolution)
 {
   const auto n = static_cast<Eigen::Index>(range.rows());
   std::vector<Eigen::VectorXd> grid;

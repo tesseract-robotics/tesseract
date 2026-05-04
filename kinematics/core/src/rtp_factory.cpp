@@ -54,8 +54,8 @@ std::unique_ptr<InverseKinematics> RTPInvKinFactory::create(const std::string& s
     std::map<std::string, std::array<double, 3>> sample_res_map;
     if (YAML::Node sample_res_node = config["tool_sample_resolution"])
     {
-      sample_res_map = parseSampleResolutionMap(sample_res_node, scene_graph,
-                                                "RTPInvKinFactory", "tool_sample_resolution");
+      sample_res_map =
+          parseSampleResolutionMap(sample_res_node, scene_graph, "RTPInvKinFactory", "tool_sample_resolution");
     }
     else
     {
