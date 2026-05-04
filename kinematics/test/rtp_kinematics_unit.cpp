@@ -71,7 +71,7 @@ TEST(TesseractKinematicsUnit, RTPInvKinMetadata)  // NOLINT
   ASSERT_EQ(rtp->getTipLinkNames().size(), 1);
   EXPECT_EQ(rtp->getTipLinkNames()[0], "tool_tip");
 
-  std::vector<std::string> expected_joints{ "joint_1", "joint_2", "joint_3", "joint_4",
+  std::vector<std::string> expected_joints{ "joint_1", "joint_2", "joint_3",   "joint_4",
                                             "joint_5", "joint_6", "tool_joint" };
   EXPECT_EQ(rtp->getJointNames(), expected_joints);
 }
@@ -128,7 +128,8 @@ TEST(TesseractKinematicsUnit, RTPInvKinConstructorValidation)  // NOLINT
         std::make_unique<RTPInvKin>(*scene_graph, scene_state, nullptr, tool_kin->clone(), tool_resolution));
   }
   {  // Auto-reach ctor: null tool positioner
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(*scene_graph, scene_state, opw_kin->clone(), nullptr, tool_resolution));
+    EXPECT_ANY_THROW(
+        std::make_unique<RTPInvKin>(*scene_graph, scene_state, opw_kin->clone(), nullptr, tool_resolution));
   }
   {  // Inverted tool sample range (min > max)
     Eigen::MatrixX2d bad_range(1, 2);
@@ -323,12 +324,8 @@ TEST(TesseractKinematicsUnit, RTPInvKinCloneAndKinematicGroup)  // NOLINT
   tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
-  auto rtp = std::make_unique<RTPInvKin>(*scene_graph,
-                                         scene_state,
-                                         makeOPWInvKin(*scene_graph),
-                                         2.0,
-                                         makeToolFwdKin(*scene_graph),
-                                         tool_resolution);
+  auto rtp = std::make_unique<RTPInvKin>(
+      *scene_graph, scene_state, makeOPWInvKin(*scene_graph), 2.0, makeToolFwdKin(*scene_graph), tool_resolution);
 
   auto cloned = rtp->clone();
   EXPECT_EQ(cloned->getSolverName(), DEFAULT_RTP_INV_KIN_SOLVER_NAME);
@@ -338,8 +335,9 @@ TEST(TesseractKinematicsUnit, RTPInvKinCloneAndKinematicGroup)  // NOLINT
   ASSERT_EQ(cloned->getTipLinkNames().size(), 1U);
   EXPECT_EQ(cloned->getTipLinkNames()[0], rtp->getTipLinkNames()[0]);
 
-  std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3", "joint_4",
-                                        "joint_5", "joint_6", "tool_joint" };
+  std::vector<std::string> joint_names{
+    "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "tool_joint"
+  };
   KinematicGroup kin_group("rtp_manip", joint_names, std::move(cloned), *scene_graph, scene_state);
   EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
   EXPECT_EQ(kin_group.getName(), "rtp_manip");
@@ -515,8 +513,8 @@ kinematic_plugins:
   }
   {  // Non-positive manipulator_reach
     YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
-    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
-          ["manipulator_reach"] = -1.0;
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["manipulator_"
+                                                                                                        "reach"] = -1.0;
     load_failure_expected(config);
   }
   {  // Missing tool_sample_resolution
@@ -527,16 +525,16 @@ kinematic_plugins:
   }
   {  // tool_sample_resolution entry missing 'name'
     YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
-    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
-          ["tool_sample_resolution"][0]
-              .remove("name");
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["tool_sample_"
+                                                                                                        "resolution"][0]
+        .remove("name");
     load_failure_expected(config);
   }
   {  // tool_sample_resolution entry missing 'value'
     YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
-    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
-          ["tool_sample_resolution"][0]
-              .remove("value");
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["tool_sample_"
+                                                                                                        "resolution"][0]
+        .remove("value");
     load_failure_expected(config);
   }
   {  // tool_sample_resolution joint name not in scene graph
@@ -559,8 +557,11 @@ kinematic_plugins:
   }
   {  // tool_sample_resolution min greater than max
     YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
-    auto entry = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
-                       ["tool_sample_resolution"][0];
+    auto entry =
+        config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["tool_"
+                                                                                                            "sample_"
+                                                                                                            "resolutio"
+                                                                                                            "n"][0];
     entry["min"] = 0.5;
     entry["max"] = 0.1;
     load_failure_expected(config);
@@ -573,8 +574,12 @@ kinematic_plugins:
   }
   {  // tool_positioner missing class entry
     YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
-    auto pos = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
-                     ["tool_positioner"];
+    auto pos = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["too"
+                                                                                                                   "l_"
+                                                                                                                   "pos"
+                                                                                                                   "iti"
+                                                                                                                   "one"
+                                                                                                                   "r"];
     pos.remove("class");
     load_failure_expected(config);
   }
@@ -592,8 +597,9 @@ kinematic_plugins:
   }
   {  // manipulator missing class entry
     YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
-    auto manip = config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
-                       ["manipulator"];
+    auto manip =
+        config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["manipulato"
+                                                                                                            "r"];
     manip.remove("class");
     load_failure_expected(config);
   }

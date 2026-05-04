@@ -216,9 +216,9 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
 
   // Internal invariants the public ctors are expected to honor; these catch bugs that bypass
   // the throw checks above (e.g. a future ctor that forgets to call gatherJointLimits correctly).
-  assert(tool_sample_resolution.size() == tool_fwd_kin_->numJoints());                           // NOLINT
-  assert(tool_sample_range.rows() == tool_fwd_kin_->numJoints());                                // NOLINT
-  assert(dof_ == manip_inv_kin_->numJoints() + tool_fwd_kin_->numJoints());                      // NOLINT
+  assert(tool_sample_resolution.size() == tool_fwd_kin_->numJoints());       // NOLINT
+  assert(tool_sample_range.rows() == tool_fwd_kin_->numJoints());            // NOLINT
+  assert(dof_ == manip_inv_kin_->numJoints() + tool_fwd_kin_->numJoints());  // NOLINT
 
   // Joint order: manipulator first, tool second.
   joint_names_ = manip_inv_kin_->getJointNames();
@@ -319,8 +319,7 @@ void RTPInvKin::ikAt(IKSolutions& solutions,
   Eigen::Isometry3d tool_tf = tool_poses.at(tool_tip_link_);
 
   // T_manip_tip = T_target_tool_tip * (T_manip_tip_to_tool_base * T_tool_base_to_tool_tip(q_tool))^-1
-  Eigen::Isometry3d robot_target_pose =
-      target_tool_tip * (manip_tip_to_tool_base_ * tool_tf).inverse();
+  Eigen::Isometry3d robot_target_pose = target_tool_tip * (manip_tip_to_tool_base_ * tool_tf).inverse();
 
   if (robot_target_pose.translation().norm() > manip_reach_)
     return;
