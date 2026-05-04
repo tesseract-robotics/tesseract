@@ -437,8 +437,7 @@ Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& sce
  * @param resolution (N,) vector; per-joint maximum step size. Must be > 0 elementwise.
  * @return Vector of N Eigen::VectorXd, each containing the sample points for one joint.
  */
-std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range,
-                                             const Eigen::VectorXd& resolution);
+std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range, const Eigen::VectorXd& resolution);
 
 }  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_UTILS_H

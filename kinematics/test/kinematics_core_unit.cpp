@@ -598,8 +598,8 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundZeroLength)  // NOLINT
 
 TEST(TesseractKinematicsUnit, ChainReachUpperBoundFloatingThrows)  // NOLINT
 {
-  auto sg = makeSingleJointSceneGraph(
-      tesseract::scene_graph::JointType::FLOATING, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 0.0);
+  auto sg =
+      makeSingleJointSceneGraph(tesseract::scene_graph::JointType::FLOATING, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 0.0);
 
   EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip"), std::runtime_error);
 }
@@ -622,11 +622,23 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundBranchedTree)  // NOLINT
   sg.addLink(Link("root"));
 
   namespace ts = tesseract::kinematics::test_suite;
-  ts::addRevoluteChild(sg, "j_root_hub", "root", "hub", Eigen::Vector3d::UnitZ(),
-                       Eigen::Isometry3d(Eigen::Translation3d(1.0, 0.0, 0.0)));    // norm = 1.0
-  ts::addRevoluteChild(sg, "j_hub_a", "hub", "tip_a", Eigen::Vector3d::UnitZ(),
-                       Eigen::Isometry3d(Eigen::Translation3d(0.0, 2.0, 0.0)));    // norm = 2.0
-  ts::addRevoluteChild(sg, "j_hub_b", "hub", "tip_b", Eigen::Vector3d::UnitZ(),
+  ts::addRevoluteChild(sg,
+                       "j_root_hub",
+                       "root",
+                       "hub",
+                       Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(1.0, 0.0, 0.0)));  // norm = 1.0
+  ts::addRevoluteChild(sg,
+                       "j_hub_a",
+                       "hub",
+                       "tip_a",
+                       Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(0.0, 2.0, 0.0)));  // norm = 2.0
+  ts::addRevoluteChild(sg,
+                       "j_hub_b",
+                       "hub",
+                       "tip_b",
+                       Eigen::Vector3d::UnitZ(),
                        Eigen::Isometry3d(Eigen::Translation3d(0.0, 0.0, 100.0)));  // norm = 100.0 (unrelated branch)
 
   EXPECT_NEAR(tesseract::kinematics::computeChainReachUpperBound(sg, "root", "tip_a"), 1.0 + 2.0, 1e-12);
@@ -646,8 +658,8 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundContinuousJoint)  // NOLINT
 
 TEST(TesseractKinematicsUnit, ChainReachUpperBoundPrismaticMimicThrows)  // NOLINT
 {
-  auto sg = makeSingleJointSceneGraph(
-      tesseract::scene_graph::JointType::PRISMATIC, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 1.0);
+  auto sg =
+      makeSingleJointSceneGraph(tesseract::scene_graph::JointType::PRISMATIC, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 1.0);
   auto j = std::const_pointer_cast<tesseract::scene_graph::Joint>(sg->getJoint("j0"));
   j->mimic = std::make_shared<tesseract::scene_graph::JointMimic>();
 
@@ -668,8 +680,7 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundABBIRB2400FKSampled)  // NOLIN
 
   // Gather joint limits along the manipulator chain via shared helper.
   const auto joint_names = fwd->getJointNames();
-  Eigen::MatrixX2d limits =
-      tesseract::kinematics::test_suite::getTargetLimits(*scene_graph, joint_names).joint_limits;
+  Eigen::MatrixX2d limits = tesseract::kinematics::test_suite::getTargetLimits(*scene_graph, joint_names).joint_limits;
 
   std::mt19937 rng(0xC0FFEE);  // deterministic
   constexpr int kNumSamples = 10000;
@@ -752,8 +763,7 @@ TEST(KinematicsUtils, GatherJointLimits)  // NOLINT
 TEST(KinematicsUtils, BuildSampleGrid)  // NOLINT
 {
   Eigen::MatrixX2d range(2, 2);
-  range << 0.0, 1.0,
-           -1.0, 1.0;
+  range << 0.0, 1.0, -1.0, 1.0;
   Eigen::VectorXd res(2);
   res << 0.5, 1.0;
 
@@ -815,16 +825,13 @@ TEST(RTPInvKin, CtorsRejectNullManipulator)  // NOLINT
   sg->setRoot("world");
 
   namespace ts = tesseract::kinematics::test_suite;
-  ts::addRevoluteChild(*sg, "tool_j1", "world", "tool_tip",
-                       Eigen::Vector3d::UnitZ());
+  ts::addRevoluteChild(*sg, "tool_j1", "world", "tool_tip", Eigen::Vector3d::UnitZ());
 
   tesseract::scene_graph::SceneState scene_state;
   scene_state.link_transforms["world"] = Eigen::Isometry3d::Identity();
   scene_state.link_transforms["tool_tip"] = Eigen::Isometry3d::Identity();
 
-  auto make_tool = [&]() {
-    return std::make_unique<tesseract::kinematics::KDLFwdKinChain>(*sg, "world", "tool_tip");
-  };
+  auto make_tool = [&]() { return std::make_unique<tesseract::kinematics::KDLFwdKinChain>(*sg, "world", "tool_tip"); };
 
   Eigen::VectorXd res(1);
   res << 0.5;
@@ -832,40 +839,40 @@ TEST(RTPInvKin, CtorsRejectNullManipulator)  // NOLINT
   range << -M_PI, M_PI;
 
   // Ctor variant: explicit reach, range derived from joint limits.
-  EXPECT_THROW(
-      tesseract::kinematics::RTPInvKin(*sg, scene_state,
-                                        /*manipulator=*/nullptr,
-                                        /*manipulator_reach=*/1.0,
-                                        make_tool(),
-                                        res),
-      std::runtime_error);
+  EXPECT_THROW(tesseract::kinematics::RTPInvKin(*sg,
+                                                scene_state,
+                                                /*manipulator=*/nullptr,
+                                                /*manipulator_reach=*/1.0,
+                                                make_tool(),
+                                                res),
+               std::runtime_error);
 
   // Ctor variant: explicit reach, explicit range.
-  EXPECT_THROW(
-      tesseract::kinematics::RTPInvKin(*sg, scene_state,
-                                        /*manipulator=*/nullptr,
-                                        /*manipulator_reach=*/1.0,
-                                        make_tool(),
-                                        range,
-                                        res),
-      std::runtime_error);
+  EXPECT_THROW(tesseract::kinematics::RTPInvKin(*sg,
+                                                scene_state,
+                                                /*manipulator=*/nullptr,
+                                                /*manipulator_reach=*/1.0,
+                                                make_tool(),
+                                                range,
+                                                res),
+               std::runtime_error);
 
   // Ctor variant: auto reach, range derived from joint limits.
-  EXPECT_THROW(
-      tesseract::kinematics::RTPInvKin(*sg, scene_state,
-                                        /*manipulator=*/nullptr,
-                                        make_tool(),
-                                        res),
-      std::runtime_error);
+  EXPECT_THROW(tesseract::kinematics::RTPInvKin(*sg,
+                                                scene_state,
+                                                /*manipulator=*/nullptr,
+                                                make_tool(),
+                                                res),
+               std::runtime_error);
 
   // Ctor variant: auto reach, explicit range.
-  EXPECT_THROW(
-      tesseract::kinematics::RTPInvKin(*sg, scene_state,
-                                        /*manipulator=*/nullptr,
-                                        make_tool(),
-                                        range,
-                                        res),
-      std::runtime_error);
+  EXPECT_THROW(tesseract::kinematics::RTPInvKin(*sg,
+                                                scene_state,
+                                                /*manipulator=*/nullptr,
+                                                make_tool(),
+                                                range,
+                                                res),
+               std::runtime_error);
 }
 
 int main(int argc, char** argv)
