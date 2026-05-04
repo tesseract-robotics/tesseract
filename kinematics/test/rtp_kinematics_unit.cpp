@@ -49,6 +49,82 @@ ForwardKinematics::UPtr makeToolFwdKin(const tesseract::scene_graph::SceneGraph&
   return std::make_unique<KDLFwdKinChain>(scene_graph, "tool0", "tool_tip");
 }
 
+namespace
+{
+/** @brief Minimal stub IK exposing two tip link names — used to verify RTP rejects multi-tip manipulators. */
+class TwoTipStubInvKin : public InverseKinematics
+{
+public:
+  void calcInvKin(IKSolutions& /*solutions*/,
+                  const tesseract::common::TransformMap& /*tip_link_poses*/,
+                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const override
+  {
+  }
+  std::vector<std::string> getJointNames() const override { return { "joint_1" }; }
+  Eigen::Index numJoints() const override { return 1; }
+  std::string getBaseLinkName() const override { return "base_link"; }
+  std::string getWorkingFrame() const override { return "base_link"; }
+  std::vector<std::string> getTipLinkNames() const override { return { "tip_a", "tip_b" }; }
+  std::string getSolverName() const override { return "TwoTipStub"; }
+  InverseKinematics::UPtr clone() const override { return std::make_unique<TwoTipStubInvKin>(*this); }
+};
+
+/** @brief Minimal stub FK with a configurable base link name — used to drive the RTP tool-base
+ *         connectivity checks (base link not in scene graph; base link disconnected from manip tip).
+ *         Joint name is also configurable so callers can supply a name that exists in the scene
+ *         graph; otherwise gatherJointLimits would throw before init()'s connectivity check runs. */
+class StubFwdKin : public ForwardKinematics
+{
+public:
+  explicit StubFwdKin(std::string base, std::string joint = "tool_joint")
+    : base_link_(std::move(base)), joint_name_(std::move(joint))
+  {
+  }
+  void calcFwdKin(tesseract::common::TransformMap& /*transforms*/,
+                  const Eigen::Ref<const Eigen::VectorXd>& /*joint_angles*/) const override
+  {
+  }
+  void calcJacobian(Eigen::Ref<Eigen::MatrixXd> /*jacobian*/,
+                    const Eigen::Ref<const Eigen::VectorXd>& /*joint_angles*/,
+                    const std::string& /*link_name*/) const override
+  {
+  }
+  std::string getBaseLinkName() const override { return base_link_; }
+  std::vector<std::string> getJointNames() const override { return { joint_name_ }; }
+  std::vector<std::string> getTipLinkNames() const override { return { "stub_tip" }; }
+  Eigen::Index numJoints() const override { return 1; }
+  std::string getSolverName() const override { return "StubFwd"; }
+  ForwardKinematics::UPtr clone() const override { return std::make_unique<StubFwdKin>(*this); }
+
+private:
+  std::string base_link_;
+  std::string joint_name_;
+};
+
+/** @brief Minimal stub IK that returns an empty solution set — drives the RTPInvKin::ikAt
+ *         early-return when the inner manipulator IK finds no solutions. */
+class EmptyInvKin : public InverseKinematics
+{
+public:
+  void calcInvKin(IKSolutions& solutions,
+                  const tesseract::common::TransformMap& /*tip_link_poses*/,
+                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const override
+  {
+    solutions.clear();
+  }
+  std::vector<std::string> getJointNames() const override
+  {
+    return { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  }
+  Eigen::Index numJoints() const override { return 6; }
+  std::string getBaseLinkName() const override { return "base_link"; }
+  std::string getWorkingFrame() const override { return "base_link"; }
+  std::vector<std::string> getTipLinkNames() const override { return { "tool0" }; }
+  std::string getSolverName() const override { return "EmptyInv"; }
+  InverseKinematics::UPtr clone() const override { return std::make_unique<EmptyInvKin>(*this); }
+};
+}  // namespace
+
 TEST(TesseractKinematicsUnit, RTPInvKinMetadata)  // NOLINT
 {
   tesseract::common::GeneralResourceLocator locator;
@@ -136,6 +212,32 @@ TEST(TesseractKinematicsUnit, RTPInvKinConstructorValidation)  // NOLINT
     bad_range << 1.0, -1.0;
     EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), bad_range, tool_resolution));  // NOLINT
+  }
+  Eigen::MatrixX2d range(1, 2);
+  range << -M_PI, M_PI;
+  {  // Explicit-range ctor with explicit reach: null tool positioner
+    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, opw_kin->clone(), 2.0, nullptr, range, tool_resolution));  // NOLINT
+  }
+  {  // Explicit-range auto-reach ctor: null tool positioner
+    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, opw_kin->clone(), nullptr, range, tool_resolution));  // NOLINT
+  }
+  {  // Explicit-range auto-reach ctor: multi-tip manipulator
+    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, std::make_unique<TwoTipStubInvKin>(), tool_kin->clone(), range, tool_resolution));
+  }
+  {  // tool_sample_range row count mismatch (2 rows, 1-DOF tool positioner)
+    Eigen::MatrixX2d wrong_range(2, 2);
+    wrong_range << -1.0, 1.0, -1.0, 1.0;
+    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), wrong_range, tool_resolution));  // NOLINT
+  }
+  {  // Empty scene graph via the explicit-range ctor — the only public path that doesn't run
+     // gatherJointLimits / computeChainReach first, so init()'s root-link check fires.
+    tesseract::scene_graph::SceneGraph empty_sg;
+    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+        empty_sg, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), range, tool_resolution));  // NOLINT
   }
 }
 
@@ -345,6 +447,52 @@ TEST(TesseractKinematicsUnit, RTPInvKinCloneAndKinematicGroup)  // NOLINT
 
   auto tip_names = kin_group.getAllPossibleTipLinkNames();
   EXPECT_NE(std::find(tip_names.begin(), tip_names.end(), "tool_tip"), tip_names.end());
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinCopyAssign)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
+
+  auto rtp_src = std::make_unique<RTPInvKin>(*scene_graph,
+                                             scene_state,
+                                             makeOPWInvKin(*scene_graph),
+                                             2.0,
+                                             makeToolFwdKin(*scene_graph),
+                                             tool_resolution,
+                                             "rtp_src_solver");
+
+  Eigen::VectorXd alt_resolution = Eigen::VectorXd::Constant(1, 0.5);
+  auto rtp_dst = std::make_unique<RTPInvKin>(*scene_graph,
+                                             scene_state,
+                                             makeOPWInvKin(*scene_graph),
+                                             1.5,
+                                             makeToolFwdKin(*scene_graph),
+                                             alt_resolution,
+                                             "rtp_dst_solver");
+  ASSERT_NE(rtp_dst->getSolverName(), rtp_src->getSolverName());
+
+  // Self-assignment must be a no-op (early-return at operator= top).
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+  *rtp_src = *rtp_src;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+  EXPECT_EQ(rtp_src->getSolverName(), "rtp_src_solver");
+
+  *rtp_dst = *rtp_src;
+  EXPECT_EQ(rtp_dst->getSolverName(), rtp_src->getSolverName());
+  EXPECT_EQ(rtp_dst->getJointNames(), rtp_src->getJointNames());
+  EXPECT_EQ(rtp_dst->getBaseLinkName(), rtp_src->getBaseLinkName());
+  EXPECT_EQ(rtp_dst->getTipLinkNames(), rtp_src->getTipLinkNames());
+  EXPECT_EQ(rtp_dst->numJoints(), rtp_src->numJoints());
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinFactoryYaml)  // NOLINT
@@ -609,6 +757,22 @@ kinematic_plugins:
           ["class"] = "DoesNotExistFactory";
     load_failure_expected(config);
   }
+  {  // tool_sample_resolution has more entries than tool positioner has joints
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    YAML::Node extra;
+    extra["name"] = "joint_1";  // exists in scene graph and has limits, but not in the tool chain
+    extra["value"] = 0.1;
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]["tool_sample_"
+                                                                                                        "resolution"]
+        .push_back(extra);
+    load_failure_expected(config);
+  }
+  {  // tool_sample_resolution names a non-tool-chain joint (size matches but lookup misses)
+    YAML::Node config = tesseract::common::loadYamlString(yaml_str, locator);
+    config["kinematic_plugins"]["inv_kin_plugins"]["rtp_manipulator"]["plugins"]["RTPInvKin"]["config"]
+          ["tool_sample_resolution"][0]["name"] = "joint_1";
+    load_failure_expected(config);
+  }
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinFactoryRejectsBadReach)  // NOLINT
@@ -662,26 +826,59 @@ kinematic_plugins:
   EXPECT_EQ(loaded, nullptr);
 }
 
-namespace
+TEST(TesseractKinematicsUnit, RTPInvKinFactoryRejectsJointWithoutLimits)  // NOLINT
 {
-/** @brief Minimal stub IK exposing two tip link names — used to verify RTP rejects multi-tip manipulators. */
-class TwoTipStubInvKin : public InverseKinematics
-{
-public:
-  void calcInvKin(IKSolutions& /*solutions*/,
-                  const tesseract::common::TransformMap& /*tip_link_poses*/,
-                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const override
-  {
-  }
-  std::vector<std::string> getJointNames() const override { return { "joint_1" }; }
-  Eigen::Index numJoints() const override { return 1; }
-  std::string getBaseLinkName() const override { return "base_link"; }
-  std::string getWorkingFrame() const override { return "base_link"; }
-  std::vector<std::string> getTipLinkNames() const override { return { "tip_a", "tip_b" }; }
-  std::string getSolverName() const override { return "TwoTipStub"; }
-  InverseKinematics::UPtr clone() const override { return std::make_unique<TwoTipStubInvKin>(*this); }
-};
-}  // namespace
+  // Exercises parseSampleResolutionMap's "joint has no limits" branch by mutating the scene graph
+  // post-URDF-parse to drop the limits on tool_joint, then asking the factory to load against it.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  // Build state solver BEFORE dropping limits — KDLStateSolver dereferences joint limits during
+  // construction, so mutating must happen after.
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+  auto j = std::const_pointer_cast<tesseract::scene_graph::Joint>(scene_graph->getJoint("tool_joint"));
+  j->limits = nullptr;
+
+  const std::string yaml_str = R"(
+kinematic_plugins:
+  search_libraries:
+    - tesseract_kinematics_factories
+  inv_kin_plugins:
+    rtp_manipulator:
+      default: RTPInvKin
+      plugins:
+        RTPInvKin:
+          class: RTPInvKinFactory
+          config:
+            manipulator_reach: 2.0
+            tool_sample_resolution:
+              - name: tool_joint
+                value: 0.1
+            tool_positioner:
+              class: KDLFwdKinChainFactory
+              config:
+                base_link: tool0
+                tip_link: tool_tip
+            manipulator:
+              class: OPWInvKinFactory
+              config:
+                base_link: base_link
+                tip_link: tool0
+                params:
+                  a1: 0.100
+                  a2: -0.135
+                  b: 0.00
+                  c1: 0.615
+                  c2: 0.705
+                  c3: 0.755
+                  c4: 0.086
+                  offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                  sign_corrections: [1, 1, 1, 1, 1, 1]
+)";
+
+  KinematicsPluginFactory factory(YAML::Load(yaml_str), locator);
+  EXPECT_EQ(factory.createInvKin("rtp_manipulator", "RTPInvKin", *scene_graph, scene_state), nullptr);
+}
 
 TEST(TesseractKinematicsUnit, RTPInvKinRejectsMultiTipManipulator)  // NOLINT
 {
@@ -734,6 +931,74 @@ TEST(TesseractKinematicsUnit, RTPInvKinRejectsActiveJointBetweenManipTipAndToolB
       2.0,
       std::move(tool_kin),
       tool_resolution));
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinRejectsToolBaseNotInSceneGraph)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto opw_kin = makeOPWInvKin(*scene_graph);
+  auto bad_tool = std::make_unique<StubFwdKin>("does_not_exist_link");
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
+
+  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+      *scene_graph,
+      scene_state,
+      std::move(opw_kin),
+      2.0,
+      std::move(bad_tool),
+      tool_resolution));
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinRejectsToolBaseDisconnectedFromManipTip)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  // Build state solver and the manipulator IK BEFORE adding the disconnected link — KDL-backed
+  // helpers parse the whole graph as a tree and would throw on the multi-root layout.
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+  auto opw_kin = makeOPWInvKin(*scene_graph);
+  scene_graph->addLink(tesseract::scene_graph::Link("phantom_island"));
+
+  auto disconnected_tool = std::make_unique<StubFwdKin>("phantom_island");
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
+
+  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+      *scene_graph,
+      scene_state,
+      std::move(opw_kin),
+      2.0,
+      std::move(disconnected_tool),
+      tool_resolution));
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinReturnsNoSolutionsWhenManipIKEmpty)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto empty_manip = std::make_unique<EmptyInvKin>();
+  auto tool_kin = makeToolFwdKin(*scene_graph);
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
+
+  auto rtp = std::make_unique<RTPInvKin>(
+      *scene_graph, scene_state, std::move(empty_manip), 2.0, std::move(tool_kin), tool_resolution);
+
+  // Aim near the manipulator base so the per-sample reach check passes and the inner manip IK
+  // is actually invoked — the stub then returns no solutions, exercising the early-return path.
+  tesseract::common::TransformMap target;
+  target["tool_tip"] = Eigen::Isometry3d::Identity();
+
+  IKSolutions solutions;
+  Eigen::VectorXd seed = Eigen::VectorXd::Zero(7);
+  rtp->calcInvKin(solutions, target, seed);
+  EXPECT_TRUE(solutions.empty());
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinMultiJointToolFKRoundtrip)  // NOLINT
