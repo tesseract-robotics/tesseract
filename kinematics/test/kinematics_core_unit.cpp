@@ -5,10 +5,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract/kinematics/utils.h>
+#include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
+#include <tesseract/scene_graph/link.h>
 #include "kinematics_test_utils.h"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
+#include <random>
 
 const static std::string FACTORY_NAME = "TestFactory";
 
@@ -492,6 +497,309 @@ TEST(TesseractKinematicsUnit, dampedPInv_EmptyMatrix)
   Eigen::MatrixXd P;
   bool success = tesseract::kinematics::dampedPInv(A, P, 1e-5, 0.01);
   EXPECT_FALSE(success);
+}
+
+namespace
+{
+/**
+ * @brief Build a single-joint 2-link scene graph used by the upper-bound tests.
+ * The chain is: base (root) -- joint --> tip.
+ */
+tesseract::scene_graph::SceneGraph::UPtr makeSingleJointSceneGraph(tesseract::scene_graph::JointType type,
+                                                                   const Eigen::Vector3d& offset,
+                                                                   double lower,
+                                                                   double upper)
+{
+  using namespace tesseract::scene_graph;
+  auto sg = std::make_unique<SceneGraph>("test");
+  sg->addLink(Link("base"));
+  sg->addLink(Link("tip"));
+  Joint j("j0");
+  j.type = type;
+  j.parent_link_name = "base";
+  j.child_link_name = "tip";
+  j.parent_to_joint_origin_transform.translation() = offset;
+  j.axis = Eigen::Vector3d::UnitZ();
+  j.limits = std::make_shared<JointLimits>();
+  j.limits->lower = lower;
+  j.limits->upper = upper;
+  sg->addJoint(j);
+  return sg;
+}
+}  // namespace
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundRevoluteOffset)  // NOLINT
+{
+  auto sg = makeSingleJointSceneGraph(
+      tesseract::scene_graph::JointType::REVOLUTE, Eigen::Vector3d(0.0, 0.0, 0.1), -M_PI, M_PI);
+
+  double bound = tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip");
+
+  EXPECT_NEAR(bound, 0.1, 1e-12);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundMultiJointRevolute)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  SceneGraph sg("test");
+  sg.addLink(Link("l0"));
+  sg.addLink(Link("l1"));
+  sg.addLink(Link("l2"));
+
+  Joint j1("j1");
+  j1.type = JointType::REVOLUTE;
+  j1.parent_link_name = "l0";
+  j1.child_link_name = "l1";
+  j1.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0.0, 0.0, 1.0);
+  j1.axis = Eigen::Vector3d::UnitY();
+  j1.limits = std::make_shared<JointLimits>();
+  j1.limits->lower = -M_PI;
+  j1.limits->upper = M_PI;
+  sg.addJoint(j1);
+
+  Joint j2("j2");
+  j2.type = JointType::REVOLUTE;
+  j2.parent_link_name = "l1";
+  j2.child_link_name = "l2";
+  j2.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1.0, 2.0, 2.0);  // norm = 3
+  j2.axis = Eigen::Vector3d::UnitZ();
+  j2.limits = std::make_shared<JointLimits>();
+  j2.limits->lower = -M_PI;
+  j2.limits->upper = M_PI;
+  sg.addJoint(j2);
+
+  double bound = tesseract::kinematics::computeChainReachUpperBound(sg, "l0", "l2");
+
+  EXPECT_NEAR(bound, 1.0 + 3.0, 1e-12);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundPrismatic)  // NOLINT
+{
+  auto sg = makeSingleJointSceneGraph(
+      tesseract::scene_graph::JointType::PRISMATIC, Eigen::Vector3d(0.1, 0.0, 0.0), -0.5, 1.5);
+
+  double bound = tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip");
+
+  // 0.1 offset + max(|-0.5|, |1.5|) = 0.1 + 1.5 = 1.6
+  EXPECT_NEAR(bound, 1.6, 1e-12);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundZeroLength)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  SceneGraph sg("test");
+  sg.addLink(Link("only"));
+
+  double bound = tesseract::kinematics::computeChainReachUpperBound(sg, "only", "only");
+
+  EXPECT_DOUBLE_EQ(bound, 0.0);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundFloatingThrows)  // NOLINT
+{
+  auto sg = makeSingleJointSceneGraph(
+      tesseract::scene_graph::JointType::FLOATING, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 0.0);
+
+  EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip"), std::runtime_error);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundMissingLinkThrows)  // NOLINT
+{
+  auto sg = makeSingleJointSceneGraph(
+      tesseract::scene_graph::JointType::REVOLUTE, Eigen::Vector3d(0.0, 0.0, 0.1), -M_PI, M_PI);
+
+  EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "no_such_link"), std::runtime_error);
+  EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "no_such_link", "tip"), std::runtime_error);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundBranchedTree)  // NOLINT
+{
+  // Two siblings hanging off a shared parent. The function must walk only the
+  // shortest path to the requested tip, not accumulate offsets from the unrelated branch.
+  using namespace tesseract::scene_graph;
+  SceneGraph sg("test");
+  sg.addLink(Link("root"));
+
+  namespace ts = tesseract::kinematics::test_suite;
+  ts::addRevoluteChild(sg, "j_root_hub", "root", "hub", Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(1.0, 0.0, 0.0)));    // norm = 1.0
+  ts::addRevoluteChild(sg, "j_hub_a", "hub", "tip_a", Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(0.0, 2.0, 0.0)));    // norm = 2.0
+  ts::addRevoluteChild(sg, "j_hub_b", "hub", "tip_b", Eigen::Vector3d::UnitZ(),
+                       Eigen::Isometry3d(Eigen::Translation3d(0.0, 0.0, 100.0)));  // norm = 100.0 (unrelated branch)
+
+  EXPECT_NEAR(tesseract::kinematics::computeChainReachUpperBound(sg, "root", "tip_a"), 1.0 + 2.0, 1e-12);
+  EXPECT_NEAR(tesseract::kinematics::computeChainReachUpperBound(sg, "root", "tip_b"), 1.0 + 100.0, 1e-12);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundContinuousJoint)  // NOLINT
+{
+  auto sg = makeSingleJointSceneGraph(
+      tesseract::scene_graph::JointType::CONTINUOUS, Eigen::Vector3d(0.0, 0.0, 0.25), 0.0, 0.0);
+
+  double bound = tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip");
+
+  // Continuous joints rotate; only the offset contributes.
+  EXPECT_NEAR(bound, 0.25, 1e-12);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundPrismaticMimicThrows)  // NOLINT
+{
+  auto sg = makeSingleJointSceneGraph(
+      tesseract::scene_graph::JointType::PRISMATIC, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 1.0);
+  auto j = std::const_pointer_cast<tesseract::scene_graph::Joint>(sg->getJoint("j0"));
+  j->mimic = std::make_shared<tesseract::scene_graph::JointMimic>();
+
+  EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip"), std::runtime_error);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundABBIRB2400FKSampled)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
+
+  const std::string base_link("base_link");
+  const std::string tip_link("tool0");
+  const double bound = tesseract::kinematics::computeChainReachUpperBound(*scene_graph, base_link, tip_link);
+
+  // Build FK to produce tool0 poses for random joint configs.
+  auto fwd = std::make_unique<tesseract::kinematics::KDLFwdKinChain>(*scene_graph, base_link, tip_link);
+
+  // Gather joint limits along the manipulator chain via shared helper.
+  const auto joint_names = fwd->getJointNames();
+  Eigen::MatrixX2d limits =
+      tesseract::kinematics::test_suite::getTargetLimits(*scene_graph, joint_names).joint_limits;
+
+  std::mt19937 rng(0xC0FFEE);  // deterministic
+  constexpr int kNumSamples = 10000;
+  constexpr double kEpsilon = 1e-9;
+
+  double observed_max = 0.0;
+  for (int i = 0; i < kNumSamples; ++i)
+  {
+    Eigen::VectorXd q(limits.rows());
+    for (Eigen::Index k = 0; k < q.size(); ++k)
+    {
+      std::uniform_real_distribution<double> dist(limits(k, 0), limits(k, 1));
+      q(k) = dist(rng);
+    }
+
+    tesseract::common::TransformMap poses;
+    fwd->calcFwdKin(poses, q);
+    const double r = poses.at(tip_link).translation().norm();
+    observed_max = std::max(observed_max, r);
+    ASSERT_LE(r, bound + kEpsilon) << "config " << i << " produced norm(tool0)=" << r << " > bound " << bound;
+  }
+
+  // Sanity: derived bound should not be wildly loose either - for a real 6-DOF arm the max
+  // reach from uniform sampling should be within a few metres of the bound. Observed max on
+  // IRB2400 is ~2.15 m; bound from the URDF sums to ~2.20 m (~2.4% slack).
+  EXPECT_LT(bound, 4.0) << "Bound " << bound << " is suspiciously loose for IRB2400";
+  EXPECT_GT(observed_max, 1.5) << "Did not sample a representative workspace (max=" << observed_max << ")";
+}
+
+TEST(KinematicsUtils, GatherJointLimits)  // NOLINT
+{
+  auto sg = std::make_shared<tesseract::scene_graph::SceneGraph>();
+  sg->setName("test");
+  sg->addLink(tesseract::scene_graph::Link("base"));
+
+  // Joint A with limits [-1, 2]
+  tesseract::scene_graph::Joint ja("a");
+  ja.parent_link_name = "base";
+  ja.child_link_name = "l1";
+  ja.type = tesseract::scene_graph::JointType::REVOLUTE;
+  ja.axis = Eigen::Vector3d::UnitZ();
+  ja.limits = std::make_shared<tesseract::scene_graph::JointLimits>();
+  ja.limits->lower = -1.0;
+  ja.limits->upper = 2.0;
+  sg->addLink(tesseract::scene_graph::Link("l1"));
+  sg->addJoint(ja);
+
+  // Joint B with limits [-3, 0.5]
+  tesseract::scene_graph::Joint jb("b");
+  jb.parent_link_name = "l1";
+  jb.child_link_name = "l2";
+  jb.type = tesseract::scene_graph::JointType::REVOLUTE;
+  jb.axis = Eigen::Vector3d::UnitZ();
+  jb.limits = std::make_shared<tesseract::scene_graph::JointLimits>();
+  jb.limits->lower = -3.0;
+  jb.limits->upper = 0.5;
+  sg->addLink(tesseract::scene_graph::Link("l2"));
+  sg->addJoint(jb);
+
+  Eigen::MatrixX2d limits = tesseract::kinematics::gatherJointLimits(*sg, { "a", "b" });
+  ASSERT_EQ(limits.rows(), 2);
+  EXPECT_DOUBLE_EQ(limits(0, 0), -1.0);
+  EXPECT_DOUBLE_EQ(limits(0, 1), 2.0);
+  EXPECT_DOUBLE_EQ(limits(1, 0), -3.0);
+  EXPECT_DOUBLE_EQ(limits(1, 1), 0.5);
+
+  // Missing joint → throws
+  EXPECT_THROW(tesseract::kinematics::gatherJointLimits(*sg, { "missing" }), std::runtime_error);
+
+  // Joint without limits → throws
+  tesseract::scene_graph::Joint jc("c");
+  jc.parent_link_name = "l2";
+  jc.child_link_name = "l3";
+  jc.type = tesseract::scene_graph::JointType::FIXED;  // FIXED has no limits
+  sg->addLink(tesseract::scene_graph::Link("l3"));
+  sg->addJoint(jc);
+  EXPECT_THROW(tesseract::kinematics::gatherJointLimits(*sg, { "c" }), std::runtime_error);
+}
+
+TEST(KinematicsUtils, BuildSampleGrid)  // NOLINT
+{
+  Eigen::MatrixX2d range(2, 2);
+  range << 0.0, 1.0,
+           -1.0, 1.0;
+  Eigen::VectorXd res(2);
+  res << 0.5, 1.0;
+
+  auto grid = tesseract::kinematics::buildSampleGrid(range, res);
+  ASSERT_EQ(grid.size(), 2U);
+  // Joint 0: range 1.0, res 0.5 → ceil(1.0/0.5) + 1 = 3 samples (0, 0.5, 1)
+  ASSERT_EQ(grid[0].size(), 3);
+  EXPECT_DOUBLE_EQ(grid[0](0), 0.0);
+  EXPECT_DOUBLE_EQ(grid[0](1), 0.5);
+  EXPECT_DOUBLE_EQ(grid[0](2), 1.0);
+  // Joint 1: range 2.0, res 1.0 → ceil(2.0/1.0) + 1 = 3 samples (-1, 0, 1)
+  ASSERT_EQ(grid[1].size(), 3);
+  EXPECT_DOUBLE_EQ(grid[1](0), -1.0);
+  EXPECT_DOUBLE_EQ(grid[1](1), 0.0);
+  EXPECT_DOUBLE_EQ(grid[1](2), 1.0);
+
+  // Resolution larger than range → still produces 2 samples (endpoints)
+  Eigen::MatrixX2d narrow(1, 2);
+  narrow << 0.0, 0.1;
+  Eigen::VectorXd coarse(1);
+  coarse << 1.0;
+  auto narrow_grid = tesseract::kinematics::buildSampleGrid(narrow, coarse);
+  ASSERT_EQ(narrow_grid.size(), 1U);
+  EXPECT_EQ(narrow_grid[0].size(), 2);
+  EXPECT_DOUBLE_EQ(narrow_grid[0](0), 0.0);
+  EXPECT_DOUBLE_EQ(narrow_grid[0](1), 0.1);
+}
+
+TEST(AddRevoluteChild, NonZeroDynamicLimitDefaults)  // NOLINT
+{
+  // Regression guard for kinematics_test_utils.h::addRevoluteChild —
+  // velocity / acceleration / jerk must default to a strictly positive value
+  // so getTargetLimits() on graphs built via this helper is usable.
+  auto sg = std::make_shared<tesseract::scene_graph::SceneGraph>();
+  sg->setName("test");
+  sg->addLink(tesseract::scene_graph::Link("base"));
+  sg->setRoot("base");
+
+  namespace ts = tesseract::kinematics::test_suite;
+  ts::addRevoluteChild(*sg, "j1", "base", "link1", Eigen::Vector3d::UnitZ());
+
+  auto joint = sg->getJoint("j1");
+  ASSERT_NE(joint, nullptr);
+  ASSERT_NE(joint->limits, nullptr);
+  EXPECT_GT(joint->limits->velocity, 0.0);
+  EXPECT_GT(joint->limits->acceleration, 0.0);
+  EXPECT_GT(joint->limits->jerk, 0.0);
 }
 
 int main(int argc, char** argv)

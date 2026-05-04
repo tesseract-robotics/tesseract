@@ -29,10 +29,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
+#include <string>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>
 #include <tesseract/common/kinematic_limits.h>
+#include <tesseract/scene_graph/fwd.h>
 
 namespace tesseract::kinematics
 {
@@ -380,6 +383,62 @@ inline void harmonizeTowardMedian(Eigen::Ref<VectorX<FloatType>> qs,
     qs[i] = (vv + mean);
   }
 }
+
+/**
+ * @brief Compute an upper bound on the Cartesian distance from @p base_link_name to @p tip_link_name
+ * across all valid joint configurations of the chain.
+ *
+ * @details Walks the shortest path from @p base_link_name to @p tip_link_name and sums, per joint along
+ * the path:
+ *   - parent_to_joint_origin_transform.translation().norm()  (fixed geometric offset)
+ *   - max(|lower|, |upper|)                                  (only for PRISMATIC joints)
+ *
+ * Revolute, continuous, and fixed joints contribute zero beyond their offset - rotation does not
+ * translate the tip in the chain's own frame. The sum upper-bounds T_base_to_tip.translation().norm()
+ * by the triangle inequality.
+ *
+ * Intended use: sizing early-exit reach filters in compound IK solvers (RTP/REP/ROP) so the filter
+ * never fires on genuinely reachable targets.
+ *
+ * @param scene_graph    Scene graph to query. Must contain both @p base_link_name and @p tip_link_name
+ *                       and have a path from one to the other.
+ * @param base_link_name Chain start.
+ * @param tip_link_name  Chain end.
+ * @return Upper bound in metres. Always > 0 if the chain contains at least one joint with a
+ *         non-zero offset or a prismatic extension; returns 0 for a zero-length chain
+ *         (@p base_link_name == @p tip_link_name).
+ * @throws std::runtime_error if either link is missing from @p scene_graph, if no path exists
+ *         between them, if any joint along the path is FLOATING / PLANAR (unbounded translation),
+ *         or if a PRISMATIC joint along the path has no finite limits.
+ */
+double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                   const std::string& base_link_name,
+                                   const std::string& tip_link_name);
+
+/**
+ * @brief Look up each named joint in @p scene_graph and return their position limits as a (N,2) matrix.
+ * @details Column 0 is the lower limit, column 1 the upper. Used by compound IK solvers (RTP/REP/ROP)
+ *          to derive a default sampling range from joint limits when the caller did not supply one.
+ * @throws std::runtime_error if any joint name is missing from @p scene_graph or if any matched
+ *         joint has a null `limits` member.
+ */
+Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                   const std::vector<std::string>& joint_names);
+
+/**
+ * @brief Build a per-joint sample grid by uniformly subdividing each row of @p range using @p resolution.
+ * @details For each joint i, returns `LinSpaced(cnt, range(i,0), range(i,1))` where
+ *          `cnt = ceil(|range(i,1) - range(i,0)| / resolution(i)) + 1`. The number of samples is
+ *          chosen so the actual step never exceeds the requested resolution.
+ *
+ * Used by compound IK solvers (RTP/REP/ROP) to discretise the auxiliary positioner / tool chain.
+ *
+ * @param range      (N,2) matrix; column 0 is the lower bound, column 1 the upper, per joint.
+ * @param resolution (N,) vector; per-joint maximum step size. Must be > 0 elementwise.
+ * @return Vector of N Eigen::VectorXd, each containing the sample points for one joint.
+ */
+std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range,
+                                             const Eigen::VectorXd& resolution);
 
 }  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_UTILS_H
