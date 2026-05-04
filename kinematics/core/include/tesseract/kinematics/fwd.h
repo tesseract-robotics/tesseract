@@ -38,6 +38,8 @@ class REPInvKinFactory;
 class REPInvKin;
 class ROPInvKinFactory;
 class ROPInvKin;
+class RTPInvKinFactory;
+class RTPInvKin;
 struct URParameters;
 struct ManipulabilityEllipsoid;
 struct Manipulability;
