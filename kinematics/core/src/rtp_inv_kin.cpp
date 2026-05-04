@@ -156,17 +156,11 @@ void RTPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
   if (!scene_graph.getLink(scene_graph.getRoot()))
     throw std::runtime_error("The scene graph has an invalid root.");
 
-  if (manipulator == nullptr)
-    throw std::runtime_error("Provided manipulator is a nullptr");
-
   if (manipulator->getTipLinkNames().size() != 1)
     throw std::runtime_error("RTPInvKin requires a manipulator with exactly one tip link");
 
   if (!(manipulator_reach > 0))
     throw std::runtime_error("Manipulator reach is not greater than zero");
-
-  if (tool_positioner == nullptr)
-    throw std::runtime_error("Provided tool positioner is a nullptr");
 
   if (tool_sample_resolution.size() != tool_positioner->numJoints())
     throw std::runtime_error("Tool sample resolution must be same size as tool positioner number of joints");
