@@ -14,6 +14,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <limits>
 #include <random>
 
 const static std::string FACTORY_NAME = "TestFactory";
@@ -654,6 +655,36 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundContinuousJoint)  // NOLINT
 
   // Continuous joints rotate; only the offset contributes.
   EXPECT_NEAR(bound, 0.25, 1e-12);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundPrismaticNoLimitsThrows)  // NOLINT
+{
+  auto sg =
+      makeSingleJointSceneGraph(tesseract::scene_graph::JointType::PRISMATIC, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 1.0);
+  auto j = std::const_pointer_cast<tesseract::scene_graph::Joint>(sg->getJoint("j0"));
+  j->limits = nullptr;
+
+  EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip"), std::runtime_error);
+}
+
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundPrismaticNonFiniteLimitsThrows)  // NOLINT
+{
+  // Lower bound is infinite — bound formula would silently produce infinity. Must reject.
+  {
+    auto sg = makeSingleJointSceneGraph(
+        tesseract::scene_graph::JointType::PRISMATIC, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 1.0);
+    auto j = std::const_pointer_cast<tesseract::scene_graph::Joint>(sg->getJoint("j0"));
+    j->limits->lower = -std::numeric_limits<double>::infinity();
+    EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip"), std::runtime_error);
+  }
+  // Upper bound is NaN.
+  {
+    auto sg = makeSingleJointSceneGraph(
+        tesseract::scene_graph::JointType::PRISMATIC, Eigen::Vector3d(0.0, 0.0, 0.1), 0.0, 1.0);
+    auto j = std::const_pointer_cast<tesseract::scene_graph::Joint>(sg->getJoint("j0"));
+    j->limits->upper = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "tip"), std::runtime_error);
+  }
 }
 
 TEST(TesseractKinematicsUnit, ChainReachUpperBoundPrismaticMimicThrows)  // NOLINT
