@@ -26,6 +26,8 @@
 #include <tesseract/collision/utils.h>
 #include <tesseract/common/types.h>
 
+#include <cassert>
+
 namespace tesseract::collision
 {
 void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
