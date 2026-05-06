@@ -2892,6 +2892,73 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff)  // NOLINT
   runCalcJacobianTransformErrorDiffDynamicTargetTest(2 * M_PI);
 }
 
+// Exercises the optional lower_tolerance / upper_tolerance parameters of calcJacobianTransformErrorDiff.
+TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
+{
+  using tesseract::common::calcJacobianTransformErrorDiff;
+
+  Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
+  const double eps = 1e-6;
+  const double atol = 1e-10;
+
+  // Shared geometry: target translated to (1,2,3); source = X-rotation by base_angle; perturbed adds eps.
+  // calcTransformError gives err[3] ≈ base_angle (X-rotation component).
+  Eigen::Isometry3d target_tf{ identity };
+  target_tf.translation() = Eigen::Vector3d(1, 2, 3);
+  const double base_angle = 0.5;
+  Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(base_angle, Eigen::Vector3d::UnitX());
+  Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(base_angle + eps, Eigen::Vector3d::UnitX());
+
+  // Case 1: both err and perturbed_err inside band → row clamped to zero.
+  {
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 1.0, 0.5, 0.5;
+    Eigen::VectorXd diff = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_TRUE(diff.isApprox(Eigen::VectorXd::Zero(6), atol));
+  }
+
+  // Case 2: both errors above the band → constant offset cancels, diff equals raw FD.
+  {
+    const double band_top = base_angle - 0.1;
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, band_top - 0.01, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, band_top, 0.5, 0.5;
+
+    Eigen::VectorXd diff_raw = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff_tol = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_TRUE(diff_tol.isApprox(diff_raw, atol));
+  }
+
+  // Case 3: band edge between err and perturbed_err → non-zero sub-gradient (the bug-fix scenario).
+  // base_angle=0.5 is inside [0.0, 0.55], base_angle + 0.2 = 0.7 is outside.
+  // Clamped diff[3] = (0.7 - 0.55) - 0.0 = 0.15.
+  {
+    const double big_step = 0.2;
+    Eigen::Isometry3d source_tf_big = identity * Eigen::AngleAxisd(base_angle + big_step, Eigen::Vector3d::UnitX());
+
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 0.55, 0.5, 0.5;
+
+    Eigen::VectorXd diff = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_big, lower, upper);
+    EXPECT_NEAR(diff(3), 0.15, atol);
+  }
+
+  // Case 4: size-mismatch throws.
+  {
+    Eigen::VectorXd lower3 = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd upper6 = Eigen::VectorXd::Zero(6);
+    EXPECT_THROW(calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower3, upper6),
+                 std::runtime_error);
+
+    Eigen::VectorXd lower4 = Eigen::VectorXd::Zero(4);
+    Eigen::VectorXd upper4 = Eigen::VectorXd::Zero(4);
+    EXPECT_THROW(calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower4, upper4),
+                 std::runtime_error);
+  }
+}
+
 /** @brief Tests calcTransformError */
 TEST(TesseractCommonUnit, computeRandomColor)  // NOLINT
 {
