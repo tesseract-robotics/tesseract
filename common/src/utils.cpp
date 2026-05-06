@@ -159,9 +159,23 @@ Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Iso
   return concat(pose_err.translation(), calcRotationalError(pose_err.rotation()));
 }
 
+void applyTolerances(Eigen::VectorXd& v, const Eigen::VectorXd& lower_tolerance, const Eigen::VectorXd& upper_tolerance)
+{
+  if (lower_tolerance.size() == 0 && upper_tolerance.size() == 0)
+    return;
+  if (lower_tolerance.size() != upper_tolerance.size())
+    throw std::runtime_error("applyTolerances: lower_tolerance and upper_tolerance must have the same size");
+  if (lower_tolerance.size() != v.size())
+    throw std::runtime_error("applyTolerances: tolerance size does not match value size (expected " +
+                             std::to_string(v.size()) + ", got " + std::to_string(lower_tolerance.size()) + ")");
+  v = (v.array() - upper_tolerance.array()).max(0.0) + (v.array() - lower_tolerance.array()).min(0.0);
+}
+
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& source,
-                                               const Eigen::Isometry3d& source_perturbed)
+                                               const Eigen::Isometry3d& source_perturbed,
+                                               const Eigen::VectorXd& lower_tolerance,
+                                               const Eigen::VectorXd& upper_tolerance)
 {
   Eigen::Isometry3d pose_err = target.inverse() * source;
   std::pair<Eigen::Vector3d, double> pose_rotation_err = calcRotationalErrorDecomposed(pose_err.rotation());
@@ -178,7 +192,7 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
     perturbed_pose_rotation_err.second *= -1;
   }
 
-  // Angle axis has a discontinity at PI so need to correctly handle this calculating jacobian difference
+  // Angle axis has a discontinuity at PI so need to correctly handle this calculating jacobian difference
   Eigen::VectorXd perturbed_err;
   if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
     perturbed_err = concat(perturbed_pose_err.translation(),
@@ -190,13 +204,19 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
     perturbed_err = concat(perturbed_pose_err.translation(),
                            perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
 
+  // Apply tolerances after the paired ±π/sign correction so the clamp sees the same branch on both errors.
+  applyTolerances(err, lower_tolerance, upper_tolerance);
+  applyTolerances(perturbed_err, lower_tolerance, upper_tolerance);
+
   return (perturbed_err - err);
 }
 
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& target_perturbed,
                                                const Eigen::Isometry3d& source,
-                                               const Eigen::Isometry3d& source_perturbed)
+                                               const Eigen::Isometry3d& source_perturbed,
+                                               const Eigen::VectorXd& lower_tolerance,
+                                               const Eigen::VectorXd& upper_tolerance)
 {
   Eigen::Isometry3d pose_err = target.inverse() * source;
   std::pair<Eigen::Vector3d, double> pose_rotation_err = calcRotationalErrorDecomposed(pose_err.rotation());
@@ -213,13 +233,12 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
     perturbed_pose_rotation_err.second *= -1;
   }
 
-  // They should always pointing in the same direction
 #ifndef NDEBUG
   if (std::abs(pose_rotation_err.second) > 0.01 && perturbed_pose_rotation_err.first.dot(pose_rotation_err.first) < 0)
     throw std::runtime_error("calcJacobianTransformErrorDiff, angle axes are pointing in oposite directions!");
 #endif
 
-  // Angle axis has a discontinity at PI so need to correctly handle this calculating  jacobian difference
+  // Angle axis has a discontinuity at PI so need to correctly handle this calculating jacobian difference
   Eigen::VectorXd perturbed_err;
   if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
     perturbed_err = concat(perturbed_pose_err.translation(),
@@ -230,6 +249,10 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
   else
     perturbed_err = concat(perturbed_pose_err.translation(),
                            perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
+
+  // Apply tolerances after the paired ±π/sign correction so the clamp sees the same branch on both errors.
+  applyTolerances(err, lower_tolerance, upper_tolerance);
+  applyTolerances(perturbed_err, lower_tolerance, upper_tolerance);
 
   return (perturbed_err - err);
 }
