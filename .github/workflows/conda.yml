@@ -58,7 +58,7 @@ jobs:
         mkdir conda
         xcopy /E workspace\src\tesseract\.github\workflows\conda conda
         cd conda
-        conda smithy regenerate --no-check-uptodate
+        conda-smithy regenerate --no-check-uptodate
         
         rattler-build build -m .ci_support/win_64_.yaml --recipe recipe/recipe.yaml
 
@@ -91,7 +91,7 @@ jobs:
         
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
         cd conda
-        conda smithy regenerate --no-check-uptodate
+        conda-smithy regenerate --no-check-uptodate
         
         rattler-build build -m .ci_support/linux_64_.yaml --recipe recipe/recipe.yaml
 
@@ -124,6 +124,6 @@ jobs:
         
         cp -r workspace/src/tesseract/.github/workflows/conda ./conda
         cd conda
-        conda smithy regenerate --no-check-uptodate
+        conda-smithy regenerate --no-check-uptodate
         
         rattler-build build -m .ci_support/osx_64_.yaml  --recipe recipe/recipe.yaml
