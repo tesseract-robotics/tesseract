@@ -34,7 +34,7 @@ requirements:
     host:
       - libboost-devel
       - cereal
-      - eigen 
+      - eigen-abi-devel
       - tinyxml2
       - console_bridge
       - assimp
@@ -59,7 +59,7 @@ requirements:
     run:
       - libboost-devel
       - cereal
-      - eigen 
+      - eigen
       - tinyxml2
       - console_bridge
       - assimp
