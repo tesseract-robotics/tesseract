@@ -235,11 +235,6 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
     perturbed_pose_rotation_err.second *= -1;
   }
 
-#ifndef NDEBUG
-  if (std::abs(pose_rotation_err.second) > 0.01 && perturbed_pose_rotation_err.first.dot(pose_rotation_err.first) < 0)
-    throw std::runtime_error("calcJacobianTransformErrorDiff, angle axes are pointing in oposite directions!");
-#endif
-
   // Angle axis has a discontinuity at PI so need to correctly handle this calculating jacobian difference
   Eigen::VectorXd perturbed_err;
   if (perturbed_pose_rotation_err.second > M_PI_2 && pose_rotation_err.second < -M_PI_2)
