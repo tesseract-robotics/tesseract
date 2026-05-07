@@ -172,16 +172,19 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
 
 /**
  * @brief Apply a per-component dead-band tolerance to an error vector in place.
- * @details Each component is clamped to zero inside `[lower(i), upper(i)]`, set to `v(i) - lower(i)` below the band,
- *          and `v(i) - upper(i)` above. If both tolerance vectors are empty this is a no-op.
+ * @details Each component is clamped to zero inside `[lower(i), upper(i)]`, shifted by `v(i) - lower(i)` below the
+ *          band, and `v(i) - upper(i)` above. The function is a no-op only when both `lower_tolerance` and
+ *          `upper_tolerance` are empty. When non-empty, both tolerance vectors must match `v` in size; otherwise
+ *          std::runtime_error is thrown. A non-empty paired with an empty tolerance is treated as a size mismatch
+ *          and throws.
  * @param v The vector to clamp in place
- * @param lower_tolerance Per-component lower bound, or empty for no-op
- * @param upper_tolerance Per-component upper bound, or empty for no-op. Must match lower_tolerance and v in size when
- *        non-empty; throws std::runtime_error otherwise.
+ * @param lower_tolerance Per-component lower bound (size must equal `v.size()`, or empty when paired with an empty
+ *        upper_tolerance for a no-op)
+ * @param upper_tolerance Per-component upper bound (same size constraints as `lower_tolerance`)
  */
-void applyTolerances(Eigen::VectorXd& v,
-                     const Eigen::VectorXd& lower_tolerance,
-                     const Eigen::VectorXd& upper_tolerance);
+void applyTolerances(Eigen::Ref<Eigen::VectorXd> v,
+                     const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                     const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance);
 
 /**
  * @brief This computes a random color RGBA [0, 1] with alpha set to 1

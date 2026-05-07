@@ -159,7 +159,9 @@ Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Iso
   return concat(pose_err.translation(), calcRotationalError(pose_err.rotation()));
 }
 
-void applyTolerances(Eigen::VectorXd& v, const Eigen::VectorXd& lower_tolerance, const Eigen::VectorXd& upper_tolerance)
+void applyTolerances(Eigen::Ref<Eigen::VectorXd> v,
+                     const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                     const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance)
 {
   if (lower_tolerance.size() == 0 && upper_tolerance.size() == 0)
     return;
