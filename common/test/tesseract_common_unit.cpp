@@ -2957,6 +2957,93 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
     EXPECT_THROW(calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower4, upper4),
                  std::runtime_error);
   }
+
+  // Dynamic-target overload: small rotation of target frame so the constraint logic is exercised
+  // independently of the fixed-target path.
+  Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitX()) * target_tf;
+
+  // Case 5: dynamic-target overload — both errors inside band → row clamped to zero.
+  {
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 1.0, 0.5, 0.5;
+    Eigen::VectorXd diff =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_TRUE(diff.isApprox(Eigen::VectorXd::Zero(6), atol));
+  }
+
+  // Case 6: dynamic-target — both errors above the band on component 3 → constant offset cancels,
+  // so the toleranced diff matches the raw FD on that component. Other components have small drift
+  // from the target perturbation that the broader translation band clamps differently, so we
+  // restrict the equality assertion to the clamped component.
+  {
+    const double band_top = base_angle - 0.1;
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, band_top - 0.01, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, band_top, 0.5, 0.5;
+
+    Eigen::VectorXd diff_raw =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff_tol =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_NEAR(diff_tol(3), diff_raw(3), atol);
+  }
+
+  // Case 7: dynamic-target — band edge between err and perturbed_err.
+  // err[3] ≈ base_angle = 0.5 (inside [0, 0.55] → 0); perturbed_err[3] ≈ base_angle + big_step + eps ≈ 0.7
+  // (above band → 0.15). Diff[3] ≈ 0.15.
+  {
+    const double big_step = 0.2;
+    Eigen::Isometry3d source_tf_big = identity * Eigen::AngleAxisd(base_angle + big_step, Eigen::Vector3d::UnitX());
+
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 0.55, 0.5, 0.5;
+
+    Eigen::VectorXd diff =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_big, lower, upper);
+    EXPECT_NEAR(diff(3), 0.15, 1e-4);
+  }
+
+  // Case 8: dynamic-target — size-mismatch throws.
+  {
+    Eigen::VectorXd lower3 = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd upper6 = Eigen::VectorXd::Zero(6);
+    EXPECT_THROW(
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed, lower3, upper6),
+        std::runtime_error);
+  }
+}
+
+// Exercises the perturbed-axis flip branch in calcJacobianTransformErrorDiff. Pinned so the
+// post-flip NDEBUG check (which is unreachable by construction) can be removed without drift.
+TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_AxisFlipPath)  // NOLINT
+{
+  using tesseract::common::calcJacobianTransformErrorDiff;
+  Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
+  const double eps = 1e-4;
+
+  // Near-zero rotation: small symmetric perturbation around zero forces the
+  // perturbed_pose_rotation axis to potentially have opposite sign from pose_rotation,
+  // which is exactly what the flip block in calcJacobianTransformErrorDiff exists to fix.
+  Eigen::Isometry3d target_tf{ identity };
+  target_tf.translation() = Eigen::Vector3d(1, 2, 3);
+  Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX());
+  Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitX());
+
+  // Fixed-target overload.
+  EXPECT_NO_THROW({
+    Eigen::VectorXd diff = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    EXPECT_EQ(diff.size(), 6);
+  });
+
+  // Dynamic-target overload — same setup with a tiny target perturbation.
+  Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX()) * target_tf;
+  EXPECT_NO_THROW({
+    Eigen::VectorXd diff =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
+    EXPECT_EQ(diff.size(), 6);
+  });
 }
 
 /** @brief Tests calcTransformError */
