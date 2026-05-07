@@ -158,8 +158,8 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed,
-                                               const Eigen::VectorXd& lower_tolerance,
-                                               const Eigen::VectorXd& upper_tolerance);
+                                               const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                                               const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance);
 
 /**
  * @brief Calculate jacobian transform error difference expressed in the target frame coordinate system
@@ -194,8 +194,8 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& target_perturbed,
                                                const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed,
-                                               const Eigen::VectorXd& lower_tolerance,
-                                               const Eigen::VectorXd& upper_tolerance);
+                                               const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                                               const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance);
 
 /**
  * @brief Apply a per-component dead-band tolerance to an error vector in place.

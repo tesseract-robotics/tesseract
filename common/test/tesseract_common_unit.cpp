@@ -3017,8 +3017,9 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
   }
 }
 
-// Exercises the perturbed-axis flip branch in calcJacobianTransformErrorDiff. Pinned so the
-// post-flip NDEBUG check (which is unreachable by construction) can be removed without drift.
+// Exercises the perturbed-axis flip branch in calcJacobianTransformErrorDiff: when the perturbed
+// rotation axis is reported with the opposite sign of the unperturbed one (common for near-zero
+// rotations), the function must internally flip it and still produce a well-formed 6-vector diff.
 TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_AxisFlipPath)  // NOLINT
 {
   using tesseract::common::calcJacobianTransformErrorDiff;

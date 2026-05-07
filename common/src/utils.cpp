@@ -183,8 +183,8 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed,
-                                               const Eigen::VectorXd& lower_tolerance,
-                                               const Eigen::VectorXd& upper_tolerance)
+                                               const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                                               const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance)
 {
   Eigen::Isometry3d pose_err = target.inverse() * source;
   std::pair<Eigen::Vector3d, double> pose_rotation_err = calcRotationalErrorDecomposed(pose_err.rotation());
@@ -233,8 +233,8 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& target_perturbed,
                                                const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed,
-                                               const Eigen::VectorXd& lower_tolerance,
-                                               const Eigen::VectorXd& upper_tolerance)
+                                               const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                                               const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance)
 {
   Eigen::Isometry3d pose_err = target.inverse() * source;
   std::pair<Eigen::Vector3d, double> pose_rotation_err = calcRotationalErrorDecomposed(pose_err.rotation());
