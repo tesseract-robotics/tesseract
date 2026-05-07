@@ -25,13 +25,42 @@
 #include <tesseract/kinematics/rop_factory.h>
 #include <tesseract/kinematics/rop_inv_kin.h>
 #include <tesseract/kinematics/forward_kinematics.h>
+#include <tesseract/kinematics/yaml_extensions.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
 
+#include <tesseract/common/schema_registration.h>
+#include <tesseract/common/property_tree.h>
+
 #include <console_bridge/console.h>
+
+namespace
+{
+tesseract::common::PropertyTree ropInvKinFactorySchema()
+{
+  using namespace tesseract::common;
+
+  static const std::string kItemType = "tesseract::kinematics::PositionerSampleResolution";
+
+  // clang-format off
+  return PropertyTreeBuilder()
+    .attribute(property_attribute::TYPE, property_type::CONTAINER)
+    .doubleNum("manipulator_reach").required().done()
+    .customType("positioner_sample_resolution",
+          property_type::createList(kItemType)).required().done()
+    .customType("positioner", "tesseract::kinematics::FwdKinFactory")
+      .required().acceptsDerivedTypes().validator(validateCustomType).done()
+    .customType("manipulator", "tesseract::kinematics::InvKinFactory")
+      .required().acceptsDerivedTypes().validator(validateCustomType).done()
+    .build();
+  // clang-format on
+}
+}  // namespace
 
 namespace tesseract::kinematics
 {
+tesseract::common::PropertyTree ROPInvKinFactory::schema() const { return ropInvKinFactorySchema(); }
+
 std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& solver_name,
                                                             const tesseract::scene_graph::SceneGraph& scene_graph,
                                                             const tesseract::scene_graph::SceneState& scene_state,
@@ -56,46 +85,28 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
     std::map<std::string, std::array<double, 3>> sample_res_map;
     if (YAML::Node sample_res_node = config["positioner_sample_resolution"])
     {
-      for (auto it = sample_res_node.begin(); it != sample_res_node.end(); ++it)
+      for (const auto& entry : sample_res_node)
       {
-        const YAML::Node& joint = *it;
-        std::array<double, 3> values{ 0, 0, 0 };
+        auto psr = entry.as<PositionerSampleResolution>();
 
-        std::string joint_name;
-        if (YAML::Node n = joint["name"])
-          joint_name = n.as<std::string>();
-        else
-          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' missing 'name' entry!");
-
-        if (YAML::Node n = joint["value"])
-          values[0] = n.as<double>();
-        else
-          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' missing 'value' entry!");
-
-        auto jnt = scene_graph.getJoint(joint_name);
+        auto jnt = scene_graph.getJoint(psr.name);
         if (jnt == nullptr)
-          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' failed to find joint in scene "
-                                   "graph!");
+          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' failed to find joint '" +
+                                   psr.name + "' in scene graph!");
 
-        values[1] = jnt->limits->lower;
-        values[2] = jnt->limits->upper;
+        double range_min = psr.min.value_or(jnt->limits->lower);
+        double range_max = psr.max.value_or(jnt->limits->upper);
 
-        if (YAML::Node min = joint["min"])
-          values[1] = min.as<double>();
-
-        if (YAML::Node max = joint["max"])
-          values[2] = max.as<double>();
-
-        if (values[1] < jnt->limits->lower)
+        if (range_min < jnt->limits->lower)
           throw std::runtime_error("ROPInvKinFactory, sample range minimum is less than joint minimum!");
 
-        if (values[2] > jnt->limits->upper)
+        if (range_max > jnt->limits->upper)
           throw std::runtime_error("ROPInvKinFactory, sample range maximum is greater than joint maximum!");
 
-        if (values[1] > values[2])
+        if (range_min > range_max)
           throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
 
-        sample_res_map[joint_name] = values;
+        sample_res_map[psr.name] = { psr.value, range_min, range_max };
       }
     }
     else
@@ -180,3 +191,5 @@ PLUGIN_ANCHOR_IMPL(ROPInvKinFactoriesAnchor)
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_INV_KIN_PLUGIN(tesseract::kinematics::ROPInvKinFactory, ROPInvKinFactory);
+TESSERACT_SCHEMA_REGISTER(ROPInvKinFactory, ropInvKinFactorySchema);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::kinematics::InvKinFactory, ROPInvKinFactory);

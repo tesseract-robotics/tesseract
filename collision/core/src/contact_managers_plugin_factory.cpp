@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/continuous_contact_manager.h>
+#include <tesseract/common/property_tree.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
@@ -47,7 +48,17 @@ namespace tesseract::collision
 {
 std::string DiscreteContactManagerFactory::getSection() { return "DiscColl"; }
 
+tesseract::common::PropertyTree DiscreteContactManagerFactory::schema() const
+{
+  return tesseract::common::PropertyTreeBuilder().build();
+}
+
 std::string ContinuousContactManagerFactory::getSection() { return "ContColl"; }
+
+tesseract::common::PropertyTree ContinuousContactManagerFactory::schema() const
+{
+  return tesseract::common::PropertyTreeBuilder().build();
+}
 
 ContactManagersPluginFactory::ContactManagersPluginFactory()
 {
@@ -67,12 +78,44 @@ void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
 {
   if (const YAML::Node& plugin_info = config[ContactManagersPluginInfo::CONFIG_KEY])
   {
-    auto cm_plugin_info = plugin_info.as<tesseract::common::ContactManagersPluginInfo>();
+    // Phase 1: Extract search paths/libraries directly from YAML (minimal parsing)
+    std::vector<std::string> search_paths_local;
+    std::vector<std::string> search_libraries_local;
+
+    if (plugin_info["search_paths"])
+      search_paths_local = plugin_info["search_paths"].as<std::vector<std::string>>();
+    if (plugin_info["search_libraries"])
+      search_libraries_local = plugin_info["search_libraries"].as<std::vector<std::string>>();
+
+    // Phase 2: Set search paths and load libraries
     plugin_loader_.search_paths.insert(
-        plugin_loader_.search_paths.end(), cm_plugin_info.search_paths.begin(), cm_plugin_info.search_paths.end());
-    plugin_loader_.search_libraries.insert(plugin_loader_.search_libraries.end(),
-                                           cm_plugin_info.search_libraries.begin(),
-                                           cm_plugin_info.search_libraries.end());
+        plugin_loader_.search_paths.end(), search_paths_local.begin(), search_paths_local.end());
+    plugin_loader_.search_libraries.insert(
+        plugin_loader_.search_libraries.end(), search_libraries_local.begin(), search_libraries_local.end());
+
+    // Trigger library loading by discovering available plugins
+    plugin_loader_.getAvailablePlugins(DiscreteContactManagerFactory::getSection());
+    plugin_loader_.getAvailablePlugins(ContinuousContactManagerFactory::getSection());
+
+    // Phase 3: Now validate full schema (plugins are loaded, so their schemas are available)
+    auto schema = YAML::convert<tesseract::common::ContactManagersPluginInfo>::schema();
+    auto config_tree = schema;
+    config_tree.mergeConfig(plugin_info, false);  // false = don't allow extra properties
+
+    auto errors = config_tree.validate(false);
+
+    if (!errors.empty())
+    {
+      std::string error_msg = "ContactManagersPluginFactory: Configuration validation failed:\n";
+      for (const auto& error : errors)
+      {
+        error_msg += "  - " + error + "\n";
+      }
+      throw std::runtime_error(error_msg);
+    }
+
+    // Phase 4: Safe to parse full struct
+    auto cm_plugin_info = plugin_info.as<tesseract::common::ContactManagersPluginInfo>();
     discrete_plugin_info_ = cm_plugin_info.discrete_plugin_infos;
     continuous_plugin_info_ = cm_plugin_info.continuous_plugin_infos;
 
