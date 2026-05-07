@@ -214,8 +214,12 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                            perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
 
   // Apply tolerances after the paired ±π/sign correction so the clamp sees the same branch on both errors.
-  applyTolerances(err, lower_tolerance, upper_tolerance);
-  applyTolerances(perturbed_err, lower_tolerance, upper_tolerance);
+  // Skip when no tolerances are supplied to keep the no-tolerance forwarding path off applyTolerances.
+  if (lower_tolerance.size() != 0 || upper_tolerance.size() != 0)
+  {
+    applyTolerances(err, lower_tolerance, upper_tolerance);
+    applyTolerances(perturbed_err, lower_tolerance, upper_tolerance);
+  }
 
   return (perturbed_err - err);
 }
@@ -264,8 +268,12 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                            perturbed_pose_rotation_err.first * perturbed_pose_rotation_err.second);
 
   // Apply tolerances after the paired ±π/sign correction so the clamp sees the same branch on both errors.
-  applyTolerances(err, lower_tolerance, upper_tolerance);
-  applyTolerances(perturbed_err, lower_tolerance, upper_tolerance);
+  // Skip when no tolerances are supplied to keep the no-tolerance forwarding path off applyTolerances.
+  if (lower_tolerance.size() != 0 || upper_tolerance.size() != 0)
+  {
+    applyTolerances(err, lower_tolerance, upper_tolerance);
+    applyTolerances(perturbed_err, lower_tolerance, upper_tolerance);
+  }
 
   return (perturbed_err - err);
 }

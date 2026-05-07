@@ -2899,6 +2899,8 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
 
   Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
   const double eps = 1e-6;
+  // Absolute tolerance: assertions below use isZero / EXPECT_NEAR / cwiseAbs().maxCoeff(),
+  // all of which interpret atol as an absolute bound on the per-component error.
   const double atol = 1e-10;
 
   // Shared geometry: target translated to (1,2,3); source = X-rotation by base_angle; perturbed adds eps.
@@ -2915,7 +2917,7 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
     lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
     upper << 5.0, 5.0, 5.0, 1.0, 0.5, 0.5;
     Eigen::VectorXd diff = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower, upper);
-    EXPECT_TRUE(diff.isApprox(Eigen::VectorXd::Zero(6), atol));
+    EXPECT_TRUE(diff.isZero(atol));
   }
 
   // Case 2: both errors above the band → constant offset cancels, diff equals raw FD.
@@ -2927,7 +2929,7 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
 
     Eigen::VectorXd diff_raw = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
     Eigen::VectorXd diff_tol = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower, upper);
-    EXPECT_TRUE(diff_tol.isApprox(diff_raw, atol));
+    EXPECT_LT((diff_tol - diff_raw).cwiseAbs().maxCoeff(), atol);
   }
 
   // Case 3: band edge between err and perturbed_err → non-zero sub-gradient (the bug-fix scenario).
@@ -2969,7 +2971,7 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
     upper << 5.0, 5.0, 5.0, 1.0, 0.5, 0.5;
     Eigen::VectorXd diff =
         calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed, lower, upper);
-    EXPECT_TRUE(diff.isApprox(Eigen::VectorXd::Zero(6), atol));
+    EXPECT_TRUE(diff.isZero(atol));
   }
 
   // Case 6: dynamic-target — both errors above the band on component 3 → constant offset cancels,
