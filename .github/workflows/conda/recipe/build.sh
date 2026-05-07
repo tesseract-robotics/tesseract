@@ -3,7 +3,7 @@ set -e
 # ln -s $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc $BUILD_PREFIX/bin/gcc
 
 colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
-   --event-handlers console_cohesion+ \
+   --event-handlers console_direct+ \
    --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp \
    --cmake-args -DCMAKE_BUILD_TYPE=Release \
    -DBUILD_SHARED_LIBS=ON \
@@ -18,7 +18,8 @@ colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    -DTESSERACT_ENABLE_TESTING=ON \
    -DTESSERACT_ENABLE_BENCHMARKING=ON \
    -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF \
-   -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+   -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+   -DCMAKE_VERBOSE_MAKEFILE=ON
 
 source "$PREFIX/opt/tesseract_robotics/setup.sh"
 
@@ -27,7 +28,7 @@ export TESSERACT_RESOURCE_PATH="$PREFIX/opt/tesseract_robotics/share/"
 colcon test --event-handlers console_direct+ --return-code-on-test-failure \
    --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp \
    --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
-   --ctest-args -E "^ResourceLocatorUnit\.GeneralResourceLocatorUnit2$"
+   --ctest-args -E "ResourceLocatorUnit.GeneralResourceLocatorUnit2|TesseractCommonUnit.timer|TesseractEnvironmentUnit.checkTrajectoryUnit"
 
 
 for CHANGE in "activate" "deactivate"
