@@ -2990,8 +2990,10 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
   }
 
   // Case 7: dynamic-target — band edge between err and perturbed_err.
-  // err[3] ≈ base_angle = 0.5 (inside [0, 0.55] → 0); perturbed_err[3] ≈ base_angle + big_step + eps ≈ 0.7
-  // (above band → 0.15). Diff[3] ≈ 0.15.
+  // err[3] = target.inv * source X-rotation ≈ base_angle = 0.5, inside [0, 0.55] → clamped to 0.
+  // perturbed_err[3] = target_perturbed.inv * source_perturbed X-rotation ≈ (base_angle + big_step) + eps ≈ 0.7,
+  // where the +eps comes from target_tf_perturbed (the inverse of AngleAxisd(-eps, X) applied on the left of
+  // target_tf) — source_tf_big itself contributes no eps. Above band → clamped to 0.15. Diff[3] ≈ 0.15.
   {
     const double big_step = 0.2;
     Eigen::Isometry3d source_tf_big = identity * Eigen::AngleAxisd(base_angle + big_step, Eigen::Vector3d::UnitX());
