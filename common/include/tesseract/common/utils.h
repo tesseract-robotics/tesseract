@@ -137,17 +137,29 @@ Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Iso
  * @param target The desired transform to express the transform error difference in
  * @param source The current location of the source transform
  * @param source_perturbed The perturbed location of the source transform
- * @param lower_tolerance Optional per-component dead-band lower bound (size 6 or empty). When supplied with
- *        upper_tolerance, err and perturbed_err are clamped inside [lower, upper] before the subtraction.
- *        Empty (default) preserves raw finite-difference behavior.
- * @param upper_tolerance Optional per-component dead-band upper bound. Must match lower_tolerance in size.
+ * @return The change in error represented in the target frame
+ */
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed);
+
+/**
+ * @brief Calculate jacobian transform error difference with optional per-component dead-band tolerances.
+ * @details Same behavior as the 3-argument overload; additionally, after the paired ±π/sign correction the
+ *          err and perturbed_err vectors are clamped inside `[lower_tolerance, upper_tolerance]` before the
+ *          subtraction. Both tolerance vectors must be size 6, or both empty for raw finite-difference behavior.
+ * @param target The desired transform to express the transform error difference in
+ * @param source The current location of the source transform
+ * @param source_perturbed The perturbed location of the source transform
+ * @param lower_tolerance Per-component dead-band lower bound (size 6, or empty for no-op)
+ * @param upper_tolerance Per-component dead-band upper bound (same size constraints as lower_tolerance)
  * @return The change in error represented in the target frame
  */
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed,
-                                               const Eigen::VectorXd& lower_tolerance = {},
-                                               const Eigen::VectorXd& upper_tolerance = {});
+                                               const Eigen::VectorXd& lower_tolerance,
+                                               const Eigen::VectorXd& upper_tolerance);
 
 /**
  * @brief Calculate jacobian transform error difference expressed in the target frame coordinate system
@@ -157,18 +169,33 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
  * @param target_perturbed The perturbed location of the target transform
  * @param source The current location of the source transform
  * @param source_perturbed The perturbed location of the source transform
- * @param lower_tolerance Optional per-component dead-band lower bound (size 6 or empty). When supplied with
- *        upper_tolerance, err and perturbed_err are clamped inside [lower, upper] before the subtraction.
- *        Empty (default) preserves raw finite-difference behavior.
- * @param upper_tolerance Optional per-component dead-band upper bound. Must match lower_tolerance in size.
+ * @return The change in error represented in the target frame
+ */
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& target_perturbed,
+                                               const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed);
+
+/**
+ * @brief Calculate jacobian transform error difference (dynamic target) with optional per-component dead-band
+ *        tolerances.
+ * @details Same behavior as the 4-argument overload; additionally, after the paired ±π/sign correction the
+ *          err and perturbed_err vectors are clamped inside `[lower_tolerance, upper_tolerance]` before the
+ *          subtraction. Both tolerance vectors must be size 6, or both empty for raw finite-difference behavior.
+ * @param target The desired transform to express the transform error difference in
+ * @param target_perturbed The perturbed location of the target transform
+ * @param source The current location of the source transform
+ * @param source_perturbed The perturbed location of the source transform
+ * @param lower_tolerance Per-component dead-band lower bound (size 6, or empty for no-op)
+ * @param upper_tolerance Per-component dead-band upper bound (same size constraints as lower_tolerance)
  * @return The change in error represented in the target frame
  */
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& target_perturbed,
                                                const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed,
-                                               const Eigen::VectorXd& lower_tolerance = {},
-                                               const Eigen::VectorXd& upper_tolerance = {});
+                                               const Eigen::VectorXd& lower_tolerance,
+                                               const Eigen::VectorXd& upper_tolerance);
 
 /**
  * @brief Apply a per-component dead-band tolerance to an error vector in place.

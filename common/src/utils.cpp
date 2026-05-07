@@ -175,6 +175,13 @@ void applyTolerances(Eigen::Ref<Eigen::VectorXd> v,
 
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed)
+{
+  return calcJacobianTransformErrorDiff(target, source, source_perturbed, Eigen::VectorXd{}, Eigen::VectorXd{});
+}
+
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed,
                                                const Eigen::VectorXd& lower_tolerance,
                                                const Eigen::VectorXd& upper_tolerance)
@@ -211,6 +218,15 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
   applyTolerances(perturbed_err, lower_tolerance, upper_tolerance);
 
   return (perturbed_err - err);
+}
+
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& target_perturbed,
+                                               const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed)
+{
+  return calcJacobianTransformErrorDiff(
+      target, target_perturbed, source, source_perturbed, Eigen::VectorXd{}, Eigen::VectorXd{});
 }
 
 Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
