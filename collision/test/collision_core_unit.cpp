@@ -1065,6 +1065,109 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesMasterWireFormat)  // NOLINT
   EXPECT_DOUBLE_EQ(stored_results[0].distance, 0.05);
 }
 
+TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLINT
+{
+  // Cross-archive load test: a hand-crafted JSON literal that mimics what master's
+  // ContactResultMap save produces (NVP "container", string-pair keys, ContactResult value).
+  // This proves the wire format is byte-readable across implementations, not merely a
+  // local round-trip fixed-point on this branch. A partner test
+  // (ContactResultMapCerealUsesMasterWireFormat, above) pins the structural shape on save.
+  using namespace tesseract::collision;
+  using namespace tesseract::common;
+
+  // Names and distance deliberately differ from the structural test so a copy-paste
+  // round-trip cannot mask a load regression.
+  const std::string master_format = R"JSON({
+    "contact_result_map": {
+        "container": [
+            {
+                "key": {
+                    "first": "master_link_x",
+                    "second": "master_link_y"
+                },
+                "value": [
+                    {
+                        "distance": 0.125,
+                        "type_id": { "value0": 0, "value1": 0 },
+                        "link_names": { "value0": "master_link_x", "value1": "master_link_y" },
+                        "shape_id": { "value0": -1, "value1": -1 },
+                        "subshape_id": { "value0": -1, "value1": -1 },
+                        "nearest_points": {
+                            "value0": { "cereal_class_version": 0, "rows": 3, "data": [0.0, 0.0, 0.0] },
+                            "value1": { "rows": 3, "data": [0.0, 0.0, 0.0] }
+                        },
+                        "nearest_points_local": {
+                            "value0": { "rows": 3, "data": [0.0, 0.0, 0.0] },
+                            "value1": { "rows": 3, "data": [0.0, 0.0, 0.0] }
+                        },
+                        "transform": {
+                            "value0": {
+                                "cereal_class_version": 0,
+                                "xyz": [0.0, 0.0, 0.0],
+                                "xyzw": [0.0, 0.0, 0.0, 1.0]
+                            },
+                            "value1": {
+                                "xyz": [0.0, 0.0, 0.0],
+                                "xyzw": [0.0, 0.0, 0.0, 1.0]
+                            }
+                        },
+                        "normal": { "rows": 3, "data": [0.0, 0.0, 0.0] },
+                        "cc_time": { "value0": -1.0, "value1": -1.0 },
+                        "cc_type": { "value0": 0, "value1": 0 },
+                        "cc_transform": {
+                            "value0": {
+                                "xyz": [0.0, 0.0, 0.0],
+                                "xyzw": [0.0, 0.0, 0.0, 1.0]
+                            },
+                            "value1": {
+                                "xyz": [0.0, 0.0, 0.0],
+                                "xyzw": [0.0, 0.0, 0.0, 1.0]
+                            }
+                        },
+                        "single_contact_point": false
+                    }
+                ]
+            }
+        ]
+    }
+  })JSON";
+
+  ContactResultMap loaded;
+  {
+    std::stringstream ss(master_format);
+    cereal::JSONInputArchive ar(ss);
+    ar(cereal::make_nvp("contact_result_map", loaded));
+  }
+
+  ASSERT_EQ(loaded.size(), 1U);
+  const auto& [stored_key, stored_results] = *loaded.getContainer().begin();
+  // LinkIdPair key reconstructed from the string names in the master-format JSON.
+  EXPECT_EQ(stored_key, LinkIdPair(LinkId("master_link_x"), LinkId("master_link_y")));
+  ASSERT_EQ(stored_results.size(), 1U);
+  EXPECT_EQ(stored_results[0].link_ids[0].name(), "master_link_x");
+  EXPECT_EQ(stored_results[0].link_ids[1].name(), "master_link_y");
+  EXPECT_DOUBLE_EQ(stored_results[0].distance, 0.125);
+}
+
+TEST(TesseractCoreUnit, ContactResultMapCerealSaveRejectsInvalidLinkIds)  // NOLINT
+{
+  // Defensive guard: the master-compatible save path derives the on-disk key from the stored
+  // ContactResult's link_ids names. A default-constructed ContactResult would silently emit
+  // ("","") on the wire and lose the LinkIdPair identity. Confirm save throws instead.
+  using namespace tesseract::collision;
+  using namespace tesseract::common;
+
+  ContactResultMap result_map;
+  // Use addContactResult with a default ContactResult — link_ids are INVALID_LINK_ID, so
+  // names are empty.
+  result_map.addContactResult(LinkIdPair(LinkId("real_a"), LinkId("real_b")), ContactResult{});
+
+  std::stringstream ss;
+  cereal::JSONOutputArchive ar(ss);
+  EXPECT_THROW(ar(cereal::make_nvp("contact_result_map", result_map)),  // NOLINT
+               std::runtime_error);
+}
+
 TEST(TesseractCoreUnit, ContactRequestUnit)  // NOLINT
 {
   {
