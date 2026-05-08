@@ -357,7 +357,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
       segment_transforms_[parent_joint->child_link_id] = segment_transforms_[parent_link_id] * kdl_sgm.pose(0.0);
     else
       segment_transforms_[parent_joint->child_link_id] =
-          segment_transforms_[parent_link_id] * kdl_sgm.pose(joint_values_.at(parent_joint->getId()));
+          segment_transforms_[parent_link_id] * kdl_sgm.pose(getJointValueOrThrow(parent_joint));
 
     if (!started_ && found)
     {
@@ -418,7 +418,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
         if (parent_joint->type == JointType::FIXED || parent_joint->type == JointType::FLOATING)
           parent_to_joint = kdl_sgm.pose(0.0);
         else
-          parent_to_joint = kdl_sgm.pose(joint_values_.at(parent_joint->getId()));
+          parent_to_joint = kdl_sgm.pose(getJointValueOrThrow(parent_joint));
 
         kdl_jnt = KDL::Joint(parent_joint->getName(), KDL::Joint::None);
       }
@@ -444,6 +444,24 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
   }
 
 protected:
+  /** @brief Look up a joint value or throw a descriptive error naming the offending joint.
+   *
+   * Callers of parseSceneGraph (sub-tree overload) must supply a value in @p joint_values_ for every
+   * non-FIXED, non-FLOATING joint reachable from the root during the DFS — not only those listed in
+   * @p joint_ids_.  A missing entry here means the caller's map is incomplete; we throw rather than
+   * crash with a bare std::out_of_range so the caller can identify and fix the omission.
+   */
+  double getJointValueOrThrow(const Joint::ConstPtr& parent_joint) const
+  {
+    auto it = joint_values_.find(parent_joint->getId());
+    if (it == joint_values_.end())
+      throw std::runtime_error(
+          "kdl_sub_tree_builder: joint_values is missing a value for non-fixed, non-floating joint '" +
+          parent_joint->getName() +
+          "'. Caller must supply values for every joint reachable from the root, not only those in joint_ids_.");
+    return it->second;
+  }
+
   KDLTreeData& data_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   int search_cnt_{ -1 };
   bool started_{ false };

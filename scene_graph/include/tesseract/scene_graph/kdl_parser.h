@@ -149,14 +149,23 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph);
 
 /**
  * @brief Convert a portion of a Tesseract SceneGraph into a KDL Tree
- * @details This will create a new tree from multiple sub tree defined by the provided joint names
+ * @details This will create a new tree from multiple sub tree defined by the provided joint names.
  * The values are used to convert non fixed joints that are not listed in joint_names to a
  * fixed joint. The first tree found a link is defined attaching world to the base link and all
  * other trees are attached to this link by a fixed joint.
- * @throws If graph is not a tree it will return false.
+ *
+ * @note **Precondition**: @p joint_values must contain an entry for *every* non-FIXED, non-FLOATING
+ * joint that is reachable from the root during the depth-first traversal, including joints that are
+ * **not** listed in @p joint_ids.  Joints absent from @p joint_ids are treated as fixed segments
+ * whose pose is determined by the value in @p joint_values.  A missing entry throws
+ * `std::runtime_error` naming the offending joint so the caller can identify and fix the omission.
+ *
+ * @throws std::runtime_error If the graph is not a tree, if the generated tree does not contain
+ * exactly `joint_ids.size()` active joints, or if @p joint_values is missing a value for a
+ * non-FIXED, non-FLOATING joint reachable from the root.
  * @param scene_graph The Tesseract Scene Graph
- * @param joint_names The active joint names
- * @param joint_values The active joint values
+ * @param joint_ids The active joint ids
+ * @param joint_values Values for every non-FIXED, non-FLOATING joint reachable from the root
  * @param floating_joint_values The floating joint values
  * @return Returns KDL tree representation of the sub scene graph
  */

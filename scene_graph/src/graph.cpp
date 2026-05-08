@@ -1201,8 +1201,10 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
   acm_->insertAllowedCollisionMatrix(*clone_prefix(scene_graph.getAllowedCollisionMatrix(), prefix));
 
   // If the this graph was empty to start we will set the root link to the same as the inserted one.
+  // When a prefix is given every link was stored under LinkId(prefix + name), so we must use the
+  // prefixed id here too; the un-prefixed id is not in link_map_ and setRoot() would silently fail.
   if (is_empty)
-    setRoot(scene_graph.getRoot());
+    setRoot(prefix.empty() ? scene_graph.getRoot() : LinkId(prefix + scene_graph.getRoot().name()));
 
   return true;
 }

@@ -1554,6 +1554,42 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointDfsUnit)  // NOLINT
   EXPECT_TRUE(data.floating_joint_values[JointId("j_float")].isApprox(fj_tf));
 }
 
+TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingJointValueThrows)  // NOLINT
+{
+  // Regression test: discover_vertex must throw std::runtime_error (naming the offending joint) when
+  // joint_values is missing an entry for a non-FIXED, non-FLOATING joint reachable from the root.
+  // Before the fix, .at() threw bare std::out_of_range without any joint name.
+  using namespace tesseract::scene_graph;
+
+  SceneGraph g = buildTestSceneGraph();
+
+  // Empty active-joint subset — every revolute joint walked by the DFS will hit the missing-value path.
+  const std::vector<JointId> subset;
+  // Deliberately omit all entries so joint_3 (revolute) has no value.
+  const std::unordered_map<JointId, double> joint_values;
+  const tesseract::common::JointIdTransformMap floating;
+
+  // Must throw std::runtime_error, not std::out_of_range.
+  EXPECT_THROW(parseSceneGraph(g, subset, joint_values, floating), std::runtime_error);
+
+  // The error message must name the offending joint so callers can act on it.
+  try
+  {
+    parseSceneGraph(g, subset, joint_values, floating);
+    FAIL() << "Expected std::runtime_error";
+  }
+  catch (const std::runtime_error& e)
+  {
+    // joint_1, joint_2, joint_3, joint_4 are all revolute — whichever the DFS hits first must be named.
+    const std::string msg(e.what());
+    const bool names_a_joint = msg.find("joint_1") != std::string::npos ||
+                               msg.find("joint_2") != std::string::npos ||
+                               msg.find("joint_3") != std::string::npos ||
+                               msg.find("joint_4") != std::string::npos;
+    EXPECT_TRUE(names_a_joint) << "Exception message did not name the offending joint: " << msg;
+  }
+}
+
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 {
   using namespace tesseract::scene_graph;
@@ -1620,6 +1656,32 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 
   // Save Graph
   ng.saveDOT(tesseract::common::getTempPath() + "graph_insert_empty_example.dot");
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyWithPrefixUnit)  // NOLINT
+{
+  // Regression test: insertSceneGraph into an empty graph WITH a prefix must store the prefixed root LinkId.
+  // Before the fix, setRoot(scene_graph.getRoot()) silently failed (link not in link_map_), leaving the root
+  // as whatever first link happened to be added — which is hash-order-dependent and wrong.
+  using namespace tesseract::scene_graph;
+
+  tesseract::scene_graph::SceneGraph g = buildTestSceneGraph();
+  const std::string prefix = "r1::";
+
+  // buildTestSceneGraph() root is "base_link"; after prefix it must be "r1::base_link".
+  const std::string expected_root_name = prefix + g.getRoot().name();
+
+  tesseract::scene_graph::SceneGraph ng;
+  EXPECT_TRUE(ng.insertSceneGraph(g, prefix));
+
+  // Root must be exactly the prefixed version of the original root.
+  EXPECT_EQ(ng.getRoot().name(), expected_root_name);
+
+  // Root must be retrievable from link_map_.
+  EXPECT_NE(ng.getLink(ng.getRoot()), nullptr);
+
+  // Inserting into an empty graph must produce a tree.
+  EXPECT_TRUE(ng.isTree());
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)  // NOLINT
