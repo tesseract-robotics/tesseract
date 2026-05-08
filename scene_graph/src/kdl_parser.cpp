@@ -347,7 +347,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
     bool found = (std::find(joint_ids_.begin(), joint_ids_.end(), parent_joint->getId()) != joint_ids_.end());
     KDL::Joint kdl_jnt = convert(parent_joint);
     KDL::Frame parent_to_joint = (parent_joint->type == JointType::FLOATING) ?
-                                     convert(data_.floating_joint_values.at(parent_joint->getId())) :
+                                     convert(getFloatingTransformOrThrow(parent_joint)) :
                                      convert(parent_joint->parent_to_joint_origin_transform);
 
     KDL::Segment kdl_sgm(link->getName(), kdl_jnt, parent_to_joint, inert);
@@ -459,6 +459,25 @@ protected:
           "kdl_sub_tree_builder: joint_values is missing a value for non-fixed, non-floating joint '" +
           parent_joint->getName() +
           "'. Caller must supply values for every joint reachable from the root, not only those in joint_ids_.");
+    return it->second;
+  }
+
+  /** @brief Look up a floating joint transform or throw a descriptive error naming the offending joint.
+   *
+   * Callers of parseSceneGraph (sub-tree overload) must supply a transform in @p floating_joint_values for
+   * every FLOATING joint reachable from the root during the DFS.  A missing entry here means the caller's
+   * map is incomplete; we throw rather than crash with a bare std::out_of_range so the caller can identify
+   * and fix the omission.  The constructor copies @p floating_joint_values straight into
+   * @p data_.floating_joint_values, so the precondition is symmetric — query the post-constructor copy.
+   */
+  const Eigen::Isometry3d& getFloatingTransformOrThrow(const Joint::ConstPtr& parent_joint) const
+  {
+    auto it = data_.floating_joint_values.find(parent_joint->getId());
+    if (it == data_.floating_joint_values.end())
+      throw std::runtime_error("kdl_sub_tree_builder: floating_joint_values is missing a transform for FLOATING "
+                               "joint '" +
+                               parent_joint->getName() +
+                               "'. Caller must supply a transform for every FLOATING joint reachable from the root.");
     return it->second;
   }
 
