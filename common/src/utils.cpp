@@ -539,29 +539,55 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
   return (diff_abs <= (mrd * a1.abs().max(a2.abs()))).all();
 }
 
+std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
+                                         const AllowedCollisionEntries& acm_entries,
+                                         bool remove_duplicates)
+{
+  std::unordered_set<NameIdValue> query_ids;
+  query_ids.reserve(link_ids.size());
+  for (const auto& q : link_ids)
+    query_ids.insert(q.value());
+
+  std::vector<LinkId> results;
+  std::unordered_set<NameIdValue> seen;
+  results.reserve(acm_entries.size());
+
+  for (const auto& [pair_key, entry] : acm_entries)
+  {
+    // entry.name1/name2 are stored in the same canonical order as pair_key.first_id()/second_id().
+    // If query contains the first id, the "other" link is name2; if it contains the second id, the "other" is name1.
+    if (query_ids.count(pair_key.first_id()) > 0)
+    {
+      LinkId other(entry.name2);
+      if (!remove_duplicates || seen.insert(other.value()).second)
+        results.push_back(std::move(other));
+    }
+    if (query_ids.count(pair_key.second_id()) > 0)
+    {
+      LinkId other(entry.name1);
+      if (!remove_duplicates || seen.insert(other.value()).second)
+        results.push_back(std::move(other));
+    }
+  }
+  return results;
+}
+
 std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
                                               const AllowedCollisionEntries& acm_entries,
                                               bool remove_duplicates)
 {
-  std::vector<std::string> results;
-  results.reserve(acm_entries.size());
+  std::vector<LinkId> ids;
+  ids.reserve(link_names.size());
+  for (const auto& n : link_names)
+    ids.emplace_back(n);
 
-  for (const auto& [key, entry] : acm_entries)
-  {
-    const std::string& link_1 = entry.name1;
-    const std::string& link_2 = entry.name2;
+  auto id_results = getAllowedCollisions(ids, acm_entries, remove_duplicates);
 
-    // If the first entry is one of the links we were looking for
-    if (std::find(link_names.begin(), link_names.end(), link_1) != link_names.end())
-      // If it hasn't already been added or remove_duplicates is disabled
-      if (!remove_duplicates || (std::find(results.begin(), results.end(), link_2) == results.end()))
-        results.push_back(link_2);
-
-    if (std::find(link_names.begin(), link_names.end(), link_2) != link_names.end())
-      if (!remove_duplicates || (std::find(results.begin(), results.end(), link_1) == results.end()))
-        results.push_back(link_1);
-  }
-  return results;
+  std::vector<std::string> out;
+  out.reserve(id_results.size());
+  for (const auto& id : id_results)
+    out.push_back(id.name());
+  return out;
 }
 
 }  // namespace tesseract::common
