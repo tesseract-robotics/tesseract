@@ -50,12 +50,8 @@ namespace tesseract::scene_graph
 using tesseract::common::JointId;
 using tesseract::common::LinkId;
 
-/** @brief Overlay floating-joint values into @p target, throwing if any source id is unknown.
- *
- *  All public OFKTStateSolver entrypoints that take a JointIdTransformMap eventually overlay
- *  the user-supplied values onto either current_state_.floating_joints or a local copy. A bare
- *  .at() throws std::out_of_range with no context; callers had no way to identify which id
- *  was missing. Throw a name-bearing message so the user can fix their map.
+/** @brief Throws std::runtime_error naming the offending floating-joint id when overlaying user-supplied
+ *         values onto @p target, instead of letting bare .at() throw a context-free std::out_of_range.
  */
 static void overlayFloatingJointsOrThrow(tesseract::common::JointIdTransformMap& target,
                                          const tesseract::common::JointIdTransformMap& source,
@@ -462,7 +458,11 @@ OFKTStateSolver::calcJacobianHelper(const SceneState::JointValues& joints,
     }
     else if (node->getType() == JointType::FLOATING)
     {
-      total_tf = floating_joint_values.at(node->getJointId()) * total_tf;
+      auto fj_it = floating_joint_values.find(node->getJointId());
+      if (fj_it == floating_joint_values.end())
+        throw std::runtime_error("OFKTStateSolver: internal inconsistency - FLOATING node '" +
+                                 node->getJointId().name() + "' has no entry in floating_joints map");
+      total_tf = fj_it->second * total_tf;
     }
     else
     {
