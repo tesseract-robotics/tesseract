@@ -55,8 +55,16 @@ AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& en
 
 void AllowedCollisionMatrix::insertEntryChecked(const LinkIdPair& key, ACMEntry entry)
 {
-  auto [it, inserted] = lookup_table_.try_emplace(key, std::move(entry));
-  if (!inserted)
+  // Construct a default value on insert and move into it; on duplicate, read
+  // names from entry (never moved-from) for the hash-collision check, then move
+  // the reason out. This keeps entry's name strings live across try_emplace
+  // regardless of stdlib implementation details.
+  auto [it, inserted] = lookup_table_.try_emplace(key);
+  if (inserted)
+  {
+    it->second = std::move(entry);
+  }
+  else
   {
     checkPairHashCollision("ACM", entry.name1, entry.name2, it->second.name1, it->second.name2);
     it->second.reason = std::move(entry.reason);
@@ -70,6 +78,11 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
   const LinkIdPair key(link_id1, link_id2);
   auto [name1, name2] = orderedPairNames(link_id1, link_id2);
   insertEntryChecked(key, ACMEntry{ std::move(name1), std::move(name2), reason });
+}
+
+void AllowedCollisionMatrix::addAllowedCollision(const LinkIdPair& pair, const ACMEntry& entry)
+{
+  insertEntryChecked(pair, entry);
 }
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
