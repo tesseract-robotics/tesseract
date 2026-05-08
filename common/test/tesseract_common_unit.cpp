@@ -3051,6 +3051,51 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_AxisFlipPath)  // NOLIN
   });
 }
 
+// Direct coverage of the public applyTolerances helper. The toleranced-jacobian tests above
+// only reach applyTolerances through the calcJacobianTransformErrorDiff call sites, which now
+// short-circuit when both tolerance vectors are empty — the empty-both early-return inside
+// applyTolerances is therefore unreachable from those tests but is still part of the documented
+// public API contract for external callers.
+TEST(TesseractCommonUnit, applyTolerances)  // NOLINT
+{
+  using tesseract::common::applyTolerances;
+
+  // Both tolerances empty → no-op (the previously uncovered early-return path).
+  {
+    Eigen::VectorXd v(3);
+    v << -2.0, 0.0, 3.0;
+    const Eigen::VectorXd v_copy = v;
+    applyTolerances(v, Eigen::VectorXd{}, Eigen::VectorXd{});
+    EXPECT_TRUE(v.isApprox(v_copy));
+  }
+
+  // In-band components clamped to zero; below-band shifts by lower; above-band shifts by upper.
+  {
+    Eigen::VectorXd v(4);
+    v << -2.0, -0.25, 0.25, 2.0;
+    Eigen::VectorXd lower(4);
+    lower << -1.0, -0.5, -0.5, -1.0;
+    Eigen::VectorXd upper(4);
+    upper << 1.0, 0.5, 0.5, 1.0;
+    applyTolerances(v, lower, upper);
+    Eigen::VectorXd expected(4);
+    expected << -1.0, 0.0, 0.0, 1.0;
+    EXPECT_TRUE(v.isApprox(expected));
+  }
+
+  // Mismatched lower/upper sizes throw.
+  {
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(3);
+    EXPECT_THROW(applyTolerances(v, Eigen::VectorXd::Zero(2), Eigen::VectorXd::Zero(3)), std::runtime_error);
+  }
+
+  // Tolerance size not matching v throws.
+  {
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(3);
+    EXPECT_THROW(applyTolerances(v, Eigen::VectorXd::Zero(4), Eigen::VectorXd::Zero(4)), std::runtime_error);
+  }
+}
+
 /** @brief Tests calcTransformError */
 TEST(TesseractCommonUnit, computeRandomColor)  // NOLINT
 {
