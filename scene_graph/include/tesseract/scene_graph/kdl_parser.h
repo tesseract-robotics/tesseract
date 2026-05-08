@@ -160,13 +160,19 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph);
  * whose pose is determined by the value in @p joint_values.  A missing entry throws
  * `std::runtime_error` naming the offending joint so the caller can identify and fix the omission.
  *
+ * @note **Precondition**: @p floating_joint_values must contain an entry for *every* FLOATING joint
+ * reachable from the root during the depth-first traversal.  A missing entry throws
+ * `std::runtime_error` naming the offending FLOATING joint so the caller can identify and fix the
+ * omission.
+ *
  * @throws std::runtime_error If the graph is not a tree, if the generated tree does not contain
- * exactly `joint_ids.size()` active joints, or if @p joint_values is missing a value for a
- * non-FIXED, non-FLOATING joint reachable from the root.
+ * exactly `joint_ids.size()` active joints, if @p joint_values is missing a value for a non-FIXED,
+ * non-FLOATING joint reachable from the root, or if @p floating_joint_values is missing a transform
+ * for a FLOATING joint reachable from the root.
  * @param scene_graph The Tesseract Scene Graph
  * @param joint_ids The active joint ids
  * @param joint_values Values for every non-FIXED, non-FLOATING joint reachable from the root
- * @param floating_joint_values The floating joint values
+ * @param floating_joint_values Transforms for every FLOATING joint reachable from the root
  * @return Returns KDL tree representation of the sub scene graph
  */
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,

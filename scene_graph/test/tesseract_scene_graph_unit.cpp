@@ -1590,6 +1590,55 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingJointValueThrows)  // N
   }
 }
 
+TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingFloatingJointValueThrows)  // NOLINT
+{
+  // Regression test (B2 follow-up): the FLOATING-joint sibling of the joint_values bug.
+  // discover_vertex must throw std::runtime_error (naming the offending joint) when
+  // floating_joint_values is missing an entry for a FLOATING joint reachable from the root.
+  // Before the fix, .at() on data_.floating_joint_values threw bare std::out_of_range without
+  // any joint name.
+  using namespace tesseract::scene_graph;
+
+  // Minimal graph: base_link (root) --fixed--> link_1 --floating--> link_2.
+  SceneGraph g;
+  EXPECT_TRUE(g.addLink(Link("base_link")));
+  EXPECT_TRUE(g.addLink(Link("link_1")));
+  EXPECT_TRUE(g.addLink(Link("link_2")));
+
+  Joint j_fixed("j_fixed");
+  j_fixed.parent_link_id = "base_link";
+  j_fixed.child_link_id = "link_1";
+  j_fixed.type = JointType::FIXED;
+  EXPECT_TRUE(g.addJoint(j_fixed));
+
+  Joint j_float("j_float");
+  j_float.parent_link_id = "link_1";
+  j_float.child_link_id = "link_2";
+  j_float.type = JointType::FLOATING;
+  EXPECT_TRUE(g.addJoint(j_float));
+
+  const std::vector<JointId> subset;
+  const std::unordered_map<JointId, double> joint_values;
+  // Deliberately empty — j_float has no transform supplied.
+  const tesseract::common::JointIdTransformMap floating;
+
+  // Must throw std::runtime_error, not std::out_of_range.
+  EXPECT_THROW(parseSceneGraph(g, subset, joint_values, floating), std::runtime_error);
+
+  // The error message must name the offending FLOATING joint so callers can act on it.
+  try
+  {
+    parseSceneGraph(g, subset, joint_values, floating);
+    FAIL() << "Expected std::runtime_error";
+  }
+  catch (const std::runtime_error& e)
+  {
+    const std::string msg(e.what());
+    EXPECT_NE(msg.find("j_float"), std::string::npos)
+        << "Exception message did not name the offending FLOATING joint: " << msg;
+  }
+}
+
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 {
   using namespace tesseract::scene_graph;
