@@ -3141,6 +3141,70 @@ TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
   EXPECT_NO_THROW(ss << acm);  // NOLINT
 }
 
+TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
+{
+  using tesseract::common::ACMEntry;
+  using tesseract::common::AllowedCollisionMatrix;
+  using tesseract::common::LinkId;
+  using tesseract::common::LinkIdPair;
+
+  // Build the canonical (key, entry) the same way the two-LinkId overload would, then
+  // re-insert via the pair-based overload. This mirrors the F6/G2 caller pattern
+  // (iterating an existing AllowedCollisionEntries map).
+  const LinkId link_a("link_a");
+  const LinkId link_b("link_b");
+  const LinkIdPair key(link_a, link_b);
+  auto [name1, name2] = tesseract::common::orderedPairNames(link_a, link_b);
+  ACMEntry entry{ name1, name2, "test_reason" };
+
+  AllowedCollisionMatrix acm;
+  acm.addAllowedCollision(key, entry);
+  EXPECT_TRUE(acm.isCollisionAllowed(link_a, link_b));
+  EXPECT_TRUE(acm.isCollisionAllowed(link_b, link_a));  // symmetric
+  ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
+  const auto& [stored_key, stored_entry] = *acm.getAllAllowedCollisions().begin();
+  EXPECT_EQ(stored_key, key);
+  EXPECT_EQ(stored_entry.name1, name1);
+  EXPECT_EQ(stored_entry.name2, name2);
+  EXPECT_EQ(stored_entry.reason, "test_reason");
+
+  // Equivalence with the two-LinkId form: an ACM populated via either path should match.
+  AllowedCollisionMatrix acm_via_link_ids;
+  acm_via_link_ids.addAllowedCollision(link_a, link_b, "test_reason");
+  EXPECT_TRUE(acm == acm_via_link_ids);
+
+  // Re-inserting an existing key updates the reason without throwing (no name-collision
+  // since names match the stored ones).
+  ACMEntry entry2{ name1, name2, "updated_reason" };
+  EXPECT_NO_THROW(acm.addAllowedCollision(key, entry2));
+  ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
+  EXPECT_EQ(acm.getAllAllowedCollisions().begin()->second.reason, "updated_reason");
+
+  // Hash-collision detection fires when the same pair is re-inserted with different names.
+  AllowedCollisionMatrix acm_collision;
+  acm_collision.addAllowedCollision(link_a, link_b, "r");
+  ACMEntry mismatched{ "wrong_a", "wrong_b", "r" };
+  EXPECT_THROW(acm_collision.addAllowedCollision(key, mismatched), std::runtime_error);
+}
+
+TEST(TesseractCommonUnit, ACMDuplicatePairInsertDoesNotFalsePositiveCollision)  // NOLINT
+{
+  // Regression: insertEntryChecked moved `entry` into try_emplace and then read
+  // entry.name1/name2 on the !inserted branch. With a moved-from entry, those
+  // reads see empty strings, so checkPairHashCollision wrongly reports a hash
+  // collision on a benign duplicate-name insert.
+  tesseract::common::AllowedCollisionMatrix acm;
+  ASSERT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "first"));
+  EXPECT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "second"))
+      << "duplicate insert misreported as hash collision because insertEntryChecked "
+      << "read the moved-from ACMEntry's empty names";
+
+  // After the second insert, the reason should be the latest value (semantic of
+  // re-inserting an existing key per the ACM contract).
+  ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
+  EXPECT_EQ(acm.getAllAllowedCollisions().begin()->second.reason, "second");
+}
+
 TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT
 {
   tesseract::common::AllowedCollisionMatrix acm1;
@@ -5125,6 +5189,41 @@ TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
   const auto id1 = tesseract::common::LinkId("linkA");
   const auto id2 = tesseract::common::LinkId("linkB");
   EXPECT_EQ(data.at(tesseract::common::LinkIdPair(id1, id2)).reason, "second");
+}
+
+TEST(TesseractCommonUnit, PairsCollisionMarginDataDecodeDoesNotFalsePositiveCollision)  // NOLINT
+{
+  // Regression: the YAML decoder for PairsCollisionMarginData read entry.name1/name2
+  // after std::move(entry) into try_emplace — on duplicate keys with matching names,
+  // checkPairHashCollision compared empty moved-from names against the stored real
+  // names and threw a false-positive collision error.
+  const std::string yaml_doc = R"(
+[link_a, link_b]: 0.05
+[link_a, link_b]: 0.10
+)";
+  YAML::Node node = YAML::Load(yaml_doc);
+  tesseract::common::PairsCollisionMarginData data;
+  EXPECT_NO_THROW(data = node.as<tesseract::common::PairsCollisionMarginData>());  // NOLINT
+  ASSERT_EQ(data.size(), 1U);
+  // The second value wins (overwrite semantics on duplicate key).
+  EXPECT_DOUBLE_EQ(data.begin()->second.margin, 0.10);
+}
+
+TEST(TesseractCommonUnit, AllowedCollisionEntriesDecodeDoesNotFalsePositiveCollision)  // NOLINT
+{
+  // Regression: the YAML decoder for AllowedCollisionEntries read entry.name1/name2
+  // after std::move(entry) into try_emplace — on duplicate keys with matching names,
+  // checkPairHashCollision compared empty moved-from names against the stored real
+  // names and threw a false-positive collision error.
+  const std::string yaml_doc = R"(
+[link_a, link_b]: first_reason
+[link_a, link_b]: second_reason
+)";
+  YAML::Node node = YAML::Load(yaml_doc);
+  tesseract::common::AllowedCollisionEntries data;
+  EXPECT_NO_THROW(data = node.as<tesseract::common::AllowedCollisionEntries>());  // NOLINT
+  ASSERT_EQ(data.size(), 1U);
+  EXPECT_EQ(data.begin()->second.reason, "second_reason");
 }
 
 int main(int argc, char** argv)

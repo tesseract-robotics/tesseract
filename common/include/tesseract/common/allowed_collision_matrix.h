@@ -67,6 +67,18 @@ public:
   virtual void addAllowedCollision(const LinkId& link_id1, const LinkId& link_id2, const std::string& reason);
 
   /**
+   * @brief Disable collision for a pre-built canonical pair, supplying the entry's names + reason.
+   * @details Useful when iterating an existing @ref AllowedCollisionEntries map and re-inserting
+   *          {key, entry} pairs without reconstructing @ref LinkId objects from strings.
+   *          Inserts the entry, or — if @p pair is already present with matching names —
+   *          updates the reason. Throws std::runtime_error if @p pair is already present with
+   *          different names (hash collision).
+   * @param pair Canonically ordered link-id pair (the map key)
+   * @param entry The ACM entry value (names + reason)
+   */
+  virtual void addAllowedCollision(const LinkIdPair& pair, const ACMEntry& entry);
+
+  /**
    * @brief Get all of the entries in the allowed collision matrix
    * @return AllowedCollisionEntries keyed by LinkIdPair with ACMEntry values containing names and reason
    */
