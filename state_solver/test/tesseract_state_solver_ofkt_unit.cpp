@@ -178,6 +178,39 @@ TEST(TesseractStateSolverUnit, OFKTSetFloatingJointStateUnit)  // NOLINT
   test_suite::runSetFloatingJointStateTest<OFKTStateSolver>();
 }
 
+// All OFKT entrypoints that overlay user-supplied floating-joint values used to call bare .at(),
+// throwing std::out_of_range with no context. Verify the safety-sweep replacement throws a
+// std::runtime_error whose message names the offending joint id, so callers can identify the
+// bad entry instead of debugging a context-free out_of_range.
+TEST(TesseractStateSolverUnit, OFKTApplyFloatingValuesUnknownIdThrows)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::JointIdTransformMap;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
+  OFKTStateSolver solver(*scene_graph);
+
+  JointIdTransformMap bad;
+  bad[JointId("does_not_exist_floating")] = Eigen::Isometry3d::Identity();
+
+  // The setState(JointIdTransformMap) overload is the simplest user-facing entrypoint into the
+  // floating-joint overlay path. It must throw std::runtime_error (not std::out_of_range).
+  EXPECT_THROW(solver.setState(bad), std::runtime_error);  // NOLINT
+
+  // The throw message must name the offending joint id so callers can identify the bad entry.
+  try
+  {
+    solver.setState(bad);
+    FAIL() << "expected std::runtime_error from setState with unknown floating-joint id";
+  }
+  catch (const std::runtime_error& e)
+  {
+    EXPECT_NE(std::string(e.what()).find("does_not_exist_floating"), std::string::npos)
+        << "throw message did not name the offending joint id: " << e.what();
+  }
+}
+
 TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT
 {
   OFKTStateSolver solver("test");
