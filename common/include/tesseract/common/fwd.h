@@ -29,6 +29,18 @@
 
 namespace tesseract::common
 {
+// types.h — identity types (NameId family)
+using NameIdValue = std::uint64_t;
+struct LinkTag;
+struct JointTag;
+template <typename Tag>
+struct NameId;
+template <typename Tag>
+struct OrderedIdPair;
+using LinkId = NameId<LinkTag>;
+using JointId = NameId<JointTag>;
+using LinkIdPair = OrderedIdPair<LinkTag>;
+
 // types.h
 struct PluginInfo;
 struct PluginInfoContainer;
