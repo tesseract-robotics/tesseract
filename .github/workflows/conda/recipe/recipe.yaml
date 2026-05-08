@@ -85,13 +85,13 @@ tests:
       files:
       - if: unix
         then:
-          - opt/tesseract_robotics/include/tesseract/common/fwd.hpp
+          - opt/tesseract_robotics/include/tesseract/common/fwd.h
           - if: osx
             then: opt/tesseract_robotics/lib/libtesseract_common.dylib
             else: opt/tesseract_robotics/lib/libtesseract_common.so
         else:
-          - opt\\tesseract_robotics\\include\\tesseract\\common\\fwd.hpp
-          - opt\\tesseract_robotics\\lib\\tesseract_common.dll
+          - opt/tesseract_robotics/include/tesseract/common/fwd.h
+          - opt/tesseract_robotics/bin/tesseract_common.dll
 
 build:
   number: 0
