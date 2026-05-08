@@ -1,17 +1,21 @@
 /**
  * @file rtp_vs_kdl_benchmarks.cpp
  * @brief Benchmark comparing RTPInvKin (OPW + 1-DOF tool positioner) against
- *        KDLInvKinChainNR_JL on the same 7-DOF ABB IRB2400 + tool positioner
- *        fixture. Reports per-call wall time plus solution-count / success
- *        counters. Note: the two solvers produce fundamentally different
- *        solution sets (RTP enumerates, KDL-NR-JL returns at most one), so
- *        compare time-to-first-solution, not total work done.
+ *        the three KDLInvKinChain{NR_JL, NR, LMA} solvers on the same 7-DOF
+ *        ABB IRB2400 + tool positioner fixture. Reports per-call wall time
+ *        plus solution-count / success counters. Note: the solvers produce
+ *        fundamentally different solution sets (RTP enumerates, KDL returns
+ *        at most one), so compare time-to-first-solution, not total work.
+ *        KDLInvKinChainNR and KDLInvKinChainLMA do not enforce joint limits
+ *        and may converge to out-of-limits configurations.
  */
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <random>
@@ -20,12 +24,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "kinematics_test_utils.h"
 
+#include <tesseract/common/kinematic_limits.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/kinematics/inverse_kinematics.h>
 #include <tesseract/kinematics/rtp_inv_kin.h>
 #include <tesseract/kinematics/opw/opw_inv_kin.h>
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract/kinematics/kdl/kdl_inv_kin_chain_nr_jl.h>
+#include <tesseract/kinematics/kdl/kdl_inv_kin_chain_nr.h>
+#include <tesseract/kinematics/kdl/kdl_inv_kin_chain_lma.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/state_solver/kdl/kdl_state_solver.h>
@@ -52,6 +59,21 @@ constexpr std::uint64_t TARGET_RNG_SEED = 0xB1A5EDU;
 
 /// Tool-tip link name in the ABB IRB2400 + tool positioner fixture.
 constexpr const char* TOOL_TIP_LINK = "tool_tip";
+
+/// Numerical slack added to joint-limit comparisons. Joint values within
+/// kJointLimitSlack of a limit are accepted as in-bounds, mirroring how
+/// downstream planners typically treat clamped values.
+constexpr double kJointLimitSlack = 1e-9;
+
+/// Counter names emitted by emitCounters() and described in the legend
+/// printed at the end of main(). Keep the two sites in sync via these
+/// constants so a rename can't silently desync the output and the legend.
+constexpr const char* kCounterSuccessRate = "success_rate";
+constexpr const char* kCounterInLimitsSuccessRate = "in_limits_success_rate";
+constexpr const char* kCounterSolsPerCall = "sols_per_call";
+constexpr const char* kCounterTimePerCall = "time_per_call";
+constexpr const char* kCounterTimePerValidSuccess = "time_per_valid_success";
+constexpr const char* kCounterTimePerSol = "time_per_sol";
 
 opw_kinematics::Parameters<double> abbIrb2400OpwParameters()
 {
@@ -96,7 +118,7 @@ bool isValidSolution(const Eigen::VectorXd& sol,
 
   for (Eigen::Index i = 0; i < sol.size(); ++i)
   {
-    if (sol(i) < limits.joint_limits(i, 0) - 1e-9 || sol(i) > limits.joint_limits(i, 1) + 1e-9)
+    if (sol(i) < limits.joint_limits(i, 0) - kJointLimitSlack || sol(i) > limits.joint_limits(i, 1) + kJointLimitSlack)
       return false;
   }
 
@@ -112,6 +134,40 @@ bool isValidSolution(const Eigen::VectorXd& sol,
   return std::abs(rot_err) <= rot_tol;
 }
 #endif  // NDEBUG
+
+/// Per-call accumulators for one benchmark run, fed into emitCounters() to
+/// produce the standard counter set printed by every BM_* function.
+struct CallStats
+{
+  std::size_t calls = 0;
+  std::size_t solutions = 0;
+  std::size_t successes = 0;            ///< solver returned at least one solution
+  std::size_t in_limits_successes = 0;  ///< solver returned at least one in-limits solution
+};
+
+/// Emits the standard counter set for a benchmark row. Values divide by total
+/// elapsed real time (kIsRate) and invert (kInvert) where the meaningful
+/// quantity is a period rather than a rate. See the legend printed at the
+/// bottom of main() for what each column means.
+void emitCounters(benchmark::State& state, const CallStats& s)
+{
+  const auto calls = static_cast<double>(s.calls);
+  const auto sols = static_cast<double>(s.solutions);
+  const auto succ = static_cast<double>(s.successes);
+  const auto in_lim = static_cast<double>(s.in_limits_successes);
+
+  // Round non-rate counters to 3 decimals so 0.976562 prints as 0.977.
+  const auto round3 = [](double x) { return std::round(x * 1000.0) / 1000.0; };
+  state.counters[kCounterSuccessRate] = benchmark::Counter(round3(succ / calls));
+  state.counters[kCounterInLimitsSuccessRate] = benchmark::Counter(round3(in_lim / calls));
+  state.counters[kCounterSolsPerCall] = benchmark::Counter(round3(sols / calls));
+  state.counters[kCounterTimePerCall] =
+      benchmark::Counter(calls, benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  state.counters[kCounterTimePerValidSuccess] =
+      benchmark::Counter(in_lim, benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  state.counters[kCounterTimePerSol] =
+      benchmark::Counter(sols, benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+}
 
 struct Target
 {
@@ -171,6 +227,7 @@ struct Fixture
   tesseract::scene_graph::SceneGraph::UPtr scene_graph;
   tesseract::scene_graph::SceneState scene_state;
   std::vector<Target> targets;
+  tesseract::common::KinematicLimits limits;  ///< for the manip-base -> tool-tip chain
 };
 
 Fixture makeFixture()
@@ -181,11 +238,29 @@ Fixture makeFixture()
   tesseract::scene_graph::SceneState state = ss.getState();
   auto targets = buildRandomTargets(*sg);
 
+  KDLFwdKinChain full_fk(*sg, "base_link", TOOL_TIP_LINK);
+  auto limits = getTargetLimits(*sg, full_fk.getJointNames());
+
   Fixture f;
   f.scene_graph = std::move(sg);
   f.scene_state = std::move(state);
   f.targets = std::move(targets);
+  f.limits = std::move(limits);
   return f;
+}
+
+/// Returns true iff `sols` contains at least one element whose joint values
+/// all lie within the kinematic limits (with kJointLimitSlack tolerance).
+/// KDLInvKinChainNR and KDLInvKinChainLMA do not enforce limits; this lets
+/// the benchmark count "planner-usable" successes separately from raw solver
+/// convergence. Allocation-free and dominated by calcInvKin, so safe inside
+/// the timed loop.
+bool anyInLimits(const IKSolutions& sols, const tesseract::common::KinematicLimits& limits)
+{
+  const auto& jl = limits.joint_limits;
+  return std::any_of(sols.begin(), sols.end(), [&](const Eigen::VectorXd& s) {
+    return s.size() == jl.rows() && tesseract::common::satisfiesLimits<double>(s, jl, kJointLimitSlack, 0.0);
+  });
 }
 
 RTPInvKin::UPtr makeRTP(const Fixture& f, double tool_resolution_rad)
@@ -198,8 +273,20 @@ RTPInvKin::UPtr makeRTP(const Fixture& f, double tool_resolution_rad)
 
 KDLInvKinChainNR_JL::UPtr makeKDLNRJL(const Fixture& f)
 {
-  KDLInvKinChainNR_JL::Config config;  // KDL defaults
+  KDLInvKinChainNR_JL::Config config;
   return std::make_unique<KDLInvKinChainNR_JL>(*f.scene_graph, "base_link", TOOL_TIP_LINK, config);
+}
+
+KDLInvKinChainNR::UPtr makeKDLNR(const Fixture& f)
+{
+  KDLInvKinChainNR::Config config;
+  return std::make_unique<KDLInvKinChainNR>(*f.scene_graph, "base_link", TOOL_TIP_LINK, config);
+}
+
+KDLInvKinChainLMA::UPtr makeKDLLMA(const Fixture& f)
+{
+  KDLInvKinChainLMA::Config config;
+  return std::make_unique<KDLInvKinChainLMA>(*f.scene_graph, "base_link", TOOL_TIP_LINK, config);
 }
 
 /// Benchmarks RTPInvKin::calcInvKin over the fixed target set.
@@ -217,9 +304,7 @@ void BM_RTP_INV_KIN(benchmark::State& state, const Fixture* f)
 
   IKSolutions sols;
   sols.reserve(1024);
-  std::size_t total_calls = 0;
-  std::size_t total_solutions = 0;
-  std::size_t total_successes = 0;
+  CallStats stats;
 
   for (auto _ : state)  // NOLINT
   {
@@ -228,24 +313,14 @@ void BM_RTP_INV_KIN(benchmark::State& state, const Fixture* f)
       sols.clear();
       rtp->calcInvKin(sols, t.tip_link_poses, t.ground_truth);
       benchmark::DoNotOptimize(sols);
-      total_solutions += sols.size();
-      total_successes += (sols.empty() ? 0U : 1U);
-      ++total_calls;
+      stats.solutions += sols.size();
+      stats.successes += (sols.empty() ? 0U : 1U);
+      stats.in_limits_successes += (anyInLimits(sols, f->limits) ? 1U : 0U);
+      ++stats.calls;
     }
   }
 
-  // Per-call averages reported via Google Benchmark counters.
-  state.counters["valid_solutions_per_call"] =
-      benchmark::Counter(static_cast<double>(total_solutions) / static_cast<double>(total_calls));
-  state.counters["success_rate"] =
-      benchmark::Counter(static_cast<double>(total_successes) / static_cast<double>(total_calls));
-  // Google Benchmark divides `total_solutions` by the total elapsed real time.
-  // With kInvert, the second counter flips that to seconds per valid solution,
-  // so you can read the RTP-vs-KDL cost ratio directly.
-  state.counters["valid_sols_per_sec"] =
-      benchmark::Counter(static_cast<double>(total_solutions), benchmark::Counter::kIsRate);
-  state.counters["sec_per_valid_sol"] = benchmark::Counter(static_cast<double>(total_solutions),
-                                                           benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  emitCounters(state, stats);
 }
 
 /// Benchmarks KDLInvKinChainNR_JL with a perturbed seed (realistic planning conditions).
@@ -255,9 +330,7 @@ void BM_KDL_NR_JL_WARM(benchmark::State& state, const Fixture* f)
 
   IKSolutions sols;
   sols.reserve(2);
-  std::size_t total_calls = 0;
-  std::size_t total_solutions = 0;
-  std::size_t total_successes = 0;
+  CallStats stats;
 
   for (auto _ : state)  // NOLINT
   {
@@ -266,20 +339,14 @@ void BM_KDL_NR_JL_WARM(benchmark::State& state, const Fixture* f)
       sols.clear();
       kdl->calcInvKin(sols, t.tip_link_poses, t.seed_warm);
       benchmark::DoNotOptimize(sols);
-      total_solutions += sols.size();
-      total_successes += (sols.empty() ? 0U : 1U);
-      ++total_calls;
+      stats.solutions += sols.size();
+      stats.successes += (sols.empty() ? 0U : 1U);
+      stats.in_limits_successes += (anyInLimits(sols, f->limits) ? 1U : 0U);
+      ++stats.calls;
     }
   }
 
-  state.counters["valid_solutions_per_call"] =
-      benchmark::Counter(static_cast<double>(total_solutions) / static_cast<double>(total_calls));
-  state.counters["success_rate"] =
-      benchmark::Counter(static_cast<double>(total_successes) / static_cast<double>(total_calls));
-  state.counters["valid_sols_per_sec"] =
-      benchmark::Counter(static_cast<double>(total_solutions), benchmark::Counter::kIsRate);
-  state.counters["sec_per_valid_sol"] = benchmark::Counter(static_cast<double>(total_solutions),
-                                                           benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  emitCounters(state, stats);
 }
 
 /// Benchmarks KDLInvKinChainNR_JL with a zero seed (worst-case: no prior knowledge).
@@ -291,9 +358,7 @@ void BM_KDL_NR_JL_COLD(benchmark::State& state, const Fixture* f)
 
   IKSolutions sols;
   sols.reserve(2);
-  std::size_t total_calls = 0;
-  std::size_t total_solutions = 0;
-  std::size_t total_successes = 0;
+  CallStats stats;
 
   for (auto _ : state)  // NOLINT
   {
@@ -302,20 +367,120 @@ void BM_KDL_NR_JL_COLD(benchmark::State& state, const Fixture* f)
       sols.clear();
       kdl->calcInvKin(sols, t.tip_link_poses, zero_seed);
       benchmark::DoNotOptimize(sols);
-      total_solutions += sols.size();
-      total_successes += (sols.empty() ? 0U : 1U);
-      ++total_calls;
+      stats.solutions += sols.size();
+      stats.successes += (sols.empty() ? 0U : 1U);
+      stats.in_limits_successes += (anyInLimits(sols, f->limits) ? 1U : 0U);
+      ++stats.calls;
     }
   }
 
-  state.counters["valid_solutions_per_call"] =
-      benchmark::Counter(static_cast<double>(total_solutions) / static_cast<double>(total_calls));
-  state.counters["success_rate"] =
-      benchmark::Counter(static_cast<double>(total_successes) / static_cast<double>(total_calls));
-  state.counters["valid_sols_per_sec"] =
-      benchmark::Counter(static_cast<double>(total_solutions), benchmark::Counter::kIsRate);
-  state.counters["sec_per_valid_sol"] = benchmark::Counter(static_cast<double>(total_solutions),
-                                                           benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
+  emitCounters(state, stats);
+}
+
+/// Benchmarks KDLInvKinChainNR (no joint-limit enforcement) with a perturbed seed.
+void BM_KDL_NR_WARM(benchmark::State& state, const Fixture* f)
+{
+  auto kdl = makeKDLNR(*f);
+
+  IKSolutions sols;
+  sols.reserve(2);
+  CallStats stats;
+
+  for (auto _ : state)  // NOLINT
+  {
+    for (const auto& t : f->targets)
+    {
+      sols.clear();
+      kdl->calcInvKin(sols, t.tip_link_poses, t.seed_warm);
+      benchmark::DoNotOptimize(sols);
+      stats.solutions += sols.size();
+      stats.successes += (sols.empty() ? 0U : 1U);
+      stats.in_limits_successes += (anyInLimits(sols, f->limits) ? 1U : 0U);
+      ++stats.calls;
+    }
+  }
+
+  emitCounters(state, stats);
+}
+
+/// Benchmarks KDLInvKinChainNR with a zero seed (worst-case: no prior knowledge).
+void BM_KDL_NR_COLD(benchmark::State& state, const Fixture* f)
+{
+  auto kdl = makeKDLNR(*f);
+  const Eigen::VectorXd zero_seed = Eigen::VectorXd::Zero(kdl->numJoints());
+
+  IKSolutions sols;
+  sols.reserve(2);
+  CallStats stats;
+
+  for (auto _ : state)  // NOLINT
+  {
+    for (const auto& t : f->targets)
+    {
+      sols.clear();
+      kdl->calcInvKin(sols, t.tip_link_poses, zero_seed);
+      benchmark::DoNotOptimize(sols);
+      stats.solutions += sols.size();
+      stats.successes += (sols.empty() ? 0U : 1U);
+      stats.in_limits_successes += (anyInLimits(sols, f->limits) ? 1U : 0U);
+      ++stats.calls;
+    }
+  }
+
+  emitCounters(state, stats);
+}
+
+/// Benchmarks KDLInvKinChainLMA (Levenberg-Marquardt, no joint-limit enforcement) with a perturbed seed.
+void BM_KDL_LMA_WARM(benchmark::State& state, const Fixture* f)
+{
+  auto kdl = makeKDLLMA(*f);
+
+  IKSolutions sols;
+  sols.reserve(2);
+  CallStats stats;
+
+  for (auto _ : state)  // NOLINT
+  {
+    for (const auto& t : f->targets)
+    {
+      sols.clear();
+      kdl->calcInvKin(sols, t.tip_link_poses, t.seed_warm);
+      benchmark::DoNotOptimize(sols);
+      stats.solutions += sols.size();
+      stats.successes += (sols.empty() ? 0U : 1U);
+      stats.in_limits_successes += (anyInLimits(sols, f->limits) ? 1U : 0U);
+      ++stats.calls;
+    }
+  }
+
+  emitCounters(state, stats);
+}
+
+/// Benchmarks KDLInvKinChainLMA with a zero seed (worst-case: no prior knowledge).
+void BM_KDL_LMA_COLD(benchmark::State& state, const Fixture* f)
+{
+  auto kdl = makeKDLLMA(*f);
+  const Eigen::VectorXd zero_seed = Eigen::VectorXd::Zero(kdl->numJoints());
+
+  IKSolutions sols;
+  sols.reserve(2);
+  CallStats stats;
+
+  for (auto _ : state)  // NOLINT
+  {
+    for (const auto& t : f->targets)
+    {
+      sols.clear();
+      kdl->calcInvKin(sols, t.tip_link_poses, zero_seed);
+      benchmark::DoNotOptimize(sols);
+      stats.solutions += sols.size();
+      stats.successes += (sols.empty() ? 0U : 1U);
+      stats.in_limits_successes += (anyInLimits(sols, f->limits) ? 1U : 0U);
+      ++stats.calls;
+    }
+  }
+
+  emitCounters(state, stats);
 }
 
 /// Always-on sanity guards executed before RunSpecifiedBenchmarks.
@@ -383,6 +548,29 @@ void selfCheck(const Fixture& f)
                                                                    "perturbed seed");
 #endif  // NDEBUG
   }
+
+  // KDLInvKinChainNR / LMA do not enforce joint limits, so we only assert
+  // that the solver returns at least one solution; FK/limits validation is
+  // skipped because these solvers can legitimately exit out-of-limits.
+  auto kdl_nr = makeKDLNR(f);
+  if (kdl_nr->numJoints() != 7)
+    fail("KDL-NR solver reports unexpected joint count (expected 7)");
+  {
+    IKSolutions sols;
+    kdl_nr->calcInvKin(sols, target0.tip_link_poses, target0.ground_truth);
+    if (sols.empty())
+      fail("KDL-NR returned no solutions for a ground-truth-seeded target");
+  }
+
+  auto kdl_lma = makeKDLLMA(f);
+  if (kdl_lma->numJoints() != 7)
+    fail("KDL-LMA solver reports unexpected joint count (expected 7)");
+  {
+    IKSolutions sols;
+    kdl_lma->calcInvKin(sols, target0.tip_link_poses, target0.ground_truth);
+    if (sols.empty())
+      fail("KDL-LMA returned no solutions for a ground-truth-seeded target");
+  }
 }
 
 }  // namespace
@@ -396,10 +584,10 @@ int main(int argc, char** argv)
     // Tool resolution sweep: 0.05, 0.10, 0.20 rad (encoded as milliradians so
     // Google Benchmark's int Arg() carries the label cleanly).
     const std::vector<int> tool_res_mrad = { 50, 100, 200 };
-    auto* rtp_bench = benchmark::RegisterBenchmark("BM_RTP_INV_KIN/tool_res_mrad", BM_RTP_INV_KIN, &fixture);
+    auto* rtp_bench = benchmark::RegisterBenchmark("BM_RTP_INV_KIN", BM_RTP_INV_KIN, &fixture);
     for (int mrad : tool_res_mrad)
       rtp_bench->Arg(mrad);
-    rtp_bench->UseRealTime()->Unit(benchmark::TimeUnit::kMicrosecond);
+    rtp_bench->ArgName("tool_res_mrad")->UseRealTime()->Unit(benchmark::TimeUnit::kMicrosecond);
   }
 
   benchmark::RegisterBenchmark("BM_KDL_NR_JL_WARM", BM_KDL_NR_JL_WARM, &fixture)
@@ -410,7 +598,50 @@ int main(int argc, char** argv)
       ->UseRealTime()
       ->Unit(benchmark::TimeUnit::kMicrosecond);
 
+  benchmark::RegisterBenchmark("BM_KDL_NR_WARM", BM_KDL_NR_WARM, &fixture)
+      ->UseRealTime()
+      ->Unit(benchmark::TimeUnit::kMicrosecond);
+
+  benchmark::RegisterBenchmark("BM_KDL_NR_COLD", BM_KDL_NR_COLD, &fixture)
+      ->UseRealTime()
+      ->Unit(benchmark::TimeUnit::kMicrosecond);
+
+  benchmark::RegisterBenchmark("BM_KDL_LMA_WARM", BM_KDL_LMA_WARM, &fixture)
+      ->UseRealTime()
+      ->Unit(benchmark::TimeUnit::kMicrosecond);
+
+  benchmark::RegisterBenchmark("BM_KDL_LMA_COLD", BM_KDL_LMA_COLD, &fixture)
+      ->UseRealTime()
+      ->Unit(benchmark::TimeUnit::kMicrosecond);
+
   benchmark::Initialize(&argc, argv);
   benchmark::RunSpecifiedBenchmarks();
+
+  std::printf("\n"
+              "Counter legend:\n"
+              "  success_rate             fraction of calls returning at least one solution\n"
+              "                           (raw solver convergence; ignores joint limits)\n"
+              "  in_limits_success_rate   fraction returning at least one in-limits solution\n"
+              "                           (planner-relevant: NR/LMA may converge out-of-limits)\n"
+              "  sols_per_call            solutions returned per call (RTP enumerates, KDL <= 1)\n"
+              "  time_per_call            wall time per calcInvKin call\n"
+              "  time_per_valid_success   wall time per call yielding an in-limits answer\n"
+              "                           (= time_per_call / in_limits_success_rate; the\n"
+              "                            number a planner actually pays per usable IK)\n"
+              "  time_per_sol             amortised wall time per returned solution\n"
+              "                           (for RTP, averages over the enumerated set)\n"
+              "\n"
+              "Note: the 'Time' / 'CPU' columns are per inner loop (%zu calcInvKin calls).\n"
+              "      Use time_per_call for direct per-call comparison.\n"
+              "\n"
+              "Picking a solver:\n"
+              "  Single-shot (RRT step, IK warm-start): compare time_per_call.\n"
+              "  Batch sampling (trajectory seeding):   compare time_per_sol.\n"
+              "  Realistic planner cost:                compare time_per_valid_success.\n"
+              "\n"
+              "If success_rate > in_limits_success_rate the solver is converging to\n"
+              "configurations the planner would reject. NR_JL keeps these equal by\n"
+              "construction; NR/LMA may diverge (especially from cold seeds).\n",
+              NUM_TARGETS);
   return 0;
 }
