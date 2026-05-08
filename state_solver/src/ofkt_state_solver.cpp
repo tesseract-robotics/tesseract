@@ -519,10 +519,21 @@ std::vector<LinkId> OFKTStateSolver::getStaticLinkIds() const
 bool OFKTStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  std::vector<LinkId> ids;
-  ids.reserve(nodes_.size());
-  loadActiveLinkIdsRecursive(ids, root_.get(), false);
-  return std::find(ids.begin(), ids.end(), link_id) != ids.end();
+  auto it = link_map_.find(link_id);
+  if (it == link_map_.end())
+    return false;
+
+  // A link is active iff itself or some ancestor has a non-FIXED, non-FLOATING parent
+  // joint — equivalent to loadActiveLinkIdsRecursive's downward propagation but cheaper:
+  // O(depth) walk vs O(n) traversal + O(n) std::find on every call. Stateless, so no
+  // cache-invalidation surface to maintain on scene mutations.
+  for (const OFKTNode* node = it->second; node != nullptr; node = node->getParent())
+  {
+    const auto t = node->getType();
+    if (t != tesseract::scene_graph::JointType::FIXED && t != tesseract::scene_graph::JointType::FLOATING)
+      return true;
+  }
+  return false;
 }
 
 bool OFKTStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const

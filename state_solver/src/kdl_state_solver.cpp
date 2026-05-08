@@ -77,6 +77,8 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   joint_qnr_ = other.joint_qnr_;
   kdl_jnt_array_ = other.kdl_jnt_array_;
   limits_ = other.limits_;
+  active_link_ids_set_ = other.active_link_ids_set_;
+  link_ids_set_ = other.link_ids_set_;
   jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
@@ -301,12 +303,12 @@ std::vector<LinkId> KDLStateSolver::getStaticLinkIds() const { return data_.stat
 
 bool KDLStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) const
 {
-  return std::find(data_.active_link_ids.begin(), data_.active_link_ids.end(), link_id) != data_.active_link_ids.end();
+  return active_link_ids_set_.find(link_id) != active_link_ids_set_.end();
 }
 
 bool KDLStateSolver::hasLinkId(const tesseract::common::LinkId& link_id) const
 {
-  return std::find(data_.link_ids.begin(), data_.link_ids.end(), link_id) != data_.link_ids.end();
+  return link_ids_set_.find(link_id) != link_ids_set_.end();
 }
 
 tesseract::common::VectorIsometry3d KDLStateSolver::getLinkTransforms() const
@@ -351,14 +353,18 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
     if (jnt.getType() == KDL::Joint::None)
       continue;
 
-    joint_to_qnr_.insert(std::make_pair(JointId(jnt.getName()), seg.second.q_nr));
+    // Compute the JointId once and reuse it for all four sites below; the JointId
+    // ctor performs a name->id lookup so reusing avoids redundant map lookups.
+    const JointId jid(jnt.getName());
+
+    joint_to_qnr_.insert(std::make_pair(jid, seg.second.q_nr));
     kdl_jnt_array_(seg.second.q_nr) = 0.0;
-    current_state_.joints.insert(std::make_pair(JointId(jnt.getName()), 0.0));
-    data_.active_joint_ids[j] = JointId(jnt.getName());
+    current_state_.joints.insert(std::make_pair(jid, 0.0));
+    data_.active_joint_ids[j] = jid;
     joint_qnr_[j] = static_cast<int>(seg.second.q_nr);
 
     // Store joint limits.
-    const auto& sj = scene_graph.getJoint(JointId(jnt.getName()));
+    const auto& sj = scene_graph.getJoint(jid);
     limits_.joint_limits(static_cast<long>(j), 0) = sj->limits->lower;
     limits_.joint_limits(static_cast<long>(j), 1) = sj->limits->upper;
     limits_.velocity_limits(static_cast<long>(j), 0) = -sj->limits->velocity;
@@ -390,6 +396,14 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
                       kdl_jnt_array_,
                       data_.tree.getRootSegment(),
                       Eigen::Isometry3d::Identity());
+
+  // Build O(1) mirrors of the active/all link id vectors so isActiveLinkId/hasLinkId
+  // can avoid the linear std::find that previously dominated lookups in hot paths.
+  active_link_ids_set_.clear();
+  active_link_ids_set_.insert(data_.active_link_ids.begin(), data_.active_link_ids.end());
+  link_ids_set_.clear();
+  link_ids_set_.insert(data_.link_ids.begin(), data_.link_ids.end());
+
   return true;
 }
 

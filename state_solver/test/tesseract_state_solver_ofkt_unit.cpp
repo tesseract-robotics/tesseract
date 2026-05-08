@@ -1,6 +1,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <unordered_set>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/state_solver/ofkt/ofkt_nodes.h>
@@ -288,6 +289,41 @@ TEST(TesseractStateSolverUnit, KDLSegmentIdCacheCopyUnit)  // NOLINT
     EXPECT_TRUE(clone2_state.link_transforms.at(link_id).isApprox(expected_tf, 1e-6))
         << "Transform mismatch for link: " << link_id.name();
   }
+}
+
+// Validates that OFKTStateSolver::isActiveLinkId (parent-chain walk) agrees with
+// getActiveLinkIds() (full downward traversal) for every link in the scene, and that
+// unknown ids return false. Locks down the equivalence after switching from a
+// rebuild-and-find implementation to the O(depth) walk-up.
+TEST(TesseractStateSolverUnit, OFKTIsActiveLinkIdMatchesActiveSetUnit)  // NOLINT
+{
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
+
+  OFKTStateSolver solver(*scene_graph);
+
+  const auto active = solver.getActiveLinkIds();
+  const std::unordered_set<LinkId> active_set(active.begin(), active.end());
+
+  // For every known link, the walk-up answer must match membership in getActiveLinkIds().
+  // This implicitly covers the root (which is fixed-only and therefore not active) and
+  // every active/static descendant produced by the recursive traversal.
+  for (const auto& link_id : solver.getLinkIds())
+  {
+    const bool expected = active_set.count(link_id) > 0;
+    EXPECT_EQ(solver.isActiveLinkId(link_id), expected) << "Mismatch for link: " << link_id.name();
+  }
+
+  // Probe an id that does not exist in the scene — must return false, not throw.
+  EXPECT_FALSE(solver.isActiveLinkId(LinkId("does_not_exist_in_this_scene")));
+
+  // The scene has at least one active link (the test fixture is a real robot), and the
+  // base link must be reported as not active (its only ancestor chain is the root).
+  ASSERT_FALSE(active.empty());
+  EXPECT_TRUE(solver.isActiveLinkId(active.front()));
+  EXPECT_FALSE(solver.isActiveLinkId(solver.getBaseLinkId()));
 }
 
 int main(int argc, char** argv)
