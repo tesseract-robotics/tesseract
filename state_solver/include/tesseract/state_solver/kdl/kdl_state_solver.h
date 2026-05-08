@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/jntarray.hpp>
 #include <kdl/treejnttojacsolver.hpp>
 #include <mutex>
+#include <unordered_set>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/state_solver/state_solver.h>
@@ -152,6 +153,11 @@ private:
   };
   std::unordered_map<const KDL::TreeElementType*, SegmentIdCache> segment_id_cache_;
   const KDL::TreeElementType* root_element_{ nullptr }; /**< Cached root element pointer for fast comparison */
+
+  /** @brief O(1) mirror of data_.active_link_ids, populated in processKDLData and copied in op=. */
+  std::unordered_set<tesseract::common::LinkId> active_link_ids_set_;
+  /** @brief O(1) mirror of data_.link_ids, populated in processKDLData and copied in op=. */
+  std::unordered_set<tesseract::common::LinkId> link_ids_set_;
 
   static thread_local KDL::JntArray kdl_joints_cache;    // NOLINT
   static thread_local KDL::Jacobian kdl_jacobian_cache;  // NOLINT

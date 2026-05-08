@@ -304,7 +304,7 @@ struct kdl_sub_tree_builder : public boost::dfs_visitor<>
                        const std::vector<JointId>& joint_ids,
                        const std::unordered_map<JointId, double>& joint_values,
                        const tesseract::common::JointIdTransformMap& floating_joint_values)
-    : data_(data), joint_ids_(joint_ids), joint_values_(joint_values), floating_joint_values_(floating_joint_values)
+    : data_(data), joint_ids_(joint_ids), joint_values_(joint_values)
   {
     for (const auto& [id, tf] : floating_joint_values)
       data_.floating_joint_values[id] = tf;
@@ -482,7 +482,6 @@ protected:
   }
 
   KDLTreeData& data_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-  int search_cnt_{ -1 };
   bool started_{ false };
   std::map<LinkId, KDL::Frame> segment_transforms_;
   std::vector<LinkId> link_ids_;
@@ -490,8 +489,6 @@ protected:
   const std::vector<JointId>& joint_ids_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   const std::unordered_map<JointId, double>& joint_values_;
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  const tesseract::common::JointIdTransformMap& floating_joint_values_;
 };
 
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
