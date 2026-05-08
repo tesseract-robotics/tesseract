@@ -26,6 +26,7 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <stdexcept>
 #include <cereal/cereal.hpp>
 #include <cereal/types/atomic.hpp>
 #include <cereal/types/array.hpp>
@@ -78,6 +79,12 @@ void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
   // ContactResult's link_ids[0/1] names (LinkId's save_minimal persists the original name).
   // OrderedIdPair has no cereal specialization on purpose — its NameIdValue ids are not stable
   // across builds, so we serialize the names instead.
+  //
+  // Note on canonicalization: we sort the (a,b) name pair here for deterministic output of *this*
+  // branch's archives only. Master canonicalizes by call-site convention (insertion order from
+  // the contact-test loop), so the resulting on-disk byte sequence is not guaranteed to match
+  // master byte-for-byte — the wire *shape* (NVP "container", keyed string pair, ContactResult
+  // value layout) is what matters for cross-build load compatibility.
   using KeyT = std::pair<std::string, std::string>;
   using MappedT = tesseract::collision::ContactResultVector;
   tesseract::common::AlignedMap<KeyT, MappedT> container;
@@ -86,6 +93,15 @@ void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
     if (results.empty())
       continue;  // Master also dropped empty buckets; preserve that.
     const auto& names = results.front().link_ids;
+    // Defensive guard against silent archive corruption: the wire key is derived from the stored
+    // ContactResult's link_ids names. A default-constructed ContactResult (link_ids of
+    // INVALID_LINK_ID) would silently emit ("","") as the key, dropping the original LinkIdPair
+    // identity. The previous (LinkIdPair, results) format did not have this footgun, so callers
+    // must populate link_ids before insertion.
+    if (names[0].name().empty() || names[1].name().empty())
+      throw std::runtime_error("ContactResultMap cereal save: stored ContactResult has empty/invalid "
+                               "link_ids; cannot persist key — caller must populate link_ids before "
+                               "insertion.");
     auto string_key = (names[0].name() <= names[1].name()) ? KeyT{ names[0].name(), names[1].name() } :
                                                              KeyT{ names[1].name(), names[0].name() };
     container.emplace(std::move(string_key), results);
