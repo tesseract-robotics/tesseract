@@ -183,6 +183,29 @@ target_code_coverage(
 add_gtest_discover_tests(tesseract_kinematics_rep_unit)
 add_dependencies(tesseract_kinematics_rep_unit tesseract::kinematics_kdl tesseract::kinematics_opw)
 
+add_executable(tesseract_kinematics_rtp_unit rtp_kinematics_unit.cpp)
+target_link_libraries(
+  tesseract_kinematics_rtp_unit
+  PRIVATE GTest::GTest
+          GTest::Main
+          tesseract::kinematics_kdl
+          tesseract::kinematics_opw
+          tesseract::urdf
+          tesseract::scene_graph)
+target_compile_options(tesseract_kinematics_rtp_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                             ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(tesseract_kinematics_rtp_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(tesseract_kinematics_rtp_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(tesseract_kinematics_rtp_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  tesseract_kinematics_rtp_unit
+  PRIVATE
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+add_gtest_discover_tests(tesseract_kinematics_rtp_unit)
+add_dependencies(tesseract_kinematics_rtp_unit tesseract::kinematics_kdl tesseract::kinematics_opw)
+
 add_executable(tesseract_kinematics_ur_unit ur_kinematics_unit.cpp)
 target_link_libraries(
   tesseract_kinematics_ur_unit

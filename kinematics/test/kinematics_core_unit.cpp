@@ -4,6 +4,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
+#include <tesseract/kinematics/rtp_inv_kin.h>
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
@@ -800,6 +801,71 @@ TEST(AddRevoluteChild, NonZeroDynamicLimitDefaults)  // NOLINT
   EXPECT_GT(joint->limits->velocity, 0.0);
   EXPECT_GT(joint->limits->acceleration, 0.0);
   EXPECT_GT(joint->limits->jerk, 0.0);
+}
+
+TEST(RTPInvKin, CtorsRejectNullManipulator)  // NOLINT
+{
+  // All four public ctors must reject a null manipulator with std::runtime_error.
+  // The explicit-reach ctors previously threw later from inside init() with a
+  // less precise stack; the auto-reach ctors would have dereferenced before
+  // reaching init(). This test pins the exception type for every ctor variant.
+  auto sg = std::make_shared<tesseract::scene_graph::SceneGraph>();
+  sg->setName("test");
+  sg->addLink(tesseract::scene_graph::Link("world"));
+  sg->setRoot("world");
+
+  namespace ts = tesseract::kinematics::test_suite;
+  ts::addRevoluteChild(*sg, "tool_j1", "world", "tool_tip",
+                       Eigen::Vector3d::UnitZ());
+
+  tesseract::scene_graph::SceneState scene_state;
+  scene_state.link_transforms["world"] = Eigen::Isometry3d::Identity();
+  scene_state.link_transforms["tool_tip"] = Eigen::Isometry3d::Identity();
+
+  auto make_tool = [&]() {
+    return std::make_unique<tesseract::kinematics::KDLFwdKinChain>(*sg, "world", "tool_tip");
+  };
+
+  Eigen::VectorXd res(1);
+  res << 0.5;
+  Eigen::MatrixX2d range(1, 2);
+  range << -M_PI, M_PI;
+
+  // Ctor variant: explicit reach, range derived from joint limits.
+  EXPECT_THROW(
+      tesseract::kinematics::RTPInvKin(*sg, scene_state,
+                                        /*manipulator=*/nullptr,
+                                        /*manipulator_reach=*/1.0,
+                                        make_tool(),
+                                        res),
+      std::runtime_error);
+
+  // Ctor variant: explicit reach, explicit range.
+  EXPECT_THROW(
+      tesseract::kinematics::RTPInvKin(*sg, scene_state,
+                                        /*manipulator=*/nullptr,
+                                        /*manipulator_reach=*/1.0,
+                                        make_tool(),
+                                        range,
+                                        res),
+      std::runtime_error);
+
+  // Ctor variant: auto reach, range derived from joint limits.
+  EXPECT_THROW(
+      tesseract::kinematics::RTPInvKin(*sg, scene_state,
+                                        /*manipulator=*/nullptr,
+                                        make_tool(),
+                                        res),
+      std::runtime_error);
+
+  // Ctor variant: auto reach, explicit range.
+  EXPECT_THROW(
+      tesseract::kinematics::RTPInvKin(*sg, scene_state,
+                                        /*manipulator=*/nullptr,
+                                        make_tool(),
+                                        range,
+                                        res),
+      std::runtime_error);
 }
 
 int main(int argc, char** argv)
