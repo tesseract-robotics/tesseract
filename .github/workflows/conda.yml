@@ -21,6 +21,7 @@ on:
       - 'CMakeLists.txt'
       - 'package.xml'
       - '.github/workflows/conda.yml'
+      - '.github/workflows/conda/**'
       - '**.repos'
   release:
     types:
