@@ -59,7 +59,6 @@ target_link_libraries(
          tesseract::scene_graph
          tesseract::collision_bullet
          console_bridge::console_bridge)
-target_link_libraries(urdf PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(urdf PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(urdf PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(urdf PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
