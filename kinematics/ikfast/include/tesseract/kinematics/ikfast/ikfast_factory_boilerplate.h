@@ -39,20 +39,20 @@ public:
                                  const KinematicsPluginFactory& /*plugin_factory*/,
                                  const YAML::Node& config) const override
   {
-    std::string base_link;
-    std::string tip_link;
+    common::LinkId base_link;
+    common::LinkId tip_link;
     std::size_t n_joints = 0;
     std::vector<common::JointId> active_joints;
     std::vector<std::vector<double>> free_joint_states;
     try
     {
       if (YAML::Node n = config["base_link"])
-        base_link = n.as<std::string>();
+        base_link = common::LinkId(n.as<std::string>());
       else
         throw std::runtime_error("IKFastInvKinFactory, missing 'base_link' entry");
 
       if (YAML::Node n = config["tip_link"])
-        tip_link = n.as<std::string>();
+        tip_link = common::LinkId(n.as<std::string>());
       else
         throw std::runtime_error("IKFastInvKinFactory, missing 'tip_link' entry");
 
