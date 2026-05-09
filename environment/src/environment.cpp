@@ -2863,7 +2863,8 @@ Environment::getActiveLinkIds(const std::vector<tesseract::common::JointId>& joi
 std::vector<std::string> Environment::getActiveLinkNames(const std::vector<std::string>& joint_names) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return common::toNames(getActiveLinkIds(tesseract::common::toIds<common::JointId>(joint_names)));
+  return common::toNames(std::as_const<Implementation>(*impl_).scene_graph->getJointChildrenIds(
+      tesseract::common::toIds<common::JointId>(joint_names)));
 }
 
 std::vector<std::string> Environment::getStaticLinkNames() const
