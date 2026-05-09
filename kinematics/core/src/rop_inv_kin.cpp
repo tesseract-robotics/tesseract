@@ -174,6 +174,8 @@ ROPInvKin& ROPInvKin::operator=(const ROPInvKin& other)
   joint_ids_ = other.joint_ids_;
   dof_ = other.dof_;
   dof_range_ = other.dof_range_;
+  positioner_to_robot_ = other.positioner_to_robot_;
+  solver_name_ = other.solver_name_;
 
   return *this;
 }

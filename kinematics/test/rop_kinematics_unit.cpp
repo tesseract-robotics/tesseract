@@ -209,6 +209,45 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   runKinSetJointLimitsTest(kin_group2);
 }
 
+TEST(TesseractKinematicsUnit, ROPInvKinCopyAssignmentPreservesSolverNameUnit)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBOnPositioner(locator);
+
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto robot_fwd_kin = getRobotFwdKinematics(*scene_graph);
+  opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
+  const auto& joint_ids = robot_fwd_kin->getJointIds();
+  auto opw_kin = std::make_unique<OPWInvKin>(
+      opw_params, robot_fwd_kin->getBaseLinkId().name(), robot_fwd_kin->getTipLinkIds()[0].name(), joint_ids);
+
+  auto positioner_kin = getPositionerFwdKinematics(*scene_graph);
+  Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(1, 1, 0.1);
+
+  const std::string custom_name = "custom_rop_solver";
+  ROPInvKin source(*scene_graph,
+                   scene_state,
+                   opw_kin->clone(),
+                   2.5,
+                   positioner_kin->clone(),
+                   positioner_resolution,
+                   custom_name);
+  EXPECT_EQ(source.getSolverName(), custom_name);
+
+  ROPInvKin dest(*scene_graph,
+                 scene_state,
+                 opw_kin->clone(),
+                 2.5,
+                 positioner_kin->clone(),
+                 positioner_resolution);
+  EXPECT_EQ(dest.getSolverName(), DEFAULT_ROP_INV_KIN_SOLVER_NAME);
+
+  dest = source;  // operator= path
+  EXPECT_EQ(dest.getSolverName(), custom_name);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
