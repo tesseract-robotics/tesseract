@@ -132,6 +132,7 @@ void serialize(Archive& ar, CombinedContactAllowedValidator& obj)
 template <class Archive>
 void serialize(Archive& ar, JointState& obj)
 {
+  // NVP key kept as "joint_names" for archive compat with master; field was renamed to joint_ids during Id migration.
   ar(cereal::make_nvp("joint_names", obj.joint_ids));
   ar(cereal::make_nvp("position", obj.position));
   ar(cereal::make_nvp("velocity", obj.velocity));

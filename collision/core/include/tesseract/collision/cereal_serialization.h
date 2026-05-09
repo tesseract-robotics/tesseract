@@ -55,6 +55,7 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
+  // NVP key kept as "link_names" for archive compat with master; field was renamed to link_ids during Id migration.
   ar(cereal::make_nvp("link_names", g.link_ids));
   ar(cereal::make_nvp("shape_id", g.shape_id));
   ar(cereal::make_nvp("subshape_id", g.subshape_id));
@@ -197,6 +198,7 @@ template <class Archive>
 void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 {
   ar(cereal::make_nvp("steps", g.steps));
+  // NVP key kept as "joint_names" for archive compat with master; field was renamed to joint_ids during Id migration.
   ar(cereal::make_nvp("joint_names", g.joint_ids));
   ar(cereal::make_nvp("total_steps", g.total_steps));
 }
