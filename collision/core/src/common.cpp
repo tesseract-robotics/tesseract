@@ -25,8 +25,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cassert>
-#include <cstdio>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>
@@ -80,31 +78,13 @@ bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active, c
 }
 
 bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
-                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
-                      bool verbose)
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator)
 {
   // do not distance check geoms part of the same object / link / attached body
   if (pair.first_id() == pair.second_id())
     return true;
 
-  if (validator != nullptr && (*validator)(pair))
-  {
-    if (verbose)
-    {
-      CONSOLE_BRIDGE_logError("Collision between LinkId(%lu) and LinkId(%lu) is allowed. No contacts are computed.",
-                              pair.first_id(),
-                              pair.second_id());
-    }
-    return true;
-  }
-
-  if (verbose)
-  {
-    CONSOLE_BRIDGE_logError(
-        "Actually checking collisions between LinkId(%lu) and LinkId(%lu)", pair.first_id(), pair.second_id());
-  }
-
-  return false;
+  return validator != nullptr && (*validator)(pair);
 }
 
 ContactResult* processResult(ContactTestData& cdata,

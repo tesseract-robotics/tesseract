@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_set>
 #include <vector>
 #include <Eigen/Geometry>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
@@ -59,24 +60,37 @@ bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active, c
 
 /**
  * @brief Determine if contact is allowed between two objects (hot-path primary).
+ * @details This overload does not log diagnostic messages because the pair stores only numeric ids and not the
+ *          link names. Use the (LinkId, LinkId) overload to enable verbose name-based logging.
  * @param pair Canonically ordered link-id pair
  * @param validator The contact allowed validator
- * @param verbose If true print debug information
  * @return True if contact is allowed between the two object, otherwise false.
  */
 bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
-                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
-                      bool verbose = false);
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator);
 
 /**
- * @brief Convenience overload; forwards to the pair-based primary.
+ * @brief Convenience overload that owns the verbose name-based diagnostic logging.
+ * @details Forwards the allowed/disallowed decision to the pair-based primary, then logs by link name when
+ *          verbose is true.
  */
 inline bool isContactAllowed(const tesseract::common::LinkId& id1,
                              const tesseract::common::LinkId& id2,
                              const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                              bool verbose = false)
 {
-  return isContactAllowed(tesseract::common::LinkIdPair(id1, id2), validator, verbose);
+  const bool allowed = isContactAllowed(tesseract::common::LinkIdPair(id1, id2), validator);
+  if (verbose && id1 != id2)
+  {
+    if (allowed)
+      CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
+                              id1.name().c_str(),
+                              id2.name().c_str());
+    else
+      CONSOLE_BRIDGE_logError(
+          "Actually checking collisions between '%s' and '%s'", id1.name().c_str(), id2.name().c_str());
+  }
+  return allowed;
 }
 
 /**

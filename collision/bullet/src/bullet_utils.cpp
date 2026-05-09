@@ -1142,9 +1142,9 @@ bool TesseractCollisionPairCallback::processOverlap(btBroadphasePair& pair)
 
     if (pair.m_algorithm != nullptr)
     {
+      // The TesseractBroadphaseBridgedManifoldResult constructor seeds m_closestPointDistanceThreshold from the
+      // pair's collision margin via the result callback, so we must not redundantly look it up again here.
       TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, results_callback_);
-      contactPointResult.m_closestPointDistanceThreshold =
-          results_callback_.collisions_.collision_margin_data.getCollisionMargin(cow0->getLinkId(), cow1->getLinkId());
 
       // discrete collision detection query
       pair.m_algorithm->processCollision(&obj0Wrap, &obj1Wrap, dispatch_info_, &contactPointResult);
