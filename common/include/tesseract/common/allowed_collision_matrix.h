@@ -92,6 +92,14 @@ public:
   virtual void removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2);
 
   /**
+   * @brief Remove disabled collision pair from allowed collision matrix using a pre-built canonical pair.
+   * @details Useful when iterating an existing @ref AllowedCollisionEntries map and erasing
+   *          by key without reconstructing @ref LinkId objects from strings.
+   * @param pair Canonically ordered link-id pair (the map key)
+   */
+  virtual void removeAllowedCollision(const LinkIdPair& pair);
+
+  /**
    * @brief Remove disabled collision for any pair with link_id from allowed collision matrix
    * @param link_id Collision object LinkId
    */

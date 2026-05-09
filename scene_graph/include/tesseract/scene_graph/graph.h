@@ -372,6 +372,15 @@ public:
   void removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2);
 
   /**
+   * @brief Remove disabled collision pair using a pre-built canonical pair.
+   * @details Forwarder to @ref tesseract::common::AllowedCollisionMatrix::removeAllowedCollision(const LinkIdPair&).
+   *          Useful when iterating an existing ACM and erasing by key without reconstructing
+   *          @ref LinkId objects from strings.
+   * @param pair Canonically ordered link-id pair (the map key)
+   */
+  void removeAllowedCollision(const tesseract::common::LinkIdPair& pair);
+
+  /**
    * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
    * @param link_name Collision object name
    */
