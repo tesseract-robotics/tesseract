@@ -56,12 +56,12 @@ tesseract::common::AllowedCollisionMatrix parseDisabledCollisions(const tesserac
     if (status != tinyxml2::XML_SUCCESS)
       std::throw_with_nested(std::runtime_error("DisabledCollisions: Missing or failed to parse attribute 'link2'!"));
 
-    if (!isRegisteredLink(scene_graph, link1_name))
+    if (!isRegisteredLink(scene_graph, common::LinkId(link1_name)))
     {
       CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link1_name.c_str());
       continue;
     }
-    if (!isRegisteredLink(scene_graph, link2_name))
+    if (!isRegisteredLink(scene_graph, common::LinkId(link2_name)))
     {
       CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link2_name.c_str());
       continue;

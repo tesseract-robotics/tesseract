@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
 #include <tesseract/common/types.h>
+#include <tesseract/common/allowed_collision_matrix.h>
 
 #ifndef SWIG
 
@@ -359,6 +360,9 @@ public:
    * @param reason The reason for disabling collision
    */
   void addAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2, const std::string& reason);
+
+  /** @brief Add allowed collision; key already a LinkIdPair (avoids re-hashing names). */
+  void addAllowedCollision(const tesseract::common::LinkIdPair& pair, const tesseract::common::ACMEntry& entry);
 
   /**
    * @brief Remove disabled collision pair from allowed collision matrix

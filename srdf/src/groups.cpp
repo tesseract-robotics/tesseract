@@ -71,7 +71,7 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
         std::throw_with_nested(std::runtime_error(
             strFormat("Group: '%s' link element is missing or failed to parse attribute 'name'!", group_name.c_str())));
 
-      if (!isRegisteredLink(scene_graph, link_name))
+      if (!isRegisteredLink(scene_graph, common::LinkId(link_name)))
         std::throw_with_nested(std::runtime_error(strFormat(
             "Group: '%s' link '%s' is not known to the Scene Graph!", group_name.c_str(), link_name.c_str())));
 
@@ -89,7 +89,7 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
                                                             "attribute 'name'!",
                                                             group_name.c_str())));
 
-      if (!isRegisteredJoint(scene_graph, joint_name))
+      if (!isRegisteredJoint(scene_graph, common::JointId(joint_name)))
         std::throw_with_nested(std::runtime_error(strFormat(
             "Group: '%s' joint '%s' is not known to the Scene Graph!", group_name.c_str(), joint_name.c_str())));
 
@@ -115,13 +115,13 @@ parseGroups(const tesseract::scene_graph::SceneGraph& scene_graph,
                                                             "'tip_link'!",
                                                             group_name.c_str())));
 
-      if (!isRegisteredLink(scene_graph, base_link_name))
+      if (!isRegisteredLink(scene_graph, common::LinkId(base_link_name)))
         std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element base link '%s' is not known to "
                                                             "the Scene Graph!",
                                                             group_name.c_str(),
                                                             base_link_name.c_str())));
 
-      if (!isRegisteredLink(scene_graph, tip_link_name))
+      if (!isRegisteredLink(scene_graph, common::LinkId(tip_link_name)))
         std::throw_with_nested(std::runtime_error(strFormat("Group: '%s' chain element tip link '%s' is not known to "
                                                             "the Scene Graph!",
                                                             group_name.c_str(),
