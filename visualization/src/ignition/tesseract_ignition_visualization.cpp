@@ -372,7 +372,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
   {
     gz::msgs::Pose* pose = pose_v.add_pose();
     pose->CopyFrom(gz::msgs::Convert(gz::math::eigen3::convert(pair.second)));
-    pose->set_name(pair.first);
+    pose->set_name(pair.first.name());
     pose->set_id(static_cast<unsigned>(entity_manager_.getLink(pair.first)));
   }
 

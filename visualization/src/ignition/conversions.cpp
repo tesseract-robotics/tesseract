@@ -91,7 +91,7 @@ bool toMsg(gz::msgs::Scene& scene_msg,
   {
     gz::msgs::Link* link_msg = model->add_link();
     link_msg->set_name(link->getName());
-    link_msg->set_id(static_cast<unsigned>(entity_manager.addLink(link->getName())));
+    link_msg->set_id(static_cast<unsigned>(entity_manager.addLink(link->getId())));
     link_msg->mutable_pose()->CopyFrom(gz::msgs::Convert(gz::math::eigen3::convert(link_transforms.at(link->getId()))));
 
     int cnt = 0;
