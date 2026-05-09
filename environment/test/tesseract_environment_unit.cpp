@@ -2841,6 +2841,27 @@ TEST(TesseractEnvironmentUnit, getActiveLinkIdsRecursiveUnit)  // NOLINT
   EXPECT_TRUE(tesseract::common::isIdentical(active_links, target_active_links, false));
 }
 
+TEST(TesseractEnvironmentUnit, GetActiveLinkNamesByJointNamesNoRecursiveLockUnit)  // NOLINT
+{
+  // Regression test for environment.cpp getActiveLinkNames(joint_names): the implementation
+  // must not recursively shared_lock mutex_ (UB per the C++ standard, even if glibc's
+  // pthread_rwlock historically tolerates it). Hammering both overloads from the same thread
+  // exercises the path; under TSan it would catch the recursion. Independently of TSan, the
+  // result must remain functionally identical to going through the Id overload.
+  auto env = getEnvironment();
+  auto joint_names = env->getActiveJointNames();
+
+  for (int i = 0; i < 100; ++i)
+  {
+    auto by_names = env->getActiveLinkNames(joint_names);
+    auto joint_ids = tesseract::common::toIds<tesseract::common::JointId>(joint_names);
+    auto by_ids = tesseract::common::toNames(env->getActiveLinkIds(joint_ids));
+    ASSERT_EQ(by_names.size(), by_ids.size());
+    for (std::size_t k = 0; k < by_names.size(); ++k)
+      EXPECT_EQ(by_names[k], by_ids[k]);
+  }
+}
+
 void checkProcessInterpolatedResults(const std::vector<tesseract::collision::ContactResultMap>& contacts)
 {
   for (const auto& c : contacts)
