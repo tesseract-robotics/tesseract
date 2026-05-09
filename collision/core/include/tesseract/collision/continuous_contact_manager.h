@@ -148,7 +148,8 @@ public:
    *          setCollisionObjectsTransform(LinkId, pose1, pose2). The end pose is encoded in the cast hull and is
    *          not retrievable from this getter.
    * @param id The LinkId of the object
-   * @return The world transform; behavior is undefined if the LinkId is not registered with the manager
+   * @return The world transform
+   * @throws std::out_of_range if the LinkId is not registered with the manager
    */
   virtual Eigen::Isometry3d getCollisionObjectsTransform(const tesseract::common::LinkId& id) const = 0;
 
