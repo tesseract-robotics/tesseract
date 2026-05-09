@@ -26,6 +26,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/calibration_info.h>
+#include <tesseract/common/collision_margin_data.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/serialization.h>
 #include <tesseract/common/unit_test_utils.h>
@@ -164,6 +166,16 @@ TEST(TesseractSRDFSerializeUnit, SRDFModelJsonRoundTripPerField)  // NOLINT
   auto graph = getSceneGraph();
   auto srdf = getSRDFModel(graph, locator);
 
+  // Populate collision_margin_data and calibration_info — the SRDF fixture leaves both empty,
+  // and per-field round-trip coverage requires non-default values for every member.
+  srdf->collision_margin_data = std::make_shared<tesseract::common::CollisionMarginData>(0.05);
+  srdf->collision_margin_data->setCollisionMargin(LinkId("link_1"), LinkId("link_2"), 0.01);
+  srdf->collision_margin_data->setCollisionMargin(LinkId("link_3"), LinkId("link_4"), 0.02);
+
+  Eigen::Isometry3d cal_tf = Eigen::Isometry3d::Identity();
+  cal_tf.translation() = Eigen::Vector3d(0.1, 0.2, 0.3);
+  srdf->calibration_info.joints[JointId("joint_a2")] = cal_tf;
+
   std::stringstream ss;
   {
     cereal::JSONOutputArchive ar(ss);
@@ -180,11 +192,9 @@ TEST(TesseractSRDFSerializeUnit, SRDFModelJsonRoundTripPerField)  // NOLINT
   EXPECT_EQ(loaded.kinematics_information, srdf->kinematics_information);
   EXPECT_EQ(loaded.contact_managers_plugin_info, srdf->contact_managers_plugin_info);
   EXPECT_EQ(loaded.acm, srdf->acm);
-  // collision_margin_data is a shared_ptr — compare deeply
-  if (srdf->collision_margin_data == nullptr)
-    EXPECT_EQ(loaded.collision_margin_data, nullptr);
-  else
-    EXPECT_EQ(*loaded.collision_margin_data, *srdf->collision_margin_data);
+  ASSERT_NE(srdf->collision_margin_data, nullptr);
+  ASSERT_NE(loaded.collision_margin_data, nullptr);
+  EXPECT_EQ(*loaded.collision_margin_data, *srdf->collision_margin_data);
   EXPECT_EQ(loaded.calibration_info, srdf->calibration_info);
 }
 
