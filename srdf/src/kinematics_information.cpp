@@ -68,7 +68,7 @@ void KinematicsInformation::insert(const KinematicsInformation& other)
 
 bool KinematicsInformation::hasGroup(const std::string& group_name) const
 {
-  return std::find(group_names.begin(), group_names.end(), group_name) != group_names.end();
+  return group_names.find(group_name) != group_names.end();
 }
 
 void KinematicsInformation::addChainGroup(const std::string& group_name, const ChainGroup& chain_group)
