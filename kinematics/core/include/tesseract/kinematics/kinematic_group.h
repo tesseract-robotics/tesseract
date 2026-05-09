@@ -180,6 +180,7 @@ private:
   std::unique_ptr<InverseKinematics> inv_kin_;
   Eigen::Isometry3d inv_to_fwd_base_{ Eigen::Isometry3d::Identity() };
   std::vector<tesseract::common::LinkId> working_frames_;
+  std::unordered_set<tesseract::common::LinkId> working_frames_set_;
   std::unordered_map<tesseract::common::LinkId, tesseract::common::LinkId> inv_tip_links_map_;
 };
 

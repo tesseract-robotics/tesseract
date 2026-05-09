@@ -165,6 +165,9 @@ KinematicGroup::KinematicGroup(std::string name,
     }
   }
 
+  working_frames_set_.reserve(working_frames_.size());
+  working_frames_set_.insert(working_frames_.begin(), working_frames_.end());
+
   // Configure the tip link frames
   // The tip links can be any link in the fixed-joint kinematic tree that contains the input tip link
   for (const auto& tip_link : tip_links)
@@ -195,6 +198,7 @@ KinematicGroup::KinematicGroup(const KinematicGroup& other)
   , inv_kin_(other.inv_kin_->clone())
   , inv_to_fwd_base_(other.inv_to_fwd_base_)
   , working_frames_(other.working_frames_)
+  , working_frames_set_(other.working_frames_set_)
   , inv_tip_links_map_(other.inv_tip_links_map_)
 {
 }
@@ -212,6 +216,7 @@ KinematicGroup& KinematicGroup::operator=(const KinematicGroup& other)
   inv_kin_ = other.inv_kin_->clone();
   inv_to_fwd_base_ = other.inv_to_fwd_base_;
   working_frames_ = other.working_frames_;
+  working_frames_set_ = other.working_frames_set_;
   inv_tip_links_map_ = other.inv_tip_links_map_;
   return *this;
 }
@@ -239,7 +244,7 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
   for (const auto& tip_link_pose : tip_link_poses)
   {
     // Check that the specified pose working frame exists in the list of identified working frames
-    if (std::find(working_frames_.begin(), working_frames_.end(), tip_link_pose.working_frame) == working_frames_.end())
+    if (working_frames_set_.count(tip_link_pose.working_frame) == 0)
     {
       std::stringstream ss;
       ss << "Specified working frame (" << tip_link_pose.working_frame.name()
