@@ -779,8 +779,7 @@ std::vector<std::string> Environment::Implementation::getGroupJointNames(const s
 std::vector<tesseract::common::JointId>
 Environment::Implementation::getGroupJointIds(const std::string& group_name) const
 {
-  auto it = std::find(kinematics_information.group_names.begin(), kinematics_information.group_names.end(), group_name);
-  if (it == kinematics_information.group_names.end())
+  if (kinematics_information.group_names.find(group_name) == kinematics_information.group_names.end())
     throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
 
   std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex);
