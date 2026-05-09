@@ -92,6 +92,8 @@ void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, cons
   lookup_table_.erase(LinkIdPair(link_id1, link_id2));
 }
 
+void AllowedCollisionMatrix::removeAllowedCollision(const LinkIdPair& pair) { lookup_table_.erase(pair); }
+
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 {
   const NameIdValue id = link_id.value();

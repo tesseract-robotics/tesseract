@@ -1873,7 +1873,7 @@ bool Environment::Implementation::applyModifyAllowedCollisionsCommand(
     case ModifyAllowedCollisionsType::REMOVE:
     {
       for (const auto& [key, entry] : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph->removeAllowedCollision(common::LinkId(entry.name1), common::LinkId(entry.name2));
+        scene_graph->removeAllowedCollision(key);
 
       break;
     }
@@ -1881,13 +1881,13 @@ bool Environment::Implementation::applyModifyAllowedCollisionsCommand(
     {
       scene_graph->clearAllowedCollisions();
       for (const auto& [key, entry] : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph->addAllowedCollision(common::LinkId(entry.name1), common::LinkId(entry.name2), entry.reason);
+        scene_graph->addAllowedCollision(key, entry);
       break;
     }
     case ModifyAllowedCollisionsType::ADD:
     {
       for (const auto& [key, entry] : cmd->getAllowedCollisionMatrix().getAllAllowedCollisions())
-        scene_graph->addAllowedCollision(common::LinkId(entry.name1), common::LinkId(entry.name2), entry.reason);
+        scene_graph->addAllowedCollision(key, entry);
 
       break;
     }
