@@ -2287,7 +2287,7 @@ TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
     tesseract::common::KinematicsPluginInfo info = tesseract::srdf::parseKinematicsPluginConfig(locator, cfg);
     EXPECT_FALSE(info.empty());
 
-    tesseract::common::KinematicsPluginInfo info2 = tesseract::srdf::parseKinematicsPluginConfig(locator, cfg);
+    tesseract::common::KinematicsPluginInfo info2 = tesseract::srdf::parseKinematicsPluginConfig(locator, yaml_str);
     EXPECT_FALSE(info2.empty());
   }
 }
