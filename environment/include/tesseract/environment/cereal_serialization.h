@@ -63,7 +63,8 @@ void serialize(Archive& ar, AddTrajectoryLinkCommand& obj)
   ar(cereal::base_class<Command>(&obj));
   // NVP key kept as "link_name" for archive compat with master; field was renamed to link_id_ during Id migration.
   ar(cereal::make_nvp("link_name", obj.link_id_));
-  // NVP key kept as "parent_link_name" for archive compat with master; field was renamed to parent_link_id_ during Id migration.
+  // NVP key kept as "parent_link_name" for archive compat with master; field was renamed to
+  // parent_link_id_ during Id migration.
   ar(cereal::make_nvp("parent_link_name", obj.parent_link_id_));
   ar(cereal::make_nvp("trajectory", obj.trajectory_));
   ar(cereal::make_nvp("replace_allowed", obj.replace_allowed_));
