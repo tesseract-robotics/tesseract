@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
+#include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/kdl_parser.h>
 
 namespace tesseract::kinematics
@@ -132,25 +133,28 @@ bool parseSceneGraph(KDLChainData& results,
     // KDL segments does not contain the the base link in this list. When calling function that take segmentNr, like
     // JntToCart to get the base link transform you would pass an index of zero and for subsequent links it is
     // index + 1. This was determined through testing which is captured in this packages unit tests.
-    results.segment_index[common::LinkId(seg.getName())] = static_cast<int>(i + 1);
+    const auto sg_link = scene_graph.getLink(common::LinkId(seg.getName()));
+    assert(sg_link && "KDL segment name not in SceneGraph - invariant violated");  // NOLINT
+    results.segment_index[sg_link->getId()] = static_cast<int>(i + 1);
 
-    results.joint_ids[j] = common::JointId(jnt.getName());
+    const auto sg_joint = scene_graph.getJoint(common::JointId(jnt.getName()));
+    assert(sg_joint && "KDL joint name not in SceneGraph - invariant violated");  // NOLINT
+    results.joint_ids[j] = sg_joint->getId();
 
-    auto joint = scene_graph.getJoint(results.joint_ids[j]);
     double lower = std::numeric_limits<float>::lowest();
     double upper = std::numeric_limits<float>::max();
     // Does the joint have limits?
-    if (joint->type != tesseract::scene_graph::JointType::CONTINUOUS)
+    if (sg_joint->type != tesseract::scene_graph::JointType::CONTINUOUS)
     {
-      if (joint->safety)
+      if (sg_joint->safety)
       {
-        lower = std::max(joint->limits->lower, joint->safety->soft_lower_limit);
-        upper = std::min(joint->limits->upper, joint->safety->soft_upper_limit);
+        lower = std::max(sg_joint->limits->lower, sg_joint->safety->soft_lower_limit);
+        upper = std::min(sg_joint->limits->upper, sg_joint->safety->soft_upper_limit);
       }
       else
       {
-        lower = joint->limits->lower;
-        upper = joint->limits->upper;
+        lower = sg_joint->limits->lower;
+        upper = sg_joint->limits->upper;
       }
     }
     // Assign limits
