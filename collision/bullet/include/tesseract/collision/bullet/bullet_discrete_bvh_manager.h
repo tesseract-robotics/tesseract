@@ -107,6 +107,8 @@ public:
 
   void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) override final;
 
+  Eigen::Isometry3d getCollisionObjectsTransform(const tesseract::common::LinkId& id) const override final;
+
   void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) override final;
 
   const std::vector<tesseract::common::LinkId>& getCollisionObjects() const override final;

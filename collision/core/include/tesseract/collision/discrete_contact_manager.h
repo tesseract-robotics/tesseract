@@ -140,6 +140,14 @@ public:
   virtual void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) = 0;
 
   /**
+   * @brief Get the world transform of a single collision object
+   * @param id The LinkId of the object
+   * @return The world transform of the collision object; behavior is undefined if the LinkId is not registered with the
+   *         manager
+   */
+  virtual Eigen::Isometry3d getCollisionObjectsTransform(const tesseract::common::LinkId& id) const = 0;
+
+  /**
    * @brief Set a series of collision object's transforms
    * @param transforms A transform map <LinkId, pose>
    */

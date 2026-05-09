@@ -260,6 +260,12 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common:
   }
 }
 
+Eigen::Isometry3d BulletCastBVHManager::getCollisionObjectsTransform(const tesseract::common::LinkId& id) const
+{
+  // Returns pose1 (start) — link2cow_ tracks the start pose; pose2 is encoded in the cast hull and unrecoverable.
+  return convertBtToEigen(link2cow_.at(id)->getWorldTransform());
+}
+
 void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
   for (const auto& [id, tf] : transforms)
