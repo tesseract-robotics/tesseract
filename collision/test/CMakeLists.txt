@@ -67,6 +67,7 @@ add_gtest(collision_octomap_octomap_unit collision_octomap_octomap_unit.cpp)
 add_gtest(collision_factory_unit contact_managers_factory_unit.cpp)
 add_gtest(collision_core_unit collision_core_unit.cpp)
 add_gtest(collision_config_unit contact_managers_config_unit.cpp)
+add_gtest(collision_get_objects_transform_unit get_collision_objects_transform_unit.cpp)
 
 add_gtest(collision_factory_static_unit contact_managers_factory_static_unit.cpp)
 target_link_libraries(collision_factory_static_unit PRIVATE tesseract::collision_bullet_factories)

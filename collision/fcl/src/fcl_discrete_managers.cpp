@@ -200,6 +200,11 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
   }
 }
 
+Eigen::Isometry3d FCLDiscreteBVHManager::getCollisionObjectsTransform(const tesseract::common::LinkId& id) const
+{
+  return link2cow_.at(id)->getCollisionObjectsTransform();
+}
+
 void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
   static_update_.clear();

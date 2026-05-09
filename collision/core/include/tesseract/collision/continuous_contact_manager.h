@@ -143,6 +143,16 @@ public:
   virtual void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) = 0;
 
   /**
+   * @brief Get the world transform of a single collision object
+   * @details For continuous (cast) backends, this returns the start pose (pose1) — the same pose passed to
+   *          setCollisionObjectsTransform(LinkId, pose1, pose2). The end pose is encoded in the cast hull and is
+   *          not retrievable from this getter.
+   * @param id The LinkId of the object
+   * @return The world transform; behavior is undefined if the LinkId is not registered with the manager
+   */
+  virtual Eigen::Isometry3d getCollisionObjectsTransform(const tesseract::common::LinkId& id) const = 0;
+
+  /**
    * @brief Set a series of collision object's transforms using integer link IDs
    * @param transforms A transform map <LinkId, pose>
    */

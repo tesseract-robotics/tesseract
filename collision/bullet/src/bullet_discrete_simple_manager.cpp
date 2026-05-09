@@ -190,6 +190,11 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::
     it->second->setWorldTransform(convertEigenToBt(pose));
 }
 
+Eigen::Isometry3d BulletDiscreteSimpleManager::getCollisionObjectsTransform(const tesseract::common::LinkId& id) const
+{
+  return convertBtToEigen(link2cow_.at(id)->getWorldTransform());
+}
+
 void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
   for (const auto& [id, tf] : transforms)
