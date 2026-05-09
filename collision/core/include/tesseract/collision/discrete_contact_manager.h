@@ -142,8 +142,8 @@ public:
   /**
    * @brief Get the world transform of a single collision object
    * @param id The LinkId of the object
-   * @return The world transform of the collision object; behavior is undefined if the LinkId is not registered with the
-   *         manager
+   * @return The world transform of the collision object
+   * @throws std::out_of_range if the LinkId is not registered with the manager
    */
   virtual Eigen::Isometry3d getCollisionObjectsTransform(const tesseract::common::LinkId& id) const = 0;
 
