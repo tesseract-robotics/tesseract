@@ -394,9 +394,8 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
       xml_cm_pair_entry->SetAttribute("link2", entry.name2.c_str());
       xml_cm_pair_entry->SetAttribute("margin", entry.margin);
       xml_cm_entry->InsertEndChild(xml_cm_pair_entry);
-
-      xml_root->InsertEndChild(xml_cm_entry);
     }
+    xml_root->InsertEndChild(xml_cm_entry);
   }
 
   doc.InsertFirstChild(xml_root);

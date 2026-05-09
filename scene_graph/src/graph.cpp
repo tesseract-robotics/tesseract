@@ -773,6 +773,12 @@ void SceneGraph::addAllowedCollision(const common::LinkId& link_id1,
   acm_->addAllowedCollision(link_id1, link_id2, reason);
 }
 
+void SceneGraph::addAllowedCollision(const tesseract::common::LinkIdPair& pair,
+                                     const tesseract::common::ACMEntry& entry)
+{
+  acm_->addAllowedCollision(pair, entry);
+}
+
 void SceneGraph::removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2)
 {
   acm_->removeAllowedCollision(link_id1, link_id2);

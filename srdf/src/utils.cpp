@@ -30,22 +30,22 @@
 
 namespace tesseract::srdf
 {
-bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& name)
+bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::LinkId& id)
 {
-  auto l = scene_graph.getLink(common::LinkId(name));
-  return l && l->getName() == name;
+  auto l = scene_graph.getLink(id);
+  return l && l->getName() == id.name();  // name-equality detects hash collisions
 }
 
-bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& name)
+bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::JointId& id)
 {
-  auto j = scene_graph.getJoint(common::JointId(name));
-  return j && j->getName() == name;
+  auto j = scene_graph.getJoint(id);
+  return j && j->getName() == id.name();
 }
 
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
   for (const auto& [key, entry] : srdf_model.acm.getAllAllowedCollisions())
-    scene_graph.addAllowedCollision(common::LinkId(entry.name1), common::LinkId(entry.name2), entry.reason);
+    scene_graph.addAllowedCollision(key, entry);
 }
 
 std::vector<tesseract::common::ACMEntry>

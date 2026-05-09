@@ -35,28 +35,20 @@ namespace tesseract::srdf
 class SRDFModel;
 
 /**
- * @brief True iff @p name resolves to a link registered in @p scene_graph with exactly that name.
+ * @brief True iff @p id resolves to a link registered in @p scene_graph with exactly that stored name.
  *
- * Returns false in two cases, indistinguishable by design:
- *   1. The name is not registered at all, or
- *   2. The name hashes to the same LinkId as an already-registered link with a different stored
- *      name, a hash collision.
- *
- * Both are equally disqualifying for SRDF name resolution, so callers need not distinguish.
+ * The name-equality check disqualifies hash collisions: if @p id was constructed from a name that
+ * collides with a different already-registered link, the registry returns the resident link but its
+ * stored name will not match, so this returns false. Callers need not distinguish "unknown" from
+ * "colliding" — both are equally disqualifying for SRDF name resolution.
  */
-bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& name);
+bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::LinkId& id);
 
 /**
- * @brief True iff @p name resolves to a joint registered in @p scene_graph with exactly that name.
- *
- * Returns false in two cases, indistinguishable by design:
- *   1. The name is not registered at all, or
- *   2. The name hashes to the same JointId as an already-registered joint with a different stored
- *      name, a hash collision.
- *
- * Both are equally disqualifying for SRDF name resolution, so callers need not distinguish.
+ * @brief True iff @p id resolves to a joint registered in @p scene_graph with exactly that stored name.
+ * Same hash-collision semantics as isRegisteredLink — see that doc.
  */
-bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& name);
+bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::JointId& id);
 
 /**
  * @brief Add allowed collisions to the scene graph

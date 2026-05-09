@@ -23,11 +23,13 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/serialization.h>
 #include <tesseract/common/unit_test_utils.h>
+#include <cereal/archives/json.hpp>
 #include <tesseract/common/utils.h>
 #include <tesseract/srdf/kinematics_information.h>
 #include <tesseract/srdf/srdf_model.h>
@@ -154,6 +156,36 @@ TEST(TesseractSRDFSerializeUnit, SRDFModel)  // NOLINT
   auto srdf = getSRDFModel(graph, locator);
 
   tesseract::common::testSerialization<SRDFModel>(*srdf, "SRDFModel");
+}
+
+TEST(TesseractSRDFSerializeUnit, SRDFModelJsonRoundTripPerField)  // NOLINT
+{
+  GeneralResourceLocator locator;
+  auto graph = getSceneGraph();
+  auto srdf = getSRDFModel(graph, locator);
+
+  std::stringstream ss;
+  {
+    cereal::JSONOutputArchive ar(ss);
+    ar(*srdf);
+  }
+  SRDFModel loaded;
+  {
+    cereal::JSONInputArchive ar(ss);
+    ar(loaded);
+  }
+
+  EXPECT_EQ(loaded.name, srdf->name);
+  EXPECT_EQ(loaded.version, srdf->version);
+  EXPECT_EQ(loaded.kinematics_information, srdf->kinematics_information);
+  EXPECT_EQ(loaded.contact_managers_plugin_info, srdf->contact_managers_plugin_info);
+  EXPECT_EQ(loaded.acm, srdf->acm);
+  // collision_margin_data is a shared_ptr — compare deeply
+  if (srdf->collision_margin_data == nullptr)
+    EXPECT_EQ(loaded.collision_margin_data, nullptr);
+  else
+    EXPECT_EQ(*loaded.collision_margin_data, *srdf->collision_margin_data);
+  EXPECT_EQ(loaded.calibration_info, srdf->calibration_info);
 }
 
 int main(int argc, char** argv)

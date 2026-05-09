@@ -798,6 +798,102 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_ANY_THROW(bad_srdf.initFile(*g, save_path, locator));  // NOLINT
 }
 
+TEST(TesseractSRDFUnit, SaveLoadRoundTripPreservesMultiplePairMargins)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  using namespace tesseract::srdf;
+  using namespace tesseract::common;
+
+  // Build a minimal scene graph with enough links to form 3 distinct pairs.
+  auto g = std::make_shared<SceneGraph>();
+  g->setName("test_robot");
+  g->addLink(Link("link_a"));
+  g->addLink(Link("link_b"));
+  g->addLink(Link("link_c"));
+  g->addLink(Link("link_d"));
+
+  Joint j1("joint_ab");
+  j1.parent_link_id = "link_a";
+  j1.child_link_id = "link_b";
+  j1.type = JointType::FIXED;
+  g->addJoint(j1);
+
+  Joint j2("joint_bc");
+  j2.parent_link_id = "link_b";
+  j2.child_link_id = "link_c";
+  j2.type = JointType::FIXED;
+  g->addJoint(j2);
+
+  Joint j3("joint_cd");
+  j3.parent_link_id = "link_c";
+  j3.child_link_id = "link_d";
+  j3.type = JointType::FIXED;
+  g->addJoint(j3);
+
+  TempResourceLocator locator;
+
+  // Build an SRDFModel with 3 distinct collision margin pairs.
+  SRDFModel srdf_save;
+  srdf_save.name = "test_robot";
+  srdf_save.collision_margin_data = std::make_shared<CollisionMarginData>(0.05);
+  srdf_save.collision_margin_data->setCollisionMargin(LinkId("link_a"), LinkId("link_b"), 0.01);
+  srdf_save.collision_margin_data->setCollisionMargin(LinkId("link_b"), LinkId("link_c"), 0.02);
+  srdf_save.collision_margin_data->setCollisionMargin(LinkId("link_c"), LinkId("link_d"), 0.03);
+
+  ASSERT_EQ(srdf_save.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 3U);
+
+  std::string save_path = tesseract::common::getTempPath() + "unit_test_multi_pair_margins.srdf";
+  ASSERT_TRUE(srdf_save.saveToFile(save_path));
+
+  SRDFModel srdf_loaded;
+  srdf_loaded.initFile(*g, save_path, locator);
+
+  ASSERT_TRUE(srdf_loaded.collision_margin_data != nullptr);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getDefaultCollisionMargin(), 0.05, 1e-6);
+  // All 3 pairs must survive the round-trip — fails before F1 fix (only 1 pair is kept).
+  EXPECT_EQ(srdf_loaded.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 3U);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_a", "link_b"), 0.01, 1e-6);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_b", "link_c"), 0.02, 1e-6);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_c", "link_d"), 0.03, 1e-6);
+}
+
+TEST(TesseractSRDFUnit, ParseCollisionMarginsSkipsUnknownLinkAfterWarn)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  using namespace tesseract::srdf;
+
+  // Build graph with only links 'a' and 'b'.
+  SceneGraph g;
+  g.addLink(Link("a"));
+  g.addLink(Link("b"));
+  Joint j("joint_ab");
+  j.parent_link_id = "a";
+  j.child_link_id = "b";
+  j.type = JointType::FIXED;
+  g.addJoint(j);
+
+  // XML with 2 entries: one valid pair (a,b), one referencing unknown link 'ghost'.
+  std::string str = R"(<robot name="test">
+                         <collision_margins default_margin="0.01">
+                           <pair_margin link1="a" link2="b" margin="0.005"/>
+                           <pair_margin link1="ghost" link2="b" margin="0.003"/>
+                         </collision_margins>
+                       </robot>)";
+
+  tinyxml2::XMLDocument xml_doc;
+  EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+  EXPECT_TRUE(element != nullptr);
+
+  tesseract::common::CollisionMarginData::Ptr margin_data;
+  EXPECT_NO_THROW(margin_data = parseCollisionMargins(g, element, std::array<int, 3>({ 1, 0, 0 })));  // NOLINT
+  ASSERT_TRUE(margin_data != nullptr);
+
+  // After F3 fix: only the valid (a,b) pair is kept; the ghost entry is skipped.
+  // Before the fix: 2 pairs are kept (the ghost entry is inserted despite the warn).
+  EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 1U);
+}
+
 TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
@@ -2452,16 +2548,16 @@ TEST(TesseractSRDFUnit, IsRegisteredLinkJointUnit)  // NOLINT
   j.type = JointType::FIXED;
   g.addJoint(j);
 
-  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "base_link"));
-  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "link_1"));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, "missing_link"));
+  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("base_link")));
+  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("link_1")));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("missing_link")));
 
-  EXPECT_TRUE(tesseract::srdf::isRegisteredJoint(g, "joint_1"));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, "missing_joint"));
+  EXPECT_TRUE(tesseract::srdf::isRegisteredJoint(g, tesseract::common::JointId("joint_1")));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, tesseract::common::JointId("missing_joint")));
 
   // A link name is not a registered joint and vice-versa (tagged-type separation).
-  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, "base_link"));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, "joint_1"));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, tesseract::common::JointId("base_link")));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("joint_1")));
 }
 
 int main(int argc, char** argv)
