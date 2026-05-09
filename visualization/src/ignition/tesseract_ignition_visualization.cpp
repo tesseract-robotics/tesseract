@@ -299,10 +299,10 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
           addArrow(entity_manager_, *link_msg, cnt, am);
         }
 
-        auto it0 = std::find(m.link_names.begin(), m.link_names.end(), dist.link_ids[0].name());
-        auto it1 = std::find(m.link_names.begin(), m.link_names.end(), dist.link_ids[1].name());
+        auto it0 = std::find(m.link_ids.begin(), m.link_ids.end(), dist.link_ids[0]);
+        auto it1 = std::find(m.link_ids.begin(), m.link_ids.end(), dist.link_ids[1]);
 
-        if (it0 != m.link_names.end() && it1 != m.link_names.end())
+        if (it0 != m.link_ids.end() && it1 != m.link_ids.end())
         {
           ArrowMarker am1(dist.nearest_points[0], dist.nearest_points[1]);
           am1.material = base_material;
@@ -312,7 +312,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
           am2.material = base_material;
           addArrow(entity_manager_, *link_msg, cnt, am2);
         }
-        else if (it0 != m.link_names.end())
+        else if (it0 != m.link_ids.end())
         {
           ArrowMarker am(dist.nearest_points[1], dist.nearest_points[0]);
           am.material = base_material;
