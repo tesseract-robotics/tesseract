@@ -2892,6 +2892,210 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff)  // NOLINT
   runCalcJacobianTransformErrorDiffDynamicTargetTest(2 * M_PI);
 }
 
+// Exercises the optional lower_tolerance / upper_tolerance parameters of calcJacobianTransformErrorDiff.
+TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_Toleranced)  // NOLINT
+{
+  using tesseract::common::calcJacobianTransformErrorDiff;
+
+  Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
+  const double eps = 1e-6;
+  // Absolute tolerance: assertions below use isZero / EXPECT_NEAR / cwiseAbs().maxCoeff(),
+  // all of which interpret atol as an absolute bound on the per-component error.
+  const double atol = 1e-10;
+
+  // Shared geometry: target translated to (1,2,3); source = X-rotation by base_angle; perturbed adds eps.
+  // calcTransformError gives err[3] ≈ base_angle (X-rotation component).
+  Eigen::Isometry3d target_tf{ identity };
+  target_tf.translation() = Eigen::Vector3d(1, 2, 3);
+  const double base_angle = 0.5;
+  Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(base_angle, Eigen::Vector3d::UnitX());
+  Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(base_angle + eps, Eigen::Vector3d::UnitX());
+
+  // Case 1: both err and perturbed_err inside band → row clamped to zero.
+  {
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 1.0, 0.5, 0.5;
+    Eigen::VectorXd diff = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_TRUE(diff.isZero(atol));
+  }
+
+  // Case 2: both errors above the band → constant offset cancels, diff equals raw FD.
+  {
+    const double band_top = base_angle - 0.1;
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, band_top - 0.01, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, band_top, 0.5, 0.5;
+
+    Eigen::VectorXd diff_raw = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff_tol = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_LT((diff_tol - diff_raw).cwiseAbs().maxCoeff(), atol);
+  }
+
+  // Case 3: band edge between err and perturbed_err → non-zero sub-gradient (the bug-fix scenario).
+  // base_angle=0.5 is inside [0.0, 0.55], base_angle + 0.2 = 0.7 is outside.
+  // Clamped diff[3] = (0.7 - 0.55) - 0.0 = 0.15.
+  {
+    const double big_step = 0.2;
+    Eigen::Isometry3d source_tf_big = identity * Eigen::AngleAxisd(base_angle + big_step, Eigen::Vector3d::UnitX());
+
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 0.55, 0.5, 0.5;
+
+    Eigen::VectorXd diff = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_big, lower, upper);
+    EXPECT_NEAR(diff(3), 0.15, atol);
+  }
+
+  // Case 4: size-mismatch throws.
+  {
+    Eigen::VectorXd lower3 = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd upper6 = Eigen::VectorXd::Zero(6);
+    EXPECT_THROW(calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower3, upper6),
+                 std::runtime_error);
+
+    Eigen::VectorXd lower4 = Eigen::VectorXd::Zero(4);
+    Eigen::VectorXd upper4 = Eigen::VectorXd::Zero(4);
+    EXPECT_THROW(calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed, lower4, upper4),
+                 std::runtime_error);
+  }
+
+  // Dynamic-target overload: small rotation of target frame so the constraint logic is exercised
+  // independently of the fixed-target path.
+  Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitX()) * target_tf;
+
+  // Case 5: dynamic-target overload — both errors inside band → row clamped to zero.
+  {
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 1.0, 0.5, 0.5;
+    Eigen::VectorXd diff =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_TRUE(diff.isZero(atol));
+  }
+
+  // Case 6: dynamic-target — both errors above the band on component 3 → constant offset cancels,
+  // so the toleranced diff matches the raw FD on that component. Other components have small drift
+  // from the target perturbation that the broader translation band clamps differently, so we
+  // restrict the equality assertion to the clamped component.
+  {
+    const double band_top = base_angle - 0.1;
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, band_top - 0.01, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, band_top, 0.5, 0.5;
+
+    Eigen::VectorXd diff_raw =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
+    Eigen::VectorXd diff_tol =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed, lower, upper);
+    EXPECT_NEAR(diff_tol(3), diff_raw(3), atol);
+  }
+
+  // Case 7: dynamic-target — band edge between err and perturbed_err.
+  // err[3] = target.inv * source X-rotation ≈ base_angle = 0.5, inside [0, 0.55] → clamped to 0.
+  // perturbed_err[3] = target_perturbed.inv * source_perturbed X-rotation ≈ (base_angle + big_step) + eps ≈ 0.7,
+  // where the +eps comes from target_tf_perturbed (the inverse of AngleAxisd(-eps, X) applied on the left of
+  // target_tf) — source_tf_big itself contributes no eps. Above band → clamped to 0.15. Diff[3] ≈ 0.15.
+  {
+    const double big_step = 0.2;
+    Eigen::Isometry3d source_tf_big = identity * Eigen::AngleAxisd(base_angle + big_step, Eigen::Vector3d::UnitX());
+
+    Eigen::VectorXd lower(6), upper(6);
+    lower << -5.0, -5.0, -5.0, 0.0, -0.5, -0.5;
+    upper << 5.0, 5.0, 5.0, 0.55, 0.5, 0.5;
+
+    Eigen::VectorXd diff =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_big, lower, upper);
+    EXPECT_NEAR(diff(3), 0.15, 1e-4);
+  }
+
+  // Case 8: dynamic-target — size-mismatch throws.
+  {
+    Eigen::VectorXd lower3 = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd upper6 = Eigen::VectorXd::Zero(6);
+    EXPECT_THROW(
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed, lower3, upper6),
+        std::runtime_error);
+  }
+}
+
+// Exercises the perturbed-axis flip branch in calcJacobianTransformErrorDiff: when the perturbed
+// rotation axis is reported with the opposite sign of the unperturbed one (common for near-zero
+// rotations), the function must internally flip it and still produce a well-formed 6-vector diff.
+TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_AxisFlipPath)  // NOLINT
+{
+  using tesseract::common::calcJacobianTransformErrorDiff;
+  Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
+  const double eps = 1e-4;
+
+  // Near-zero rotation: small symmetric perturbation around zero forces the
+  // perturbed_pose_rotation axis to potentially have opposite sign from pose_rotation,
+  // which is exactly what the flip block in calcJacobianTransformErrorDiff exists to fix.
+  Eigen::Isometry3d target_tf{ identity };
+  target_tf.translation() = Eigen::Vector3d(1, 2, 3);
+  Eigen::Isometry3d source_tf = identity * Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX());
+  Eigen::Isometry3d source_tf_perturbed = identity * Eigen::AngleAxisd(-eps, Eigen::Vector3d::UnitX());
+
+  // Fixed-target overload.
+  EXPECT_NO_THROW({
+    Eigen::VectorXd diff = calcJacobianTransformErrorDiff(target_tf, source_tf, source_tf_perturbed);
+    EXPECT_EQ(diff.size(), 6);
+  });
+
+  // Dynamic-target overload — same setup with a tiny target perturbation.
+  Eigen::Isometry3d target_tf_perturbed = Eigen::AngleAxisd(eps, Eigen::Vector3d::UnitX()) * target_tf;
+  EXPECT_NO_THROW({
+    Eigen::VectorXd diff =
+        calcJacobianTransformErrorDiff(target_tf, target_tf_perturbed, source_tf, source_tf_perturbed);
+    EXPECT_EQ(diff.size(), 6);
+  });
+}
+
+// Direct coverage of the public applyTolerances helper. The toleranced-jacobian tests above
+// only reach applyTolerances through the calcJacobianTransformErrorDiff call sites, which now
+// short-circuit when both tolerance vectors are empty — the empty-both early-return inside
+// applyTolerances is therefore unreachable from those tests but is still part of the documented
+// public API contract for external callers.
+TEST(TesseractCommonUnit, applyTolerances)  // NOLINT
+{
+  using tesseract::common::applyTolerances;
+
+  // Both tolerances empty → no-op (the previously uncovered early-return path).
+  {
+    Eigen::VectorXd v(3);
+    v << -2.0, 0.0, 3.0;
+    const Eigen::VectorXd v_copy = v;
+    applyTolerances(v, Eigen::VectorXd{}, Eigen::VectorXd{});
+    EXPECT_TRUE(v.isApprox(v_copy));
+  }
+
+  // In-band components clamped to zero; below-band shifts by lower; above-band shifts by upper.
+  {
+    Eigen::VectorXd v(4);
+    v << -2.0, -0.25, 0.25, 2.0;
+    Eigen::VectorXd lower(4);
+    lower << -1.0, -0.5, -0.5, -1.0;
+    Eigen::VectorXd upper(4);
+    upper << 1.0, 0.5, 0.5, 1.0;
+    applyTolerances(v, lower, upper);
+    Eigen::VectorXd expected(4);
+    expected << -1.0, 0.0, 0.0, 1.0;
+    EXPECT_TRUE(v.isApprox(expected));
+  }
+
+  // Mismatched lower/upper sizes throw.
+  {
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(3);
+    EXPECT_THROW(applyTolerances(v, Eigen::VectorXd::Zero(2), Eigen::VectorXd::Zero(3)), std::runtime_error);
+  }
+
+  // Tolerance size not matching v throws.
+  {
+    Eigen::VectorXd v = Eigen::VectorXd::Zero(3);
+    EXPECT_THROW(applyTolerances(v, Eigen::VectorXd::Zero(4), Eigen::VectorXd::Zero(4)), std::runtime_error);
+  }
+}
+
 /** @brief Tests calcTransformError */
 TEST(TesseractCommonUnit, computeRandomColor)  // NOLINT
 {

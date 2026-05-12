@@ -132,8 +132,9 @@ Eigen::VectorXd calcTransformError(const Eigen::Isometry3d& t1, const Eigen::Iso
 
 /**
  * @brief Calculate jacobian transform error difference expressed in the target frame coordinate system
- * @details This is used when the target is a fixed frame in the environment
- * @param target Target The desired transform to express the transform error difference in
+ * @details This is used when the target is a fixed frame in the environment. Handles the angle-axis ±π
+ *          discontinuity by computing err and perturbed_err in coordination.
+ * @param target The desired transform to express the transform error difference in
  * @param source The current location of the source transform
  * @param source_perturbed The perturbed location of the source transform
  * @return The change in error represented in the target frame
@@ -143,9 +144,28 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& source_perturbed);
 
 /**
+ * @brief Calculate jacobian transform error difference with optional per-component dead-band tolerances.
+ * @details Same behavior as the 3-argument overload; additionally, after the paired ±π/sign correction the
+ *          err and perturbed_err vectors are clamped inside `[lower_tolerance, upper_tolerance]` before the
+ *          subtraction. Both tolerance vectors must be size 6, or both empty for raw finite-difference behavior.
+ * @param target The desired transform to express the transform error difference in
+ * @param source The current location of the source transform
+ * @param source_perturbed The perturbed location of the source transform
+ * @param lower_tolerance Per-component dead-band lower bound (size 6, or empty for no-op)
+ * @param upper_tolerance Per-component dead-band upper bound (same size constraints as lower_tolerance)
+ * @return The change in error represented in the target frame
+ */
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed,
+                                               const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                                               const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance);
+
+/**
  * @brief Calculate jacobian transform error difference expressed in the target frame coordinate system
- * @details This is used when the target and source are both dynamic links
- * @param target Target The desired transform to express the transform error difference in
+ * @details This is used when the target and source are both dynamic links. Handles the angle-axis ±π
+ *          discontinuity by computing err and perturbed_err in coordination.
+ * @param target The desired transform to express the transform error difference in
  * @param target_perturbed The perturbed location of the target transform
  * @param source The current location of the source transform
  * @param source_perturbed The perturbed location of the source transform
@@ -155,6 +175,43 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
                                                const Eigen::Isometry3d& target_perturbed,
                                                const Eigen::Isometry3d& source,
                                                const Eigen::Isometry3d& source_perturbed);
+
+/**
+ * @brief Calculate jacobian transform error difference (dynamic target) with optional per-component dead-band
+ *        tolerances.
+ * @details Same behavior as the 4-argument overload; additionally, after the paired ±π/sign correction the
+ *          err and perturbed_err vectors are clamped inside `[lower_tolerance, upper_tolerance]` before the
+ *          subtraction. Both tolerance vectors must be size 6, or both empty for raw finite-difference behavior.
+ * @param target The desired transform to express the transform error difference in
+ * @param target_perturbed The perturbed location of the target transform
+ * @param source The current location of the source transform
+ * @param source_perturbed The perturbed location of the source transform
+ * @param lower_tolerance Per-component dead-band lower bound (size 6, or empty for no-op)
+ * @param upper_tolerance Per-component dead-band upper bound (same size constraints as lower_tolerance)
+ * @return The change in error represented in the target frame
+ */
+Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
+                                               const Eigen::Isometry3d& target_perturbed,
+                                               const Eigen::Isometry3d& source,
+                                               const Eigen::Isometry3d& source_perturbed,
+                                               const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                                               const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance);
+
+/**
+ * @brief Apply a per-component dead-band tolerance to an error vector in place.
+ * @details Each component is clamped to zero inside `[lower(i), upper(i)]`, shifted by `v(i) - lower(i)` below the
+ *          band, and `v(i) - upper(i)` above. The function is a no-op only when both `lower_tolerance` and
+ *          `upper_tolerance` are empty. When non-empty, both tolerance vectors must match `v` in size; otherwise
+ *          std::runtime_error is thrown. A non-empty paired with an empty tolerance is treated as a size mismatch
+ *          and throws.
+ * @param v The vector to clamp in place
+ * @param lower_tolerance Per-component lower bound (size must equal `v.size()`, or empty when paired with an empty
+ *        upper_tolerance for a no-op)
+ * @param upper_tolerance Per-component upper bound (same size constraints as `lower_tolerance`)
+ */
+void applyTolerances(Eigen::Ref<Eigen::VectorXd> v,
+                     const Eigen::Ref<const Eigen::VectorXd>& lower_tolerance,
+                     const Eigen::Ref<const Eigen::VectorXd>& upper_tolerance);
 
 /**
  * @brief This computes a random color RGBA [0, 1] with alpha set to 1
