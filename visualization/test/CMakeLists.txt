@@ -9,7 +9,7 @@ target_link_libraries(
           tesseract::visualization)
 target_compile_options(tesseract_visualization_player_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_visualization_player_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_visualization_player_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_visualization_player_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_visualization_player_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

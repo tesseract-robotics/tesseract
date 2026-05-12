@@ -1,6 +1,11 @@
 #ifndef TESSERACT_COLLISION_COLLISION_BOX_BOX_CAST_UNIT_H
 #define TESSERACT_COLLISION_COLLISION_BOX_BOX_CAST_UNIT_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/geometry/geometries.h>
 
@@ -122,11 +127,11 @@ inline void runTest(ContinuousContactManager& checker)
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "moving_box_link", "static_box_link" });
+  checker.setActiveCollisionObjects(std::vector<std::string>{ "moving_box_link", "static_box_link" });
 
   std::vector<std::string> active_links{ "moving_box_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);

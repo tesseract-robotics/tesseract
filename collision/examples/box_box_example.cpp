@@ -254,7 +254,7 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform("Test when object is inside another");
 
   //! [collision_example_set_active_objects]
-  checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
+  checker.setActiveCollisionObjects(std::vector<std::string>{ "box_link", "second_box_link" });
   //! [collision_example_set_active_objects]
 
   //! [collision_example_set_margin_data]
@@ -262,7 +262,7 @@ int main(int /*argc*/, char** /*argv*/)
   //! [collision_example_set_margin_data]
 
   //! [collision_example_set_transforms_initial]
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["box_link"].translation()(0) = 0.2;
   location["box_link"].translation()(1) = 0.1;
@@ -282,14 +282,14 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
   CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);
   CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_names[0].c_str(),
+                           result_vector[0].link_ids[0].name().c_str(),
                            toString(result_vector[0].nearest_points[0]).c_str());
   CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_names[1].c_str(),
+                           result_vector[0].link_ids[1].name().c_str(),
                            toString(result_vector[0].nearest_points[1]).c_str());
   CONSOLE_BRIDGE_logInform("Direction to move Link %s out of collision with Link %s: %s",
-                           result_vector[0].link_names[0].c_str(),
-                           result_vector[0].link_names[1].c_str(),
+                           result_vector[0].link_ids[0].name().c_str(),
+                           result_vector[0].link_ids[1].name().c_str(),
                            toString(result_vector[0].normal).c_str());
   //! [collision_example_first_check]
 
@@ -324,14 +324,14 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
   CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);
   CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_names[0].c_str(),
+                           result_vector[0].link_ids[0].name().c_str(),
                            toString(result_vector[0].nearest_points[0]).c_str());
   CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_names[1].c_str(),
+                           result_vector[0].link_ids[1].name().c_str(),
                            toString(result_vector[0].nearest_points[1]).c_str());
   CONSOLE_BRIDGE_logInform("Direction to move Link %s further from Link %s: %s",
-                           result_vector[0].link_names[0].c_str(),
-                           result_vector[0].link_names[1].c_str(),
+                           result_vector[0].link_ids[0].name().c_str(),
+                           result_vector[0].link_ids[1].name().c_str(),
                            toString(result_vector[0].normal).c_str());
   //! [collision_example_third_check]
 }

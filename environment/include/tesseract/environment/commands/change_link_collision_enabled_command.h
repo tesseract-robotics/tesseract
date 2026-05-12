@@ -27,9 +27,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -48,19 +48,19 @@ public:
 
   /**
    * @brief Set whether a link should be considered during collision checking
-   * @param link_name The link name to modify collision enabled
+   * @param link_id The link id to modify collision enabled
    * @param enabled True if should be condisdered during collision checking, otherwise false
    */
-  ChangeLinkCollisionEnabledCommand(std::string link_name, bool enabled);
+  ChangeLinkCollisionEnabledCommand(common::LinkId link_id, bool enabled);
 
-  const std::string& getLinkName() const;
+  const common::LinkId& getLinkId() const;
   bool getEnabled() const;
 
   bool operator==(const ChangeLinkCollisionEnabledCommand& rhs) const;
   bool operator!=(const ChangeLinkCollisionEnabledCommand& rhs) const;
 
 private:
-  std::string link_name_;
+  common::LinkId link_id_;
   bool enabled_{ false };
 
   template <class Archive>

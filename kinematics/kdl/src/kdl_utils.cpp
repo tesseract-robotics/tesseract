@@ -28,6 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_utils.h>
+#include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/scene_graph/kdl_parser.h>
@@ -82,7 +83,7 @@ void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> vec) { 
 
 bool parseSceneGraph(KDLChainData& results,
                      const tesseract::scene_graph::SceneGraph& scene_graph,
-                     const std::vector<std::pair<std::string, std::string>>& chains)
+                     const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains)
 {
   try
   {
@@ -96,28 +97,29 @@ bool parseSceneGraph(KDLChainData& results,
   }
 
   results.chains = chains;
-  results.base_link_name = chains.front().first;
+  results.base_link_id = chains.front().first;
   for (const auto& chain : chains)
   {
     KDL::Chain sub_chain;
-    if (!results.kdl_tree.getChain(chain.first, chain.second, sub_chain))
+    if (!results.kdl_tree.getChain(chain.first.name(), chain.second.name(), sub_chain))
     {
-      CONSOLE_BRIDGE_logError(
-          "Failed to initialize KDL between links: '%s' and '%s'", chain.first.c_str(), chain.second.c_str());
+      CONSOLE_BRIDGE_logError("Failed to initialize KDL between links: '%s' and '%s'",
+                              chain.first.name().c_str(),
+                              chain.second.name().c_str());
       return false;
     }
     results.robot_chain.addChain(sub_chain);
   }
-  results.tip_link_name = chains.back().second;
+  results.tip_link_id = chains.back().second;
 
-  results.joint_names.clear();
-  results.joint_names.resize(results.robot_chain.getNrOfJoints());
+  results.joint_ids.clear();
+  results.joint_ids.resize(results.robot_chain.getNrOfJoints());
   results.q_min.resize(results.robot_chain.getNrOfJoints());
   results.q_max.resize(results.robot_chain.getNrOfJoints());
 
   results.segment_index.clear();
-  results.segment_index[results.base_link_name] = 0;
-  results.segment_index[results.tip_link_name] = static_cast<int>(results.robot_chain.getNrOfSegments());
+  results.segment_index[results.base_link_id] = 0;
+  results.segment_index[results.tip_link_id] = static_cast<int>(results.robot_chain.getNrOfSegments());
 
   for (unsigned i = 0, j = 0; i < results.robot_chain.getNrOfSegments(); ++i)
   {
@@ -130,11 +132,11 @@ bool parseSceneGraph(KDLChainData& results,
     // KDL segments does not contain the the base link in this list. When calling function that take segmentNr, like
     // JntToCart to get the base link transform you would pass an index of zero and for subsequent links it is
     // index + 1. This was determined through testing which is captured in this packages unit tests.
-    results.segment_index[seg.getName()] = static_cast<int>(i + 1);
+    results.segment_index[common::LinkId(seg.getName())] = static_cast<int>(i + 1);
 
-    results.joint_names[j] = jnt.getName();
+    results.joint_ids[j] = common::JointId(jnt.getName());
 
-    auto joint = scene_graph.getJoint(results.joint_names[j]);
+    auto joint = scene_graph.getJoint(results.joint_ids[j]);
     double lower = std::numeric_limits<float>::lowest();
     double upper = std::numeric_limits<float>::max();
     // Does the joint have limits?
@@ -163,11 +165,11 @@ bool parseSceneGraph(KDLChainData& results,
 
 bool parseSceneGraph(KDLChainData& results,
                      const tesseract::scene_graph::SceneGraph& scene_graph,
-                     const std::string& base_name,
-                     const std::string& tip_name)
+                     const tesseract::common::LinkId& base_link,
+                     const tesseract::common::LinkId& tip_link)
 {
-  std::vector<std::pair<std::string, std::string>> chains;
-  chains.emplace_back(base_name, tip_name);
+  std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>> chains;
+  chains.emplace_back(base_link, tip_link);
   return parseSceneGraph(results, scene_graph, chains);
 }
 

@@ -41,8 +41,8 @@ void ContactResult::clear()
   nearest_points_local[1].setZero();
   transform[0] = Eigen::Isometry3d::Identity();
   transform[1] = Eigen::Isometry3d::Identity();
-  link_names[0] = "";
-  link_names[1] = "";
+  link_ids[0] = {};
+  link_ids[1] = {};
   shape_id[0] = -1;
   shape_id[1] = -1;
   subshape_id[0] = -1;
@@ -69,7 +69,7 @@ bool ContactResult::operator==(const ContactResult& rhs) const
   ret_val &= tesseract::common::almostEqualRelativeAndAbs(nearest_points_local[1], rhs.nearest_points_local[1]);
   ret_val &= transform[0].isApprox(rhs.transform[0]);
   ret_val &= transform[1].isApprox(rhs.transform[1]);
-  ret_val &= (link_names == rhs.link_names);
+  ret_val &= (link_ids == rhs.link_ids);
   ret_val &= (shape_id == rhs.shape_id);
   ret_val &= (subshape_id == rhs.subshape_id);
   ret_val &= (type_id == rhs.type_id);
@@ -101,7 +101,7 @@ bool ContactRequest::operator!=(const ContactRequest& rhs) const { return !opera
 
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactResult result)
 {
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first_id() <= key.second_id());
   ++count_;
   auto& cv = data_[key];
   return cv.emplace_back(std::move(result));
@@ -110,7 +110,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, ContactRes
 ContactResult& ContactResultMap::addContactResult(const KeyType& key, const MappedType& results)
 {
   assert(!results.empty());
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first_id() <= key.second_id());
   count_ += static_cast<long>(results.size());
   auto& cv = data_[key];
   cv.insert(cv.end(), results.begin(), results.end());
@@ -119,7 +119,7 @@ ContactResult& ContactResultMap::addContactResult(const KeyType& key, const Mapp
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactResult result)
 {
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first_id() <= key.second_id());
   auto& cv = data_[key];
   count_ += (1 - static_cast<long>(cv.size()));
   assert(count_ >= 0);
@@ -130,7 +130,7 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, ContactRes
 
 ContactResult& ContactResultMap::setContactResult(const KeyType& key, const MappedType& results)
 {
-  assert(tesseract::common::makeOrderedLinkPair(key.first, key.second) == key);
+  assert(key.first_id() <= key.second_id());
   assert(!results.empty());
   auto& cv = data_[key];
   count_ += (static_cast<long>(results.size()) - static_cast<long>(cv.size()));
@@ -141,24 +141,25 @@ ContactResult& ContactResultMap::setContactResult(const KeyType& key, const Mapp
   return cv.back();
 }
 
-void ContactResultMap::addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
-                                                       long sub_segment_index,
-                                                       long sub_segment_last_index,
-                                                       const std::vector<std::string>& active_link_names,
-                                                       double segment_dt,
-                                                       bool discrete,
-                                                       const tesseract::collision::ContactResultMap::FilterFn& filter)
+void ContactResultMap::addInterpolatedCollisionResults(
+    ContactResultMap& sub_segment_results,
+    long sub_segment_index,
+    long sub_segment_last_index,
+    const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
+    double segment_dt,
+    bool discrete,
+    const tesseract::collision::ContactResultMap::FilterFn& filter)
 {
   for (auto& pair : sub_segment_results.data_)
   {
-    assert(tesseract::common::makeOrderedLinkPair(pair.first.first, pair.first.second) == pair.first);
+    assert(common::LinkIdPair(pair.second.front().link_ids[0], pair.second.front().link_ids[1]) == pair.first);
     // Update cc_time and cc_type
     for (auto& r : pair.second)
     {
       // Iterate over the two time values in r.cc_time
       for (size_t j = 0; j < 2; ++j)
       {
-        if (std::find(active_link_names.begin(), active_link_names.end(), r.link_names[j]) != active_link_names.end())
+        if (active_link_ids.find(r.link_ids[j]) != active_link_ids.end())
         {
           r.cc_time[j] = (r.cc_time[j] < 0) ?
                              (static_cast<double>(sub_segment_index) * segment_dt) :
@@ -326,6 +327,7 @@ std::string ContactResultMap::getSummary() const
   std::stringstream ss;
   std::map<KeyType, std::size_t> collision_counts;
   std::map<KeyType, double> closest_distances;
+  std::map<KeyType, std::array<std::string, 2>> pair_names;
 
   // Initialize distances map with max values
   for (const auto& pair : data_)
@@ -334,6 +336,7 @@ std::string ContactResultMap::getSummary() const
     {
       collision_counts[pair.first] = pair.second.size();
       closest_distances[pair.first] = std::numeric_limits<double>::max();
+      pair_names[pair.first] = { pair.second.front().link_ids[0].name(), pair.second.front().link_ids[1].name() };
 
       // Find closest distance for this pair
       for (const auto& result : pair.second)
@@ -352,7 +355,8 @@ std::string ContactResultMap::getSummary() const
                                       collision_counts.end(),
                                       [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
 
-  ss << max_element->first.first << " - " << max_element->first.second << ": " << max_element->second
+  const auto& names = pair_names[max_element->first];
+  ss << names[0] << " - " << names[1] << ": " << max_element->second
      << " collisions, min dist: " << closest_distances[max_element->first];
 
   return ss.str();
@@ -594,12 +598,13 @@ ContactTrajectorySubstepResults ContactTrajectoryStepResults::mostCollisionsSubs
   return most_collisions_substep;
 }
 
-ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names) : joint_names(std::move(j_names))
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids)
+  : joint_ids(std::move(j_ids))
 {
 }
 
-ContactTrajectoryResults::ContactTrajectoryResults(std::vector<std::string> j_names, int num_steps)
-  : joint_names(std::move(j_names)), total_steps(num_steps)
+ContactTrajectoryResults::ContactTrajectoryResults(std::vector<tesseract::common::JointId> j_ids, int num_steps)
+  : joint_ids(std::move(j_ids)), total_steps(num_steps)
 {
   steps.resize(static_cast<std::size_t>(num_steps));
 }
@@ -719,8 +724,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
   // Joint Names can vary widely
   std::string joint_name_title = "JOINT NAMES";
   int longest_joint_name_width = static_cast<int>(joint_name_title.size()) + 2;
-  for (const auto& name : joint_names)
-    longest_joint_name_width = std::max(static_cast<int>(name.size()) + 2, longest_joint_name_width);
+  for (const auto& jid : joint_ids)
+    longest_joint_name_width = std::max(static_cast<int>(jid.name().size()) + 2, longest_joint_name_width);
 
   step_details_width += longest_joint_name_width;
 
@@ -790,10 +795,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         {
           if (collision.second.empty())
             continue;
-          std::string link1_name = collision.second.front().link_names[0];
+          std::string link1_name = collision.second.front().link_ids[0].name();
           longest_link1_width = std::max(static_cast<int>(link1_name.size()) + 2, longest_link1_width);
 
-          std::string link2_name = collision.second.front().link_names[1];
+          std::string link2_name = collision.second.front().link_ids[1].name();
           longest_link2_width = std::max(static_cast<int>(link2_name.size()) + 2, longest_link2_width);
         }
       }
@@ -858,10 +863,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         ss << std::setw(longest_steps_width) << step_number_string;
 
         // Check if we still need to be adding to the joint state information
-        if (line_number < static_cast<int>(joint_names.size()))
+        if (line_number < static_cast<int>(joint_ids.size()))
         {
           ss << std::setprecision(4) << std::fixed;
-          ss << std::setw(longest_joint_name_width) << joint_names[static_cast<std::size_t>(line_number)];
+          ss << std::setw(longest_joint_name_width) << joint_ids[static_cast<std::size_t>(line_number)].name();
           ss << std::setw(longest_state0_width) << step.state0(line_number);
           ss << std::setw(longest_state1_width) << step.state1(line_number);
         }
@@ -876,8 +881,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 
         // Add specific contact information
         ss << std::setw(longest_substep_width) << substep_string;
-        ss << std::setw(longest_link1_width) << collision.second.front().link_names[0];
-        ss << std::setw(longest_link2_width) << collision.second.front().link_names[1];
+        ss << std::setw(longest_link1_width) << collision.second.front().link_ids[0].name();
+        ss << std::setw(longest_link2_width) << collision.second.front().link_ids[1].name();
         ss << std::setw(longest_distance_width) << collision.second.front().distance;
         ss << "\n";
         line_number++;
@@ -885,9 +890,9 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 
       // Make new line for seperator between substates
       ss << std::setw(longest_steps_width) << step_number_string;
-      if (line_number < static_cast<int>(joint_names.size()))
+      if (line_number < static_cast<int>(joint_ids.size()))
       {
-        ss << std::setw(longest_joint_name_width) << joint_names[static_cast<std::size_t>(line_number)];
+        ss << std::setw(longest_joint_name_width) << joint_ids[static_cast<std::size_t>(line_number)].name();
         ss << std::setw(longest_state0_width) << step.state0(line_number);
         ss << std::setw(longest_state1_width) << step.state1(line_number);
       }
@@ -903,10 +908,10 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
     }
 
     // Finish writing joint state if necessary
-    while (line_number < static_cast<int>(joint_names.size()))
+    while (line_number < static_cast<int>(joint_ids.size()))
     {
       ss << std::setw(longest_steps_width) << step_number_string;
-      ss << std::setw(longest_joint_name_width) << joint_names[static_cast<std::size_t>(line_number)];
+      ss << std::setw(longest_joint_name_width) << joint_ids[static_cast<std::size_t>(line_number)].name();
       ss << std::setw(longest_state0_width) << step.state0(line_number);
       ss << std::setw(longest_state1_width) << step.state1(line_number);
       ss << "|\n";
@@ -920,7 +925,7 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
 {
   // Create a map to assign an index to each unique link name
-  std::unordered_map<std::string, std::size_t> link_index_map;
+  std::unordered_map<common::LinkId, std::size_t> link_index_map;
   std::size_t index = 0;
   for (const auto& step : steps)
   {
@@ -928,14 +933,17 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
     {
       for (const auto& contact_pair : substep.contacts.getContainer())
       {
-        const auto& link_pair = contact_pair.first;
-        if (link_index_map.find(link_pair.first) == link_index_map.end())
+        if (contact_pair.second.empty())
+          continue;
+        const auto id0 = contact_pair.second.front().link_ids[0];
+        const auto id1 = contact_pair.second.front().link_ids[1];
+        if (link_index_map.find(id0) == link_index_map.end())
         {
-          link_index_map[link_pair.first] = index++;
+          link_index_map[id0] = index++;
         }
-        if (link_index_map.find(link_pair.second) == link_index_map.end())
+        if (link_index_map.find(id1) == link_index_map.end())
         {
-          link_index_map[link_pair.second] = index++;
+          link_index_map[id1] = index++;
         }
       }
     }
@@ -952,9 +960,12 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
     {
       for (const auto& contact_pair : substep.contacts.getContainer())
       {
-        const auto& link_pair = contact_pair.first;
-        std::size_t row = link_index_map[link_pair.first];
-        std::size_t col = link_index_map[link_pair.second];
+        if (contact_pair.second.empty())
+          continue;
+        const auto cid0 = contact_pair.second.front().link_ids[0];
+        const auto cid1 = contact_pair.second.front().link_ids[1];
+        std::size_t row = link_index_map[cid0];
+        std::size_t col = link_index_map[cid1];
         collision_matrix[row][col]++;
         collision_matrix[col][row]++;
       }
@@ -973,7 +984,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   // Determine the maximum width for the link name column
   std::size_t max_link_name_length = 0;
   for (const auto& entry : link_index_map)
-    max_link_name_length = std::max(entry.first.size(), max_link_name_length);
+    max_link_name_length = std::max(entry.first.name().size(), max_link_name_length);
 
   // Adjust the width to have some extra space after the longest link name
   const int column_width = static_cast<int>(max_link_name_length) + 2;
@@ -995,16 +1006,16 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
   ss << "\n";
 
   // Prepare the data rows
-  std::vector<std::string> link_names(link_index_map.size());
+  std::vector<common::LinkId> link_ids(link_index_map.size());
   for (const auto& entry : link_index_map)
   {
-    link_names[entry.second] = entry.first;
+    link_ids[entry.second] = entry.first;
   }
 
-  for (std::size_t i = 0; i < link_names.size(); ++i)
+  for (std::size_t i = 0; i < link_ids.size(); ++i)
   {
-    ss << std::setw(5) << i << std::setw(column_width) << link_names[i] << "|";
-    for (std::size_t j = 0; j < link_names.size(); ++j)
+    ss << std::setw(5) << i << std::setw(column_width) << link_ids[i].name() << "|";
+    for (std::size_t j = 0; j < link_ids.size(); ++j)
     {
       if (i == j)
         break;
@@ -1060,8 +1071,9 @@ std::stringstream ContactTrajectoryResults::condensedSummary() const
         const auto& first_contact = collision_pair.second.front();
 
         // Format: "14.4: [link_a, link_b]->0.001"
-        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": [" << first_contact.link_names[0]
-           << ", " << first_contact.link_names[1] << "] @ " << std::setprecision(4) << first_contact.distance << "\n";
+        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": ["
+           << first_contact.link_ids[0].name() << ", " << first_contact.link_ids[1].name() << "] @ "
+           << std::setprecision(4) << first_contact.distance << "\n";
 
         found_first_collision = true;
         break;

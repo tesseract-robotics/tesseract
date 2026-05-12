@@ -72,7 +72,11 @@ macro(tesseract_variables)
     set(TESSERACT_ENABLE_RUN_BENCHMARKING OFF)
   endif()
 
-  set(TESSERACT_COMPILE_DEFINITIONS "")
+  set(TESSERACT_COMPILE_DEFINITIONS_PUBLIC "")
+  # Definitions applied PRIVATE to Tesseract's own production libraries so they affect only the libraries' own
+  # translation units, not their consumers (tests, examples, downstream users). Currently forces explicit string ->
+  # NameId construction inside the libraries while leaving implicit conversion available everywhere else.
+  set(TESSERACT_COMPILE_DEFINITIONS_PRIVATE "TESSERACT_NAMEID_NO_IMPLICIT")
   set(TESSERACT_COMPILE_OPTIONS_PUBLIC "")
   set(TESSERACT_COMPILE_OPTIONS_PRIVATE "")
   if(NOT TESSERACT_WARNINGS_AS_ERRORS)
@@ -105,10 +109,10 @@ macro(tesseract_variables)
           -Wextra
           -Wconversion
           -Wsign-conversion)
-      set(TESSERACT_COMPILE_DEFINITIONS "BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED")
+      set(TESSERACT_COMPILE_DEFINITIONS_PUBLIC "BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-      set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON")
+      set(TESSERACT_COMPILE_DEFINITIONS_PUBLIC "_USE_MATH_DEFINES=ON")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE "/bigobj")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     else()
@@ -144,10 +148,10 @@ macro(tesseract_variables)
           -Werror=extra
           -Werror=conversion
           -Werror=sign-conversion)
-      set(TESSERACT_COMPILE_DEFINITIONS "BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED")
+      set(TESSERACT_COMPILE_DEFINITIONS_PUBLIC "BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-      set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON")
+      set(TESSERACT_COMPILE_DEFINITIONS_PUBLIC "_USE_MATH_DEFINES=ON")
       set(TESSERACT_COMPILE_OPTIONS_PRIVATE "/bigobj")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     else()

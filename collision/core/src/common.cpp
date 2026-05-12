@@ -36,26 +36,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::collision
 {
-std::vector<ObjectPairKey>
-getCollisionObjectPairs(const std::vector<std::string>& active_links,
-                        const std::vector<std::string>& static_links,
+std::vector<tesseract::common::LinkIdPair>
+getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_links,
+                        const std::vector<tesseract::common::LinkId>& static_links,
                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator)
 {
   std::size_t num_pairs = active_links.size() * (active_links.size() - 1) / 2;
   num_pairs += (active_links.size() * static_links.size());
 
-  std::vector<ObjectPairKey> clp;
+  std::vector<tesseract::common::LinkIdPair> clp;
   clp.reserve(num_pairs);
 
   // Create active to active pairs
   for (std::size_t i = 0; i < active_links.size() - 1; ++i)
   {
-    const std::string& l1 = active_links[i];
+    const auto& l1 = active_links[i];
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
     {
-      const std::string& l2 = active_links[j];
-      if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
-        clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
+      const auto& l2 = active_links[j];
+      auto pair = tesseract::common::LinkIdPair(l1, l2);
+      if (validator == nullptr || !(*validator)(pair))
+        clp.push_back(pair);
     }
   }
 
@@ -64,41 +65,43 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
   {
     for (const auto& l2 : static_links)
     {
-      if (validator == nullptr || (validator != nullptr && !(*validator)(l1, l2)))
-        clp.push_back(tesseract::common::makeOrderedLinkPair(l1, l2));
+      auto pair = tesseract::common::LinkIdPair(l1, l2);
+      if (validator == nullptr || !(*validator)(pair))
+        clp.push_back(pair);
     }
   }
 
   return clp;
 }
 
-bool isLinkActive(const std::vector<std::string>& active, const std::string& name)
+bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active, const tesseract::common::LinkId& id)
 {
-  return active.empty() || (std::find(active.begin(), active.end(), name) != active.end());
+  return active.empty() || (active.count(id) > 0);
 }
 
-bool isContactAllowed(const std::string& name1,
-                      const std::string& name2,
+bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose)
 {
   // do not distance check geoms part of the same object / link / attached body
-  if (name1 == name2)
+  if (pair.first_id() == pair.second_id())
     return true;
 
-  if (validator != nullptr && (*validator)(name1, name2))
+  if (validator != nullptr && (*validator)(pair))
   {
     if (verbose)
     {
-      CONSOLE_BRIDGE_logError(
-          "Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
+      CONSOLE_BRIDGE_logError("Collision between LinkId(%lu) and LinkId(%lu) is allowed. No contacts are computed.",
+                              pair.first_id(),
+                              pair.second_id());
     }
     return true;
   }
 
   if (verbose)
   {
-    CONSOLE_BRIDGE_logError("Actually checking collisions between %s and %s", name1.c_str(), name2.c_str());
+    CONSOLE_BRIDGE_logError(
+        "Actually checking collisions between LinkId(%lu) and LinkId(%lu)", pair.first_id(), pair.second_id());
   }
 
   return false;
@@ -106,14 +109,14 @@ bool isContactAllowed(const std::string& name1,
 
 ContactResult* processResult(ContactTestData& cdata,
                              ContactResult& contact,
-                             const std::pair<std::string, std::string>& key,
+                             const tesseract::common::LinkIdPair& key,
+                             double margin,
                              bool found)
 {
   if (cdata.req.is_valid && !(*cdata.req.is_valid)(contact))
     return nullptr;
 
-  if ((cdata.req.calculate_distance || cdata.req.calculate_penetration) &&
-      (contact.distance > cdata.collision_margin_data.getCollisionMargin(key.first, key.second)))
+  if ((cdata.req.calculate_distance || cdata.req.calculate_penetration) && (contact.distance > margin))
     return nullptr;
 
   if (!found)

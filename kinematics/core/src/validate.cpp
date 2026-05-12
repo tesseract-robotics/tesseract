@@ -26,10 +26,12 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
+#include <algorithm>
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/validate.h>
+#include <tesseract/common/types.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/kinematics/kinematic_group.h>
 
@@ -41,8 +43,8 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
   Eigen::Isometry3d test2;
   Eigen::VectorXd seed_angles(manip.numJoints());
   Eigen::VectorXd joint_angles2(manip.numJoints());
-  std::vector<std::string> tip_links = manip.getAllPossibleTipLinkNames();
-  std::vector<std::string> working_frames = manip.getAllValidWorkingFrames();
+  auto tip_links = manip.getAllPossibleTipLinkIds();
+  auto working_frames = manip.getAllValidWorkingFrames();
   const int nj = static_cast<int>(manip.numJoints());
 
   std::vector<std::vector<double>> passed_data;
@@ -52,7 +54,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
   double translation_max{ 0 };
   double angular_max{ 0 };
 
-  std::vector<std::pair<std::string, std::string>> checks;
+  std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>> checks;
   checks.reserve(tip_links.size() + working_frames.size());
 
   for (const auto& tip_link : tip_links)
@@ -91,11 +93,9 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
           if (angular_distance > tol)
             ++angular_failures;
 
-          if (angular_distance > angular_max)
-            angular_max = angular_distance;
+          angular_max = std::max(angular_distance, angular_max);
 
-          if (translation_distance > translation_max)
-            translation_max = translation_distance;
+          translation_max = std::max(translation_distance, translation_max);
 
           std::vector<double> data{ translation_distance, tol, angular_distance, tol };
           for (Eigen::Index i = 0; i < sol.rows(); ++i)

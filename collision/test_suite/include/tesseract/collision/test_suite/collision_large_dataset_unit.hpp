@@ -45,7 +45,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   std::size_t t = 5;  // Because of unit test runtime this was reduced from 10 to 5.
   std::vector<std::string> link_names;
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   for (std::size_t x = 0; x < t; ++x)
   {
     for (std::size_t y = 0; y < t; ++y)
@@ -72,7 +72,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   // Check if they are in collision
   checker.setActiveCollisionObjects(link_names);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(link_names, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
@@ -95,7 +95,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
     if (result_vector.size() != 300)
       for (const auto& result : result_vector)
-        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << "\n";
+        std::cout << result.link_ids[0].name() << "," << result.link_ids[1].name() << "," << result.distance << "\n";
 
     EXPECT_EQ(result_vector.size(), 300);
   }

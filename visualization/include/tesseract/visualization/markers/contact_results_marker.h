@@ -22,26 +22,27 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ContactResultsMarker() = default;
-  ContactResultsMarker(std::vector<std::string> link_names,
+  ContactResultsMarker(std::vector<tesseract::common::LinkId> link_ids,
                        tesseract::collision::ContactResultVector dist_results,
                        tesseract::collision::CollisionMarginData margin_data)
-    : link_names(std::move(link_names)), dist_results(std::move(dist_results)), margin_data(std::move(margin_data))
+    : link_ids(std::move(link_ids)), dist_results(std::move(dist_results)), margin_data(std::move(margin_data))
   {
   }
 
-  ContactResultsMarker(std::vector<std::string> link_names,
-                       tesseract::collision::ContactResultVector dist_results,
-                       std::function<double(const std::string&, const std::string&)> margin_fn)
-    : link_names(std::move(link_names)), dist_results(std::move(dist_results)), margin_fn(std::move(margin_fn))
+  ContactResultsMarker(
+      std::vector<tesseract::common::LinkId> link_ids,
+      tesseract::collision::ContactResultVector dist_results,
+      std::function<double(const tesseract::common::LinkId&, const tesseract::common::LinkId&)> margin_fn)
+    : link_ids(std::move(link_ids)), dist_results(std::move(dist_results)), margin_fn(std::move(margin_fn))
   {
   }
 
   int getType() const override { return static_cast<int>(MarkerType::CONTACT_RESULTS); }
 
-  std::vector<std::string> link_names;
+  std::vector<tesseract::common::LinkId> link_ids;
   tesseract::collision::ContactResultVector dist_results;
   tesseract::collision::CollisionMarginData margin_data;
-  std::function<double(const std::string&, const std::string&)> margin_fn;
+  std::function<double(const tesseract::common::LinkId&, const tesseract::common::LinkId&)> margin_fn;
 };
 
 }  // namespace tesseract::visualization

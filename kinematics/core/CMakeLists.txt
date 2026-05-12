@@ -22,8 +22,9 @@ target_link_libraries(
          yaml-cpp)
 target_compile_options(kinematics PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(kinematics PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(kinematics PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
 target_compile_definitions(kinematics PRIVATE TESSERACT_KINEMATICS_PLUGIN_PATH="${TESSERACT_KINEMATICS_PLUGIN_PATH}")
+target_compile_definitions(kinematics PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(kinematics ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(kinematics PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -41,7 +42,8 @@ set_target_properties(kinematics_factories PROPERTIES OUTPUT_NAME tesseract_kine
 target_link_libraries(kinematics_factories PUBLIC kinematics console_bridge::console_bridge)
 target_compile_options(kinematics_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(kinematics_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(kinematics_factories PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(kinematics_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(kinematics_factories ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(kinematics_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
