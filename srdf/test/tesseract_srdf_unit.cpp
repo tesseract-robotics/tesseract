@@ -2123,6 +2123,40 @@ TEST(TesseractSRDFUnit, ParseContactManagersPluginConfigUnit)  // NOLINT
     tesseract::srdf::SRDFModel srdf_model;
     EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
+
+  {  // valid yaml
+    std::string yaml_str = R"(contact_manager_plugins:
+                              search_paths:
+                                - /usr/local/lib
+                              search_libraries:
+                                - tesseract_collision_bullet_factories
+                                - tesseract_collision_fcl_factories
+                              discrete_plugins:
+                                default: BulletDiscreteBVHManager
+                                plugins:
+                                  BulletDiscreteBVHManager:
+                                    class: BulletDiscreteBVHManagerFactory
+                                  BulletDiscreteSimpleManager:
+                                    class: BulletDiscreteSimpleManagerFactory
+                                  FCLDiscreteBVHManager:
+                                    class: FCLDiscreteBVHManagerFactory
+                              continuous_plugins:
+                                default: BulletCastBVHManager
+                                plugins:
+                                  BulletCastBVHManager:
+                                    class: BulletCastBVHManagerFactory
+                                  BulletCastSimpleManager:
+                                    class: BulletCastSimpleManagerFactory)";
+
+    YAML::Node cfg = YAML::Load(yaml_str);
+
+    tesseract::common::ContactManagersPluginInfo info = tesseract::srdf::parseContactManagersPluginConfig(locator, cfg);
+    EXPECT_FALSE(info.empty());
+
+    tesseract::common::ContactManagersPluginInfo info2 =
+        tesseract::srdf::parseContactManagersPluginConfig(locator, yaml_str);
+    EXPECT_FALSE(info2.empty());
+  }
 }
 
 TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
@@ -2209,6 +2243,53 @@ TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
     tesseract::srdf::SRDFModel srdf_model;
     EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
   }
+
+  {  // valid yaml
+    std::string yaml_str = R"(kinematic_plugins:
+                                search_libraries:
+                                  - tesseract_kinematics_opw_factories
+                                fwd_kin_plugins:
+                                  manipulator:
+                                    default: KDLFwdKinChain
+                                    plugins:
+                              # //! [KDL FK config]
+                                      KDLFwdKinChain:
+                                        class: KDLFwdKinChainFactory
+                                        config:
+                                          base_link: base_link
+                                          tip_link: tool0
+                              # //! [KDL FK config]
+                                inv_kin_plugins:
+                                  manipulator:
+                                    default: OPWInvKin
+                                    plugins:
+                              # //! [OPW config]
+                                      OPWInvKin:
+                                        class: OPWInvKinFactory
+                                        config:
+                                          base_link: base_link
+                                          tip_link: tool0
+                                          params:
+                                            a1: 0.100
+                                            a2: -0.135
+                                            b: 0.00
+                                            c1: 0.615
+                                            c2: 0.705
+                                            c3: 0.755
+                                            c4: 0.085
+                                            offsets: [0, 0, -1.57079632679, 0, 0, 0]
+                                            sign_corrections: [1, 1, 1, 1, 1, 1]
+                              # //! [OPW config]
+                              )";
+
+    YAML::Node cfg = YAML::Load(yaml_str);
+
+    tesseract::common::KinematicsPluginInfo info = tesseract::srdf::parseKinematicsPluginConfig(locator, cfg);
+    EXPECT_FALSE(info.empty());
+
+    tesseract::common::KinematicsPluginInfo info2 = tesseract::srdf::parseKinematicsPluginConfig(locator, yaml_str);
+    EXPECT_FALSE(info2.empty());
+  }
 }
 
 TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
@@ -2293,6 +2374,40 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
 
     tesseract::srdf::SRDFModel srdf_model;
     EXPECT_ANY_THROW(srdf_model.initString(*g, str, locator));  // NOLINT
+  }
+
+  {  // valid yaml
+    std::string yaml_str = R"(calibration:
+                                joints:
+                                  joint_1:
+                                    position:
+                                      x: 1
+                                      y: 2
+                                      z: 3
+                                    orientation:
+                                      x: 0
+                                      y: 0
+                                      z: 0
+                                      w: 1
+                                  joint_2:
+                                    position:
+                                      x: 4
+                                      y: 5
+                                      z: 6
+                                    orientation:
+                                      x: 0
+                                      y: 0
+                                      z: 0
+                                      w: 1
+                              )";
+
+    YAML::Node cfg = YAML::Load(yaml_str);
+
+    tesseract::common::CalibrationInfo info = tesseract::srdf::parseCalibrationConfig(*g, locator, cfg);
+    EXPECT_FALSE(info.empty());
+
+    tesseract::common::CalibrationInfo info2 = tesseract::srdf::parseCalibrationConfig(*g, locator, yaml_str);
+    EXPECT_FALSE(info2.empty());
   }
 }
 

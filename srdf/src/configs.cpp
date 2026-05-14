@@ -94,6 +94,65 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
   return info;
 }
 
+tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                          const tesseract::common::ResourceLocator& locator,
+                                                          const YAML::Node& config)
+{
+  YAML::Node cfg = config;
+  try
+  {
+    tesseract::common::processYamlIncludeDirective(cfg, locator);
+  }
+  // LCOV_EXCL_START
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("calibration_config: YAML failed to parse calibration node."));
+  }
+  // LCOV_EXCL_STOP
+
+  const YAML::Node& cal_info = cfg[tesseract::common::CalibrationInfo::CONFIG_KEY];
+  auto info = cal_info.as<tesseract::common::CalibrationInfo>();
+
+  // Check to make sure calibration joints exist
+  for (const auto& cal_joint : info.joints)
+  {
+    if (scene_graph.getJoint(cal_joint.first) == nullptr)
+      std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first + "' does not exist!"));
+  }
+
+  return info;
+}
+
+tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                          const tesseract::common::ResourceLocator& locator,
+                                                          const std::string& config)
+{
+  YAML::Node cfg;
+  try
+  {
+    cfg = YAML::Load(config);
+    tesseract::common::processYamlIncludeDirective(cfg, locator);
+  }
+  // LCOV_EXCL_START
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("calibration_config: YAML failed to parse calibration string."));
+  }
+  // LCOV_EXCL_STOP
+
+  const YAML::Node& cal_info = cfg[tesseract::common::CalibrationInfo::CONFIG_KEY];
+  auto info = cal_info.as<tesseract::common::CalibrationInfo>();
+
+  // Check to make sure calibration joints exist
+  for (const auto& cal_joint : info.joints)
+  {
+    if (scene_graph.getJoint(cal_joint.first) == nullptr)
+      std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first + "' does not exist!"));
+  }
+
+  return info;
+}
+
 tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
                                                                     const tinyxml2::XMLElement* xml_element,
                                                                     const std::array<int, 3>& version)
@@ -115,6 +174,49 @@ tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesser
   // LCOV_EXCL_STOP
 
   const YAML::Node& kin_plugin_info = config[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+
+  return kin_plugin_info.as<tesseract::common::KinematicsPluginInfo>();
+}
+
+tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
+                                                                    const YAML::Node& config)
+{
+  YAML::Node cfg = config;
+  try
+  {
+    tesseract::common::processYamlIncludeDirective(cfg, locator);
+  }
+  // LCOV_EXCL_START
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("kinematics_plugin_config: YAML failed to parse kinematics plugins "
+                                              "node."));
+  }
+  // LCOV_EXCL_STOP
+
+  const YAML::Node& kin_plugin_info = cfg[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
+
+  return kin_plugin_info.as<tesseract::common::KinematicsPluginInfo>();
+}
+
+tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
+                                                                    const std::string& config)
+{
+  YAML::Node cfg;
+  try
+  {
+    cfg = YAML::Load(config);
+    tesseract::common::processYamlIncludeDirective(cfg, locator);
+  }
+  // LCOV_EXCL_START
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("kinematics_plugin_config: YAML failed to parse kinematics plugins "
+                                              "string."));
+  }
+  // LCOV_EXCL_STOP
+
+  const YAML::Node& kin_plugin_info = cfg[tesseract::common::KinematicsPluginInfo::CONFIG_KEY];
 
   return kin_plugin_info.as<tesseract::common::KinematicsPluginInfo>();
 }
@@ -144,4 +246,46 @@ parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locat
   const YAML::Node& cm_plugin_info = config[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
   return cm_plugin_info.as<tesseract::common::ContactManagersPluginInfo>();
 }
+
+tesseract::common::ContactManagersPluginInfo
+parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locator, const YAML::Node& config)
+{
+  YAML::Node cfg = config;
+  try
+  {
+    tesseract::common::processYamlIncludeDirective(cfg, locator);
+  }
+  // LCOV_EXCL_START
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: YAML failed to parse contact "
+                                              "managers plugins node."));
+  }
+  // LCOV_EXCL_STOP
+
+  const YAML::Node& cm_plugin_info = cfg[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+  return cm_plugin_info.as<tesseract::common::ContactManagersPluginInfo>();
+}
+
+tesseract::common::ContactManagersPluginInfo
+parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locator, const std::string& config)
+{
+  YAML::Node cfg;
+  try
+  {
+    cfg = YAML::Load(config);
+    tesseract::common::processYamlIncludeDirective(cfg, locator);
+  }
+  // LCOV_EXCL_START
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: YAML failed to parse contact "
+                                              "managers plugins string."));
+  }
+  // LCOV_EXCL_STOP
+
+  const YAML::Node& cm_plugin_info = cfg[tesseract::common::ContactManagersPluginInfo::CONFIG_KEY];
+  return cm_plugin_info.as<tesseract::common::ContactManagersPluginInfo>();
+}
+
 }  // namespace tesseract::srdf

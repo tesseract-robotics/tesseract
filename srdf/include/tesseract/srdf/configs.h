@@ -37,6 +37,11 @@ namespace tinyxml2
 class XMLElement;  // NOLINT
 }
 
+namespace YAML
+{
+class Node;  // NOLINT
+}
+
 namespace tesseract::srdf
 {
 /**
@@ -65,6 +70,28 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
                                                           const std::array<int, 3>& version);
 
 /**
+ * @brief Parse calibration config from yaml
+ * @param scene_graph The scene graph
+ * @param locator The locator used to process the file name URL
+ * @param config The yaml node to process
+ * @return The calibration information
+ */
+tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                          const tesseract::common::ResourceLocator& locator,
+                                                          const YAML::Node& config);
+
+/**
+ * @brief Parse calibration config from yaml string
+ * @param scene_graph The scene graph
+ * @param locator The locator used to process the file name URL
+ * @param config The yaml config as a string
+ * @return The calibration information
+ */
+tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                          const tesseract::common::ResourceLocator& locator,
+                                                          const std::string& config);
+
+/**
  * @brief Parse kinematics plugin config xml element
  * @param locator The locator used to process the file name URL
  * @param xml_element The xml element to process
@@ -74,6 +101,24 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
 tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
                                                                     const tinyxml2::XMLElement* xml_element,
                                                                     const std::array<int, 3>& version);
+
+/**
+ * @brief Parse kinematics plugin config yaml node
+ * @param locator The locator used to process the file name URL
+ * @param config The yaml config node
+ * @return The kinematics plugin information
+ */
+tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
+                                                                    const YAML::Node& config);
+
+/**
+ * @brief Parse kinematics plugin config yaml string
+ * @param locator The locator used to process the file name URL
+ * @param config The yaml config as a string
+ * @return The kinematics plugin information
+ */
+tesseract::common::KinematicsPluginInfo parseKinematicsPluginConfig(const tesseract::common::ResourceLocator& locator,
+                                                                    const std::string& config);
 
 /**
  * @brief Parse contact managers plugin config xml element
@@ -86,5 +131,24 @@ tesseract::common::ContactManagersPluginInfo
 parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locator,
                                  const tinyxml2::XMLElement* xml_element,
                                  const std::array<int, 3>& version);
+
+/**
+ * @brief Parse contact managers plugin config yaml node
+ * @param locator The locator used to process the file name URL
+ * @param config The yaml config node
+ * @return The contact managers plugin information
+ */
+tesseract::common::ContactManagersPluginInfo
+parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locator, const YAML::Node& config);
+
+/**
+ * @brief Parse contact managers plugin config yaml string
+ * @param locator The locator used to process the file name URL
+ * @param config The yaml config string
+ * @return The contact managers plugin information
+ */
+tesseract::common::ContactManagersPluginInfo
+parseContactManagersPluginConfig(const tesseract::common::ResourceLocator& locator, const std::string& config);
+
 }  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_CONFIGS_H
