@@ -27,6 +27,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <cmath>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -76,6 +77,124 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphABB(const tesseract
 {
   std::string path = locator.locateResource("package://tesseract/support/urdf/abb_irb2400.urdf")->getFilePath();
   return tesseract::urdf::parseURDFFile(path, locator);
+}
+
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  using namespace tesseract::scene_graph;
+
+  auto sg = getSceneGraphABB(locator);
+
+  // Append a single-revolute tool positioner: tool0 -> tool_tip, axis z, 0.1m offset along z.
+  sg->addLink(Link("tool_tip"));
+
+  Joint j("tool_joint");
+  j.type = JointType::REVOLUTE;
+  j.parent_link_name = "tool0";
+  j.child_link_name = "tool_tip";
+  j.axis = Eigen::Vector3d::UnitZ();
+  j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.1);
+  j.limits = std::make_shared<JointLimits>();
+  j.limits->lower = -M_PI;
+  j.limits->upper = M_PI;
+  j.limits->velocity = 2.0;
+  j.limits->acceleration = 1.0;
+  sg->addJoint(j);
+
+  return sg;
+}
+
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithActiveJointBeforeToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  using namespace tesseract::scene_graph;
+
+  auto sg = getSceneGraphABB(locator);
+
+  // Insert an active revolute joint between tool0 (manipulator tip) and a pivot link, then put
+  // the tool positioner's chain on the far side of that pivot. This violates the rigid-attachment
+  // contract between the manipulator tip and the tool positioner's base.
+  sg->addLink(Link("tool_pivot"));
+  sg->addLink(Link("tool_tip"));
+
+  {
+    Joint j("bad_extra_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool0";
+    j.child_link_name = "tool_pivot";
+    j.axis = Eigen::Vector3d::UnitZ();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI;
+    j.limits->upper = M_PI;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("tool_joint");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool_pivot";
+    j.child_link_name = "tool_tip";
+    j.axis = Eigen::Vector3d::UnitZ();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI;
+    j.limits->upper = M_PI;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  return sg;
+}
+
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithMultiJointToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  using namespace tesseract::scene_graph;
+
+  auto sg = getSceneGraphABB(locator);
+
+  // Two-revolute tool positioner: tool0 -> tool_mid -> tool_tip.
+  // tool_joint_1: tool0 -> tool_mid, axis Y, 0.05m offset along Z.
+  // tool_joint_2: tool_mid -> tool_tip, axis X, 0.05m offset along Z.
+  sg->addLink(Link("tool_mid"));
+  sg->addLink(Link("tool_tip"));
+
+  {
+    Joint j("tool_joint_1");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool0";
+    j.child_link_name = "tool_mid";
+    j.axis = Eigen::Vector3d::UnitY();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI_2;
+    j.limits->upper = M_PI_2;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  {
+    Joint j("tool_joint_2");
+    j.type = JointType::REVOLUTE;
+    j.parent_link_name = "tool_mid";
+    j.child_link_name = "tool_tip";
+    j.axis = Eigen::Vector3d::UnitX();
+    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, 0.05);
+    j.limits = std::make_shared<JointLimits>();
+    j.limits->lower = -M_PI_2;
+    j.limits->upper = M_PI_2;
+    j.limits->velocity = 2.0;
+    j.limits->acceleration = 1.0;
+    sg->addJoint(j);
+  }
+
+  return sg;
 }
 
 inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphIIWA7(const tesseract::common::ResourceLocator& locator)
@@ -1136,6 +1255,52 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
     auto inv_kin = factory.createInvKin(inv_factory_name, inv_plugin_info, *scene_graph, scene_state);
     EXPECT_TRUE(inv_kin == nullptr);
   }
+}
+
+/**
+ * @brief Add a revolute joint between an existing parent link and a new child link.
+ * @details Convenience for test fixtures that build small chains. The child link is created with
+ *          name @p child and added to the graph; a revolute joint named @p name connects parent->child
+ *          with the given @p axis, @p offset, and joint limits.
+ * @param sg     Scene graph to mutate (must already contain @p parent).
+ * @param name   Name for the new revolute joint.
+ * @param parent Existing parent link name.
+ * @param child  Name for the new child link (created by this function).
+ * @param axis   Joint rotation axis in the child link frame.
+ * @param offset       Transform from parent joint origin to child (default: Identity).
+ * @param lower        Lower joint limit in radians (default: -pi).
+ * @param upper        Upper joint limit in radians (default: +pi).
+ * @param velocity     Velocity limit (default: 1.0). Must be > 0 — getTargetLimits()
+ *                     consumers reject zero bands.
+ * @param acceleration Acceleration limit (default: 1.0).
+ * @param jerk         Jerk limit (default: 1.0).
+ */
+inline void addRevoluteChild(tesseract::scene_graph::SceneGraph& sg,
+                             const std::string& name,
+                             const std::string& parent,
+                             const std::string& child,
+                             const Eigen::Vector3d& axis,
+                             const Eigen::Isometry3d& offset = Eigen::Isometry3d::Identity(),
+                             double lower = -M_PI,
+                             double upper = M_PI,
+                             double velocity = 1.0,
+                             double acceleration = 1.0,
+                             double jerk = 1.0)
+{
+  sg.addLink(tesseract::scene_graph::Link(child));
+  tesseract::scene_graph::Joint j(name);
+  j.parent_link_name = parent;
+  j.child_link_name = child;
+  j.type = tesseract::scene_graph::JointType::REVOLUTE;
+  j.axis = axis;
+  j.parent_to_joint_origin_transform = offset;
+  j.limits = std::make_shared<tesseract::scene_graph::JointLimits>();
+  j.limits->lower = lower;
+  j.limits->upper = upper;
+  j.limits->velocity = velocity;
+  j.limits->acceleration = acceleration;
+  j.limits->jerk = jerk;
+  sg.addJoint(j);
 }
 
 }  // namespace tesseract::kinematics::test_suite
