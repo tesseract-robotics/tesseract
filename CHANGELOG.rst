@@ -2,8 +2,8 @@
 Changelog for package tesseract
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.35.0 (2026-05-28)
+-------------------
 * Add yaml node and string parsing to srdf configs (`#1302 <https://github.com/tesseract-robotics/tesseract/issues/1302>`_)
 * Add optional tolerances on calcJacobianTransformErrorDiff (`#1299 <https://github.com/tesseract-robotics/tesseract/issues/1299>`_)
 * Bump conda-incubator/setup-miniconda from 3 to 4 (`#1287 <https://github.com/tesseract-robotics/tesseract/issues/1287>`_)
