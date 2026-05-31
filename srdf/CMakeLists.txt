@@ -59,6 +59,7 @@ install(
         include/tesseract/srdf/kinematics_information.h
         include/tesseract/srdf/utils.h
         include/tesseract/srdf/fwd.h
+        include/tesseract/srdf/configs.h
   DESTINATION include/tesseract/srdf
   COMPONENT srdf)
 
