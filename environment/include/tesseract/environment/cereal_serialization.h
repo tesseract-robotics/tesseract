@@ -244,6 +244,12 @@ void serialize(Archive& ar, Environment& obj)
 
 }  // namespace tesseract::environment
 
+// On Windows the cereal polymorphic-type registration must be in the header,
+// for other platforms registration is in the cpp.
+#ifdef _WIN32
 #include <tesseract/environment/cereal_serialization_impl.hpp>
+#else
+CEREAL_FORCE_DYNAMIC_INIT(tesseract_environment_cereal)
+#endif
 
 #endif  // TESSERACT_ENVIRONMENT_CEREAL_SERIALIZATION_H

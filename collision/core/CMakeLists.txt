@@ -8,6 +8,10 @@ add_library(
   src/types.cpp
   src/utils.cpp)
 add_library(tesseract::collision ALIAS collision)
+if(NOT WIN32)
+  # Compile the cereal polymorphic-type registration. On Windows it is registered in the header instead.
+  target_sources(collision PRIVATE src/cereal_serialization.cpp)
+endif()
 set_target_properties(collision PROPERTIES OUTPUT_NAME tesseract_collision)
 target_link_libraries(
   collision
