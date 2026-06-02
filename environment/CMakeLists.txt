@@ -32,6 +32,10 @@ add_library(
   src/commands/set_active_continuous_contact_manager_command.cpp
   src/commands/set_active_discrete_contact_manager_command.cpp)
 add_library(tesseract::environment ALIAS environment)
+if(NOT WIN32)
+  # Compile the cereal polymorphic-type registration. On Windows it is registered in the header instead.
+  target_sources(environment PRIVATE src/cereal_serialization.cpp)
+endif()
 set_target_properties(environment PROPERTIES OUTPUT_NAME tesseract_environment)
 target_link_libraries(
   environment

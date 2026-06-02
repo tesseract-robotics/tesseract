@@ -166,6 +166,12 @@ void serialize(Archive& ar, CompoundMesh& obj)
 
 }  // namespace tesseract::geometry
 
+// On Windows the cereal polymorphic-type registration must be in the header,
+// for other platforms registration is in the cpp.
+#ifdef _WIN32
 #include <tesseract/geometry/cereal_serialization_impl.hpp>
+#else
+CEREAL_FORCE_DYNAMIC_INIT(tesseract_geometry_cereal)
+#endif
 
 #endif  // TESSERACT_GEOMETRY_CEREAL_SERIALIZATION_H

@@ -141,6 +141,12 @@ void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 }
 }  // namespace tesseract::collision
 
+// On Windows the cereal polymorphic-type registration must be in the header,
+// for other platforms registration is in the cpp.
+#ifdef _WIN32
 #include <tesseract/collision/cereal_serialization_impl.hpp>
+#else
+CEREAL_FORCE_DYNAMIC_INIT(tesseract_collision_cereal)
+#endif
 
 #endif  // TESSERACT_COLLISION_CEREAL_SERIALIZATION_H

@@ -2,6 +2,13 @@ set -e
 
 # ln -s $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc $BUILD_PREFIX/bin/gcc
 
+# conda's clang adds -fvisibility-inlines-hidden, hiding Cereal's visibility("default")
+# registration singleton; with Mach-O's two-level namespace each dylib gets its own registry
+# and consumers throw "unregistered polymorphic type". Strip it so the registry is shared.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export CXXFLAGS="${CXXFLAGS//-fvisibility-inlines-hidden/}"
+fi
+
 colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    --event-handlers console_direct+ \
    --packages-ignore gtest osqp osqp_eigen tesseract_examples trajopt_ifopt trajopt_sqp \

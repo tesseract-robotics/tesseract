@@ -57,6 +57,10 @@ add_library(
   src/timer.cpp
   src/yaml_utils.cpp)
 add_library(tesseract::common ALIAS common)
+if(NOT WIN32)
+  # Compile the cereal polymorphic-type registration. On Windows it is registered in the header instead.
+  target_sources(common PRIVATE src/cereal_serialization.cpp)
+endif()
 set_target_properties(common PROPERTIES OUTPUT_NAME tesseract_common)
 target_link_libraries(
   common
