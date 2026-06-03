@@ -27,7 +27,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <fstream>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -89,6 +88,7 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
                                                                 double elbow_offset)
 {
   using namespace tesseract::scene_graph;
+  using tesseract::common::LinkId;
 
   auto sg = std::make_unique<SceneGraph>("universal_robot");
   sg->addLink(Link("base_link"));
@@ -104,8 +104,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("shoulder_pan_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "base_link";
-    j.child_link_name = "shoulder_link";
+    j.parent_link_id = "base_link";
+    j.child_link_id = "shoulder_link";
     j.axis = Eigen::Vector3d::UnitZ();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d1);
     j.limits = std::make_shared<JointLimits>();
@@ -119,8 +119,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("shoulder_lift_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "shoulder_link";
-    j.child_link_name = "upper_arm_link";
+    j.parent_link_id = "shoulder_link";
+    j.child_link_id = "upper_arm_link";
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, shoulder_offset, 0);
     j.parent_to_joint_origin_transform =
@@ -136,8 +136,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("elbow_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "upper_arm_link";
-    j.child_link_name = "forearm_link";
+    j.parent_link_id = "upper_arm_link";
+    j.child_link_id = "forearm_link";
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, elbow_offset, -params.a2);
     j.limits = std::make_shared<JointLimits>();
@@ -151,8 +151,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_1_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "forearm_link";
-    j.child_link_name = "wrist_1_link";
+    j.parent_link_id = "forearm_link";
+    j.child_link_id = "wrist_1_link";
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, -params.a3);
     j.parent_to_joint_origin_transform =
@@ -168,8 +168,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_2_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "wrist_1_link";
-    j.child_link_name = "wrist_2_link";
+    j.parent_link_id = "wrist_1_link";
+    j.child_link_id = "wrist_2_link";
     j.axis = Eigen::Vector3d::UnitZ();
     j.parent_to_joint_origin_transform.translation() =
         Eigen::Vector3d(0, params.d4 - elbow_offset - shoulder_offset, 0);
@@ -184,8 +184,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_3_joint");
     j.type = JointType::REVOLUTE;
-    j.parent_link_name = "wrist_2_link";
-    j.child_link_name = "wrist_3_link";
+    j.parent_link_id = "wrist_2_link";
+    j.child_link_id = "wrist_3_link";
     j.axis = Eigen::Vector3d::UnitY();
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d5);
     j.limits = std::make_shared<JointLimits>();
@@ -199,8 +199,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("ee_fixed_joint");
     j.type = JointType::FIXED;
-    j.parent_link_name = "wrist_3_link";
-    j.child_link_name = "ee_link";
+    j.parent_link_id = "wrist_3_link";
+    j.child_link_id = "ee_link";
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d6, 0);
     j.parent_to_joint_origin_transform =
         j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
@@ -210,8 +210,8 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
   {
     Joint j("wrist_3_link-tool0_fixed_joint");
     j.type = JointType::FIXED;
-    j.parent_link_name = "wrist_3_link";
-    j.child_link_name = "tool0";
+    j.parent_link_id = "wrist_3_link";
+    j.child_link_id = "tool0";
     j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, params.d6, 0);
     j.parent_to_joint_origin_transform =
         j.parent_to_joint_origin_transform * Eigen::AngleAxisd(-M_PI_2, Eigen::Vector3d::UnitX());
@@ -222,16 +222,16 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
 }
 
 inline tesseract::common::KinematicLimits getTargetLimits(const tesseract::scene_graph::SceneGraph& scene_graph,
-                                                          const std::vector<std::string>& joint_names)
+                                                          const std::vector<tesseract::common::JointId>& joint_ids)
 {
-  auto s = static_cast<Eigen::Index>(joint_names.size());
+  auto s = static_cast<Eigen::Index>(joint_ids.size());
 
   tesseract::common::KinematicLimits limits;
   limits.resize(s);
 
   for (Eigen::Index i = 0; i < s; ++i)
   {
-    auto joint = scene_graph.getJoint(joint_names[static_cast<std::size_t>(i)]);
+    auto joint = scene_graph.getJoint(joint_ids[static_cast<std::size_t>(i)]);
     limits.joint_limits(i, 0) = joint->limits->lower;
     limits.joint_limits(i, 1) = joint->limits->upper;
     limits.velocity_limits(i, 0) = -joint->limits->velocity;
@@ -257,22 +257,22 @@ inline tesseract::common::KinematicLimits getTargetLimits(const tesseract::scene
  */
 inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
                             const Eigen::VectorXd& jvals,
-                            const std::string& link_name,
+                            const tesseract::common::LinkId& link_id,
                             const Eigen::Vector3d& link_point,
                             const Eigen::Isometry3d& change_base)
 {
   Eigen::MatrixXd jacobian, numerical_jacobian;
-  tesseract::common::TransformMap poses;
+  tesseract::common::LinkIdTransformMap poses;
 
   jacobian.resize(6, kin.numJoints());
 
   poses = kin.calcFwdKin(jvals);
-  jacobian = kin.calcJacobian(jvals, link_name);
+  jacobian = kin.calcJacobian(jvals, link_id);
   tesseract::common::jacobianChangeBase(jacobian, change_base);
-  tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_name]).linear() * link_point);
+  tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_id]).linear() * link_point);
 
   numerical_jacobian.resize(6, kin.numJoints());
-  tesseract::kinematics::numericalJacobian(numerical_jacobian, change_base, kin, jvals, link_name, link_point);
+  tesseract::kinematics::numericalJacobian(numerical_jacobian, change_base, kin, jvals, link_id, link_point);
 
   for (int i = 0; i < 6; ++i)
     for (int j = 0; j < static_cast<int>(kin.numJoints()); ++j)
@@ -283,25 +283,24 @@ inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
  * @brief Run a kinematic jacobian test
  * @param kin The kinematics object
  * @param jvals The joint values to calculate the jacobian about
- * @param link_name Name of link to calculate jacobian. If empty it will use the function that does not require link
- * name
+ * @param link_id Id of link to calculate jacobian. If empty it will use the function that does not require link id
  * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
  * point.
  */
 inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
                             const Eigen::VectorXd& jvals,
-                            const std::string& link_name,
+                            const tesseract::common::LinkId& link_id,
                             const Eigen::Vector3d& link_point)
 {
   Eigen::MatrixXd jacobian, numerical_jacobian;
   jacobian.resize(6, kin_group.numJoints());
 
   {  // Test with all information
-    jacobian = kin_group.calcJacobian(jvals, link_name, link_point);
+    jacobian = kin_group.calcJacobian(jvals, link_id, link_point);
 
     numerical_jacobian.resize(6, kin_group.numJoints());
     tesseract::kinematics::numericalJacobian(
-        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_name, link_point);
+        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_id, link_point);
 
     for (int i = 0; i < 6; ++i)
       for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -309,27 +308,27 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
   }
 
   {  // Test don't use link_point
-    jacobian = kin_group.calcJacobian(jvals, link_name);
+    jacobian = kin_group.calcJacobian(jvals, link_id);
 
     numerical_jacobian.resize(6, kin_group.numJoints());
     tesseract::kinematics::numericalJacobian(
-        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_name, Eigen::Vector3d::Zero());
+        numerical_jacobian, Eigen::Isometry3d::Identity(), kin_group, jvals, link_id, Eigen::Vector3d::Zero());
 
     for (int i = 0; i < 6; ++i)
       for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
         EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
   }
 
-  std::vector<std::string> static_link_names = kin_group.getStaticLinkNames();
-  tesseract::common::TransformMap poses = kin_group.calcFwdKin(jvals);
-  for (const auto& static_link_name : static_link_names)
+  auto static_link_ids = kin_group.getStaticLinkIds();
+  tesseract::common::LinkIdTransformMap poses = kin_group.calcFwdKin(jvals);
+  for (const auto& static_link_id : static_link_ids)
   {
     {  // Test with all information
-      jacobian = kin_group.calcJacobian(jvals, static_link_name, link_name, link_point);
+      jacobian = kin_group.calcJacobian(jvals, static_link_id, link_id, link_point);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(
-          numerical_jacobian, poses.at(static_link_name).inverse(), kin_group, jvals, link_name, link_point);
+          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_id, link_point);
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -337,15 +336,11 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
     }
 
     {  // Test don't use link_point
-      jacobian = kin_group.calcJacobian(jvals, static_link_name, link_name);
+      jacobian = kin_group.calcJacobian(jvals, static_link_id, link_id);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
-      tesseract::kinematics::numericalJacobian(numerical_jacobian,
-                                               poses.at(static_link_name).inverse(),
-                                               kin_group,
-                                               jvals,
-                                               link_name,
-                                               Eigen::Vector3d::Zero());
+      tesseract::kinematics::numericalJacobian(
+          numerical_jacobian, poses.at(static_link_id).inverse(), kin_group, jvals, link_id, Eigen::Vector3d::Zero());
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
@@ -353,19 +348,19 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
     }
   }
 
-  std::vector<std::string> active_link_names = kin_group.getActiveLinkNames();
-  for (const auto& active_link_name : active_link_names)
+  auto active_link_ids = kin_group.getActiveLinkIds();
+  for (const auto& active_link_id : active_link_ids)
   {
     {  // Test with all information
-      jacobian = kin_group.calcJacobian(jvals, active_link_name, link_name, link_point);
+      jacobian = kin_group.calcJacobian(jvals, active_link_id, link_id, link_point);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(numerical_jacobian,
                                                kin_group,
                                                jvals,
-                                               active_link_name,
+                                               active_link_id,
                                                Eigen::Isometry3d::Identity(),
-                                               link_name,
+                                               link_id,
                                                Eigen::Isometry3d(Eigen::Translation3d(link_point)));
 
       for (int i = 0; i < 6; ++i)
@@ -374,15 +369,15 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
     }
 
     {  // Test don't use link_point
-      jacobian = kin_group.calcJacobian(jvals, active_link_name, link_name);
+      jacobian = kin_group.calcJacobian(jvals, active_link_id, link_id);
 
       numerical_jacobian.resize(6, kin_group.numJoints());
       tesseract::kinematics::numericalJacobian(numerical_jacobian,
                                                kin_group,
                                                jvals,
-                                               active_link_name,
+                                               active_link_id,
                                                Eigen::Isometry3d::Identity(),
-                                               link_name,
+                                               link_id,
                                                Eigen::Isometry3d::Identity());
 
       for (int i = 0; i < 6; ++i)
@@ -494,21 +489,21 @@ inline void runStringVectorEqualTest(const std::vector<std::string>& names,
 inline void runInvKinTest(const tesseract::kinematics::InverseKinematics& inv_kin,
                           const tesseract::kinematics::ForwardKinematics& fwd_kin,
                           const Eigen::Isometry3d& target_pose,
-                          const std::string& tip_link_name,
+                          const tesseract::common::LinkId& tip_link_id,
                           const Eigen::VectorXd& seed)
 {
   ///////////////////////////
   // Test Inverse kinematics
   ///////////////////////////
-  EXPECT_TRUE(inv_kin.getBaseLinkName() == fwd_kin.getBaseLinkName());  // This only works if they are equal
-  tesseract::common::TransformMap input{ std::make_pair(tip_link_name, target_pose) };
+  EXPECT_TRUE(inv_kin.getBaseLinkId() == fwd_kin.getBaseLinkId());  // This only works if they are equal
+  tesseract::common::LinkIdTransformMap input{ { tip_link_id, target_pose } };
   IKSolutions solutions = inv_kin.calcInvKin(input, seed);
   EXPECT_TRUE(!solutions.empty());
 
   for (const auto& sol : solutions)
   {
-    tesseract::common::TransformMap result_poses = fwd_kin.calcFwdKin(sol);
-    Eigen::Isometry3d result = result_poses[tip_link_name];
+    auto result_poses = fwd_kin.calcFwdKin(sol);
+    Eigen::Isometry3d result = result_poses[tip_link_id];
     EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
 
     Eigen::Quaterniond rot_pose(target_pose.rotation());
@@ -525,22 +520,22 @@ inline void runInvKinTest(const tesseract::kinematics::InverseKinematics& inv_ki
  */
 inline void runInvKinTest(const tesseract::kinematics::KinematicGroup& kin_group,
                           const Eigen::Isometry3d& target_pose,
-                          const std::string& working_frame,
-                          const std::string& tip_link_name,
+                          const tesseract::common::LinkId& working_id,
+                          const tesseract::common::LinkId& tip_link_id,
                           const Eigen::VectorXd& seed)
 {
   ///////////////////////////
   // Test Inverse kinematics
   ///////////////////////////
   EXPECT_NO_THROW(kin_group.getInverseKinematics());
-  KinGroupIKInput input(target_pose, working_frame, tip_link_name);
+  KinGroupIKInput input(target_pose, working_id, tip_link_id);
   IKSolutions solutions = kin_group.calcInvKin(input, seed);
   EXPECT_TRUE(!solutions.empty());
 
   for (const auto& sol : solutions)
   {
-    tesseract::common::TransformMap result_poses = kin_group.calcFwdKin(sol);
-    Eigen::Isometry3d result = result_poses.at(working_frame).inverse() * result_poses[tip_link_name];
+    tesseract::common::LinkIdTransformMap result_poses = kin_group.calcFwdKin(sol);
+    Eigen::Isometry3d result = result_poses.at(working_id).inverse() * result_poses[tip_link_id];
     EXPECT_TRUE(target_pose.translation().isApprox(result.translation(), 1e-4));
 
     Eigen::Quaterniond rot_pose(target_pose.rotation());
@@ -552,12 +547,12 @@ inline void runInvKinTest(const tesseract::kinematics::KinematicGroup& kin_group
 
   // Test failures
   {
-    KinGroupIKInput input(target_pose, "does_not_exist", tip_link_name);
+    KinGroupIKInput input(target_pose, "does_not_exist", tip_link_id);
     EXPECT_ANY_THROW(kin_group.calcInvKin(input, seed));  // NOLINT
   }
 
   {
-    KinGroupIKInput input(target_pose, working_frame, "does_not_exist");
+    KinGroupIKInput input(target_pose, working_id, "does_not_exist");
     EXPECT_ANY_THROW(kin_group.calcInvKin(input, seed));  // NOLINT
   }
 }
@@ -572,7 +567,7 @@ inline void runFwdKinIIWATest(tesseract::kinematics::ForwardKinematics& kin)
   jvals.resize(7);
   jvals.setZero();
 
-  tesseract::common::TransformMap poses = kin.calcFwdKin(jvals);
+  auto poses = kin.calcFwdKin(jvals);
 
   EXPECT_EQ(poses.size(), 1);
   Eigen::Isometry3d pose = poses.at("tool0");
@@ -587,7 +582,6 @@ inline void runFwdKinIIWATest(tesseract::kinematics::ForwardKinematics& kin)
 inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, bool is_kin_tree = false)
 {
   UNUSED(is_kin_tree);
-  std::string tip_link = "tool0";
 
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
@@ -607,7 +601,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
   // Test Jacobian
   ///////////////////////////
   Eigen::Vector3d link_point(0, 0, 0);
-  runJacobianTest(kin, jvals, tip_link, link_point, Eigen::Isometry3d::Identity());
+  runJacobianTest(kin, jvals, "tool0", link_point, Eigen::Isometry3d::Identity());
 
   EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
@@ -619,7 +613,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    runJacobianTest(kin, jvals, tip_link, link_point, Eigen::Isometry3d::Identity());
+    runJacobianTest(kin, jvals, "tool0", link_point, Eigen::Isometry3d::Identity());
 
     EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -639,7 +633,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     change_base.translation() = Eigen::Vector3d(0, 0, 0);
     change_base.translation()[k] = 1;
 
-    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
+    runJacobianTest(kin, jvals, "tool0", link_point, change_base);
 
     EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
   }
@@ -660,7 +654,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     change_base(1, 1) = 0;
     change_base.translation() = link_point;
 
-    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
+    runJacobianTest(kin, jvals, "tool0", link_point, change_base);
 
     EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
   }
@@ -719,27 +713,27 @@ inline void runActiveLinkNamesIIWATest(const tesseract::kinematics::KinematicGro
 
   for (const auto& l : target_active_link_names)
   {
-    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+    EXPECT_TRUE(kin_group.isActiveLinkId(l));
   }
 
   for (const auto& l : target_link_names)
   {
-    EXPECT_TRUE(kin_group.hasLinkName(l));
+    EXPECT_TRUE(kin_group.hasLinkId(l));
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-    runStringVectorEqualTest(link_names, target_active_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getActiveLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_active_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
-    runStringVectorEqualTest(link_names, target_static_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getStaticLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_static_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getLinkNames();
-    runStringVectorEqualTest(link_names, target_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_link_names);
   }
 }
 
@@ -760,27 +754,27 @@ inline void runActiveLinkNamesABBTest(const tesseract::kinematics::KinematicGrou
 
   for (const auto& l : target_active_link_names)
   {
-    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+    EXPECT_TRUE(kin_group.isActiveLinkId(l));
   }
 
   for (const auto& l : target_link_names)
   {
-    EXPECT_TRUE(kin_group.hasLinkName(l));
+    EXPECT_TRUE(kin_group.hasLinkId(l));
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-    runStringVectorEqualTest(link_names, target_active_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getActiveLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_active_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
-    runStringVectorEqualTest(link_names, target_static_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getStaticLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_static_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getLinkNames();
-    runStringVectorEqualTest(link_names, target_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_link_names);
   }
 }
 
@@ -802,27 +796,27 @@ inline void runActiveLinkNamesURTest(const tesseract::kinematics::KinematicGroup
 
   for (const auto& l : target_active_link_names)
   {
-    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+    EXPECT_TRUE(kin_group.isActiveLinkId(l));
   }
 
   for (const auto& l : target_link_names)
   {
-    EXPECT_TRUE(kin_group.hasLinkName(l));
+    EXPECT_TRUE(kin_group.hasLinkId(l));
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-    runStringVectorEqualTest(link_names, target_active_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getActiveLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_active_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
-    runStringVectorEqualTest(link_names, target_static_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getStaticLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_static_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getLinkNames();
-    runStringVectorEqualTest(link_names, target_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_link_names);
   }
 }
 
@@ -889,27 +883,27 @@ inline void runActiveLinkNamesABBOnPositionerTest(const tesseract::kinematics::K
 
   for (const auto& l : target_active_link_names)
   {
-    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+    EXPECT_TRUE(kin_group.isActiveLinkId(l));
   }
 
   for (const auto& l : target_link_names)
   {
-    EXPECT_TRUE(kin_group.hasLinkName(l));
+    EXPECT_TRUE(kin_group.hasLinkId(l));
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-    runStringVectorEqualTest(link_names, target_active_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getActiveLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_active_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
-    runStringVectorEqualTest(link_names, target_static_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getStaticLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_static_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getLinkNames();
-    runStringVectorEqualTest(link_names, target_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_link_names);
   }
 }
 
@@ -978,27 +972,27 @@ inline void runActiveLinkNamesABBExternalPositionerTest(const tesseract::kinemat
 
   for (const auto& l : target_active_link_names)
   {
-    EXPECT_TRUE(kin_group.isActiveLinkName(l));
+    EXPECT_TRUE(kin_group.isActiveLinkId(l));
   }
 
   for (const auto& l : target_link_names)
   {
-    EXPECT_TRUE(kin_group.hasLinkName(l));
+    EXPECT_TRUE(kin_group.hasLinkId(l));
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getActiveLinkNames();
-    runStringVectorEqualTest(link_names, target_active_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getActiveLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_active_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getStaticLinkNames();
-    runStringVectorEqualTest(link_names, target_static_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getStaticLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_static_link_names);
   }
 
   {
-    std::vector<std::string> link_names = kin_group.getLinkNames();
-    runStringVectorEqualTest(link_names, target_link_names);
+    const std::vector<common::LinkId>& link_ids = kin_group.getLinkIds();
+    runStringVectorEqualTest(common::toNames(link_ids), target_link_names);
   }
 }
 
@@ -1009,20 +1003,20 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
   tesseract::common::GeneralResourceLocator locator;
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = getSceneGraphIIWA(locator);
   std::string manip_name = "manip";
-  std::string base_link_name = "base_link";
-  std::string tip_link_name = "tool0";
-  std::vector<std::string> joint_names{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                        "joint_a5", "joint_a6", "joint_a7" };
+  tesseract::common::LinkId base_link_id = "base_link";
+  tesseract::common::LinkId tip_link_id = "tool0";
+  std::vector<tesseract::common::JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                     "joint_a5", "joint_a6", "joint_a7" };
   std::vector<std::string> joint_link_names{ "link_1", "link_2", "link_3", "link_4", "link_5", "link_6", "link_7" };
-  tesseract::common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_names);
+  tesseract::common::KinematicLimits target_limits = getTargetLimits(*scene_graph, joint_ids);
 
   tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
   tesseract::scene_graph::SceneState scene_state = state_solver.getState();
 
   tesseract::common::PluginInfo fwd_plugin_info;
   fwd_plugin_info.class_name = fwd_factory_name;
-  fwd_plugin_info.config["base_link"] = base_link_name;
-  fwd_plugin_info.config["tip_link"] = tip_link_name;
+  fwd_plugin_info.config["base_link"] = base_link_id.name();
+  fwd_plugin_info.config["tip_link"] = tip_link_id.name();
 
   tesseract::common::PluginInfo inv_plugin_info;
   inv_plugin_info.class_name = inv_factory_name;
@@ -1055,10 +1049,10 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
     EXPECT_TRUE(fwd_kin != nullptr);
     //    EXPECT_EQ(fwd_kin->getSolverName(), fwd_solver_name);
     EXPECT_EQ(fwd_kin->numJoints(), 7);
-    EXPECT_EQ(fwd_kin->getBaseLinkName(), base_link_name);
-    EXPECT_EQ(fwd_kin->getTipLinkNames().size(), 1);
-    EXPECT_EQ(fwd_kin->getTipLinkNames()[0], tip_link_name);
-    EXPECT_EQ(fwd_kin->getJointNames(), joint_names);
+    EXPECT_EQ(fwd_kin->getBaseLinkId(), base_link_id);
+    EXPECT_EQ(fwd_kin->getTipLinkIds().size(), 1);
+    EXPECT_EQ(fwd_kin->getTipLinkIds()[0], tip_link_id);
+    EXPECT_EQ(fwd_kin->getJointIds(), joint_ids);
 
     runJacobianIIWATest(*fwd_kin);
     runFwdKinIIWATest(*fwd_kin);
@@ -1067,17 +1061,17 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
     EXPECT_TRUE(inv_kin != nullptr);
     //    EXPECT_EQ(inv_kin->getSolverName(), inv_solver_name);
     EXPECT_EQ(inv_kin->numJoints(), 7);
-    EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
-    EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_name);
-    EXPECT_EQ(inv_kin->getTipLinkNames().size(), 1);
-    EXPECT_EQ(inv_kin->getTipLinkNames()[0], tip_link_name);
-    EXPECT_EQ(inv_kin->getJointNames(), joint_names);
+    EXPECT_EQ(inv_kin->getBaseLinkId(), base_link_id);
+    EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_id);
+    EXPECT_EQ(inv_kin->getTipLinkIds().size(), 1);
+    EXPECT_EQ(inv_kin->getTipLinkIds()[0], tip_link_id);
+    EXPECT_EQ(inv_kin->getJointIds(), joint_ids);
 
-    runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_name, seed);
+    runInvKinTest(*inv_kin, *fwd_kin, pose, tip_link_id, seed);
 
-    KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin), *scene_graph, scene_state);
-    EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
-    runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
+    KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin), *scene_graph, scene_state);
+    EXPECT_EQ(kin_group.getBaseLinkId(), scene_graph->getRoot());
+    runInvKinTest(kin_group, pose, base_link_id, tip_link_id, seed);
     runKinGroupJacobianIIWATest(kin_group);
     runActiveLinkNamesIIWATest(kin_group);
     runKinJointLimitsTest(kin_group.getLimits(), target_limits);
@@ -1091,10 +1085,10 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
     auto fwd_kin3 = fwd_kin->clone();
     //    EXPECT_EQ(fwd_kin3->getSolverName(), fwd_solver_name);
     EXPECT_EQ(fwd_kin3->numJoints(), 7);
-    EXPECT_EQ(fwd_kin3->getBaseLinkName(), base_link_name);
-    EXPECT_EQ(fwd_kin3->getTipLinkNames().size(), 1);
-    EXPECT_EQ(fwd_kin3->getTipLinkNames()[0], tip_link_name);
-    EXPECT_EQ(fwd_kin3->getJointNames(), joint_names);
+    EXPECT_EQ(fwd_kin3->getBaseLinkId(), base_link_id);
+    EXPECT_EQ(fwd_kin3->getTipLinkIds().size(), 1);
+    EXPECT_EQ(fwd_kin3->getTipLinkIds()[0], tip_link_id);
+    EXPECT_EQ(fwd_kin3->getJointIds(), joint_ids);
 
     runJacobianIIWATest(*fwd_kin3);
     runFwdKinIIWATest(*fwd_kin3);
@@ -1104,17 +1098,17 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
     EXPECT_TRUE(inv_kin3 != nullptr);
     //    EXPECT_EQ(inv_kin3->getSolverName(), inv_solver_name);
     EXPECT_EQ(inv_kin3->numJoints(), 7);
-    EXPECT_EQ(inv_kin3->getBaseLinkName(), base_link_name);
-    EXPECT_EQ(inv_kin3->getWorkingFrame(), base_link_name);
-    EXPECT_EQ(inv_kin3->getTipLinkNames().size(), 1);
-    EXPECT_EQ(inv_kin3->getTipLinkNames()[0], tip_link_name);
-    EXPECT_EQ(inv_kin3->getJointNames(), joint_names);
+    EXPECT_EQ(inv_kin3->getBaseLinkId(), base_link_id);
+    EXPECT_EQ(inv_kin3->getWorkingFrame(), base_link_id);
+    EXPECT_EQ(inv_kin3->getTipLinkIds().size(), 1);
+    EXPECT_EQ(inv_kin3->getTipLinkIds()[0], tip_link_id);
+    EXPECT_EQ(inv_kin3->getJointIds(), joint_ids);
 
-    runInvKinTest(*inv_kin3, *fwd_kin3, pose, tip_link_name, seed);
+    runInvKinTest(*inv_kin3, *fwd_kin3, pose, tip_link_id, seed);
 
-    KinematicGroup kin_group(manip_name, joint_names, std::move(inv_kin3), *scene_graph, scene_state);
-    EXPECT_EQ(kin_group.getBaseLinkName(), scene_graph->getRoot());
-    runInvKinTest(kin_group, pose, base_link_name, tip_link_name, seed);
+    KinematicGroup kin_group(manip_name, joint_ids, std::move(inv_kin3), *scene_graph, scene_state);
+    EXPECT_EQ(kin_group.getBaseLinkId(), scene_graph->getRoot());
+    runInvKinTest(kin_group, pose, base_link_id, tip_link_id, seed);
     runKinGroupJacobianIIWATest(kin_group);
     runActiveLinkNamesIIWATest(kin_group);
     runKinJointLimitsTest(kin_group.getLimits(), target_limits);
@@ -1123,7 +1117,7 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
   }
 
   fwd_plugin_info.config["base_link"] = "missing_link";
-  fwd_plugin_info.config["tip_link"] = tip_link_name;
+  fwd_plugin_info.config["tip_link"] = tip_link_id.name();
   inv_plugin_info.config = fwd_plugin_info.config;
 
   {  // Test forward kinematics failure

@@ -136,11 +136,11 @@ bool Collision::operator!=(const Collision& rhs) const { return !operator==(rhs)
 /*********************************************************/
 /******                     Link                     *****/
 /*********************************************************/
-Link::Link(const std::string& name) : name_(name), hash_(std::hash<std::string>{}(name)) { this->clear(); }
+Link::Link(common::LinkId id) : id_(std::move(id)) { this->clear(); }
 
-const std::string& Link::getName() const { return name_; }
+const std::string& Link::getName() const { return id_.name(); }
 
-std::size_t Link::getHash() const { return hash_; }
+const common::LinkId& Link::getId() const { return id_; }
 
 void Link::clear()
 {
@@ -149,11 +149,11 @@ void Link::clear()
   this->visual.clear();
 }
 
-Link Link::clone() const { return clone(name_); }
+Link Link::clone() const { return clone(id_); }
 
-Link Link::clone(const std::string& name) const
+Link Link::clone(common::LinkId id) const
 {
-  Link ret(name);
+  Link ret(std::move(id));
   ret.visible = visible;
   ret.collision_enabled = collision_enabled;
   if (this->inertial)
@@ -187,8 +187,7 @@ bool Link::operator==(const Link& rhs) const
       false,
       tesseract::common::pointersEqual<Collision>,
       [](const Collision::Ptr& v1, const Collision::Ptr& v2) { return v1->name < v2->name; });
-  equal &= name_ == rhs.name_;
-  equal &= hash_ == rhs.hash_;
+  equal &= id_ == rhs.id_;
   equal &= visible == rhs.visible;
   equal &= collision_enabled == rhs.collision_enabled;
   return equal;

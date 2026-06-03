@@ -132,7 +132,7 @@ inline void runTest(DiscreteContactManager& checker)
   ///////////////////////////////////////////////////////////////////
   std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
   EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
@@ -141,7 +141,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.0, 1e-5);
 
   // Test when object is inside another
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(0) = 0.2;
@@ -184,7 +184,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.52448, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][0], 0.23776, 0.001);
@@ -213,7 +213,7 @@ inline void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[static_cast<size_t>(idx[0])][1], 0.25, 0.001);

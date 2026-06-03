@@ -67,7 +67,7 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   info.contact_manager_->addCollisionObject(std::string("geom1"), 0, info.geom1_, info.obj1_poses);
   info.contact_manager_->addCollisionObject(std::string("geom2"), 0, info.geom2_, info.obj2_poses);
 
-  info.contact_manager_->setActiveCollisionObjects({ "geom1", "geom2" });
+  info.contact_manager_->setActiveCollisionObjects(std::vector<std::string>{ "geom1", "geom2" });
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   ContactResultMap result;
@@ -144,8 +144,8 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
   }
 }
 
-/** @brief Benchmark that checks the setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
- * method in discrete contact managers. Moves only a single random link*/
+/** @brief Benchmark that checks the setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap&
+ * transforms) method in discrete contact managers. Moves only a single random link*/
 static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
                                                    DiscreteBenchmarkInfo info,
                                                    std::size_t num_obj)
@@ -161,7 +161,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
   info.contact_manager_->setActiveCollisionObjects(active_obj);
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
-  tesseract::common::TransformMap selected_link;
+  tesseract::common::LinkIdTransformMap selected_link;
   for (auto _ : state)  // NOLINT
   {
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for

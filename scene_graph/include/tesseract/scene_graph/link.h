@@ -46,6 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 #include <tesseract/geometry/fwd.h>
 
 namespace tesseract::scene_graph
@@ -183,7 +184,7 @@ public:
   using Ptr = std::shared_ptr<Link>;
   using ConstPtr = std::shared_ptr<const Link>;
 
-  Link(const std::string& name);
+  Link(common::LinkId id);
   Link() = default;
   ~Link() = default;
   // Links are non-copyable as their name must be unique
@@ -195,7 +196,7 @@ public:
 
   const std::string& getName() const;
 
-  std::size_t getHash() const;
+  const common::LinkId& getId() const;
 
   /// inertial element
   Inertial::Ptr inertial;
@@ -224,13 +225,10 @@ public:
   Link clone() const;
 
   /** Perform a copy of link, changing its name **/
-  Link clone(const std::string& name) const;
+  Link clone(common::LinkId id) const;
 
 private:
-  std::string name_;
-
-  /** @brief The hash of the link name */
-  std::size_t hash_{};
+  common::LinkId id_;
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, Link& obj);

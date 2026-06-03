@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
@@ -71,13 +72,13 @@ public:
 
   /**
    * @brief Add a object to the checker
-   * @param name            The name of the object, must be unique.
+   * @param id              The LinkId of the object, must be unique.
    * @param mask_id         User defined id which gets stored in the results structure.
    * @param shapes          A vector of shapes that make up the collision object.
    * @param shape_poses     A vector of poses for each shape, must be same length as shapes
    * @return true if successfully added, otherwise false.
    */
-  virtual bool addCollisionObject(const std::string& name,
+  virtual bool addCollisionObject(const tesseract::common::LinkId& id,
                                   const int& mask_id,
                                   const CollisionShapesConst& shapes,
                                   const tesseract::common::VectorIsometry3d& shape_poses,
@@ -85,90 +86,98 @@ public:
 
   /**
    * @brief Get a collision objects collision geometries
-   * @param name The collision objects name
+   * @param id The collision object's LinkId
    * @return A vector of collision geometries. The vector will be empty if the collision object is not found.
    */
-  virtual const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const = 0;
+  virtual const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const = 0;
 
   /**
    * @brief Get a collision objects collision geometries transforms
-   * @param name  The collision objects name
+   * @param id The collision object's LinkId
    * @return A vector of collision geometries transforms. The vector will be empty if the collision object is not found.
    */
   virtual const tesseract::common::VectorIsometry3d&
-  getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
+  getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const = 0;
 
   /**
    * @brief Find if a collision object already exists
-   * @param name The name of the collision object
+   * @param id The LinkId of the collision object
    * @return true if it exists, otherwise false.
    */
-  virtual bool hasCollisionObject(const std::string& name) const = 0;
+  virtual bool hasCollisionObject(const tesseract::common::LinkId& id) const = 0;
 
   /**
    * @brief Remove an object from the checker
-   * @param name The name of the object
+   * @param id The LinkId of the object
    * @return true if successfully removed, otherwise false.
    */
-  virtual bool removeCollisionObject(const std::string& name) = 0;
+  virtual bool removeCollisionObject(const tesseract::common::LinkId& id) = 0;
 
   /**
    * @brief Enable an object
-   * @param name The name of the object
+   * @param id The LinkId of the object
    */
-  virtual bool enableCollisionObject(const std::string& name) = 0;
+  virtual bool enableCollisionObject(const tesseract::common::LinkId& id) = 0;
 
   /**
    * @brief Disable an object
-   * @param name The name of the object
+   * @param id The LinkId of the object
    */
-  virtual bool disableCollisionObject(const std::string& name) = 0;
+  virtual bool disableCollisionObject(const tesseract::common::LinkId& id) = 0;
 
   /**
    * @brief Check if collision object is enabled
-   * @param name The name of the object
+   * @param id The LinkId of the object
    * @return True if enabled, otherwise false
    */
-  virtual bool isCollisionObjectEnabled(const std::string& name) const = 0;
+  virtual bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const = 0;
 
   /**
    * @brief Set a single collision object's transforms
-   * @param name The name of the object
+   * @param id The LinkId of the object
    * @param pose The transformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) = 0;
 
   /**
    * @brief Set a series of collision object's transforms
-   * @param names The name of the object
-   * @param poses The transformation in world
+   * @param transforms A transform map <LinkId, pose>
    */
+  virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) = 0;
+
+  /** @brief Set a series of collision object's transforms by name (delegates to LinkId overload) */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const tesseract::common::VectorIsometry3d& poses) = 0;
-
-  /**
-   * @brief Set a series of collision object's transforms
-   * @param transforms A transform map <name, pose>
-   */
-  virtual void setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms) = 0;
+                                            const tesseract::common::VectorIsometry3d& poses);
 
   /**
    * @brief Get all collision objects
-   * @return A list of collision object names
+   * @return A list of collision object IDs
    */
-  virtual const std::vector<std::string>& getCollisionObjects() const = 0;
+  virtual const std::vector<tesseract::common::LinkId>& getCollisionObjects() const = 0;
 
   /**
    * @brief Set which collision objects can move
-   * @param names A vector of collision object names
+   * @param ids A set of LinkIds identifying the active collision objects
    */
-  virtual void setActiveCollisionObjects(const std::vector<std::string>& names) = 0;
+  virtual void setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids) = 0;
+
+  /** @brief Set which collision objects can move by vector (delegates to set overload) */
+  virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids);
+
+  /** @brief Set which collision objects can move by name (delegates to LinkId overload) */
+  virtual void setActiveCollisionObjects(const std::vector<std::string>& names);
 
   /**
    * @brief Get which collision objects can move
-   * @return A list of collision object names
+   * @return A set of active collision object LinkIds
    */
-  virtual const std::vector<std::string>& getActiveCollisionObjects() const = 0;
+  virtual const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjectIds() const = 0;
+
+  /**
+   * @brief Get which collision objects can move as names
+   * @return A list of collision object names (derived from getActiveCollisionObjectIds)
+   */
+  virtual std::vector<std::string> getActiveCollisionObjectNames() const;
 
   /**
    * @brief Set the contact distance threshold
@@ -200,14 +209,16 @@ public:
   /**
    * @brief Set the margin for a given contact pair
    *
-   * The order of the object names does not matter, that is handled internal to
+   * The order of the object ids does not matter, that is handled internal to
    * the class.
    *
-   * @param obj1 The first object name. Order doesn't matter
-   * @param obj2 The Second object name. Order doesn't matter
+   * @param obj1 The first object id. Order doesn't matter
+   * @param obj2 The Second object id. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  virtual void setCollisionMarginPair(const std::string& name1, const std::string& name2, double collision_margin) = 0;
+  virtual void setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                      const tesseract::common::LinkId& id2,
+                                      double collision_margin) = 0;
 
   /**
    * @brief Increment the collision margin data by some value

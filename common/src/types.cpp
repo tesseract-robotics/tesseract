@@ -22,45 +22,29 @@
  * limitations under the License.
  */
 
-#include <tesseract/common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/functional/hash.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract/common/types.h>
+
+#include <stdexcept>
+#include <string>
 
 namespace tesseract::common
 {
-LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
+void checkPairHashCollision(const char* context,
+                            const std::string& new_name1,
+                            const std::string& new_name2,
+                            const std::string& existing_name1,
+                            const std::string& existing_name2)
 {
-  return (link_name1 <= link_name2) ? std::make_pair(link_name1, link_name2) : std::make_pair(link_name2, link_name1);
+  const bool names_match = (existing_name1 == new_name1 && existing_name2 == new_name2) ||
+                           (existing_name1 == new_name2 && existing_name2 == new_name1);
+  if (!names_match)
+    throw std::runtime_error(std::string(context) + " LinkIdPair hash collision: ('" + new_name1 + "', '" + new_name2 +
+                             "') collides with ('" + existing_name1 + "', '" + existing_name2 + "')");
 }
 
-void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2)
+void checkHashCollision(const char* context, const std::string& new_name, const std::string& existing_name)
 {
-  if (link_name1 <= link_name2)
-  {
-    pair.first = link_name1;
-    pair.second = link_name2;
-  }
-  else
-  {
-    pair.first = link_name2;
-    pair.second = link_name1;
-  }
+  if (existing_name != new_name)
+    throw std::runtime_error(std::string(context) + " hash collision: '" + new_name + "' and '" + existing_name + "'");
 }
-
 }  // namespace tesseract::common
-
-namespace std
-{
-std::size_t
-hash<tesseract::common::LinkNamesPair>::operator()(const tesseract::common::LinkNamesPair& pair) const noexcept
-{
-  std::size_t seed{ 0 };
-  boost::hash_combine(seed, pair.first);
-  boost::hash_combine(seed, pair.second);
-  return seed;
-}
-
-}  // namespace std

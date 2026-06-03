@@ -76,6 +76,7 @@ python3 -m pip install --user  tesseract_robotics tesseract_robotics_viewer
 * [Wiki](https://tesseract-docs.readthedocs.io)
 * [Doxygen](https://tesseract-robotics.github.io/tesseract/)
 * [Benchmark](https://tesseract-robotics.github.io/tesseract_docs/tesseract/dev/bench/)
+* [Identity design (`NameId`, `LinkId`, `JointId`)](IDENTITY_DESIGN.md) — type safety, performance, and hash-collision prevention for the ID-based identity model
 
 ## Evolution
 
