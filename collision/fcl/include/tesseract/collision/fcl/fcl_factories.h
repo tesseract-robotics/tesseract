@@ -34,6 +34,7 @@ class FCLDiscreteBVHManagerFactory : public DiscreteContactManagerFactory
 public:
   std::unique_ptr<DiscreteContactManager> create(const std::string& name,
                                                  const YAML::Node& config) const override final;
+  tesseract::common::PropertyTree schema() const override;
 };
 
 PLUGIN_ANCHOR_DECL(FCLFactoriesAnchor)
