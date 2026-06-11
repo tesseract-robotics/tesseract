@@ -28,6 +28,36 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 [![ros_industrial_cmake_boilerplate](https://img.shields.io/badge/ros_industrial_cmake_boilerplate-0.7.3-brightgreen)](https://github.com/ros-industrial/ros_industrial_cmake_boilerplate/tree/0.7.3)  
 [![opw_kinematics](https://img.shields.io/badge/opw_kinematics-0.5.2-brightgreen)](https://github.com/Jmeyer1292/opw_kinematics/tree/0.5.2)
 
+## Tesseract Monthly Meeting
+
+We hold a monthly Google Meet for Tesseract project updates, coordination, and open discussion.
+
+**Schedule:** Thursday, monthly  
+**Time:** 10:00 – 11:00 AM Central Time  
+**Time zone:** America/Chicago  
+**Google Meet:** https://meet.google.com/oyq-puvp-nyg
+
+### Dial-in
+
+**Phone:** +1 337-346-2448  
+**PIN:** 452 223 087#  
+**More phone numbers:** https://tel.meet/oyq-puvp-nyg?pin=2663350273813
+
+### Access
+
+This meeting uses Google Meet host controls. Attendees may need to request to join and be admitted by the host before entering.
+
+### Agenda
+
+- Project updates
+- Open issues or blockers
+- Upcoming priorities
+- General Q&A
+
+### Notes
+
+Please join using a recognizable name so the host can admit you.
+
 ## Tesseract Setup Wizard and Visualization Tools
 
 [![](https://github.com/snapcore/snap-store-badges/blob/master/EN/%5BEN%5D-snap-store-black-uneditable%401x.png)](https://snapcraft.io/tesseract-ignition)
