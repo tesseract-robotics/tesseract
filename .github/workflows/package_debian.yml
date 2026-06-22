@@ -22,7 +22,7 @@ jobs:
         distro: [jammy, noble]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: target_ws/src
 
