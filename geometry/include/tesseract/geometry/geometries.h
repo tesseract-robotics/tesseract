@@ -35,6 +35,7 @@
 #include <tesseract/geometry/impl/plane.h>
 #include <tesseract/geometry/impl/polygon_mesh.h>
 #include <tesseract/geometry/impl/sdf_mesh.h>
+#include <tesseract/geometry/impl/signed_distance_field.h>
 #include <tesseract/geometry/impl/sphere.h>
 
 #endif

@@ -122,6 +122,23 @@ void serialize(Archive& ar, Octree& obj)
 }
 
 template <class Archive>
+void serialize(Archive& ar, SignedDistanceField& obj)
+{
+  // Materialize a lazy (function-backed) field so its grid is concrete before writing. On load this
+  // is a no-op (no sampler), and the grid is populated by the archive below.
+  obj.discretize();
+  ar(cereal::base_class<Geometry>(&obj));
+  ar(cereal::make_nvp("domain_min", obj.domain_.min()));
+  ar(cereal::make_nvp("domain_max", obj.domain_.max()));
+  ar(cereal::make_nvp("dim_x", obj.dimensions_.x()));
+  ar(cereal::make_nvp("dim_y", obj.dimensions_.y()));
+  ar(cereal::make_nvp("dim_z", obj.dimensions_.z()));
+  ar(cereal::make_nvp("distances", obj.distances_));
+  ar(cereal::make_nvp("scale", obj.scale_));
+  ar(cereal::make_nvp("margin", obj.margin_));
+}
+
+template <class Archive>
 void serialize(Archive& ar, PolygonMesh& obj)
 {
   ar(cereal::base_class<Geometry>(&obj));
@@ -155,6 +172,7 @@ template <class Archive>
 void serialize(Archive& ar, SDFMesh& obj)
 {
   ar(cereal::base_class<PolygonMesh>(&obj));
+  ar(cereal::make_nvp("sdf", obj.sdf_));
 }
 
 template <class Archive>

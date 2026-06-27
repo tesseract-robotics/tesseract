@@ -46,18 +46,143 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <LinearMath/btConvexHullComputer.h>
 #include <BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
+#include <BulletCollision/CollisionShapes/btSdfCollisionShape.h>
 #include <BulletCollision/Gimpact/btTriangleShapeEx.h>
 #include <boost/thread/mutex.hpp>
+#include <array>
+#include <cstdint>
+#include <limits>
 #include <memory>
 #include <stdexcept>
+#include <unordered_map>
 #include <octomap/octomap.h>
 #include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/geometries.h>
+#include <tesseract/common/utils.h>
 
 namespace tesseract::collision::bullet_internal
 {
+/**
+ * @brief Convert a backend-neutral SignedDistanceField into Bullet's btMiniSDF blob.
+ *
+ * Builds a tricubic (32-node Lagrange) cell grid -- one cell per interval of the neutral sample
+ * grid -- evaluates the field at the de-duplicated cell nodes (via @c getDistance, which samples the
+ * field's function directly when lazy or trilinearly interpolates a grid-backed one), and serializes
+ * it into the byte layout consumed by @c btSdfCollisionShape::initializeSDF.
+ */
+static std::vector<std::uint8_t> convertSDFToBt(const tesseract::geometry::SignedDistanceField& field)
+{
+  // The 32 tricubic-Lagrange node offsets of a btMiniSDF cell (integer lattice units, {0,1,2,3} per
+  // axis): 8 corners, then the x / y / z edge nodes. A cell spans 3 lattice units per axis.
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  static constexpr int NODE_OFFSETS[32][3] = { { 0, 0, 0 }, { 3, 0, 0 }, { 0, 3, 0 }, { 3, 3, 0 },  // corners (z low)
+                                               { 0, 0, 3 }, { 3, 0, 3 }, { 0, 3, 3 }, { 3, 3, 3 },  // corners (z high)
+                                               { 1, 0, 0 }, { 2, 0, 0 }, { 1, 0, 3 }, { 2, 0, 3 },  // x edges
+                                               { 1, 3, 0 }, { 2, 3, 0 }, { 1, 3, 3 }, { 2, 3, 3 },
+                                               { 0, 1, 0 }, { 0, 2, 0 }, { 3, 1, 0 }, { 3, 2, 0 },  // y edges
+                                               { 0, 1, 3 }, { 0, 2, 3 }, { 3, 1, 3 }, { 3, 2, 3 },
+                                               { 0, 0, 1 }, { 0, 0, 2 }, { 0, 3, 1 }, { 0, 3, 2 },  // z edges
+                                               { 3, 0, 1 }, { 3, 0, 2 }, { 3, 3, 1 }, { 3, 3, 2 } };
+
+  const Eigen::Vector3d domain_min = field.getDomain().min();
+  const Eigen::Vector3d domain_max = field.getDomain().max();
+  // One tricubic cell per neutral-grid interval (dimensions are sample counts, so cells = dims - 1).
+  const Eigen::Vector3i resolution = (field.getDimensions().array() - 1).cwiseMax(1).matrix();
+
+  const Eigen::Vector3d cell_size = (domain_max - domain_min).cwiseQuotient(resolution.cast<double>());
+  const Eigen::Vector3d inv_cell_size = cell_size.cwiseInverse();
+
+  const std::int64_t la = 3LL * resolution.x() + 1;  // lattice extents (cell_size/3 spacing) for node hashing
+  const std::int64_t lb = 3LL * resolution.y() + 1;
+
+  std::vector<Eigen::Vector3d> node_positions;
+  std::vector<std::array<std::uint32_t, 32>> cells;
+  std::unordered_map<std::int64_t, std::uint32_t> node_ids;
+  cells.reserve(static_cast<std::size_t>(resolution.x()) * static_cast<std::size_t>(resolution.y()) *
+                static_cast<std::size_t>(resolution.z()));
+
+  // Cells in single-index order: single = i + nx*j + nx*ny*k (matches btMiniSDF::multiToSingleIndex).
+  for (int ck = 0; ck < resolution.z(); ++ck)
+  {
+    for (int cj = 0; cj < resolution.y(); ++cj)
+    {
+      for (int ci = 0; ci < resolution.x(); ++ci)
+      {
+        std::array<std::uint32_t, 32> cell{};
+        for (int n = 0; n < 32; ++n)
+        {
+          const std::int64_t a = 3LL * ci + NODE_OFFSETS[n][0];
+          const std::int64_t b = 3LL * cj + NODE_OFFSETS[n][1];
+          const std::int64_t c = 3LL * ck + NODE_OFFSETS[n][2];
+          const std::int64_t key = a + (la * b) + (la * lb * c);
+
+          auto it = node_ids.find(key);
+          if (it == node_ids.end())
+          {
+            const auto id = static_cast<std::uint32_t>(node_positions.size());
+            node_ids.emplace(key, id);
+            const Eigen::Vector3d lattice(static_cast<double>(a), static_cast<double>(b), static_cast<double>(c));
+            node_positions.emplace_back(domain_min + lattice.cwiseProduct(cell_size) / 3.0);
+            cell[static_cast<std::size_t>(n)] = id;
+          }
+          else
+          {
+            cell[static_cast<std::size_t>(n)] = it->second;
+          }
+        }
+        cells.push_back(cell);
+      }
+    }
+  }
+
+  std::vector<std::uint8_t> blob;
+
+  // Domain (min xyz, max xyz)
+  for (int i = 0; i < 3; ++i)
+    tesseract::common::appendBytes(blob, domain_min[i]);
+  for (int i = 0; i < 3; ++i)
+    tesseract::common::appendBytes(blob, domain_max[i]);
+
+  // Resolution (cells per axis)
+  for (int i = 0; i < 3; ++i)
+    tesseract::common::appendBytes(blob, static_cast<unsigned int>(resolution[i]));
+
+  // Cell size / inverse cell size
+  for (int i = 0; i < 3; ++i)
+    tesseract::common::appendBytes(blob, cell_size[i]);
+  for (int i = 0; i < 3; ++i)
+    tesseract::common::appendBytes(blob, inv_cell_size[i]);
+
+  tesseract::common::appendBytes(blob, static_cast<unsigned long long>(cells.size()));  // n_cells
+  tesseract::common::appendBytes(blob, static_cast<unsigned long long>(1));             // n_fields
+
+  // Nodes: a single field whose values are the field sampled at the de-duplicated node positions.
+  tesseract::common::appendBytes(blob, static_cast<unsigned long long>(1));  // outer (one field)
+  tesseract::common::appendBytes(blob,
+                                 static_cast<unsigned long long>(node_positions.size()));  // inner (unique node count)
+  for (const auto& position : node_positions)
+    tesseract::common::appendBytes(blob, field.getDistance(position));
+
+  // Cells: a single field; each cell references its 32 (shared) node ids.
+  tesseract::common::appendBytes(blob, static_cast<unsigned long long>(1));             // outer (one field)
+  tesseract::common::appendBytes(blob, static_cast<unsigned long long>(cells.size()));  // inner (cell count)
+  for (const auto& cell : cells)
+  {
+    for (const std::uint32_t id : cell)
+      tesseract::common::appendBytes(blob, static_cast<unsigned int>(id));
+  }
+
+  // Cell map: identity (every cell is valid).
+  tesseract::common::appendBytes(blob, static_cast<unsigned long long>(1));             // outer (one field)
+  tesseract::common::appendBytes(blob, static_cast<unsigned long long>(cells.size()));  // inner (map count)
+  for (std::size_t s = 0; s < cells.size(); ++s)
+    tesseract::common::appendBytes(blob, static_cast<unsigned int>(s));
+
+  return blob;
+}
+
 btVector3 convertEigenToBt(const Eigen::Vector3d& v)
 {
   return btVector3{ static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2]) };
@@ -362,6 +487,48 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geom
   return shape;
 }
 
+std::shared_ptr<BulletCollisionShape>
+createShapePrimitive(const tesseract::geometry::SignedDistanceField::ConstPtr& geom)
+{
+  if (geom->getDimensions().minCoeff() < 2)
+  {
+    CONSOLE_BRIDGE_logError("The SDF grid is empty!");
+    return nullptr;
+  }
+
+  // Transcode the backend-neutral field into Bullet's btMiniSDF blob. getDistance() samples the
+  // field's function directly when it is lazy (exact) or trilinearly interpolates a grid-backed one,
+  // so no full grid discretization is forced here.
+  const std::vector<std::uint8_t> data = convertSDFToBt(*geom);
+
+  auto sdf = std::make_shared<btSdfCollisionShape>();
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  if (!sdf->initializeSDF(reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size())))
+    throw std::runtime_error("Failed to initialize btSdfCollisionShape from blob");
+
+  sdf->setLocalScaling(convertEigenToBt(geom->getScale()));
+
+  auto collision_shape = std::make_shared<BulletCollisionShape>();
+  collision_shape->top_level = sdf;  // children stays empty
+  return collision_shape;
+}
+
+std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::SDFMesh::ConstPtr& geom)
+{
+  // Prefer the attached signed distance field (true volumetric concave contact) over the triangle
+  // surface when one is present. This only selects the field as the collision representation; it does
+  // not force discretization -- the btMiniSDF transcode samples the field's function directly when lazy.
+  const tesseract::geometry::SignedDistanceField::ConstPtr& sdf = geom->getSignedDistanceField();
+  if (sdf != nullptr && sdf->getDimensions().minCoeff() >= 2)
+    return createShapePrimitive(sdf);
+
+  // Otherwise fall back to the triangle surface (also the path for URDF-loaded sdf_mesh elements,
+  // and the only representation FCL / the continuous-cast managers can consume).
+  auto mesh = std::make_shared<tesseract::geometry::Mesh>(
+      geom->getVertices(), geom->getFaces(), geom->getFaceCount(), geom->getResource(), geom->getScale());
+  return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Mesh>(mesh));
+}
+
 std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom)
 {
   std::shared_ptr<BulletCollisionShape> shape = BulletCollisionShapeCache::get(geom);
@@ -422,6 +589,30 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::CompoundMesh>(geom));
       shape->top_level->setMargin(BULLET_MARGIN);
+      break;
+    }
+    case tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD:
+    {
+      const auto& sdf = std::static_pointer_cast<const tesseract::geometry::SignedDistanceField>(geom);
+      shape = createShapePrimitive(sdf);
+      if (shape != nullptr)
+      {
+        const auto margin = (sdf->getMargin() > 0.0) ? static_cast<btScalar>(sdf->getMargin()) : BULLET_MARGIN;
+        shape->top_level->setMargin(margin);
+      }
+      break;
+    }
+    case tesseract::geometry::GeometryType::SDF_MESH:
+    {
+      const auto& sdf_mesh = std::static_pointer_cast<const tesseract::geometry::SDFMesh>(geom);
+      shape = createShapePrimitive(sdf_mesh);
+      if (shape != nullptr)
+      {
+        const tesseract::geometry::SignedDistanceField::ConstPtr& sdf = sdf_mesh->getSignedDistanceField();
+        const auto margin =
+            (sdf != nullptr && sdf->getMargin() > 0.0) ? static_cast<btScalar>(sdf->getMargin()) : BULLET_MARGIN;
+        shape->top_level->setMargin(margin);
+      }
       break;
     }
     // LCOV_EXCL_START

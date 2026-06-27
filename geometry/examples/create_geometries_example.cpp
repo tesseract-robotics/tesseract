@@ -17,8 +17,15 @@
  * - **Mesh Geometries**: Triangle-based representations of arbitrary 3D shapes, loaded
  *   from files or constructed manually. More flexible but slower than primitives.
  *
- * - **Signed Distance Field (SDF) Mesh**: A specialized mesh that stores per-vertex or
- *   per-cell distance information. Useful for faster proximity queries and haptic feedback.
+ * - **Signed Distance Field**: A volumetric, implicit geometry storing the signed distance to a
+ *   surface (negative inside) sampled on a grid. Enables true concave volumetric contact and
+ *   signed-distance/gradient queries on the Bullet discrete backend. This is the canonical way to
+ *   use a distance field.
+ *
+ * - **SDF Mesh**: A triangle mesh that may *also* carry a Signed Distance Field. It is checked as
+ *   a field on the Bullet discrete backend (when one is attached) and as a triangle mesh
+ *   everywhere else. Prefer a plain Signed Distance Field unless you also need the surface on FCL /
+ *   the continuous managers or via the `tesseract:sdf_mesh` URDF element.
  *
  * - **Convex Mesh**: A mesh guaranteed to be convex (all interior angles < 180°). More
  *   efficient for collision checking than arbitrary meshes while maintaining flexibility.
@@ -32,7 +39,8 @@
  * |---------------|-------|-------------|----------|
  * | Primitive | Very Fast | Low | Robot links, obstacles with simple shapes |
  * | Mesh | Slow | Very High | Complex geometry, CAD models |
- * | SDF Mesh | Medium | High | Smooth contact, force feedback |
+ * | Signed Distance Field | Fast | Medium | Concave volumetric collision + distance/gradient queries (Bullet) |
+ * | SDF Mesh | Medium | High | A surface mesh that also collides as a field on Bullet discrete |
  * | Convex Mesh | Fast | Medium | Complex convex objects, gripper fingers |
  * | Octree | Medium | Medium | Point clouds, voxel grids, occupancy maps |
  *
@@ -79,7 +87,8 @@
  * **Standard Mesh** - Use for complex geometry loaded from CAD files:
  * @snippet create_geometries_example.cpp create_geometries_mesh
  *
- * **Signed Distance Field (SDF) Mesh** - Use when you need distance information at vertices:
+ * **SDF Mesh** - A triangle mesh that can also carry a Signed Distance Field (see below); checked
+ * as a field on Bullet discrete and as a triangle mesh elsewhere:
  * @snippet create_geometries_example.cpp create_geometries_sdf_mesh
  *
  * **Convex Mesh** - Use when your geometry should be convex (more efficient):
@@ -91,6 +100,20 @@
  * point clouds, occupancy grids, or voxel-based representations:
  *
  * @snippet create_geometries_example.cpp create_geometries_octree
+ *
+ * @section create_geometries_sdf Creating a Signed Distance Field
+ *
+ * A `SignedDistanceField` is a volumetric, implicit geometry: the signed distance to a surface
+ * (negative inside) sampled on a grid. Discretize one from any distance function over a domain at a
+ * chosen resolution. This is the canonical way to use a distance field; it is consumed by the
+ * Bullet discrete backend for concave volumetric contact and signed-distance/gradient queries:
+ *
+ * @snippet create_geometries_example.cpp create_geometries_signed_distance_field
+ *
+ * You can also attach a field to an `SDFMesh`, so a surface mesh is collision-checked as a field
+ * on the Bullet discrete backend while remaining a triangle mesh on FCL and the continuous
+ * managers. Prefer a plain `SignedDistanceField` unless you also need that surface fallback or the
+ * `tesseract:sdf_mesh` URDF element.
  *
  * @section create_geometries_typical_workflow Typical Workflow
  *
@@ -127,7 +150,7 @@
  * - Common primitives: Box, Sphere, Cylinder, Cone, Capsule, Plane
  * - Mesh loading from files (practical for real-world usage)
  * - Mesh variants: Standard, SDF, and Convex meshes
- * - Volumetric representation: Octrees
+ * - Volumetric representations: Signed Distance Fields and Octrees
  *
  * Choose the simplest geometry that fits your use case for optimal performance.
  *
@@ -142,6 +165,7 @@
 #include <console_bridge/console.h>
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/geometry/mesh_parser.h>
+#include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/common/resource_locator.h>
 #include <octomap/OcTree.h>
 #include <iostream>
@@ -208,6 +232,23 @@ int main(int /*argc*/, char** /*argv*/)
   // Next fill out vertices and triangles
   auto sdf_mesh = std::make_shared<tesseract::geometry::SDFMesh>(sdf_vertices, sdf_faces);
   //! [create_geometries_sdf_mesh]
+
+  //! [create_geometries_signed_distance_field]
+  // A SignedDistanceField is a volumetric, implicit geometry: the signed distance to a surface
+  // (negative inside) sampled on a grid. Discretize one from any distance function -- here an analytic
+  // sphere of radius 0.5 -- over a domain at a chosen resolution. This is the canonical way to use
+  // a distance field; the Bullet discrete backend consumes it for concave volumetric contact and
+  // signed-distance/gradient queries.
+  SignedDistanceFunction sphere_sdf = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+  auto signed_distance_field = createDiscreteSignedDistanceField(sphere_sdf,
+                                                                 Eigen::Vector3d(-1, -1, -1),   // domain minimum
+                                                                 Eigen::Vector3d(1, 1, 1),      // domain maximum
+                                                                 Eigen::Vector3i(16, 16, 16));  // grid resolution
+
+  // Optionally attach it to an SDFMesh so a surface mesh is collision-checked as a field on the
+  // Bullet discrete backend while remaining a plain triangle mesh on the other backends.
+  sdf_mesh->setSignedDistanceField(signed_distance_field);
+  //! [create_geometries_signed_distance_field]
 
   //! [create_geometries_convex_mesh]
   // Manually create convex mesh

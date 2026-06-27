@@ -31,9 +31,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/impl/polygon_mesh.h>
+#include <tesseract/geometry/impl/signed_distance_field.h>
 
 namespace tesseract::geometry
 {
+class SDFMesh;
+template <class Archive>
+void serialize(Archive& ar, SDFMesh& obj);
+
+/**
+ * @brief A triangle mesh that may carry a discretized volumetric signed distance field.
+ *
+ * The surface (vertices/faces/normals/material) is always present and is used for visualization,
+ * broadphase, and by backends that cannot consume a distance field (FCL and the Bullet
+ * continuous/cast managers). If a @ref SignedDistanceField is attached via
+ * @ref setSignedDistanceField, the Bullet discrete backend uses it instead of the triangle soup,
+ * giving true volumetric concave contact and signed-distance/gradient queries.
+ *
+ * @note The attached field is concave, so it is only consumed by the Bullet discrete backend. With
+ * no field attached the geometry behaves as a plain triangle mesh on every backend (this is also
+ * the case for meshes loaded from a @c tesseract:sdf_mesh URDF element, which carry no field).
+ */
 class SDFMesh : public PolygonMesh
 {
 public:
@@ -94,10 +112,29 @@ public:
   SDFMesh() = default;
   ~SDFMesh() override = default;
 
+  /**
+   * @brief Attach a discretized signed distance field used as the discrete-collision representation.
+   * @param sdf The discretized field (e.g. from @ref createDiscreteSignedDistanceField), or nullptr to clear it
+   */
+  void setSignedDistanceField(SignedDistanceField::Ptr sdf);
+
+  /**
+   * @brief Get the attached signed distance field, or nullptr if none is set.
+   * @return The discretized field used for discrete collision
+   */
+  std::shared_ptr<const SignedDistanceField> getSignedDistanceField() const;
+
   Geometry::Ptr clone() const override final;
 
   bool operator==(const SDFMesh& rhs) const;
   bool operator!=(const SDFMesh& rhs) const;
+
+private:
+  /** @brief Optional discretized signed distance field used by the Bullet discrete backend */
+  SignedDistanceField::Ptr sdf_;
+
+  template <class Archive>
+  friend void ::tesseract::geometry::serialize(Archive& ar, SDFMesh& obj);
 };
 }  // namespace tesseract::geometry
 

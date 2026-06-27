@@ -72,15 +72,25 @@ SDFMesh::SDFMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertic
     std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
 }
 
+void SDFMesh::setSignedDistanceField(SignedDistanceField::Ptr sdf) { sdf_ = std::move(sdf); }
+
+std::shared_ptr<const SignedDistanceField> SDFMesh::getSignedDistanceField() const { return sdf_; }
+
 Geometry::Ptr SDFMesh::clone() const
 {
-  return std::make_shared<SDFMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
+  auto cloned = std::make_shared<SDFMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
+  if (sdf_ != nullptr)
+    cloned->setSignedDistanceField(std::static_pointer_cast<SignedDistanceField>(sdf_->clone()));
+  return cloned;
 }
 
 bool SDFMesh::operator==(const SDFMesh& rhs) const
 {
   bool equal = true;
   equal &= Geometry::operator==(rhs);
+  equal &= (sdf_ == nullptr) == (rhs.sdf_ == nullptr);
+  if (equal && sdf_ != nullptr)
+    equal &= (*sdf_ == *rhs.sdf_);
   return equal;
 }
 bool SDFMesh::operator!=(const SDFMesh& rhs) const { return !operator==(rhs); }
