@@ -40,6 +40,8 @@ add_library(
   src/geometries/plane.cpp
   src/geometries/polygon_mesh.cpp
   src/geometries/sdf_mesh.cpp
+  src/geometries/signed_distance_field.cpp
+  src/geometries/signed_distance_field_utils.cpp
   src/geometries/sphere.cpp)
 add_library(tesseract::geometry ALIAS geometry)
 if(NOT WIN32)

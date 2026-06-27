@@ -180,6 +180,15 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       if (s1.getVertices() != s2.getVertices())
         return false;
 
+      if ((s1.getSignedDistanceField() == nullptr) != (s2.getSignedDistanceField() == nullptr))
+        return false;
+
+      // Compare the attached field by content (not operator==) so a cloned mesh, whose field
+      // carries a fresh UUID, still compares identical.
+      if (s1.getSignedDistanceField() != nullptr &&
+          !isIdentical(*s1.getSignedDistanceField(), *s2.getSignedDistanceField()))
+        return false;
+
       break;
     }
     case GeometryType::OCTREE:
@@ -222,6 +231,29 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
         return false;
 
       if (s1.getVertices() != s2.getVertices())
+        return false;
+
+      break;
+    }
+    case GeometryType::SIGNED_DISTANCE_FIELD:
+    {
+      const auto& s1 = static_cast<const SignedDistanceField&>(geom1);
+      const auto& s2 = static_cast<const SignedDistanceField&>(geom2);
+
+      if (s1.getDimensions() != s2.getDimensions())
+        return false;
+
+      if (!s1.getDomain().min().isApprox(s2.getDomain().min(), std::numeric_limits<double>::epsilon()) ||
+          !s1.getDomain().max().isApprox(s2.getDomain().max(), std::numeric_limits<double>::epsilon()))
+        return false;
+
+      if (s1.getDistances() != s2.getDistances())
+        return false;
+
+      if (!s1.getScale().isApprox(s2.getScale(), std::numeric_limits<double>::epsilon()))
+        return false;
+
+      if (std::abs(s1.getMargin() - s2.getMargin()) > std::numeric_limits<double>::epsilon())
         return false;
 
       break;
@@ -306,6 +338,7 @@ tesseract::common::VectorVector3d extractVertices(const Geometry& geom, const Ei
       return vertices;
     }
     case tesseract::geometry::GeometryType::OCTREE:
+    case tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD:
     default:
     {
       const std::string type_str = std::to_string(static_cast<int>(geom.getType()));
