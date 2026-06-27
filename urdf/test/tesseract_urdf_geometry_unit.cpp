@@ -6,6 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/geometries.h>
+#include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/urdf/geometry.h>
 #include <tesseract/common/resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
@@ -103,6 +104,16 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
   }
 
   {
+    std::string str = R"(<geometry extra="0 0 0">
+                           <tesseract:signed_distance_field filename="package://tesseract/support/meshes/sphere.sdf" extra="0 0 0"/>
+                         </geometry>)";
+    tesseract::geometry::Geometry::Ptr elem;
+    EXPECT_TRUE(runTest<tesseract::geometry::Geometry::Ptr>(
+        elem, parse_geometry_fn, str, tesseract::urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_TRUE(elem->getType() == tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
+  }
+
+  {
     std::string str = R"(<geometry>
                            <unknown_type extra="0 0 0"/>
                          </geometry>)";
@@ -196,6 +207,16 @@ TEST(TesseractURDFUnit, parse_geometry)  // NOLINT
   {
     std::string str = R"(<geometry extra="0 0 0">
                            <tesseract:sdf_mesh />
+                         </geometry>)";
+    tesseract::geometry::Geometry::Ptr elem;
+    EXPECT_FALSE(runTest<tesseract::geometry::Geometry::Ptr>(
+        elem, parse_geometry_fn, str, tesseract::urdf::GEOMETRY_ELEMENT_NAME.data(), resource_locator, true));
+    EXPECT_TRUE(elem == nullptr);
+  }
+
+  {  // signed distance field with no filename -> parse throws -> dispatch rethrows
+    std::string str = R"(<geometry extra="0 0 0">
+                           <tesseract:signed_distance_field />
                          </geometry>)";
     tesseract::geometry::Geometry::Ptr elem;
     EXPECT_FALSE(runTest<tesseract::geometry::Geometry::Ptr>(
@@ -305,6 +326,31 @@ TEST(TesseractURDFUnit, write_geometry)  // NOLINT
         writeTest<tesseract::geometry::Geometry::Ptr>(
             geometry, &tesseract::urdf::writeGeometry, text, tesseract::common::getTempPath(), std::string("geom2")));
     EXPECT_NE(text, "");
+  }
+
+  {  // signed distance field
+    const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+    tesseract::geometry::Geometry::Ptr geometry = tesseract::geometry::createDiscreteSignedDistanceField(
+        sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(4, 4, 4));
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract::geometry::Geometry::Ptr>(geometry,
+                                                            &tesseract::urdf::writeGeometry,
+                                                            text,
+                                                            tesseract::common::getTempPath(),
+                                                            std::string("geom_sdf")));
+    EXPECT_NE(text, "");
+  }
+
+  {  // signed distance field failed-to-write
+    const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+    tesseract::geometry::Geometry::Ptr geometry = tesseract::geometry::createDiscreteSignedDistanceField(
+        sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(4, 4, 4));
+    std::string text;
+    EXPECT_EQ(1,
+              writeTest<tesseract::geometry::Geometry::Ptr>(
+                  geometry, &tesseract::urdf::writeGeometry, text, std::string("/tmp/nonexistant/"), std::string("")));
+    EXPECT_EQ(text, "");
   }
 
   {  // octree
