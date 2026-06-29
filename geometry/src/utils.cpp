@@ -163,34 +163,6 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
 
       break;
     }
-    case GeometryType::SDF_MESH:
-    {
-      const auto& s1 = static_cast<const SDFMesh&>(geom1);
-      const auto& s2 = static_cast<const SDFMesh&>(geom2);
-
-      if (s1.getVertexCount() != s2.getVertexCount())
-        return false;
-
-      if (s1.getFaceCount() != s2.getFaceCount())
-        return false;
-
-      if (s1.getFaces() != s2.getFaces())
-        return false;
-
-      if (s1.getVertices() != s2.getVertices())
-        return false;
-
-      if ((s1.getSignedDistanceField() == nullptr) != (s2.getSignedDistanceField() == nullptr))
-        return false;
-
-      // Compare the attached field by content (not operator==) so a cloned mesh, whose field
-      // carries a fresh UUID, still compares identical.
-      if (s1.getSignedDistanceField() != nullptr &&
-          !isIdentical(*s1.getSignedDistanceField(), *s2.getSignedDistanceField()))
-        return false;
-
-      break;
-    }
     case GeometryType::OCTREE:
     {
       const auto& s1 = static_cast<const Octree&>(geom1);
@@ -310,13 +282,6 @@ tesseract::common::VectorVector3d extractVertices(const Geometry& geom, const Ei
     {
       const auto& convex_mesh = static_cast<const tesseract::geometry::ConvexMesh&>(geom);
       for (const auto& v : *convex_mesh.getVertices())
-        vertices.emplace_back(origin * v);
-      return vertices;
-    }
-    case tesseract::geometry::GeometryType::SDF_MESH:
-    {
-      const auto& sdf_mesh = static_cast<const tesseract::geometry::SDFMesh&>(geom);
-      for (const auto& v : *sdf_mesh.getVertices())
         vertices.emplace_back(origin * v);
       return vertices;
     }

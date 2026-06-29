@@ -23,7 +23,6 @@ add_executable(
   tesseract_urdf_octree_unit.cpp
   tesseract_urdf_origin_unit.cpp
   tesseract_urdf_safety_controller_unit.cpp
-  tesseract_urdf_sdf_mesh_unit.cpp
   tesseract_urdf_signed_distance_field_unit.cpp
   tesseract_urdf_sphere_unit.cpp
   tesseract_urdf_urdf_unit.cpp

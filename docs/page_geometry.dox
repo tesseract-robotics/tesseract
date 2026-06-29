@@ -30,9 +30,6 @@ Analytically-defined shapes with exact representations:
   approximation.
 - <b>Convex Mesh</b> — A mesh guaranteed to be convex. Used for efficient collision checking.
   The data must already be convex; use Tesseract utilities to convert if needed.
-- <b>SDF Mesh</b> — A triangle mesh that may also carry a @ref geometry_sdf "Signed Distance Field".
-  When a field is attached it is used for collision on the Bullet discrete backend; otherwise — and on
-  FCL and the continuous/cast managers — it behaves as a plain triangle mesh.
 
 @subsection geometry_sdf Signed Distance Field
 
@@ -47,9 +44,8 @@ such as OpenVDB) — discretized lazily on demand, or up front with the discrete
 serialized field.
 
 > <b>Note:</b> Only the Bullet discrete collision backend consumes a Signed Distance Field — it is
-> concave, so it is not supported by FCL or the continuous/cast managers. For geometry that must also
-> work on those backends, attach the field to an <b>SDF Mesh</b> (above), which keeps a triangle-mesh
-> fallback. This is distinct from the Gazebo "SDF" Simulation Description Format.
+> concave, so it is not supported by FCL or the continuous/cast managers. This is distinct from the
+> Gazebo "SDF" Simulation Description Format.
 
 @subsection geometry_octree Octree
 

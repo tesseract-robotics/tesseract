@@ -205,42 +205,6 @@ TEST(TesseractGeometrySerializeUnit, PolygonMesh)  // NOLINT
   tesseract::common::testSerializationDerivedClass<Geometry, PolygonMesh>(object.front(), "PolygonMesh");
 }
 
-TEST(TesseractGeometrySerializeUnit, SDFMesh)  // NOLINT
-{
-  tesseract::common::GeneralResourceLocator locator;
-  std::string path = "package://tesseract/support/meshes/sphere_p25m.stl";
-  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
-      locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  tesseract::common::testSerialization<SDFMesh>(*object.front(), "SDFMesh");
-  tesseract::common::testSerializationDerivedClass<Geometry, SDFMesh>(object.front(), "SDFMesh");
-  tesseract::common::testSerializationDerivedClass<PolygonMesh, SDFMesh>(object.front(), "SDFMesh");
-}
-
-TEST(TesseractGeometrySerializeUnit, SDFMeshWithSignedDistanceField)  // NOLINT
-{
-  // In-memory surface + attached field so the round-trip exercises the SDFMesh::sdf_ member.
-  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
-  vertices->emplace_back(1, 1, 0);
-  vertices->emplace_back(1, -1, 0);
-  vertices->emplace_back(-1, -1, 0);
-  vertices->emplace_back(-1, 1, 0);
-  auto faces = std::make_shared<Eigen::VectorXi>();
-  faces->resize(8);
-  (*faces) << 3, 0, 1, 2, 3, 0, 2, 3;
-
-  auto object = std::make_shared<SDFMesh>(vertices, faces);
-  const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));
-  const Eigen::Vector3i dims(2, 2, 2);
-  const std::vector<double> distances{ -0.5, -0.4, -0.3, -0.2, 0.1, 0.2, 0.3, 0.4 };
-  object->setSignedDistanceField(
-      std::make_shared<SignedDistanceField>(domain, dims, distances, Eigen::Vector3d(1.0, 2.0, 3.0), 0.02));
-
-  // SDFMesh::operator== compares the attached field, so a dropped sdf_ on load fails these.
-  tesseract::common::testSerialization<SDFMesh>(*object, "SDFMeshWithSDF");
-  tesseract::common::testSerializationDerivedClass<Geometry, SDFMesh>(object, "SDFMeshWithSDF");
-  tesseract::common::testSerializationDerivedClass<PolygonMesh, SDFMesh>(object, "SDFMeshWithSDF");
-}
-
 TEST(TesseractGeometrySerializeUnit, SignedDistanceField)  // NOLINT
 {
   const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));

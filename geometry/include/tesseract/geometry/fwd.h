@@ -43,7 +43,6 @@ enum class OctreeSubType : std::uint8_t;
 class Plane;
 class PolygonMesh;  // NOLINT(bugprone-forward-declaration-namespace)
 class SignedDistanceField;
-class SDFMesh;
 class Sphere;
 }  // namespace tesseract::geometry
 #endif  // TESSERACT_GEOMETRY_TESSERACT_GEOMETRY_FWD_H
