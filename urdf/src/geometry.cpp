@@ -41,7 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/urdf/geometry.h>
 #include <tesseract/urdf/mesh.h>
 #include <tesseract/urdf/octomap.h>
-#include <tesseract/urdf/sdf_mesh.h>
 #include <tesseract/urdf/signed_distance_field.h>
 #include <tesseract/urdf/sphere.h>
 
@@ -171,24 +170,6 @@ tesseract::geometry::Geometry::Ptr parseGeometry(const tinyxml2::XMLElement* xml
     return octree;
   }
 
-  if (geometry_type == SDF_MESH_ELEMENT_NAME)
-  {
-    std::vector<tesseract::geometry::SDFMesh::Ptr> meshes;
-    try
-    {
-      meshes = parseSDFMesh(geometry, locator, visual);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Geometry: Failed parsing geometry type 'sdf_mesh'!"));
-    }
-
-    if (meshes.size() > 1)
-      return std::make_shared<tesseract::geometry::CompoundMesh>(meshes);
-
-    return meshes.front();
-  }
-
   if (geometry_type == SIGNED_DISTANCE_FIELD_ELEMENT_NAME)
   {
     tesseract::geometry::SignedDistanceField::Ptr sdf;
@@ -300,19 +281,6 @@ tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract::geome
     catch (...)
     {
       std::throw_with_nested(std::runtime_error("Could not write geometry marked as mesh!"));
-    }
-  }
-  else if (type == tesseract::geometry::GeometryType::SDF_MESH)
-  {
-    try
-    {
-      tinyxml2::XMLElement* xml_sdf_mesh = writeSDFMesh(
-          std::static_pointer_cast<const tesseract::geometry::SDFMesh>(geometry), doc, package_path, filename + ".ply");
-      xml_element->InsertEndChild(xml_sdf_mesh);
-    }
-    catch (...)
-    {
-      std::throw_with_nested(std::runtime_error("Could not write geometry marked as SDF mesh!"));
     }
   }
   else if (type == tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD)

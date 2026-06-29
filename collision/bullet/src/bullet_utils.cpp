@@ -513,22 +513,6 @@ createShapePrimitive(const tesseract::geometry::SignedDistanceField::ConstPtr& g
   return collision_shape;
 }
 
-std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geometry::SDFMesh::ConstPtr& geom)
-{
-  // Prefer the attached signed distance field (true volumetric concave contact) over the triangle
-  // surface when one is present. This only selects the field as the collision representation; it does
-  // not force discretization -- the btMiniSDF transcode samples the field's function directly when lazy.
-  const tesseract::geometry::SignedDistanceField::ConstPtr& sdf = geom->getSignedDistanceField();
-  if (sdf != nullptr && sdf->getDimensions().minCoeff() >= 2)
-    return createShapePrimitive(sdf);
-
-  // Otherwise fall back to the triangle surface (also the path for URDF-loaded sdf_mesh elements,
-  // and the only representation FCL / the continuous-cast managers can consume).
-  auto mesh = std::make_shared<tesseract::geometry::Mesh>(
-      geom->getVertices(), geom->getFaces(), geom->getFaceCount(), geom->getResource(), geom->getScale());
-  return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Mesh>(mesh));
-}
-
 std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom)
 {
   std::shared_ptr<BulletCollisionShape> shape = BulletCollisionShapeCache::get(geom);
@@ -598,19 +582,6 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
       if (shape != nullptr)
       {
         const auto margin = (sdf->getMargin() > 0.0) ? static_cast<btScalar>(sdf->getMargin()) : BULLET_MARGIN;
-        shape->top_level->setMargin(margin);
-      }
-      break;
-    }
-    case tesseract::geometry::GeometryType::SDF_MESH:
-    {
-      const auto& sdf_mesh = std::static_pointer_cast<const tesseract::geometry::SDFMesh>(geom);
-      shape = createShapePrimitive(sdf_mesh);
-      if (shape != nullptr)
-      {
-        const tesseract::geometry::SignedDistanceField::ConstPtr& sdf = sdf_mesh->getSignedDistanceField();
-        const auto margin =
-            (sdf != nullptr && sdf->getMargin() > 0.0) ? static_cast<btScalar>(sdf->getMargin()) : BULLET_MARGIN;
         shape->top_level->setMargin(margin);
       }
       break;
