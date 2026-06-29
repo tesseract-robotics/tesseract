@@ -163,25 +163,6 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
 
       break;
     }
-    case GeometryType::SDF_MESH:
-    {
-      const auto& s1 = static_cast<const SDFMesh&>(geom1);
-      const auto& s2 = static_cast<const SDFMesh&>(geom2);
-
-      if (s1.getVertexCount() != s2.getVertexCount())
-        return false;
-
-      if (s1.getFaceCount() != s2.getFaceCount())
-        return false;
-
-      if (s1.getFaces() != s2.getFaces())
-        return false;
-
-      if (s1.getVertices() != s2.getVertices())
-        return false;
-
-      break;
-    }
     case GeometryType::OCTREE:
     {
       const auto& s1 = static_cast<const Octree&>(geom1);
@@ -222,6 +203,29 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
         return false;
 
       if (s1.getVertices() != s2.getVertices())
+        return false;
+
+      break;
+    }
+    case GeometryType::SIGNED_DISTANCE_FIELD:
+    {
+      const auto& s1 = static_cast<const SignedDistanceField&>(geom1);
+      const auto& s2 = static_cast<const SignedDistanceField&>(geom2);
+
+      if (s1.getDimensions() != s2.getDimensions())
+        return false;
+
+      if (!s1.getDomain().min().isApprox(s2.getDomain().min(), std::numeric_limits<double>::epsilon()) ||
+          !s1.getDomain().max().isApprox(s2.getDomain().max(), std::numeric_limits<double>::epsilon()))
+        return false;
+
+      if (s1.getDistances() != s2.getDistances())
+        return false;
+
+      if (!s1.getScale().isApprox(s2.getScale(), std::numeric_limits<double>::epsilon()))
+        return false;
+
+      if (std::abs(s1.getMargin() - s2.getMargin()) > std::numeric_limits<double>::epsilon())
         return false;
 
       break;
@@ -281,13 +285,6 @@ tesseract::common::VectorVector3d extractVertices(const Geometry& geom, const Ei
         vertices.emplace_back(origin * v);
       return vertices;
     }
-    case tesseract::geometry::GeometryType::SDF_MESH:
-    {
-      const auto& sdf_mesh = static_cast<const tesseract::geometry::SDFMesh&>(geom);
-      for (const auto& v : *sdf_mesh.getVertices())
-        vertices.emplace_back(origin * v);
-      return vertices;
-    }
     case tesseract::geometry::GeometryType::POLYGON_MESH:
     {
       const auto& polygon_mesh = static_cast<const tesseract::geometry::PolygonMesh&>(geom);
@@ -306,6 +303,7 @@ tesseract::common::VectorVector3d extractVertices(const Geometry& geom, const Ei
       return vertices;
     }
     case tesseract::geometry::GeometryType::OCTREE:
+    case tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD:
     default:
     {
       const std::string type_str = std::to_string(static_cast<int>(geom.getType()));

@@ -25,7 +25,6 @@
 #include <tesseract/geometry/impl/compound_mesh.h>
 #include <tesseract/geometry/impl/convex_mesh.h>
 #include <tesseract/geometry/impl/mesh.h>
-#include <tesseract/geometry/impl/sdf_mesh.h>
 
 template <typename T>
 std::vector<std::shared_ptr<tesseract::geometry::PolygonMesh>> convert(std::vector<std::shared_ptr<T>>& meshes)
@@ -59,8 +58,6 @@ CompoundMesh::CompoundMesh(std::vector<std::shared_ptr<PolygonMesh>> meshes)
 CompoundMesh::CompoundMesh(std::vector<std::shared_ptr<ConvexMesh>> meshes) : CompoundMesh(convert(meshes)) {}
 
 CompoundMesh::CompoundMesh(std::vector<std::shared_ptr<Mesh>> meshes) : CompoundMesh(convert(meshes)) {}
-
-CompoundMesh::CompoundMesh(std::vector<std::shared_ptr<SDFMesh>> meshes) : CompoundMesh(convert(meshes)) {}
 
 const std::vector<std::shared_ptr<PolygonMesh>>& CompoundMesh::getMeshes() const { return meshes_; }
 

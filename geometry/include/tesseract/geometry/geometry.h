@@ -48,15 +48,24 @@ enum class GeometryType : std::uint8_t
   PLANE,
   MESH,
   CONVEX_MESH,
-  SDF_MESH,
   OCTREE,
   POLYGON_MESH,
-  COMPOUND_MESH
+  COMPOUND_MESH,
+  SIGNED_DISTANCE_FIELD
 };
-static const std::vector<std::string> GeometryTypeStrings = { "UNINITIALIZED", "SPHERE",   "CYLINDER", "CAPSULE",
-                                                              "CONE",          "BOX",      "PLANE",    "MESH",
-                                                              "CONVEX_MESH",   "SDF_MESH", "OCTREE",   "POLYGON_MESH",
-                                                              "COMPOUND_MESH" };
+static const std::vector<std::string> GeometryTypeStrings = { "UNINITIALIZED",
+                                                              "SPHERE",
+                                                              "CYLINDER",
+                                                              "CAPSULE",
+                                                              "CONE",
+                                                              "BOX",
+                                                              "PLANE",
+                                                              "MESH",
+                                                              "CONVEX_MESH",
+                                                              "OCTREE",
+                                                              "POLYGON_MESH",
+                                                              "COMPOUND_MESH",
+                                                              "SIGNED_DISTANCE_FIELD" };
 class Geometry;
 template <class Archive>
 void serialize(Archive& ar, Geometry& obj);

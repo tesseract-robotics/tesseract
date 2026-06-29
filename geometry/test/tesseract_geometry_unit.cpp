@@ -9,7 +9,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/geometry/conversions.h>
 #include <tesseract/geometry/utils.h>
 #include <tesseract/geometry/impl/octree_utils.h>
+#include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/common/utils.h>
+#include <tesseract/common/resource_locator.h>
+#include <cstring>
 
 static constexpr double BIG_TOL = 1e6;
 
@@ -94,7 +97,6 @@ TEST(TesseractGeometryUnit, Instantiation)  // NOLINT
   auto sphere = std::make_shared<tesseract::geometry::Sphere>(1);
   auto convex_mesh = std::make_shared<tesseract::geometry::ConvexMesh>(vertices, faces);
   auto mesh = std::make_shared<tesseract::geometry::Mesh>(vertices, faces);
-  auto sdf_mesh = std::make_shared<tesseract::geometry::SDFMesh>(vertices, faces);
   auto octree = std::make_shared<tesseract::geometry::Octree>(nullptr, tesseract::geometry::OctreeSubType::BOX);
   auto compound_mesh = std::make_shared<tesseract::geometry::CompoundMesh>(
       std::vector<std::shared_ptr<tesseract::geometry::PolygonMesh>>{
@@ -456,46 +458,6 @@ TEST(TesseractGeometryUnit, CompoundConvexMesh)  // NOLINT
     (*faces)(6) = 2;
     (*faces)(7) = 3;
 
-    using T = tesseract::geometry::SDFMesh;
-    auto sub_geom = std::make_shared<T>(vertices, faces);
-    EXPECT_TRUE(sub_geom->getVertices() != nullptr);
-    EXPECT_TRUE(sub_geom->getFaces() != nullptr);
-    EXPECT_TRUE(sub_geom->getVertexCount() == 4);
-    EXPECT_TRUE(sub_geom->getFaceCount() == 2);
-    EXPECT_EQ(sub_geom->getType(), tesseract::geometry::GeometryType::SDF_MESH);
-    EXPECT_FALSE(geom->getUUID().is_nil());
-
-    std::vector<tesseract::geometry::SDFMesh::Ptr> sdf_meshes;
-    sdf_meshes.push_back(sub_geom);
-    sdf_meshes.push_back(sub_geom);
-    sdf_meshes.push_back(sub_geom);
-
-    auto geom = std::make_shared<tesseract::geometry::CompoundMesh>(sdf_meshes);
-    EXPECT_EQ(geom->getMeshes().size(), 3);
-    EXPECT_EQ(geom->getResource(), geom->getMeshes().front()->getResource());
-    EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(geom->getScale(), geom->getMeshes().front()->getScale()));
-    EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::COMPOUND_MESH);
-  }
-
-  {  // Test convex hull constructors
-    auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
-    vertices->emplace_back(1, 1, 0);
-    vertices->emplace_back(1, -1, 0);
-    vertices->emplace_back(-1, -1, 0);
-    vertices->emplace_back(1, -1, 0);
-
-    auto faces = std::make_shared<Eigen::VectorXi>();
-    faces->resize(8);
-    (*faces)(0) = 3;
-    (*faces)(1) = 0;
-    (*faces)(2) = 1;
-    (*faces)(3) = 2;
-
-    (*faces)(4) = 3;
-    (*faces)(5) = 0;
-    (*faces)(6) = 2;
-    (*faces)(7) = 3;
-
     using T = tesseract::geometry::Mesh;
     auto sub_geom = std::make_shared<T>(vertices, faces);
     EXPECT_TRUE(sub_geom->getVertices() != nullptr);
@@ -672,53 +634,179 @@ TEST(TesseractGeometryUnit, CompoundMesh)  // NOLINT
   EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, tesseract::geometry::CompoundMesh(meshes)));
 }
 
-TEST(TesseractGeometryUnit, SDFMesh)  // NOLINT
+TEST(TesseractGeometryUnit, SignedDistanceField)  // NOLINT
 {
-  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
-  vertices->emplace_back(1, 1, 0);
-  vertices->emplace_back(1, -1, 0);
-  vertices->emplace_back(-1, -1, 0);
-  vertices->emplace_back(1, -1, 0);
+  using T = tesseract::geometry::SignedDistanceField;
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));
+  const Eigen::Vector3i dims(2, 2, 2);
+  const std::vector<double> distances{ -0.5, -0.4, -0.3, -0.2, 0.1, 0.2, 0.3, 0.4 };
+  const Eigen::Vector3d scale(1.0, 2.0, 3.0);
+  const double margin = 0.01;
 
-  auto faces = std::make_shared<Eigen::VectorXi>();
-  faces->resize(8);
-  (*faces)(0) = 3;
-  (*faces)(1) = 0;
-  (*faces)(2) = 1;
-  (*faces)(3) = 2;
-
-  (*faces)(4) = 3;
-  (*faces)(5) = 0;
-  (*faces)(6) = 2;
-  (*faces)(7) = 3;
-
-  using T = tesseract::geometry::SDFMesh;
-  auto geom = std::make_shared<T>(vertices, faces);
-  EXPECT_TRUE(geom->getVertices() != nullptr);
-  EXPECT_TRUE(geom->getFaces() != nullptr);
-  EXPECT_TRUE(geom->getVertexCount() == 4);
-  EXPECT_TRUE(geom->getFaceCount() == 2);
-  EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::SDF_MESH);
+  auto geom = std::make_shared<T>(domain, dims, distances, scale, margin);
+  EXPECT_EQ(geom->getDistances(), distances);
+  EXPECT_EQ(geom->getDimensions(), dims);
+  EXPECT_TRUE(geom->getDomain().min().isApprox(domain.min(), 1e-9));
+  EXPECT_TRUE(geom->getDomain().max().isApprox(domain.max(), 1e-9));
+  EXPECT_TRUE(geom->getScale().isApprox(scale, 1e-5));
+  EXPECT_NEAR(geom->getMargin(), margin, 1e-5);
+  EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
   EXPECT_FALSE(geom->getUUID().is_nil());
 
+  // Trilinear sampling: a corner returns its stored value exactly; the center is the 8-corner mean.
+  EXPECT_NEAR(geom->getDistance(Eigen::Vector3d(-1, -1, -1)), distances.front(), 1e-9);
+  const double mean = std::accumulate(distances.begin(), distances.end(), 0.0) / static_cast<double>(distances.size());
+  EXPECT_NEAR(geom->getDistance(Eigen::Vector3d(0, 0, 0)), mean, 1e-9);
+  // Points outside the domain clamp to the boundary.
+  EXPECT_NEAR(geom->getDistance(Eigen::Vector3d(-5, -5, -5)), distances.front(), 1e-9);
+
+  // Invalid construction is rejected.
+  EXPECT_ANY_THROW(T(domain, Eigen::Vector3i(1, 2, 2), std::vector<double>(4, 0.0)));          // NOLINT dim < 2
+  EXPECT_ANY_THROW(T(domain, dims, std::vector<double>(7, 0.0)));                              // NOLINT wrong count
+  EXPECT_ANY_THROW(T(Eigen::AlignedBox3d(Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 1)),  // NOLINT degenerate
+                     dims,
+                     distances));
+
   auto geom_clone = geom->clone();
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
-  EXPECT_EQ(geom_clone->getType(), tesseract::geometry::GeometryType::SDF_MESH);
+  EXPECT_EQ(std::static_pointer_cast<T>(geom_clone)->getDistances(), distances);
+  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getScale().isApprox(scale, 1e-5));
+  EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getMargin(), margin, 1e-5);
+  EXPECT_EQ(geom_clone->getType(), tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
   EXPECT_FALSE(geom_clone->getUUID().is_nil());
   EXPECT_NE(geom_clone->getUUID(), geom->getUUID());
 
   geom->setUUID(geom_clone->getUUID());
   EXPECT_EQ(geom_clone->getUUID(), geom->getUUID());
 
+  const std::vector<double> other(8, 9.0);
+
+  // operator== / operator!=
+  EXPECT_TRUE(*geom == *std::static_pointer_cast<T>(geom_clone));
+  EXPECT_FALSE(*geom != *std::static_pointer_cast<T>(geom_clone));
+  EXPECT_TRUE(*geom != T(domain, dims, other, scale, margin));
+
   // Test isIdentical
   EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *geom_clone));
-  EXPECT_FALSE(tesseract::geometry::isIdentical(
-      *geom,
-      tesseract::geometry::SDFMesh(std::make_shared<tesseract::common::VectorVector3d>(),
-                                   std::make_shared<Eigen::VectorXi>())));
+  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, other, scale, margin)));
+  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, distances, Eigen::Vector3d(1, 1, 1), margin)));
+  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, distances, scale, 0.5)));
+
+  // The grid round-trips through the backend-neutral binary serialization.
+  const std::vector<std::uint8_t> blob = tesseract::geometry::writeSignedDistanceFieldData(*geom);
+  auto geom_rt = tesseract::geometry::readSignedDistanceFieldData(blob, scale, margin);
+  EXPECT_EQ(geom_rt->getDistances(), distances);
+  EXPECT_EQ(geom_rt->getDimensions(), dims);
+  EXPECT_TRUE(geom_rt->getDomain().min().isApprox(domain.min(), 1e-9));
+  EXPECT_TRUE(geom_rt->getDomain().max().isApprox(domain.max(), 1e-9));
+  EXPECT_TRUE(geom_rt->getScale().isApprox(scale, 1e-5));
+  EXPECT_NEAR(geom_rt->getMargin(), margin, 1e-9);
+
+  // A malformed blob is rejected.
+  EXPECT_ANY_THROW(
+      tesseract::geometry::readSignedDistanceFieldData(std::vector<std::uint8_t>{ 0, 1, 2, 3 }));  // NOLINT
+}
+
+TEST(TesseractGeometryUnit, SignedDistanceFieldSampler)  // NOLINT
+{
+  // Discretize a sphere distance field on a dense grid and verify the stored samples and interpolation.
+  const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+  const Eigen::Vector3d dmin(-1, -1, -1);
+  const Eigen::Vector3d dmax(1, 1, 1);
+  const Eigen::Vector3i dims(9, 9, 9);
+  auto geom = tesseract::geometry::createDiscreteSignedDistanceField(sphere, dmin, dmax, dims);
+
+  EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
+  EXPECT_EQ(geom->getDimensions(), dims);
+  EXPECT_EQ(geom->getDistances().size(), 9U * 9U * 9U);
+
+  // The first sample sits at the domain minimum corner, so it equals sphere(dmin).
+  EXPECT_NEAR(geom->getDistances().front(), std::sqrt(3.0) - 0.5, 1e-9);
+  // The field interpolates back to roughly the true distance at the center.
+  EXPECT_NEAR(geom->getDistance(Eigen::Vector3d(0, 0, 0)), -0.5, 0.05);
+
+  // Invalid inputs are rejected.
+  EXPECT_ANY_THROW(tesseract::geometry::createDiscreteSignedDistanceField(  // NOLINT degenerate domain
+      sphere,
+      Eigen::Vector3d(0, 0, 0),
+      Eigen::Vector3d(0, 1, 1),
+      dims));
+  EXPECT_ANY_THROW(tesseract::geometry::createDiscreteSignedDistanceField(  // NOLINT dimension < 2
+      sphere,
+      dmin,
+      dmax,
+      Eigen::Vector3i(1, 2, 2)));
+}
+
+TEST(TesseractGeometryUnit, SignedDistanceFieldSamplerBatched)  // NOLINT
+{
+  const Eigen::Vector3d dmin(-1, -1, -1);
+  const Eigen::Vector3d dmax(1, 1, 1);
+  const Eigen::Vector3i dims(4, 4, 4);
+  const Eigen::Vector3d scale(1.0, 2.0, 3.0);
+  const double margin = 0.01;
+
+  const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+  const tesseract::geometry::BatchedSignedDistanceFunction sphere_batched =
+      [&sphere](const std::vector<Eigen::Vector3d>& pts) {
+        std::vector<double> out;
+        out.reserve(pts.size());
+        for (const auto& p : pts)
+          out.push_back(sphere(p));
+        return out;
+      };
+
+  // Per-point and batched sampling must produce identical grids (same nodes, same order).
+  auto geom = tesseract::geometry::createDiscreteSignedDistanceField(sphere, dmin, dmax, dims, scale, margin);
+  auto geom_batched =
+      tesseract::geometry::createDiscreteSignedDistanceField(sphere_batched, dmin, dmax, dims, scale, margin);
+  EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
+  EXPECT_EQ(geom->getDistances(), geom_batched->getDistances());
+  EXPECT_EQ(geom->getDimensions(), dims);
+  EXPECT_TRUE(geom->getScale().isApprox(scale, 1e-5));
+  EXPECT_NEAR(geom->getMargin(), margin, 1e-9);
+
+  // A batched function that returns the wrong number of values is rejected.
+  const tesseract::geometry::BatchedSignedDistanceFunction wrong_count = [](const std::vector<Eigen::Vector3d>&) {
+    return std::vector<double>{ 1.0 };
+  };
+  EXPECT_ANY_THROW(tesseract::geometry::createDiscreteSignedDistanceField(wrong_count, dmin, dmax, dims));  // NOLINT
+}
+
+TEST(TesseractGeometryUnit, SignedDistanceFieldLazy)  // NOLINT
+{
+  const Eigen::Vector3d dmin(-1, -1, -1);
+  const Eigen::Vector3d dmax(1, 1, 1);
+  const Eigen::Vector3i dims(8, 8, 8);
+  const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+
+  // Lazy field: not discretized up front; getDistance hits the sampler directly (exact) and does not discretize.
+  auto lazy = tesseract::geometry::createSignedDistanceField(sphere, dmin, dmax, dims);
+  EXPECT_FALSE(lazy->isDiscretized());
+  EXPECT_NEAR(lazy->getDistance(Eigen::Vector3d(0, 0, 0)), -0.5, 1e-12);
+  EXPECT_FALSE(lazy->isDiscretized());
+
+  // Explicit discretize materializes the grid.
+  lazy->discretize();
+  EXPECT_TRUE(lazy->isDiscretized());
+  EXPECT_EQ(lazy->getDistances().size(), 8U * 8U * 8U);
+
+  // Eager is pre-discretized.
+  auto eager = tesseract::geometry::createDiscreteSignedDistanceField(sphere, dmin, dmax, dims);
+  EXPECT_TRUE(eager->isDiscretized());
+
+  // Serializing a lazy field discretizes it, and the round-trip yields a grid-backed (discretized) field.
+  auto lazy2 = tesseract::geometry::createSignedDistanceField(sphere, dmin, dmax, dims);
+  EXPECT_FALSE(lazy2->isDiscretized());
+  const std::vector<std::uint8_t> blob = tesseract::geometry::writeSignedDistanceFieldData(*lazy2);
+  EXPECT_TRUE(lazy2->isDiscretized());
+  auto rt = tesseract::geometry::readSignedDistanceFieldData(blob);
+  EXPECT_TRUE(rt->isDiscretized());
+  EXPECT_EQ(rt->getDimensions(), dims);
+  EXPECT_EQ(rt->getDistances(), lazy2->getDistances());
+
+  // Cloning a lazy field preserves the sampler (clone queries exactly, still not yet discretized).
+  auto clone = std::static_pointer_cast<tesseract::geometry::SignedDistanceField>(lazy2->clone());
+  EXPECT_NEAR(clone->getDistance(Eigen::Vector3d(0, 0, 0)), -0.5, 1e-12);
 }
 
 TEST(TesseractGeometryUnit, Octree)  // NOLINT
@@ -964,22 +1052,6 @@ TEST(TesseractGeometryUnit, ExtractVerticesConvexMesh)
 {
   auto simple = makeSimpleTriangleMesh();
   auto geom = std::make_shared<tesseract::geometry::ConvexMesh>(
-      simple->getVertices(), simple->getFaces(), 1, nullptr, Eigen::Vector3d(1, 1, 1));
-  Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
-  tesseract::common::VectorVector3d id = tesseract::geometry::extractVertices(*geom, origin);
-  origin = Eigen::Translation3d(0.2, 0.3, 0.4);
-  tesseract::common::VectorVector3d tr = tesseract::geometry::extractVertices(*geom, origin);
-  ASSERT_EQ(id.size(), tr.size());
-  for (size_t i = 0; i < id.size(); ++i)
-  {
-    EXPECT_TRUE(tr[i].isApprox(id[i] + Eigen::Vector3d(0.2, 0.3, 0.4), 1e-6));
-  }
-}
-
-TEST(TesseractGeometryUnit, ExtractVerticesSDFMesh)
-{
-  auto simple = makeSimpleTriangleMesh();
-  auto geom = std::make_shared<tesseract::geometry::SDFMesh>(
       simple->getVertices(), simple->getFaces(), 1, nullptr, Eigen::Vector3d(1, 1, 1));
   Eigen::Isometry3d origin = Eigen::Isometry3d::Identity();
   tesseract::common::VectorVector3d id = tesseract::geometry::extractVertices(*geom, origin);

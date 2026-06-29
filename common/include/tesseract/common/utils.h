@@ -35,6 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <random>
 #include <algorithm>
 #include <unordered_set>
+#include <cstdint>
+#include <cstring>
+#include <type_traits>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -70,6 +73,36 @@ std::string strFormat(const std::string& format, Args... args)
   auto buf = std::make_unique<char[]>(size);  // NOLINT
   std::snprintf(buf.get(), size, format.c_str(), args...);
   return std::string{ buf.get(), buf.get() + size - 1 };  // We don't want the '\0' inside
+}
+
+/**
+ * @brief Append the raw bytes of a trivially-copyable value to a byte buffer (native byte order).
+ * @details A small primitive for hand-rolled binary serialization; pairs with @ref readBytes.
+ */
+template <typename T>
+void appendBytes(std::vector<std::uint8_t>& buf, const T& value)
+{
+  static_assert(std::is_trivially_copyable_v<T>, "appendBytes requires a trivially-copyable type");
+  const auto* bytes =
+      reinterpret_cast<const std::uint8_t*>(&value);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+  buf.insert(buf.end(), bytes, bytes + sizeof(T));
+}
+
+/**
+ * @brief Read a trivially-copyable value from a byte buffer at @p offset, advancing it.
+ * @details Inverse of @ref appendBytes.
+ * @throw std::runtime_error if the buffer has fewer than sizeof(T) bytes remaining.
+ */
+template <typename T>
+T readBytes(const std::vector<std::uint8_t>& buf, std::size_t& offset)
+{
+  static_assert(std::is_trivially_copyable_v<T>, "readBytes requires a trivially-copyable type");
+  if (offset + sizeof(T) > buf.size())
+    throw std::runtime_error("readBytes: buffer truncated");
+  T value{};
+  std::memcpy(&value, buf.data() + offset, sizeof(T));
+  offset += sizeof(T);
+  return value;
 }
 
 /**

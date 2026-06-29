@@ -205,15 +205,14 @@ TEST(TesseractGeometrySerializeUnit, PolygonMesh)  // NOLINT
   tesseract::common::testSerializationDerivedClass<Geometry, PolygonMesh>(object.front(), "PolygonMesh");
 }
 
-TEST(TesseractGeometrySerializeUnit, SDFMesh)  // NOLINT
+TEST(TesseractGeometrySerializeUnit, SignedDistanceField)  // NOLINT
 {
-  tesseract::common::GeneralResourceLocator locator;
-  std::string path = "package://tesseract/support/meshes/sphere_p25m.stl";
-  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
-      locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  tesseract::common::testSerialization<SDFMesh>(*object.front(), "SDFMesh");
-  tesseract::common::testSerializationDerivedClass<Geometry, SDFMesh>(object.front(), "SDFMesh");
-  tesseract::common::testSerializationDerivedClass<PolygonMesh, SDFMesh>(object.front(), "SDFMesh");
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));
+  const Eigen::Vector3i dims(2, 2, 2);
+  const std::vector<double> distances{ -0.5, -0.4, -0.3, -0.2, 0.1, 0.2, 0.3, 0.4 };
+  auto object = std::make_shared<SignedDistanceField>(domain, dims, distances, Eigen::Vector3d(1.0, 2.0, 3.0), 0.02);
+  tesseract::common::testSerialization<SignedDistanceField>(*object, "SignedDistanceField");
+  tesseract::common::testSerializationDerivedClass<Geometry, SignedDistanceField>(object, "SignedDistanceField");
 }
 
 TEST(TesseractGeometrySerializeUnit, Sphere)  // NOLINT

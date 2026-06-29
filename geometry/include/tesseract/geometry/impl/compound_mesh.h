@@ -35,7 +35,6 @@ namespace tesseract::geometry
 {
 class ConvexMesh;
 class Mesh;
-class SDFMesh;
 
 class CompoundMesh;
 template <class Archive>
@@ -51,7 +50,6 @@ public:
   CompoundMesh(std::vector<std::shared_ptr<PolygonMesh>> meshes);
   CompoundMesh(std::vector<std::shared_ptr<ConvexMesh>> meshes);
   CompoundMesh(std::vector<std::shared_ptr<Mesh>> meshes);
-  CompoundMesh(std::vector<std::shared_ptr<SDFMesh>> meshes);
   CompoundMesh() = default;
 
   /**

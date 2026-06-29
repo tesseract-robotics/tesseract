@@ -268,22 +268,25 @@ An <b>octree map</b> for volumetric environment representation, populated from p
 </geometry>
 ```
 
-@subsection tesseract_sdf_mesh tesseract:sdf_mesh
+@subsection tesseract_signed_distance_field tesseract:signed_distance_field
 
-A <b>signed distance field (SDF) mesh</b> for precise collision geometry with precomputed distance information.
+A <b>signed distance field</b> loaded from a serialized field file for true volumetric concave
+collision and distance/gradient queries on the Bullet discrete backend.
 
 <b>When to use:</b>
-- Complex, smooth geometry where collision precision matters
-- Precomputed SDFs for faster collision checks
-- Applications requiring exact distance queries
+- Concave geometry that needs volumetric (not just surface) contact
+- Precomputed distance fields for fast signed-distance / gradient queries
 
 <b>URDF Usage:</b>
 
 ```xml
 <geometry>
-  <tesseract:sdf_mesh filename="complex_part.sdf"/>
+  <tesseract:signed_distance_field filename="complex_part.sdf" scale="1 1 1" margin="0.0"/>
 </geometry>
 ```
+
+> <b>Note:</b> Consumed only by the Bullet discrete backend; it is concave, so it is not supported by
+> FCL or the continuous/cast managers. Distinct from the Gazebo "SDF" Simulation Description Format.
 
 @subsection tesseract_make_convex tesseract:make_convex
 
