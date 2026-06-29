@@ -24,7 +24,6 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/change_joint_acceleration_limits_command.h>
 
-#include <string>
 #include <cassert>
 
 namespace tesseract::environment
@@ -32,20 +31,20 @@ namespace tesseract::environment
 ChangeJointAccelerationLimitsCommand::ChangeJointAccelerationLimitsCommand()
   : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS){};
 
-ChangeJointAccelerationLimitsCommand::ChangeJointAccelerationLimitsCommand(std::string joint_name, double limit)
-  : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_({ std::make_pair(std::move(joint_name), limit) })
+ChangeJointAccelerationLimitsCommand::ChangeJointAccelerationLimitsCommand(common::JointId joint_id, double limit)
+  : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_({ std::make_pair(std::move(joint_id), limit) })
 {
   assert(limit > 0);
 }
 
 ChangeJointAccelerationLimitsCommand::ChangeJointAccelerationLimitsCommand(
-    std::unordered_map<std::string, double> limits)
+    std::unordered_map<common::JointId, double> limits)
   : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_(std::move(limits))
 {
   assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second > 0; }));
 }
 
-const std::unordered_map<std::string, double>& ChangeJointAccelerationLimitsCommand::getLimits() const
+const std::unordered_map<common::JointId, double>& ChangeJointAccelerationLimitsCommand::getLimits() const
 {
   return limits_;
 }
@@ -54,7 +53,7 @@ bool ChangeJointAccelerationLimitsCommand::operator==(const ChangeJointAccelerat
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract::common::isIdenticalMap<std::unordered_map<std::string, double>, double>(limits_, rhs.limits_);
+  equal &= tesseract::common::isIdenticalMap<std::unordered_map<common::JointId, double>, double>(limits_, rhs.limits_);
   return equal;
 }
 bool ChangeJointAccelerationLimitsCommand::operator!=(const ChangeJointAccelerationLimitsCommand& rhs) const

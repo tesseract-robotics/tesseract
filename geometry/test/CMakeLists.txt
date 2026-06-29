@@ -4,7 +4,7 @@ add_executable(tesseract_geometry_serialization_unit tesseract_geometry_serializ
 target_link_libraries(tesseract_geometry_serialization_unit PRIVATE GTest::GTest GTest::Main tesseract::geometry)
 target_compile_options(tesseract_geometry_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                      ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_geometry_serialization_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_geometry_serialization_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_geometry_serialization_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_geometry_serialization_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -20,7 +20,7 @@ add_executable(tesseract_geometry_unit tesseract_geometry_unit.cpp)
 target_link_libraries(tesseract_geometry_unit PRIVATE GTest::GTest GTest::Main tesseract::geometry)
 target_compile_options(tesseract_geometry_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                        ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_geometry_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_geometry_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_geometry_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_geometry_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

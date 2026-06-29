@@ -39,24 +39,24 @@ using namespace tesseract::collision;
 class AlwaysTrueContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(const std::string&, const std::string&) const override { return true; }
+  bool operator()(const tesseract::common::LinkIdPair&) const override { return true; }
 };
 
 class AlwaysFalseContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(const std::string&, const std::string&) const override { return false; }
+  bool operator()(const tesseract::common::LinkIdPair&) const override { return false; }
 };
 
 class TestOrigContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(const std::string& s1, const std::string& s2) const override
+  bool operator()(const tesseract::common::LinkIdPair& pair) const override
   {
-    if (s1 == "link_1" && s2 == "link_2")
+    if (pair == tesseract::common::LinkIdPair("link_1", "link_2"))
       return true;
 
-    if (s1 == "link_1" && s2 == "link_3")
+    if (pair == tesseract::common::LinkIdPair("link_1", "link_3"))
       return true;
 
     return false;
@@ -66,9 +66,9 @@ public:
 class TestOvrdContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
 public:
-  bool operator()(const std::string& s1, const std::string& s2) const override
+  bool operator()(const tesseract::common::LinkIdPair& pair) const override
   {
-    return (s1 == "link_1" && s2 == "link_2");
+    return pair == tesseract::common::LinkIdPair("link_1", "link_2");
   }
 };
 
@@ -109,7 +109,7 @@ TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
     auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::NONE);
-    EXPECT_TRUE((*comb)("", ""));
+    EXPECT_TRUE((*comb)(tesseract::common::LinkIdPair("", "")));
   }
 
   {  // tesseract::collision::ACMOverrideType::ASSIGN
@@ -117,7 +117,7 @@ TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
     auto ovrd = std::make_shared<AlwaysFalseContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::ASSIGN);
-    EXPECT_FALSE((*comb)("", ""));
+    EXPECT_FALSE((*comb)(tesseract::common::LinkIdPair("", "")));
   }
 
   {  // tesseract::collision::ACMOverrideType::AND
@@ -125,27 +125,27 @@ TEST(TesseractCollisionUnit, CombineContactAllowedFnUnit)  // NOLINT
     auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::AND);
-    EXPECT_TRUE((*comb)("link_1", "link_2"));
-    EXPECT_FALSE((*comb)("link_1", "link_3"));
-    EXPECT_FALSE((*comb)("abc", "def"));
+    EXPECT_TRUE((*comb)(tesseract::common::LinkIdPair("link_1", "link_2")));
+    EXPECT_FALSE((*comb)(tesseract::common::LinkIdPair("link_1", "link_3")));
+    EXPECT_FALSE((*comb)(tesseract::common::LinkIdPair("abc", "def")));
 
     auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract::collision::ACMOverrideType::AND);
     EXPECT_TRUE(comb1 == nullptr);
   }
 
-  {  // tesseract::collision::ACMOverrideType::AND
+  {  // tesseract::collision::ACMOverrideType::OR
     auto orig = std::make_shared<TestOrigContactAllowedValidator>();
     auto ovrd = std::make_shared<TestOvrdContactAllowedValidator>();
 
     auto comb = combineContactAllowedValidators(orig, ovrd, tesseract::collision::ACMOverrideType::OR);
-    EXPECT_TRUE((*comb)("link_1", "link_2"));
-    EXPECT_TRUE((*comb)("link_1", "link_3"));
-    EXPECT_FALSE((*comb)("abc", "def"));
+    EXPECT_TRUE((*comb)(tesseract::common::LinkIdPair("link_1", "link_2")));
+    EXPECT_TRUE((*comb)(tesseract::common::LinkIdPair("link_1", "link_3")));
+    EXPECT_FALSE((*comb)(tesseract::common::LinkIdPair("abc", "def")));
 
     auto comb1 = combineContactAllowedValidators(nullptr, ovrd, tesseract::collision::ACMOverrideType::OR);
-    EXPECT_TRUE((*comb1)("link_1", "link_2"));
-    EXPECT_FALSE((*comb1)("link_1", "link_3"));
-    EXPECT_FALSE((*comb1)("abc", "def"));
+    EXPECT_TRUE((*comb1)(tesseract::common::LinkIdPair("link_1", "link_2")));
+    EXPECT_FALSE((*comb1)(tesseract::common::LinkIdPair("link_1", "link_3")));
+    EXPECT_FALSE((*comb1)(tesseract::common::LinkIdPair("abc", "def")));
   }
 }
 

@@ -24,7 +24,6 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/change_joint_position_limits_command.h>
 
-#include <string>
 #include <cassert>
 
 namespace tesseract::environment
@@ -32,21 +31,22 @@ namespace tesseract::environment
 ChangeJointPositionLimitsCommand::ChangeJointPositionLimitsCommand()
   : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS){};
 
-ChangeJointPositionLimitsCommand::ChangeJointPositionLimitsCommand(std::string joint_name, double lower, double upper)
+ChangeJointPositionLimitsCommand::ChangeJointPositionLimitsCommand(common::JointId joint_id, double lower, double upper)
   : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS)
-  , limits_({ std::make_pair(std::move(joint_name), std::make_pair(lower, upper)) })
+  , limits_({ std::make_pair(std::move(joint_id), std::make_pair(lower, upper)) })
 {
   assert(upper > lower);
 }
 
 ChangeJointPositionLimitsCommand::ChangeJointPositionLimitsCommand(
-    std::unordered_map<std::string, std::pair<double, double>> limits)
+    std::unordered_map<common::JointId, std::pair<double, double>> limits)
   : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS), limits_(std::move(limits))
 {
   assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second.second > p.second.first; }));
 }
 
-const std::unordered_map<std::string, std::pair<double, double>>& ChangeJointPositionLimitsCommand::getLimits() const
+const std::unordered_map<common::JointId, std::pair<double, double>>&
+ChangeJointPositionLimitsCommand::getLimits() const
 {
   return limits_;
 }
@@ -59,7 +59,7 @@ bool ChangeJointPositionLimitsCommand::operator==(const ChangeJointPositionLimit
   };
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= tesseract::common::isIdenticalMap<std::unordered_map<std::string, std::pair<double, double>>,
+  equal &= tesseract::common::isIdenticalMap<std::unordered_map<common::JointId, std::pair<double, double>>,
                                              std::pair<double, double>>(limits_, rhs.limits_, fn);
   return equal;
 }

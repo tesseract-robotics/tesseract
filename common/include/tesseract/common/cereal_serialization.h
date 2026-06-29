@@ -7,6 +7,7 @@
 #include <tesseract/common/collision_margin_data.h>
 #include <tesseract/common/contact_allowed_validator.h>
 #include <tesseract/common/joint_state.h>
+#include <tesseract/common/types.h>
 #include <tesseract/common/manipulator_info.h>
 #include <tesseract/common/kinematic_limits.h>
 #include <tesseract/common/resource_locator.h>
@@ -18,6 +19,7 @@
 
 #include <cereal/cereal.hpp>
 #include <cereal/types/variant.hpp>
+#include <cereal/types/map.hpp>
 #include <cereal/types/unordered_map.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
@@ -28,6 +30,35 @@
 
 namespace tesseract::common
 {
+template <class Archive, typename Tag>
+std::string save_minimal(const Archive&, const NameId<Tag>& id)
+{
+  return id.name();
+}
+
+template <class Archive, typename Tag>
+void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
+{
+  id = NameId<Tag>(value);
+}
+
+template <class Archive, typename Tag>
+void save(Archive& ar, const OrderedIdPair<Tag>& pair)
+{
+  ar(cereal::make_nvp("first_id", pair.first_id()));
+  ar(cereal::make_nvp("second_id", pair.second_id()));
+}
+
+template <class Archive, typename Tag>
+void load(Archive& ar, OrderedIdPair<Tag>& pair)
+{
+  NameIdValue first_id = 0;
+  NameIdValue second_id = 0;
+  ar(cereal::make_nvp("first_id", first_id));
+  ar(cereal::make_nvp("second_id", second_id));
+  pair = OrderedIdPair<Tag>(first_id, second_id);
+}
+
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
 {
@@ -41,9 +72,22 @@ void serialize(Archive& ar, AnyPoly& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, AllowedCollisionMatrix& obj)
+void save(Archive& ar, const AllowedCollisionMatrix& obj)
 {
-  ar(cereal::make_nvp("lookup_table", obj.lookup_table_));
+  // Serialize as string-based format for backwards compatibility
+  std::map<std::pair<std::string, std::string>, std::string> compat;
+  for (const auto& [key, entry] : obj.lookup_table_)
+    compat[{ entry.name1, entry.name2 }] = entry.reason;
+  ar(cereal::make_nvp("lookup_table", compat));
+}
+
+template <class Archive>
+void load(Archive& ar, AllowedCollisionMatrix& obj)
+{
+  std::map<std::pair<std::string, std::string>, std::string> compat;
+  ar(cereal::make_nvp("lookup_table", compat));
+  for (const auto& [names, reason] : compat)
+    obj.addAllowedCollision(LinkId(names.first), LinkId(names.second), reason);
 }
 
 template <class Archive>
@@ -53,19 +97,33 @@ void serialize(Archive& ar, CalibrationInfo& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, CollisionMarginPairData& obj)
+void save(Archive& ar, const CollisionMarginPairData& obj)
 {
-  ar(cereal::make_nvp("lookup_table", obj.lookup_table_));
-
-  // Recreate max_collision_margin_ and object_max_margins_ after deserialization
-  if (Archive::is_loading::value)
-  {
-    obj.updateMaxMargins();
-  }
+  // Serialize as string-based format for backwards compatibility
+  std::map<std::pair<std::string, std::string>, double> compat;
+  for (const auto& [key, entry] : obj.lookup_table_)
+    compat[{ entry.name1, entry.name2 }] = entry.margin;
+  ar(cereal::make_nvp("lookup_table", compat));
 }
 
 template <class Archive>
-void serialize(Archive& ar, CollisionMarginData& obj)
+void load(Archive& ar, CollisionMarginPairData& obj)
+{
+  std::map<std::pair<std::string, std::string>, double> compat;
+  ar(cereal::make_nvp("lookup_table", compat));
+  for (const auto& [names, margin] : compat)
+    obj.setCollisionMargin(LinkId(names.first), LinkId(names.second), margin);
+}
+
+template <class Archive>
+void save(Archive& ar, const CollisionMarginData& obj)
+{
+  ar(cereal::make_nvp("default_collision_margin", obj.default_collision_margin_));
+  ar(cereal::make_nvp("pair_margins", obj.pair_margins_));
+}
+
+template <class Archive>
+void load(Archive& ar, CollisionMarginData& obj)
 {
   ar(cereal::make_nvp("default_collision_margin", obj.default_collision_margin_));
   ar(cereal::make_nvp("pair_margins", obj.pair_margins_));
@@ -87,7 +145,7 @@ void serialize(Archive& ar, CombinedContactAllowedValidator& obj)
 template <class Archive>
 void serialize(Archive& ar, JointState& obj)
 {
-  ar(cereal::make_nvp("joint_names", obj.joint_names));
+  ar(cereal::make_nvp("joint_names", obj.joint_ids));
   ar(cereal::make_nvp("position", obj.position));
   ar(cereal::make_nvp("velocity", obj.velocity));
   ar(cereal::make_nvp("acceleration", obj.acceleration));
@@ -104,13 +162,41 @@ void serialize(Archive& ar, JointTrajectory& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, ManipulatorInfo& obj)
+void save(Archive& ar, const ManipulatorInfo& obj)
 {
   ar(cereal::make_nvp("manipulator", obj.manipulator));
   ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
   ar(cereal::make_nvp("working_frame", obj.working_frame));
   ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
-  ar(cereal::make_nvp("tcp_offset", obj.tcp_offset));
+
+  // Serialize tcp_offset as variant<string, Isometry3d> for backward compat
+  if (obj.tcp_offset.index() == 0)
+  {
+    std::variant<std::string, Eigen::Isometry3d> tcp_offset_str(std::get<LinkId>(obj.tcp_offset).name());
+    ar(cereal::make_nvp("tcp_offset", tcp_offset_str));
+  }
+  else
+  {
+    std::variant<std::string, Eigen::Isometry3d> tcp_offset_tf(std::get<Eigen::Isometry3d>(obj.tcp_offset));
+    ar(cereal::make_nvp("tcp_offset", tcp_offset_tf));
+  }
+}
+
+template <class Archive>
+void load(Archive& ar, ManipulatorInfo& obj)
+{
+  ar(cereal::make_nvp("manipulator", obj.manipulator));
+  ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
+  ar(cereal::make_nvp("working_frame", obj.working_frame));
+  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
+
+  // Load tcp_offset as variant<string, Isometry3d>, then convert string to LinkId
+  std::variant<std::string, Eigen::Isometry3d> tcp_offset_compat;
+  ar(cereal::make_nvp("tcp_offset", tcp_offset_compat));
+  if (tcp_offset_compat.index() == 0)
+    obj.tcp_offset = LinkId(std::get<std::string>(tcp_offset_compat));
+  else
+    obj.tcp_offset = std::get<Eigen::Isometry3d>(tcp_offset_compat);
 }
 
 template <class Archive>

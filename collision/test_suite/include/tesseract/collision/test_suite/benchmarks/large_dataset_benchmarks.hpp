@@ -63,7 +63,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
   double delta = 0.55;
 
   std::vector<std::string> link_names;
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   for (int x = 0; x < edge_size; ++x)
   {
     for (int y = 0; y < edge_size; ++y)
@@ -154,7 +154,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   double delta = 0.55;
 
   std::vector<std::string> link_names;
-  //  tesseract::common::TransformMap location;
+  //  tesseract::common::LinkIdTransformMap location;
   CollisionShapesConst obj3_shapes;
   tesseract::common::VectorIsometry3d obj3_poses;
   for (int x = 0; x < edge_size; ++x)

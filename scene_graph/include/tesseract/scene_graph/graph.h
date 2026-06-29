@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/types.h>
 
 #ifndef SWIG
 
@@ -70,7 +71,7 @@ class JointLimits;
 
 /** @brief Defines the boost graph property. */
 using GraphProperty =
-    boost::property<boost::graph_name_t, std::string, boost::property<boost::graph_root_t, std::string>>;
+    boost::property<boost::graph_name_t, std::string, boost::property<boost::graph_root_t, common::LinkId>>;
 
 /** @brief Defines the boost graph vertex property. */
 using VertexProperty = boost::property<boost::vertex_link_t, std::shared_ptr<Link>>;
@@ -92,13 +93,13 @@ using Graph = boost::
 struct ShortestPath
 {
   /** @brief a list of links along the shortest path */
-  std::vector<std::string> links;
+  std::vector<common::LinkId> links;
 
   /** @brief A list of joints along the shortest path */
-  std::vector<std::string> joints;
+  std::vector<common::JointId> joints;
 
   /** @brief A list of active joints along the shortest path */
-  std::vector<std::string> active_joints;
+  std::vector<common::JointId> active_joints;
 };
 
 class SceneGraph;
@@ -156,13 +157,13 @@ public:
    * @param name The name of the link
    * @return Return False if a link does not exists, otherwise true
    */
-  bool setRoot(const std::string& name);
+  bool setRoot(const common::LinkId& id);
 
   /**
    * @brief Gets the root link name (aka. World Coordinate Frame)
    * @return The root link name
    */
-  const std::string& getRoot() const;
+  const common::LinkId& getRoot() const;
 
   /**
    * @brief Adds a link to the graph
@@ -191,7 +192,7 @@ public:
    * @param name The name of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  std::shared_ptr<const Link> getLink(const std::string& name) const;
+  std::shared_ptr<const Link> getLink(const common::LinkId& id) const;
 
   /**
    * @brief Get a vector links in the scene graph
@@ -214,7 +215,7 @@ public:
    * @param recursive If true all children are removed if it only has a single joint
    * @return Return False if a link does not exists, otherwise true
    */
-  bool removeLink(const std::string& name, bool recursive = false);
+  bool removeLink(const common::LinkId& id, bool recursive = false);
 
   /**
    * @brief Move link defined by provided joint
@@ -228,25 +229,25 @@ public:
    * @brief Set a links visibility
    * @param visibility True if should be visible, otherwise false
    */
-  void setLinkVisibility(const std::string& name, bool visibility);
+  void setLinkVisibility(const common::LinkId& id, bool visibility);
 
   /**
    * @brief Get a given links visibility setting
    * @return True if should be visible, otherwise false
    */
-  bool getLinkVisibility(const std::string& name) const;
+  bool getLinkVisibility(const common::LinkId& id) const;
 
   /**
    * @brief Set whether a link should be considered during collision checking
    * @param enabled True if should be considered during collision checking, otherwise false
    */
-  void setLinkCollisionEnabled(const std::string& name, bool enabled);
+  void setLinkCollisionEnabled(const common::LinkId& id, bool enabled);
 
   /**
    * @brief Get whether a link should be considered during collision checking
    * @return True if should be considered during collision checking, otherwise false
    */
-  bool getLinkCollisionEnabled(const std::string& name) const;
+  bool getLinkCollisionEnabled(const common::LinkId& id) const;
 
   /**
    * @brief Adds joint to the graph
@@ -261,7 +262,7 @@ public:
    * @param name The name of the joint
    * @return Return nullptr if joint name does not exists, otherwise a pointer to the joint
    */
-  std::shared_ptr<const Joint> getJoint(const std::string& name) const;
+  std::shared_ptr<const Joint> getJoint(const common::JointId& id) const;
 
   /**
    * @brief Removes a joint from the graph
@@ -269,7 +270,7 @@ public:
    * @param recursive If true all children are removed if this this is the only joint of the child link
    * @return Return False if a joint does not exists, otherwise true
    */
-  bool removeJoint(const std::string& name, bool recursive = false);
+  bool removeJoint(const common::JointId& id, bool recursive = false);
 
   /**
    * @brief Move joint to new parent link
@@ -277,7 +278,7 @@ public:
    * @param parent_link Name of parent link to move to
    * @return Returns true if successful, otherwise false.
    */
-  bool moveJoint(const std::string& name, const std::string& parent_link);
+  bool moveJoint(const common::JointId& id, const common::LinkId& parent_link_id);
 
   /**
    * @brief Get a vector of joints in the scene graph
@@ -296,7 +297,7 @@ public:
    * @param new_origin The new transform associated with the joint
    * @return True if successful.
    */
-  bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin);
+  bool changeJointOrigin(const common::JointId& id, const Eigen::Isometry3d& new_origin);
 
   /**
    * @brief Changes the limits of a joint. The JointLimits::Ptr remains the same, but the values passed in are assigned
@@ -304,7 +305,7 @@ public:
    * @param limits The new limits associated with the joint
    * @return True if successful.
    */
-  bool changeJointLimits(const std::string& name, const JointLimits& limits);
+  bool changeJointLimits(const common::JointId& id, const JointLimits& limits);
 
   /**
    * @brief Changes the position limits associated with a joint
@@ -312,7 +313,7 @@ public:
    * @param limits New position limits to be set as the joint limits
    * @returnTrue if successful.
    */
-  bool changeJointPositionLimits(const std::string& name, double lower, double upper);
+  bool changeJointPositionLimits(const common::JointId& id, double lower, double upper);
 
   /**
    * @brief Changes the velocity limits associated with a joint
@@ -320,7 +321,7 @@ public:
    * @param limits New velocity limits to be set as the joint limits
    * @return
    */
-  bool changeJointVelocityLimits(const std::string& name, double limit);
+  bool changeJointVelocityLimits(const common::JointId& id, double limit);
 
   /**
    * @brief Changes the acceleration limits associated with a joint
@@ -328,7 +329,7 @@ public:
    * @param limits New acceleration limits to be set as the joint limits
    * @return
    */
-  bool changeJointAccelerationLimits(const std::string& name, double limit);
+  bool changeJointAccelerationLimits(const common::JointId& id, double limit);
 
   /**
    * @brief Changes the jerk limits associated with a joint
@@ -336,14 +337,14 @@ public:
    * @param limits New jerk limits to be set as the joint limits
    * @return
    */
-  bool changeJointJerkLimits(const std::string& name, double limit);
+  bool changeJointJerkLimits(const common::JointId& id, double limit);
 
   /**
    * @brief Gets the limits of the joint specified by name
    * @param name Name of the joint which limits will be retrieved
    * @return Limits of the joint. Returns nullptr is joint is not found.
    */
-  std::shared_ptr<const JointLimits> getJointLimits(const std::string& name);
+  std::shared_ptr<const JointLimits> getJointLimits(const common::JointId& id);
 
   /**
    * @brief Set the allowed collision matrix
@@ -357,31 +358,38 @@ public:
    * @param link_name2 Collision object name
    * @param reason The reason for disabling collision
    */
-  void addAllowedCollision(const std::string& link_name1, const std::string& link_name2, const std::string& reason);
+  void addAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2, const std::string& reason);
 
   /**
    * @brief Remove disabled collision pair from allowed collision matrix
    * @param link_name1 Collision object name
    * @param link_name2 Collision object name
    */
-  void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
+  void removeAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2);
 
   /**
    * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
    * @param link_name Collision object name
    */
-  void removeAllowedCollision(const std::string& link_name);
+  void removeAllowedCollision(const common::LinkId& link_id);
 
   /** @brief Remove all allowed collisions */
   void clearAllowedCollisions();
 
   /**
-   * @brief Check if two links are allowed to be in collision
-   * @param link_name1 link name
-   * @param link_name2 link name
+   * @brief Check if a link pair is allowed to be in collision (hot-path primary).
+   * @param pair Canonically ordered link-id pair
    * @return True if the two links are allowed to be in collision, otherwise false
    */
-  bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
+  bool isCollisionAllowed(const tesseract::common::LinkIdPair& pair) const;
+
+  /**
+   * @brief Convenience overload; forwards to the pair-based primary.
+   */
+  bool isCollisionAllowed(const tesseract::common::LinkId& link_id1, const tesseract::common::LinkId& link_id2) const
+  {
+    return isCollisionAllowed(tesseract::common::LinkIdPair(link_id1, link_id2));
+  }
 
   /**
    * @brief Get the allowed collision matrix
@@ -397,17 +405,17 @@ public:
 
   /**
    * @brief Get the source link (parent link) for a joint
-   * @param joint_name The name of the joint
+   * @param id The joint ID
    * @return The source link
    */
-  std::shared_ptr<const Link> getSourceLink(const std::string& joint_name) const;
+  std::shared_ptr<const Link> getSourceLink(const common::JointId& id) const;
 
   /**
    * @brief Get the target link (child link) for a joint
    * @param joint_name The name of the joint
    * @return The target link
    */
-  std::shared_ptr<const Link> getTargetLink(const std::string& joint_name) const;
+  std::shared_ptr<const Link> getTargetLink(const common::JointId& id) const;
 
   /**
    * @brief Get inbound joints for a link
@@ -418,7 +426,7 @@ public:
    * @param link_name The name of the link
    * @return Vector of joints
    */
-  std::vector<std::shared_ptr<const Joint>> getInboundJoints(const std::string& link_name) const;
+  std::vector<std::shared_ptr<const Joint>> getInboundJoints(const common::LinkId& id) const;
 
   /**
    * @brief Get outbound joints for a link
@@ -426,10 +434,10 @@ public:
    * The outbound joints are all joins that have the
    * link identified as the parent link
    *
-   * @param link_name The name of the link
+   * @param id The link ID
    * @return Vector of joints
    */
-  std::vector<std::shared_ptr<const Joint>> getOutboundJoints(const std::string& link_name) const;
+  std::vector<std::shared_ptr<const Joint>> getOutboundJoints(const common::LinkId& id) const;
 
   /**
    * @brief Determine if the graph contains cycles
@@ -450,48 +458,48 @@ public:
   bool isEmpty() const;
 
   /**
-   * @brief Get a vector of adjacent link names provided a link name
-   * @param name Name of link
-   * @return A vector of adjacent link names
+   * @brief Get a vector of adjacent link ids provided a link name
+   * @param id Id of link
+   * @return A vector of adjacent link ids
    */
-  std::vector<std::string> getAdjacentLinkNames(const std::string& name) const;
+  std::vector<common::LinkId> getAdjacentLinkIds(const common::LinkId& id) const;
 
   /**
-   * @brief Geta a vectpr pf inverse adjacent link names provided a link name
-   * @param name
+   * @brief Geta a vector of inverse adjacent link ids provided a link id
+   * @param id
    * @return
    */
-  std::vector<std::string> getInvAdjacentLinkNames(const std::string& name) const;
+  std::vector<common::LinkId> getInvAdjacentLinkIds(const common::LinkId& id) const;
 
   /**
-   * @brief Get all children for a given link name
-   * @param name Name of Link
-   * @return A vector of child link names
+   * @brief Get all children for a given link id
+   * @param id Id of Link
+   * @return A vector of child link ids
    */
-  std::vector<std::string> getLinkChildrenNames(const std::string& name) const;
+  std::vector<common::LinkId> getLinkChildrenIds(const common::LinkId& id) const;
 
   /**
-   * @brief Get all children link names for a given joint name
-   * @param name Name of joint
-   * @return A vector of child link names
+   * @brief Get all children link ids for a given joint id
+   * @param id Id of joint
+   * @return A vector of child link ids
    */
-  std::vector<std::string> getJointChildrenNames(const std::string& name) const;
+  std::vector<common::LinkId> getJointChildrenIds(const common::JointId& id) const;
 
   /**
    * @brief Create mapping between links in the scene to the provided links if they are directly affected if the link
    * moves
    * @param link_names The links to map other links to
-   * @return A map of affected links to on of the provided link names.
+   * @return A map of affected links to on of the provided link ids.
    */
-  std::unordered_map<std::string, std::string> getAdjacencyMap(const std::vector<std::string>& link_names) const;
+  std::unordered_map<common::LinkId, common::LinkId> getAdjacencyMap(const std::vector<common::LinkId>& link_ids) const;
 
   /**
-   * @brief Get all children link names for the given joint names
-   * @todo Need to create custom visitor so already process joint_names do not get processed again.
-   * @param names Name of joints
-   * @return A vector of child link names
+   * @brief Get all children link ids for the given joint ids
+   * @todo Need to create custom visitor so already process joint_ids do not get processed again.
+   * @param ids Ids of joints
+   * @return A vector of child link ids
    */
-  std::vector<std::string> getJointChildrenNames(const std::vector<std::string>& names) const;
+  std::vector<common::LinkId> getJointChildrenIds(const std::vector<common::JointId>& ids) const;
 
   /**
    * @brief Saves Graph as Graph Description Language (DOT)
@@ -505,22 +513,22 @@ public:
    * @param tip The tip link
    * @return The shortest path between the two links
    */
-  ShortestPath getShortestPath(const std::string& root, const std::string& tip) const;
+  ShortestPath getShortestPath(const common::LinkId& root, const common::LinkId& tip) const;
 
 #ifndef SWIG
   /**
-   * @brief Get the graph vertex by name
+   * @brief Get the graph vertex by name or ID
    * @param name The vertex/link name
    * @return Graph Vertex
    */
-  Vertex getVertex(const std::string& name) const;
+  Vertex getVertex(const common::LinkId& id) const;
 
   /**
-   * @brief Get the graph edge by name
-   * @param name The edge/joint name
+   * @brief Get the graph edge by joint ID
+   * @param id The edge/joint ID
    * @return Graph Edge
    */
-  Edge getEdge(const std::string& name) const;
+  Edge getEdge(const common::JointId& id) const;
 #endif
   /**
    * @brief Merge a graph into the current graph
@@ -572,8 +580,8 @@ protected:
   bool addJointHelper(const std::shared_ptr<Joint>& joint_ptr);
 
 private:
-  std::unordered_map<std::string, std::pair<std::shared_ptr<Link>, Vertex>> link_map_;
-  std::unordered_map<std::string, std::pair<std::shared_ptr<Joint>, Edge>> joint_map_;
+  std::unordered_map<common::LinkId, std::pair<std::shared_ptr<Link>, Vertex>> link_map_;
+  std::unordered_map<common::JointId, std::pair<std::shared_ptr<Joint>, Edge>> joint_map_;
   std::shared_ptr<tesseract::common::AllowedCollisionMatrix> acm_;
 
   /** @brief The rebuild the link and joint map by extraction information from the graph */
@@ -587,7 +595,7 @@ private:
    * @param start_vertex The vertex to find childeren for.
    * @return A list of child link names including the start vertex
    */
-  std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const;
+  std::vector<common::LinkId> getLinkChildrenHelper(Vertex start_vertex) const;
 
   template <class Archive>
   friend void ::tesseract::scene_graph::serialize(Archive& ar, SceneGraph& obj);

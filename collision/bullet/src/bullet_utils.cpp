@@ -438,11 +438,11 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
   return shape;
 }
 
-void updateCollisionObjectFilters(const std::vector<std::string>& active, const COW::Ptr& cow)
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active, const COW::Ptr& cow)
 {
   cow->m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
 
-  if (!isLinkActive(active, cow->getName()))
+  if (!isLinkActive(active, cow->getLinkId()))
   {
     cow->m_collisionFilterGroup = btBroadphaseProxy::StaticFilter;
   }
@@ -457,15 +457,15 @@ void updateCollisionObjectFilters(const std::vector<std::string>& active, const 
   }
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
+CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : m_name(std::move(name)), m_type_id(type_id), m_shapes(std::move(shapes)), m_shape_poses(std::move(shape_poses))
+  : m_link_id(std::move(id)), m_type_id(type_id), m_shapes(std::move(shapes)), m_shape_poses(std::move(shape_poses))
 {
   assert(!m_shapes.empty());
   assert(!m_shape_poses.empty());
-  assert(!m_name.empty());
+  assert(m_link_id.isValid());
   assert(m_shapes.size() == m_shape_poses.size());
 
   m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
@@ -504,13 +504,11 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   setWorldTransform(trans);
 }
 
-const std::string& CollisionObjectWrapper::getName() const { return m_name; }
-
 const int& CollisionObjectWrapper::getTypeID() const { return m_type_id; }
 
 bool CollisionObjectWrapper::sameObject(const CollisionObjectWrapper& other) const
 {
-  return m_name == other.m_name && m_type_id == other.m_type_id && m_shapes.size() == other.m_shapes.size() &&
+  return m_link_id == other.m_link_id && m_type_id == other.m_type_id && m_shapes.size() == other.m_shapes.size() &&
          m_shape_poses.size() == other.m_shape_poses.size() &&
          std::equal(m_shapes.begin(), m_shapes.end(), other.m_shapes.begin()) &&
          std::equal(m_shape_poses.begin(),
@@ -538,7 +536,7 @@ void CollisionObjectWrapper::getAABB(btVector3& aabb_min, btVector3& aabb_max) c
 std::shared_ptr<CollisionObjectWrapper> CollisionObjectWrapper::clone()
 {
   auto clone_cow = std::make_shared<CollisionObjectWrapper>();
-  clone_cow->m_name = m_name;
+  clone_cow->m_link_id = m_link_id;
   clone_cow->m_type_id = m_type_id;
   clone_cow->m_shapes = m_shapes;
   clone_cow->m_shape_poses = m_shape_poses;
@@ -703,7 +701,7 @@ bool needsCollisionCheck(const COW& cow1,
 {
   return cow1.m_enabled && cow2.m_enabled && (cow2.m_collisionFilterGroup & cow1.m_collisionFilterMask) &&  // NOLINT
          (cow1.m_collisionFilterGroup & cow2.m_collisionFilterMask) &&                                      // NOLINT
-         !isContactAllowed(cow1.getName(), cow2.getName(), validator, verbose);
+         !isContactAllowed(cow1.getLinkId(), cow2.getLinkId(), validator, verbose);
 }
 
 btScalar addDiscreteSingleResult(btManifoldPoint& cp,
@@ -718,9 +716,7 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
-  tesseract::common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
-
+  auto key = tesseract::common::LinkIdPair(cd0->getLinkId(), cd1->getLinkId());
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
 
@@ -739,8 +735,8 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   btTransform tf1_inv = tf1.inverse();
 
   ContactResult contact;
-  contact.link_names[0] = cd0->getName();
-  contact.link_names[1] = cd1->getName();
+  contact.link_ids[0] = cd0->getLinkId();
+  contact.link_ids[1] = cd1->getLinkId();
 
   if (cd0->getCollisionGeometries().size() == 1)
     contact.shape_id[0] = 0;
@@ -765,7 +761,9 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  if (processResult(collisions, contact, key, found) == nullptr)
+  const double security_margin = collisions.collision_margin_data.getCollisionMargin(key);
+
+  if (processResult(collisions, contact, key, security_margin, found) == nullptr)
     return 0;
 
   return 1;
@@ -859,8 +857,7 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair key;
-  tesseract::common::makeOrderedLinkPair(key, cd0->getName(), cd1->getName());
+  auto key = tesseract::common::LinkIdPair(cd0->getLinkId(), cd1->getLinkId());
 
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
@@ -879,8 +876,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   btTransform tf1_inv = tf1.inverse();
 
   ContactResult contact;
-  contact.link_names[0] = cd0->getName();
-  contact.link_names[1] = cd1->getName();
+  contact.link_ids[0] = cd0->getLinkId();
+  contact.link_ids[1] = cd1->getLinkId();
 
   if (cd0->getCollisionGeometries().size() == 1)
     contact.shape_id[0] = 0;
@@ -905,7 +902,9 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   contact.distance = static_cast<double>(cp.m_distance1);
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  ContactResult* col = processResult(collisions, contact, key, found);
+  const double security_margin = collisions.collision_margin_data.getCollisionMargin(key);
+
+  ContactResult* col = processResult(collisions, contact, key, security_margin, found);
   if (col == nullptr)
     return 0;
 
@@ -928,7 +927,7 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
       std::swap(col->nearest_points[0], col->nearest_points[1]);
       std::swap(col->nearest_points_local[0], col->nearest_points_local[1]);
       std::swap(col->transform[0], col->transform[1]);
-      std::swap(col->link_names[0], col->link_names[1]);
+      std::swap(col->link_ids[0], col->link_ids[1]);
       std::swap(col->type_id[0], col->type_id[1]);
       std::swap(col->shape_id[0], col->shape_id[1]);
       std::swap(col->subshape_id[0], col->subshape_id[1]);
@@ -1045,8 +1044,8 @@ btScalar CastBroadphaseContactResultCallback::addSingleResult(btManifoldPoint& c
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);  // NOLINT
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
-  assert(!(cp.m_distance1 > static_cast<btScalar>(
-                                collisions_.collision_margin_data.getCollisionMargin(cd0->getName(), cd1->getName()))));
+  assert(!(cp.m_distance1 > static_cast<btScalar>(collisions_.collision_margin_data.getCollisionMargin(
+                                cd0->getLinkId(), cd1->getLinkId()))));
 #endif
 
   return addCastSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);
@@ -1063,7 +1062,7 @@ TesseractBroadphaseBridgedManifoldResult::TesseractBroadphaseBridgedManifoldResu
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(m_body0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(m_body1Wrap->getCollisionObject());    // NOLINT
   m_closestPointDistanceThreshold =
-      result_callback_.collisions_.collision_margin_data.getCollisionMargin(cd0->getName(), cd1->getName());
+      result_callback_.collisions_.collision_margin_data.getCollisionMargin(cd0->getLinkId(), cd1->getLinkId());
 }
 
 void TesseractBroadphaseBridgedManifoldResult::addContactPoint(const btVector3& normalOnBInWorld,
@@ -1145,7 +1144,7 @@ bool TesseractCollisionPairCallback::processOverlap(btBroadphasePair& pair)
     {
       TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, results_callback_);
       contactPointResult.m_closestPointDistanceThreshold =
-          results_callback_.collisions_.collision_margin_data.getCollisionMargin(cow0->getName(), cow1->getName());
+          results_callback_.collisions_.collision_margin_data.getCollisionMargin(cow0->getLinkId(), cow1->getLinkId());
 
       // discrete collision detection query
       pair.m_algorithm->processCollision(&obj0Wrap, &obj1Wrap, dispatch_info_, &contactPointResult);
@@ -1166,7 +1165,7 @@ bool TesseractOverlapFilterCallback::needBroadphaseCollision(btBroadphaseProxy* 
                              verbose_);
 }
 
-COW::Ptr createCollisionObject(const std::string& name,
+COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
                                const int& type_id,
                                const CollisionShapesConst& shapes,
                                const tesseract::common::VectorIsometry3d& shape_poses,
@@ -1175,16 +1174,16 @@ COW::Ptr createCollisionObject(const std::string& name,
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
-    CONSOLE_BRIDGE_logDebug("ignoring link %s", name.c_str());
+    CONSOLE_BRIDGE_logDebug("ignoring link %s", id.name().c_str());
     return nullptr;
   }
 
-  auto new_cow = std::make_shared<COW>(name, type_id, shapes, shape_poses);
+  auto new_cow = std::make_shared<COW>(id, type_id, shapes, shape_poses);
 
   new_cow->m_enabled = enabled;
   new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
 
-  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getName().c_str());
+  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getLinkId().name().c_str());
   return new_cow;
 }
 
@@ -1207,7 +1206,7 @@ btScalar DiscreteCollisionCollector::addSingleResult(btManifoldPoint& cp,
 #ifndef NDEBUG
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());  // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());  // NOLINT
-  const double threshold = collisions_.collision_margin_data.getCollisionMargin(cd0->getName(), cd1->getName());
+  const double threshold = collisions_.collision_margin_data.getCollisionMargin(cd0->getLinkId(), cd1->getLinkId());
   assert(!(cp.m_distance1 > static_cast<btScalar>(threshold)));
 #endif
 
@@ -1240,7 +1239,7 @@ btScalar CastCollisionCollector::addSingleResult(btManifoldPoint& cp,
 #ifndef NDEBUG
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());  // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());  // NOLINT
-  const double threshold = collisions_.collision_margin_data.getCollisionMargin(cd0->getName(), cd1->getName());
+  const double threshold = collisions_.collision_margin_data.getCollisionMargin(cd0->getLinkId(), cd1->getLinkId());
   assert(!(cp.m_distance1 > static_cast<btScalar>(threshold)));
 #endif
 
@@ -1400,7 +1399,7 @@ void addCollisionObjectToBroadphase(const COW::Ptr& cow,
       aabb_min, aabb_max, type, cow.get(), cow->m_collisionFilterGroup, cow->m_collisionFilterMask, dispatcher.get()));
 }
 
-void updateCollisionObjectFilters(const std::vector<std::string>& active,
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active,
                                   const COW::Ptr& cow,
                                   const std::unique_ptr<btBroadphaseInterface>& broadphase,
                                   const std::unique_ptr<btCollisionDispatcher>& dispatcher)

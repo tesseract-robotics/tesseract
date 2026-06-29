@@ -42,7 +42,7 @@ public:
     std::string base_link;
     std::string tip_link;
     std::size_t n_joints = 0;
-    std::vector<std::string> active_joints;
+    std::vector<common::JointId> active_joints;
     std::vector<std::vector<double>> free_joint_states;
     try
     {
