@@ -169,13 +169,6 @@ void serialize(Archive& ar, Mesh& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, SDFMesh& obj)
-{
-  ar(cereal::base_class<PolygonMesh>(&obj));
-  ar(cereal::make_nvp("sdf", obj.sdf_));
-}
-
-template <class Archive>
 void serialize(Archive& ar, CompoundMesh& obj)
 {
   ar(cereal::base_class<Geometry>(&obj));

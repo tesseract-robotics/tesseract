@@ -191,17 +191,6 @@ CollisionGeometryPtr createShapePrimitiveHelper(const CollisionShapeConstPtr& ge
     {
       return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Octree>(geom));
     }
-    case tesseract::geometry::GeometryType::SDF_MESH:
-    {
-      // FCL cannot consume a signed distance field; always use the triangle surface.
-      const auto& sdf_mesh = std::static_pointer_cast<const tesseract::geometry::SDFMesh>(geom);
-      auto mesh = std::make_shared<tesseract::geometry::Mesh>(sdf_mesh->getVertices(),
-                                                              sdf_mesh->getFaces(),
-                                                              sdf_mesh->getFaceCount(),
-                                                              sdf_mesh->getResource(),
-                                                              sdf_mesh->getScale());
-      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Mesh>(mesh));
-    }
     case tesseract::geometry::GeometryType::COMPOUND_MESH:
     {
       throw std::runtime_error("CompundMesh type should not be passed to this function!");

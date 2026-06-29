@@ -66,10 +66,8 @@ using BatchedSignedDistanceFunction = std::function<std::vector<double>(const st
  * front with @ref createDiscreteSignedDistanceField, construct it directly from sampled data, or load
  * a serialized field with @ref readSignedDistanceFieldData.
  *
- * @note This is the canonical signed-distance-field geometry; prefer it when the field is your
- * native representation (sensor-fused / analytic) or you only need discrete collision.
- * @see SDFMesh, a triangle mesh that can carry one of these as its discrete-collision
- * representation while staying usable as a mesh on FCL and the continuous/cast managers.
+ * @note This is the signed-distance-field geometry; use it when the field is your native
+ * representation (sensor-fused / analytic) or you need volumetric discrete collision.
  *
  * @note Distinct from the Gazebo "SDF" Simulation Description Format.
  *

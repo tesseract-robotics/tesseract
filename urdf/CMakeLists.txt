@@ -43,7 +43,6 @@ add_library(
   src/origin.cpp
   src/point_cloud.cpp
   src/safety_controller.cpp
-  src/sdf_mesh.cpp
   src/signed_distance_field.cpp
   src/sphere.cpp
   src/urdf_parser.cpp
