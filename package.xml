@@ -30,28 +30,33 @@
 
   <!-- PCL -->
   <build_depend>libpcl-all-dev</build_depend>
-  <build_export_depend>libpcl-all-dev</build_export_depend>
-  <exec_depend>libpcl-all</exec_depend>
+  <exec_depend>libpcl-common</exec_depend>
+  <exec_depend>libpcl-io</exec_depend>
 
   <!-- Core dependencies -->
   <depend>libconsole-bridge-dev</depend>
   <depend>tinyxml2</depend>
   <depend>yaml-cpp</depend>
   <depend>boost_plugin_loader</depend>
-  <depend>cereal</depend>
-  <depend>assimp-dev</depend>
   <depend>liboctomap-dev</depend>
-  <depend>boost</depend>
-  <depend>liborocos-kdl-dev</depend>
+  <build_depend>cereal</build_depend>
+  <build_export_depend>cereal</build_export_depend>
+  <build_depend>assimp-dev</build_depend>
+  <build_export_depend>assimp-dev</build_export_depend>
+  <exec_depend>assimp</exec_depend>
+  <build_depend>liborocos-kdl-dev</build_depend>
+  <build_export_depend>liborocos-kdl-dev</build_export_depend>
+  <exec_depend>liborocos-kdl</exec_depend>
 
   <!-- Collision -->
   <depend>bullet</depend>
   <depend>bullet-extras</depend>
-  <depend>fcl</depend>
-  <depend>libfcl-dev</depend>
+  <build_depend>libfcl-dev</build_depend>
+  <exec_depend>libfcl</exec_depend>
 
   <!-- Kinematics -->
-  <depend>opw_kinematics</depend>
+  <build_depend>opw_kinematics</build_depend>
+  <build_export_depend>opw_kinematics</build_export_depend>
 
   <!-- Test dependencies -->
   <test_depend>gtest</test_depend>
