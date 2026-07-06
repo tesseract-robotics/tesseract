@@ -390,8 +390,8 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     for (const auto& [key, entry] : collision_margin_data->getCollisionMarginPairData().getCollisionMargins())
     {
       tinyxml2::XMLElement* xml_cm_pair_entry = doc.NewElement("pair_margin");
-      xml_cm_pair_entry->SetAttribute("link1", entry.name1.c_str());
-      xml_cm_pair_entry->SetAttribute("link2", entry.name2.c_str());
+      xml_cm_pair_entry->SetAttribute("link1", key.first().name().c_str());
+      xml_cm_pair_entry->SetAttribute("link2", key.second().name().c_str());
       xml_cm_pair_entry->SetAttribute("margin", entry.margin);
       xml_cm_entry->InsertEndChild(xml_cm_pair_entry);
     }

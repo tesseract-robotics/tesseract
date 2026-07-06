@@ -225,28 +225,6 @@ using LinkIdPair = OrderedIdPair<LinkTag>;
 static_assert(sizeof(LinkIdPair) == (2 * sizeof(LinkId)) + sizeof(std::size_t),
               "LinkIdPair is two full NameIds plus the cached pair hash");
 
-/** @brief Return the two names canonically ordered to match OrderedIdPair(a, b). */
-template <typename Tag>
-inline std::pair<std::string, std::string> orderedPairNames(const NameId<Tag>& a, const NameId<Tag>& b)
-{
-  return (a.value() <= b.value()) ? std::pair<std::string, std::string>{ a.name(), b.name() } :
-                                    std::pair<std::string, std::string>{ b.name(), a.name() };
-}
-
-/**
- * @brief Throw if the two canonicalized names do not match the stored pair's names.
- *
- * Since NameId hashes collapse a full string into a NameIdValue (size_t-bounded, currently 64
- * bits), two distinct link names can in theory map to the same id. When that happens, every
- * LinkIdPair-keyed map silently aliases the two pairs. Call this at insertion time to surface
- * such collisions as a clear runtime error.
- */
-void checkPairHashCollision(const char* context,
-                            const std::string& new_name1,
-                            const std::string& new_name2,
-                            const std::string& existing_name1,
-                            const std::string& existing_name2);
-
 /** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
 template <typename Tag>
 constexpr std::size_t hash_value(const NameId<Tag>& id) noexcept
@@ -254,9 +232,14 @@ constexpr std::size_t hash_value(const NameId<Tag>& id) noexcept
   return static_cast<std::size_t>(id.value());
 }
 
-/** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
+/**
+ * @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map).
+ * @details Not constexpr: it calls the non-constexpr OrderedIdPair::hash() accessor. A constexpr
+ *          function that can never produce a constant expression is ill-formed, no diagnostic
+ *          required — some compilers (e.g. MSVC) reject it outright.
+ */
 template <typename Tag>
-constexpr std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
+std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
 {
   return p.hash();
 }
@@ -301,7 +284,8 @@ struct hash<tesseract::common::NameId<Tag>>
 template <typename Tag>
 struct hash<tesseract::common::OrderedIdPair<Tag>>
 {
-  constexpr std::size_t operator()(const tesseract::common::OrderedIdPair<Tag>& p) const noexcept { return p.hash(); }
+  // Not constexpr: OrderedIdPair::hash() is not constexpr (see the hash_value ADL hook above).
+  std::size_t operator()(const tesseract::common::OrderedIdPair<Tag>& p) const noexcept { return p.hash(); }
 };
 
 }  // namespace std

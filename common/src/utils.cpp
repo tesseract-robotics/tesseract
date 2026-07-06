@@ -557,19 +557,19 @@ std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
 
   for (const auto& [pair_key, entry] : acm_entries)
   {
-    // entry.name1/name2 are stored in the same canonical order as pair_key.first()/second().
-    // If query contains the first id, the "other" link is name2; if it contains the second id, the "other" is name1.
+    // The pair key carries the names directly now, so the "other" link for a query hit is
+    // simply the other half of pair_key — no entry field needed here.
     if (query_ids.count(pair_key.first()) > 0)
     {
-      LinkId other(entry.name2);
+      LinkId other = pair_key.second();
       if (!remove_duplicates || seen.insert(other).second)
-        results.push_back(std::move(other));
+        results.push_back(other);
     }
     if (query_ids.count(pair_key.second()) > 0)
     {
-      LinkId other(entry.name1);
+      LinkId other = pair_key.first();
       if (!remove_duplicates || seen.insert(other).second)
-        results.push_back(std::move(other));
+        results.push_back(other);
     }
   }
   return results;

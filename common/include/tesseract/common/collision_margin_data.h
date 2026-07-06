@@ -67,18 +67,14 @@ enum class CollisionMarginPairOverrideType : std::uint8_t
   MODIFY
 };
 
-/** @brief Value stored in each pair-margin entry — names for serialization/display, margin for lookups. */
+/** @brief Value stored in each pair-margin entry. The pair key carries the names. */
 struct PairMarginEntry
 {
-  std::string name1;
-  std::string name2;
   double margin{ 0 };
 
   bool operator==(const PairMarginEntry& other) const
   {
-    const bool names_match =
-        (name1 == other.name1 && name2 == other.name2) || (name1 == other.name2 && name2 == other.name1);
-    return names_match && tesseract::common::almostEqualRelativeAndAbs(margin, other.margin, 1e-5);
+    return tesseract::common::almostEqualRelativeAndAbs(margin, other.margin, 1e-5);
   }
   bool operator!=(const PairMarginEntry& other) const { return !(*this == other); }
 };
@@ -186,7 +182,7 @@ private:
    *          re-add of the same named pair. Single write path used by every
    *          bulk/merge/deserialization entry point.
    */
-  void insertEntryChecked(const LinkIdPair& key, const PairMarginEntry& entry);
+  void insertEntry(const LinkIdPair& key, const PairMarginEntry& entry);
 
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();

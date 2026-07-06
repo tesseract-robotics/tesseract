@@ -780,7 +780,10 @@ void SceneGraph::removeAllowedCollision(const common::LinkId& link_id1, const co
   acm_->removeAllowedCollision(link_id1, link_id2);
 }
 
-void SceneGraph::removeAllowedCollision(const tesseract::common::LinkIdPair& pair) { acm_->removeAllowedCollision(pair); }
+void SceneGraph::removeAllowedCollision(const tesseract::common::LinkIdPair& pair)
+{
+  acm_->removeAllowedCollision(pair);
+}
 
 void SceneGraph::removeAllowedCollision(const common::LinkId& link_id) { acm_->removeAllowedCollision(link_id); }
 
@@ -1144,7 +1147,8 @@ clone_prefix(const tesseract::common::AllowedCollisionMatrix::ConstPtr& acm, con
 
   auto new_acm = std::make_shared<tesseract::common::AllowedCollisionMatrix>();
   for (const auto& [key, entry] : acm->getAllAllowedCollisions())
-    new_acm->addAllowedCollision(LinkId(prefix + entry.name1), LinkId(prefix + entry.name2), entry.reason);
+    new_acm->addAllowedCollision(
+        LinkId(prefix + key.first().name()), LinkId(prefix + key.second().name()), entry.reason);
 
   return new_acm;
 }
