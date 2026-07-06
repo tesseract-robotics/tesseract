@@ -200,7 +200,12 @@ struct OrderedIdPair
     return second_ < other.second_;
   }
 
-  /** @brief Mix two id values into one bucket hash (shared with OrderedIdPairView lookups). */
+  /**
+   * @brief Mix two id values into one bucket hash.
+   * @details Public and static so heterogeneous lookups (a planned non-owning pair view, see
+   *          IDENTITY_BENCHMARKS.md Phase 2) can compute the same bucket hash without
+   *          constructing an OrderedIdPair.
+   */
   static std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
   {
     auto h = static_cast<std::size_t>(f);
