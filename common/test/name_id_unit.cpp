@@ -362,6 +362,46 @@ TEST(NameIdHybridEquality, CollidingIdsCoexistInOrderedMap)  // NOLINT
   EXPECT_EQ(map.at(b), 2);
 }
 
+// ======================== OrderedIdPair hybrid equality ========================
+
+TEST(OrderedIdPairHybrid, CollidingPairsCompareUnequalAndCoexist)  // NOLINT
+{
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  const tesseract::common::LinkId x("some_other_link");
+  const tesseract::common::LinkIdPair pa(a, x);
+  const tesseract::common::LinkIdPair pb(b, x);
+  EXPECT_EQ(pa.hash(), pb.hash());  // same bucket...
+  EXPECT_FALSE(pa == pb);           // ...but distinguished at equality, like a hash map
+  std::unordered_map<tesseract::common::LinkIdPair, int> map;
+  map[pa] = 1;
+  map[pb] = 2;
+  EXPECT_EQ(map.size(), 2U);
+  EXPECT_EQ(map.at(pa), 1);
+  EXPECT_EQ(map.at(pb), 2);
+}
+
+TEST(OrderedIdPairHybrid, CanonicalizationIsArgumentOrderIndependentUnderCollision)  // NOLINT
+{
+  // Colliding values tie-break on name, so (a,b) and (b,a) still canonicalize identically.
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  EXPECT_TRUE(tesseract::common::LinkIdPair(a, b) == tesseract::common::LinkIdPair(b, a));
+  EXPECT_EQ(tesseract::common::LinkIdPair(a, b).first().name(), "link_a");
+  EXPECT_EQ(tesseract::common::LinkIdPair(b, a).first().name(), "link_a");
+}
+
+TEST(OrderedIdPairHybrid, KeyCarriesNames)  // NOLINT
+{
+  const tesseract::common::LinkId c("link_c");
+  const tesseract::common::LinkId d("link_d");
+  const tesseract::common::LinkIdPair p(c, d);
+  EXPECT_TRUE(p == tesseract::common::LinkIdPair(d, c));
+  // first()/second() expose the full ids; first_id()/second_id() remain value shorthands.
+  EXPECT_EQ(p.first_id(), p.first().value());
+  EXPECT_EQ(p.second_id(), p.second().value());
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
