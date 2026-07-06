@@ -21,7 +21,7 @@ std::vector<LinkId> makeLinkIds(std::size_t n)
   std::vector<LinkId> ids;
   ids.reserve(n);
   for (std::size_t i = 0; i < n; ++i)
-    ids.emplace_back(LinkId("robot_arm_segment_link_" + std::to_string(i)));
+    ids.emplace_back("robot_arm_segment_link_" + std::to_string(i));
   return ids;
 }
 
@@ -74,6 +74,7 @@ static void BM_AcmIsAllowed_PreconstructedPair_Miss(benchmark::State& state)
   const auto acm = makeAcm(ids);
   const auto outsiders = makeLinkIds(8);  // same names? No — regenerate with a distinct prefix:
   std::vector<LinkIdPair> miss_keys;
+  miss_keys.reserve(outsiders.size());
   for (std::size_t a = 0; a < outsiders.size(); ++a)
     miss_keys.emplace_back(LinkId("unrelated_object_" + std::to_string(a)), ids[a]);
   std::size_t i = 0;
