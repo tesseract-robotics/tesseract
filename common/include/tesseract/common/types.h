@@ -234,15 +234,6 @@ void checkPairHashCollision(const char* context,
                             const std::string& existing_name1,
                             const std::string& existing_name2);
 
-/**
- * @brief Throw if a single NameId lookup hit an existing entry whose stored name differs.
- *
- * When a NameId-keyed map finds an existing entry at the same hash as the incoming name but
- * the stored name is different, that is a genuine hash collision. Call this at insertion time
- * to surface it as a clear runtime error rather than silent aliasing.
- */
-void checkHashCollision(const char* context, const std::string& new_name, const std::string& existing_name);
-
 /** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
 template <typename Tag>
 constexpr std::size_t hash_value(const NameId<Tag>& id) noexcept

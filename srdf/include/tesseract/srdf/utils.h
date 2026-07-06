@@ -34,20 +34,10 @@ namespace tesseract::srdf
 {
 class SRDFModel;
 
-/**
- * @brief True iff @p id resolves to a link registered in @p scene_graph with exactly that stored name.
- *
- * The name-equality check disqualifies hash collisions: if @p id was constructed from a name that
- * collides with a different already-registered link, the registry returns the resident link but its
- * stored name will not match, so this returns false. Callers need not distinguish "unknown" from
- * "colliding" — both are equally disqualifying for SRDF name resolution.
- */
+/** @brief Returns true iff a link with exactly this name is registered in the scene graph. */
 bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::LinkId& id);
 
-/**
- * @brief True iff @p id resolves to a joint registered in @p scene_graph with exactly that stored name.
- * Same hash-collision semantics as isRegisteredLink — see that doc.
- */
+/** @brief Returns true iff a joint with exactly this name is registered in the scene graph. */
 bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::JointId& id);
 
 /**

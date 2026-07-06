@@ -3258,10 +3258,18 @@ TEST(TesseractCommonUnit, CollisionMarginPairDataApplyModifyThrowsOnHashCollisio
                std::runtime_error);
 }
 
-TEST(TesseractCommonUnit, CheckHashCollisionUnit)  // NOLINT
+TEST(TesseractCommonUnit, HashCollisionsResolveLikeAHashMap)  // NOLINT
 {
-  EXPECT_NO_THROW(tesseract::common::checkHashCollision("LinkId", "foo", "foo"));                   // NOLINT
-  EXPECT_THROW(tesseract::common::checkHashCollision("LinkId", "foo", "bar"), std::runtime_error);  // NOLINT
+  // Replaces the retired checkHashCollision tests: collisions are no longer detected-and-thrown,
+  // they are resolved by hybrid equality — colliding ids are simply distinct keys.
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(7, "collide_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(7, "collide_b");
+  std::unordered_map<tesseract::common::LinkId, std::string> map;
+  map[a] = "a";
+  map[b] = "b";
+  EXPECT_EQ(map.size(), 2U);
+  EXPECT_EQ(map.at(a), "a");
+  EXPECT_EQ(map.at(b), "b");
 }
 
 TEST(TesseractCommonUnit, CheckPairHashCollisionUnit)  // NOLINT
