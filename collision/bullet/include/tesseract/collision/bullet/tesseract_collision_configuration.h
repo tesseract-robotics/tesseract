@@ -45,6 +45,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/collision/bullet/tesseract_convex_sdf_algorithm.h>
+
 namespace tesseract::collision
 {
 struct TesseractCollisionConfigurationInfo : public btDefaultCollisionConstructionInfo
@@ -75,12 +77,21 @@ protected:
  *     - Compound to Collision
  *     - Compound to Compound
  *     - Convex to Convex
+ *     - Convex to Signed Distance Field
  */
 class TesseractCollisionConfiguration : public btDefaultCollisionConfiguration
 {
 public:
   TesseractCollisionConfiguration(
       const TesseractCollisionConfigurationInfo& config_info = TesseractCollisionConfigurationInfo());
+
+  btCollisionAlgorithmCreateFunc* getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1) override;
+  btCollisionAlgorithmCreateFunc* getClosestPointsAlgorithmCreateFunc(int proxyType0, int proxyType1) override;
+
+protected:
+  /** @brief Convex vs SDF narrowphase that honors the contact distance threshold (stock Bullet does not) */
+  bullet_internal::TesseractConvexSdfAlgorithm::CreateFunc convex_sdf_create_func_;
+  bullet_internal::TesseractConvexSdfAlgorithm::SwappedCreateFunc swapped_convex_sdf_create_func_;
 };
 }  // namespace tesseract::collision
 #endif  // TESSERACT_COLLISION_TESSERACT_COLLISION_CONFIGURATION_H
