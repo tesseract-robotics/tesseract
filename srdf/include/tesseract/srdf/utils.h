@@ -48,19 +48,30 @@ bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, co
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model);
 
 /**
+ * @brief One allowed-collision entry with names resolved from the pair key and alphabetically
+ *        ordered — see @ref getAlphabeticalACMEntries.
+ */
+struct AlphabeticalACMEntry
+{
+  std::string name1;
+  std::string name2;
+  std::string reason;
+};
+
+/**
  * @brief Returns a deterministically alphabetically sorted vector of ACM entries.
  *
- * Entries stored in an AllowedCollisionMatrix have `name1`/`name2` ordered by LinkId hash value
- * (see common::orderedPairNames), not alphabetically — and std::hash<std::string> is not portable
- * across standard library implementations, so that order is unstable for cross-library output.
- * This function normalizes each entry so `name1 <= name2` alphabetically, then sorts the entries
- * by (name1, name2), producing output suitable for deterministic serialization.
+ * An AllowedCollisionMatrix's pair keys are canonically ordered by LinkId hash value, not
+ * alphabetically — and std::hash<std::string> is not portable across standard library
+ * implementations, so that order is unstable for cross-library output. This function resolves
+ * each entry's names from its pair key, normalizes them so `name1 <= name2` alphabetically, then
+ * sorts the entries by (name1, name2), producing output suitable for deterministic serialization.
  *
  * @param allowed_collision_entries Entries to be sorted
- * @return An alphabetically sorted vector of ACM entries (by name1, then name2), with each entry's
+ * @return An alphabetically sorted vector of entries (by name1, then name2), with each entry's
  *         names themselves in alphabetical order.
  */
-std::vector<tesseract::common::ACMEntry>
+std::vector<AlphabeticalACMEntry>
 getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
 }  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_UTILS_H

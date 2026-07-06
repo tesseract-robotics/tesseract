@@ -43,8 +43,8 @@ void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
 }
 
 // OrderedIdPair has no cereal specialization on purpose — its NameIdValue ids are
-// not stable across builds. Serialize wrapping structs (ContactResult, ACMEntry,
-// PairMarginEntry) using their name-bearing fields and rebuild the pair on load.
+// not stable across builds. Serialize wrapping containers (AllowedCollisionMatrix,
+// CollisionMarginPairData) using the key's name-bearing NameIds and rebuild the pair on load.
 
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
@@ -64,7 +64,7 @@ void save(Archive& ar, const AllowedCollisionMatrix& obj)
   // Serialize as string-based format for backwards compatibility
   std::map<std::pair<std::string, std::string>, std::string> compat;
   for (const auto& [key, entry] : obj.lookup_table_)
-    compat[{ entry.name1, entry.name2 }] = entry.reason;
+    compat[{ key.first().name(), key.second().name() }] = entry.reason;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 
@@ -89,7 +89,7 @@ void save(Archive& ar, const CollisionMarginPairData& obj)
   // Serialize as string-based format for backwards compatibility
   std::map<std::pair<std::string, std::string>, double> compat;
   for (const auto& [key, entry] : obj.lookup_table_)
-    compat[{ entry.name1, entry.name2 }] = entry.margin;
+    compat[{ key.first().name(), key.second().name() }] = entry.margin;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 

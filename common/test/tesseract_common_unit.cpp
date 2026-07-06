@@ -3154,8 +3154,7 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
   const LinkId link_a("link_a");
   const LinkId link_b("link_b");
   const LinkIdPair key(link_a, link_b);
-  auto [name1, name2] = tesseract::common::orderedPairNames(link_a, link_b);
-  ACMEntry entry{ name1, name2, "test_reason" };
+  ACMEntry entry{ "test_reason" };
 
   AllowedCollisionMatrix acm;
   acm.addAllowedCollision(key, entry);
@@ -3164,8 +3163,8 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
   ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
   const auto& [stored_key, stored_entry] = *acm.getAllAllowedCollisions().begin();
   EXPECT_EQ(stored_key, key);
-  EXPECT_EQ(stored_entry.name1, name1);
-  EXPECT_EQ(stored_entry.name2, name2);
+  EXPECT_EQ(stored_key.first().name(), "link_a");
+  EXPECT_EQ(stored_key.second().name(), "link_b");
   EXPECT_EQ(stored_entry.reason, "test_reason");
 
   // Equivalence with the two-LinkId form: an ACM populated via either path should match.
@@ -3173,9 +3172,8 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
   acm_via_link_ids.addAllowedCollision(link_a, link_b, "test_reason");
   EXPECT_TRUE(acm == acm_via_link_ids);
 
-  // Re-inserting an existing key updates the reason without throwing (no name-collision
-  // since names match the stored ones).
-  ACMEntry entry2{ name1, name2, "updated_reason" };
+  // Re-inserting an existing key updates the reason without throwing.
+  ACMEntry entry2{ "updated_reason" };
   EXPECT_NO_THROW(acm.addAllowedCollision(key, entry2));
   ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
   EXPECT_EQ(acm.getAllAllowedCollisions().begin()->second.reason, "updated_reason");
@@ -3183,16 +3181,15 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
 
 TEST(TesseractCommonUnit, ACMDuplicatePairInsertDoesNotFalsePositiveCollision)  // NOLINT
 {
-  // Regression: insertEntryChecked previously moved `entry` into try_emplace and then read
-  // entry.name1/name2 on the !inserted branch to feed checkPairHashCollision. With a
+  // Regression: insertEntry previously moved `entry` into try_emplace and then read stale
+  // fields on the !inserted branch to feed a since-retired hash-collision check. With a
   // moved-from entry, those reads saw empty strings, so a benign duplicate-name insert was
   // wrongly reported as a hash collision. The collision check is gone now (fat LinkIdPair
   // keys make it unreachable), but the duplicate-insert-doesn't-corrupt-state behavior this
   // test verifies still matters.
   tesseract::common::AllowedCollisionMatrix acm;
   ASSERT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "first"));
-  EXPECT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "second"))
-      << "duplicate insert unexpectedly threw";
+  EXPECT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "second")) << "duplicate insert unexpectedly threw";
 
   // After the second insert, the reason should be the latest value (semantic of
   // re-inserting an existing key per the ACM contract).
@@ -3234,17 +3231,6 @@ TEST(TesseractCommonUnit, HashCollisionsResolveLikeAHashMap)  // NOLINT
   EXPECT_EQ(map.size(), 2U);
   EXPECT_EQ(map.at(a), "a");
   EXPECT_EQ(map.at(b), "b");
-}
-
-TEST(TesseractCommonUnit, CheckPairHashCollisionUnit)  // NOLINT
-{
-  // Same order: no throw.
-  EXPECT_NO_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "a", "b"));  // NOLINT
-  // Swapped order: also no throw (check is order-independent).
-  EXPECT_NO_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "b", "a"));  // NOLINT
-  // Mismatch in either slot: throws.
-  EXPECT_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "a", "c"), std::runtime_error);  // NOLINT
-  EXPECT_THROW(tesseract::common::checkPairHashCollision("ACM", "a", "b", "x", "y"), std::runtime_error);  // NOLINT
 }
 
 TEST(TesseractCommonUnit, CollisionMarginDataUnit)  // NOLINT
@@ -5059,8 +5045,8 @@ TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
   const auto it = entries.find(LinkIdPair(id_a, id_b));
   ASSERT_NE(it, entries.end());
   // Names should be canonical (alphabetical within LinkIdPair ordering)
-  EXPECT_FALSE(it->second.name1.empty());
-  EXPECT_FALSE(it->second.name2.empty());
+  EXPECT_FALSE(it->first.first().name().empty());
+  EXPECT_FALSE(it->first.second().name().empty());
   EXPECT_EQ(it->second.reason, "test_reason");
 }
 
@@ -5090,8 +5076,8 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   EXPECT_EQ(margins.size(), 1);
   const auto it = margins.find(LinkIdPair(id_x, id_y));
   ASSERT_NE(it, margins.end());
-  EXPECT_FALSE(it->second.name1.empty());
-  EXPECT_FALSE(it->second.name2.empty());
+  EXPECT_FALSE(it->first.first().name().empty());
+  EXPECT_FALSE(it->first.second().name().empty());
   EXPECT_NEAR(it->second.margin, 0.1, 1e-12);
 
   // Max margin tests with LinkId
@@ -5163,8 +5149,8 @@ TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, PairsCollisionMarginDataDecodeDoesNotFalsePositiveCollision)  // NOLINT
 {
-  // Regression: the YAML decoder for PairsCollisionMarginData previously read
-  // entry.name1/name2 after std::move(entry) into try_emplace, so a duplicate-key
+  // Regression: the YAML decoder for PairsCollisionMarginData previously read the
+  // entry's name fields after std::move(entry) into try_emplace, so a duplicate-key
   // decode would falsely report a hash collision from the moved-from (empty) names.
   const std::string yaml_doc = R"(
 [link_a, link_b]: 0.05
@@ -5180,8 +5166,8 @@ TEST(TesseractCommonUnit, PairsCollisionMarginDataDecodeDoesNotFalsePositiveColl
 
 TEST(TesseractCommonUnit, AllowedCollisionEntriesDecodeDoesNotFalsePositiveCollision)  // NOLINT
 {
-  // Regression: the YAML decoder for AllowedCollisionEntries previously read
-  // entry.name1/name2 after std::move(entry) into try_emplace, so a duplicate-key
+  // Regression: the YAML decoder for AllowedCollisionEntries previously read the
+  // entry's name fields after std::move(entry) into try_emplace, so a duplicate-key
   // decode would falsely report a hash collision from the moved-from (empty) names.
   const std::string yaml_doc = R"(
 [link_a, link_b]: first_reason

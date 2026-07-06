@@ -1582,10 +1582,8 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingJointValueThrows)  // N
   {
     // joint_1, joint_2, joint_3, joint_4 are all revolute — whichever the DFS hits first must be named.
     const std::string msg(e.what());
-    const bool names_a_joint = msg.find("joint_1") != std::string::npos ||
-                               msg.find("joint_2") != std::string::npos ||
-                               msg.find("joint_3") != std::string::npos ||
-                               msg.find("joint_4") != std::string::npos;
+    const bool names_a_joint = msg.find("joint_1") != std::string::npos || msg.find("joint_2") != std::string::npos ||
+                               msg.find("joint_3") != std::string::npos || msg.find("joint_4") != std::string::npos;
     EXPECT_TRUE(names_a_joint) << "Exception message did not name the offending joint: " << msg;
   }
 }
@@ -1700,7 +1698,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
+    EXPECT_TRUE(
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
   }
 
   // Save Graph
@@ -1766,7 +1765,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
+    EXPECT_TRUE(
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
   }
 }
 
@@ -1810,9 +1810,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
     EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.second.name1, prefix + entry.second.name2));
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first().name(),
+                                                                   prefix + entry.first.second().name()));
   }
 
   // Save Graph
@@ -1869,9 +1870,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.second.name1, entry.second.name2));
     EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.second.name1, prefix + entry.second.name2));
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first().name(),
+                                                                   prefix + entry.first.second().name()));
   }
 
   // Save Graph

@@ -2507,13 +2507,13 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
 
 TEST(TesseractSRDFUnit, GetAlphabeticalACMEntriesUnit)  // NOLINT
 {
-  // Build entries directly. Each entry's stored name1/name2 is whatever we pass — in practice the
-  // ACM stores them in hash-canonical order, which is *not* alphabetical. getAlphabeticalACMEntries
-  // must normalize each entry so name1<=name2 alphabetically, then sort by (name1, name2).
+  // AllowedCollisionMatrix's pair keys are canonically ordered by LinkId hash value, which is
+  // *not* alphabetical. getAlphabeticalACMEntries must resolve each entry's names from its pair
+  // key, normalize so name1<=name2 alphabetically, then sort entries by (name1, name2).
   tesseract::common::AllowedCollisionEntries entries;
-  entries[tesseract::common::LinkIdPair("x1", "x2")] = tesseract::common::ACMEntry{ "gamma", "beta", "r_bg" };
-  entries[tesseract::common::LinkIdPair("x3", "x4")] = tesseract::common::ACMEntry{ "delta", "alpha", "r_ad" };
-  entries[tesseract::common::LinkIdPair("x5", "x6")] = tesseract::common::ACMEntry{ "beta", "alpha", "r_ba" };
+  entries[tesseract::common::LinkIdPair("gamma", "beta")] = tesseract::common::ACMEntry{ "r_bg" };
+  entries[tesseract::common::LinkIdPair("delta", "alpha")] = tesseract::common::ACMEntry{ "r_ad" };
+  entries[tesseract::common::LinkIdPair("beta", "alpha")] = tesseract::common::ACMEntry{ "r_ba" };
 
   auto sorted = tesseract::srdf::getAlphabeticalACMEntries(entries);
 

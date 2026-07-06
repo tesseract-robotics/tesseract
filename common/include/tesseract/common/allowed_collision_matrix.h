@@ -13,19 +13,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::common
 {
-/** @brief Value stored in each ACM entry — names for serialization/display, reason for the allowance. */
+/** @brief Value stored in each ACM entry. The pair key carries the names. */
 struct ACMEntry
 {
-  std::string name1;
-  std::string name2;
   std::string reason;
 
-  bool operator==(const ACMEntry& other) const
-  {
-    const bool names_match =
-        (name1 == other.name1 && name2 == other.name2) || (name1 == other.name2 && name2 == other.name1);
-    return names_match && reason == other.reason;
-  }
+  bool operator==(const ACMEntry& other) const { return reason == other.reason; }
   bool operator!=(const ACMEntry& other) const { return !(*this == other); }
 };
 
@@ -67,20 +60,20 @@ public:
   virtual void addAllowedCollision(const LinkId& link_id1, const LinkId& link_id2, const std::string& reason);
 
   /**
-   * @brief Disable collision for a pre-built canonical pair, supplying the entry's names + reason.
+   * @brief Disable collision for a pre-built canonical pair, supplying the entry's reason.
    * @details Useful when iterating an existing @ref AllowedCollisionEntries map and re-inserting
    *          {key, entry} pairs without reconstructing @ref LinkId objects from strings.
    *          Inserts the entry, or — if @p pair is already present — updates the reason.
    *          Fat LinkIdPair keys carry names, so a duplicate key is always the same named
    *          pair; there is no hash-collision case to detect here.
    * @param pair Canonically ordered link-id pair (the map key)
-   * @param entry The ACM entry value (names + reason)
+   * @param entry The ACM entry value (reason)
    */
   virtual void addAllowedCollision(const LinkIdPair& pair, const ACMEntry& entry);
 
   /**
    * @brief Get all of the entries in the allowed collision matrix
-   * @return AllowedCollisionEntries keyed by LinkIdPair with ACMEntry values containing names and reason
+   * @return AllowedCollisionEntries keyed by LinkIdPair (names) with ACMEntry values containing the reason
    */
   const AllowedCollisionEntries& getAllAllowedCollisions() const;
 
@@ -150,7 +143,7 @@ private:
    *          re-add of the same named pair. Single write path used by every mutation
    *          entry point.
    */
-  void insertEntryChecked(const LinkIdPair& key, ACMEntry entry);
+  void insertEntry(const LinkIdPair& key, ACMEntry entry);
 
   template <class Archive>
   friend void ::tesseract::common::save(Archive& ar, const AllowedCollisionMatrix& obj);

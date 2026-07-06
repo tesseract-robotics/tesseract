@@ -50,10 +50,10 @@ AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& en
 {
   lookup_table_.reserve(entries.size());
   for (const auto& [key, entry] : entries)
-    insertEntryChecked(key, entry);
+    insertEntry(key, entry);
 }
 
-void AllowedCollisionMatrix::insertEntryChecked(const LinkIdPair& key, ACMEntry entry)
+void AllowedCollisionMatrix::insertEntry(const LinkIdPair& key, ACMEntry entry)
 {
   // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
   // always a genuine re-add of the same named pair — just refresh the payload.
@@ -69,13 +69,12 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
                                                  const std::string& reason)
 {
   const LinkIdPair key(link_id1, link_id2);
-  auto [name1, name2] = orderedPairNames(link_id1, link_id2);
-  insertEntryChecked(key, ACMEntry{ std::move(name1), std::move(name2), reason });
+  insertEntry(key, ACMEntry{ reason });
 }
 
 void AllowedCollisionMatrix::addAllowedCollision(const LinkIdPair& pair, const ACMEntry& entry)
 {
-  insertEntryChecked(pair, entry);
+  insertEntry(pair, entry);
 }
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
@@ -108,7 +107,7 @@ void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }
 void AllowedCollisionMatrix::insertAllowedCollisionMatrix(const AllowedCollisionMatrix& acm)
 {
   for (const auto& [key, entry] : acm.getAllAllowedCollisions())
-    insertEntryChecked(key, entry);
+    insertEntry(key, entry);
 }
 
 void AllowedCollisionMatrix::reserveAllowedCollisionMatrix(std::size_t size) { lookup_table_.reserve(size); }
@@ -125,7 +124,7 @@ bool AllowedCollisionMatrix::operator!=(const AllowedCollisionMatrix& rhs) const
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
 {
   for (const auto& [key, entry] : acm.getAllAllowedCollisions())
-    os << "link=" << entry.name1 << " link=" << entry.name2 << " reason=" << entry.reason << "\n";
+    os << "link=" << key.first().name() << " link=" << key.second().name() << " reason=" << entry.reason << "\n";
   return os;
 }
 }  // namespace tesseract::common

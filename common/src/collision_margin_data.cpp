@@ -31,7 +31,7 @@ CollisionMarginPairData::CollisionMarginPairData(const PairsCollisionMarginData&
 {
   lookup_table_.reserve(pair_margins.size());
   for (const auto& [key, entry] : pair_margins)
-    insertEntryChecked(key, entry);
+    insertEntry(key, entry);
   updateMaxMargins();
 }
 
@@ -44,11 +44,10 @@ void CollisionMarginPairData::setCollisionMargin(const LinkId& id1, const LinkId
 void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin)
 {
   const LinkIdPair key(id1, id2);
-  auto [name1, name2] = orderedPairNames(id1, id2);
-  insertEntryChecked(key, PairMarginEntry{ std::move(name1), std::move(name2), margin });
+  insertEntry(key, PairMarginEntry{ margin });
 }
 
-void CollisionMarginPairData::insertEntryChecked(const LinkIdPair& key, const PairMarginEntry& entry)
+void CollisionMarginPairData::insertEntry(const LinkIdPair& key, const PairMarginEntry& entry)
 {
   // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
   // always a genuine re-add of the same named pair — just refresh the payload.
@@ -164,7 +163,7 @@ void CollisionMarginPairData::apply(const CollisionMarginPairData& pair_margin_d
     case CollisionMarginPairOverrideType::MODIFY:
     {
       for (const auto& [key, entry] : pair_margin_data.lookup_table_)
-        insertEntryChecked(key, entry);
+        insertEntry(key, entry);
 
       updateMaxMargins();
       break;
