@@ -32,14 +32,12 @@ namespace tesseract::srdf
 {
 bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::LinkId& id)
 {
-  auto l = scene_graph.getLink(id);
-  return l && l->getName() == id.name();  // name-equality detects hash collisions
+  return scene_graph.getLink(id) != nullptr;
 }
 
 bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::JointId& id)
 {
-  auto j = scene_graph.getJoint(id);
-  return j && j->getName() == id.name();
+  return scene_graph.getJoint(id) != nullptr;
 }
 
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)

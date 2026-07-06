@@ -292,10 +292,9 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
 bool SceneGraph::addLinkHelper(const std::shared_ptr<Link>& link_ptr, bool replace_allowed)
 {
   auto found = link_map_.find(link_ptr->getId());
+  // Hybrid NameId equality: find() only matches an entry with the identical name, so a hit
+  // always means "same-named link already exists" — a hash collision cannot reach this branch.
   bool link_exists = (found != link_map_.end());
-
-  if (link_exists)
-    common::checkHashCollision("LinkId", link_ptr->getName(), found->second.first->getName());
 
   if (link_exists && !replace_allowed)
     return false;
@@ -467,9 +466,6 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
     CONSOLE_BRIDGE_logWarn("Child link (%s) does not exist in scene graph.", joint_ptr->child_link_id.name().c_str());
     return false;
   }
-
-  if (found != joint_map_.end())
-    common::checkHashCollision("JointId", joint_ptr->getName(), found->second.first->getName());
 
   if (found != joint_map_.end())
   {
