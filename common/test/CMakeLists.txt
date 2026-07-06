@@ -172,3 +172,7 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 add_gtest_discover_tests(tesseract_common_property_tree_unit)
 add_dependencies(tesseract_common_property_tree_unit tesseract::common)
+
+if(TESSERACT_ENABLE_BENCHMARKING)
+  add_subdirectory(benchmarks)
+endif()
