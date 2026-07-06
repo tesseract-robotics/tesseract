@@ -11,6 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <unordered_set>
 #include <unordered_map>
+#include <map>
 #include <cereal/archives/xml.hpp>
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -310,6 +311,55 @@ TEST(NameIdTest, ConstructorJointId)  // NOLINT
   // JointId and LinkId with same name should have same hash but different types
   auto lid = LinkId("test_joint");
   EXPECT_EQ(jid.value(), lid.value());
+}
+
+// ======================== Hybrid equality ========================
+
+TEST(NameIdHybridEquality, CollidingNamesCompareUnequal)  // NOLINT
+{
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  EXPECT_EQ(a.value(), b.value());
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
+  // Strict weak ordering must separate value-equal, name-different ids exactly one way.
+  EXPECT_TRUE((a < b) != (b < a));
+}
+
+TEST(NameIdHybridEquality, SameNameCompareEqual)  // NOLINT
+{
+  const tesseract::common::LinkId a("base_link");
+  const tesseract::common::LinkId b("base_link");
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+  EXPECT_FALSE(a < b);
+  EXPECT_FALSE(b < a);
+}
+
+TEST(NameIdHybridEquality, CollidingIdsCoexistInUnorderedMap)  // NOLINT
+{
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  std::unordered_map<tesseract::common::LinkId, int> map;
+  map[a] = 1;
+  map[b] = 2;
+  EXPECT_EQ(map.size(), 2U);
+  EXPECT_EQ(map.at(a), 1);
+  EXPECT_EQ(map.at(b), 2);
+  EXPECT_EQ(map.erase(a), 1U);
+  EXPECT_EQ(map.count(b), 1U);  // erasing one colliding key must not disturb the other
+}
+
+TEST(NameIdHybridEquality, CollidingIdsCoexistInOrderedMap)  // NOLINT
+{
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  std::map<tesseract::common::LinkId, int> map;  // exercises hybrid operator<
+  map[a] = 1;
+  map[b] = 2;
+  EXPECT_EQ(map.size(), 2U);
+  EXPECT_EQ(map.at(a), 1);
+  EXPECT_EQ(map.at(b), 2);
 }
 
 int main(int argc, char** argv)
