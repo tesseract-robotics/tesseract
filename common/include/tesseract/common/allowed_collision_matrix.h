@@ -70,9 +70,9 @@ public:
    * @brief Disable collision for a pre-built canonical pair, supplying the entry's names + reason.
    * @details Useful when iterating an existing @ref AllowedCollisionEntries map and re-inserting
    *          {key, entry} pairs without reconstructing @ref LinkId objects from strings.
-   *          Inserts the entry, or — if @p pair is already present with matching names —
-   *          updates the reason. Throws std::runtime_error if @p pair is already present with
-   *          different names (hash collision).
+   *          Inserts the entry, or — if @p pair is already present — updates the reason.
+   *          Fat LinkIdPair keys carry names, so a duplicate key is always the same named
+   *          pair; there is no hash-collision case to detect here.
    * @param pair Canonically ordered link-id pair (the map key)
    * @param entry The ACM entry value (names + reason)
    */
@@ -145,9 +145,10 @@ private:
   AllowedCollisionEntries lookup_table_;
 
   /**
-   * @brief Insert an entry or, if the key already exists, verify the stored names match
-   *        (throwing via checkPairHashCollision otherwise) and update the reason.
-   *        Single write path used by every mutation entry point.
+   * @brief Insert an entry, or update the reason if the key already exists.
+   * @details Fat LinkIdPair keys carry names, so a duplicate key is always a genuine
+   *          re-add of the same named pair. Single write path used by every mutation
+   *          entry point.
    */
   void insertEntryChecked(const LinkIdPair& key, ACMEntry entry);
 

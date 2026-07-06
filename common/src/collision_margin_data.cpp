@@ -50,12 +50,11 @@ void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const 
 
 void CollisionMarginPairData::insertEntryChecked(const LinkIdPair& key, const PairMarginEntry& entry)
 {
+  // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
+  // always a genuine re-add of the same named pair — just refresh the payload.
   auto [it, inserted] = lookup_table_.try_emplace(key, entry);
   if (!inserted)
-  {
-    checkPairHashCollision("MarginData", entry.name1, entry.name2, it->second.name1, it->second.name2);
     it->second.margin = entry.margin;
-  }
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkIdPair& pair) const

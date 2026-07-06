@@ -55,20 +55,13 @@ AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& en
 
 void AllowedCollisionMatrix::insertEntryChecked(const LinkIdPair& key, ACMEntry entry)
 {
-  // Construct a default value on insert and move into it; on duplicate, read
-  // names from entry (never moved-from) for the hash-collision check, then move
-  // the reason out. This keeps entry's name strings live across try_emplace
-  // regardless of stdlib implementation details.
+  // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
+  // always a genuine re-add of the same named pair — just refresh the payload.
   auto [it, inserted] = lookup_table_.try_emplace(key);
   if (inserted)
-  {
     it->second = std::move(entry);
-  }
   else
-  {
-    checkPairHashCollision("ACM", entry.name1, entry.name2, it->second.name1, it->second.name2);
     it->second.reason = std::move(entry.reason);
-  }
 }
 
 void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
@@ -96,17 +89,12 @@ void AllowedCollisionMatrix::removeAllowedCollision(const LinkIdPair& pair) { lo
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 {
-  const NameIdValue id = link_id.value();
   for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
-    if (it->first.first_id() == id || it->first.second_id() == id)
-    {
+    if (it->first.first() == link_id || it->first.second() == link_id)
       it = lookup_table_.erase(it);
-    }
     else
-    {
       ++it;
-    }
   }
 }
 

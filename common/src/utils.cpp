@@ -543,29 +543,32 @@ std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
                                          const AllowedCollisionEntries& acm_entries,
                                          bool remove_duplicates)
 {
-  std::unordered_set<NameIdValue> query_ids;
+  // Full LinkId (value + name), not just the raw NameIdValue: two different link names sharing a
+  // hash value must not be treated as the same query link (see removeAllowedCollision(LinkId) for
+  // the same class of bug).
+  std::unordered_set<LinkId> query_ids;
   query_ids.reserve(link_ids.size());
   for (const auto& q : link_ids)
-    query_ids.insert(q.value());
+    query_ids.insert(q);
 
   std::vector<LinkId> results;
-  std::unordered_set<NameIdValue> seen;
+  std::unordered_set<LinkId> seen;
   results.reserve(acm_entries.size());
 
   for (const auto& [pair_key, entry] : acm_entries)
   {
-    // entry.name1/name2 are stored in the same canonical order as pair_key.first_id()/second_id().
+    // entry.name1/name2 are stored in the same canonical order as pair_key.first()/second().
     // If query contains the first id, the "other" link is name2; if it contains the second id, the "other" is name1.
-    if (query_ids.count(pair_key.first_id()) > 0)
+    if (query_ids.count(pair_key.first()) > 0)
     {
       LinkId other(entry.name2);
-      if (!remove_duplicates || seen.insert(other.value()).second)
+      if (!remove_duplicates || seen.insert(other).second)
         results.push_back(std::move(other));
     }
-    if (query_ids.count(pair_key.second_id()) > 0)
+    if (query_ids.count(pair_key.second()) > 0)
     {
       LinkId other(entry.name1);
-      if (!remove_duplicates || seen.insert(other.value()).second)
+      if (!remove_duplicates || seen.insert(other).second)
         results.push_back(std::move(other));
     }
   }

@@ -181,9 +181,10 @@ private:
   void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);
 
   /**
-   * @brief Insert an entry or, if the key already exists, verify the stored names match
-   *        (throwing via checkPairHashCollision otherwise) and update the margin.
-   *        Single write path used by every bulk/merge/deserialization entry point.
+   * @brief Insert an entry, or update the margin if the key already exists.
+   * @details Fat LinkIdPair keys carry names, so a duplicate key is always a genuine
+   *          re-add of the same named pair. Single write path used by every
+   *          bulk/merge/deserialization entry point.
    */
   void insertEntryChecked(const LinkIdPair& key, const PairMarginEntry& entry);
 

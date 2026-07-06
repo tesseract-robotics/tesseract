@@ -3179,25 +3179,20 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
   EXPECT_NO_THROW(acm.addAllowedCollision(key, entry2));
   ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
   EXPECT_EQ(acm.getAllAllowedCollisions().begin()->second.reason, "updated_reason");
-
-  // Hash-collision detection fires when the same pair is re-inserted with different names.
-  AllowedCollisionMatrix acm_collision;
-  acm_collision.addAllowedCollision(link_a, link_b, "r");
-  ACMEntry mismatched{ "wrong_a", "wrong_b", "r" };
-  EXPECT_THROW(acm_collision.addAllowedCollision(key, mismatched), std::runtime_error);
 }
 
 TEST(TesseractCommonUnit, ACMDuplicatePairInsertDoesNotFalsePositiveCollision)  // NOLINT
 {
-  // Regression: insertEntryChecked moved `entry` into try_emplace and then read
-  // entry.name1/name2 on the !inserted branch. With a moved-from entry, those
-  // reads see empty strings, so checkPairHashCollision wrongly reports a hash
-  // collision on a benign duplicate-name insert.
+  // Regression: insertEntryChecked previously moved `entry` into try_emplace and then read
+  // entry.name1/name2 on the !inserted branch to feed checkPairHashCollision. With a
+  // moved-from entry, those reads saw empty strings, so a benign duplicate-name insert was
+  // wrongly reported as a hash collision. The collision check is gone now (fat LinkIdPair
+  // keys make it unreachable), but the duplicate-insert-doesn't-corrupt-state behavior this
+  // test verifies still matters.
   tesseract::common::AllowedCollisionMatrix acm;
   ASSERT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "first"));
   EXPECT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "second"))
-      << "duplicate insert misreported as hash collision because insertEntryChecked "
-      << "read the moved-from ACMEntry's empty names";
+      << "duplicate insert unexpectedly threw";
 
   // After the second insert, the reason should be the latest value (semantic of
   // re-inserting an existing key per the ACM contract).
@@ -3225,37 +3220,6 @@ TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT
   acm2.clearAllowedCollisions();
   acm2.addAllowedCollision("link1", "link2", "do_not_match");
   EXPECT_FALSE(acm1.getAllAllowedCollisions() == acm2.getAllAllowedCollisions());
-}
-
-TEST(TesseractCommonUnit, AllowedCollisionMatrixInsertThrowsOnHashCollision)  // NOLINT
-{
-  // Seed the target with a real pair; its LinkIdPair key is K.
-  tesseract::common::AllowedCollisionMatrix target;
-  target.addAllowedCollision("link1", "link2", "seed");
-
-  // Build a source whose stored entry uses the same LinkIdPair key K but
-  // different stored names — simulating the outcome of a real hash collision
-  // without needing to synthesize one in std::hash<std::string>.
-  tesseract::common::AllowedCollisionEntries corrupt;
-  const tesseract::common::LinkIdPair key("link1", "link2");
-  corrupt[key] = tesseract::common::ACMEntry{ "other_a", "other_b", "conflict" };
-  tesseract::common::AllowedCollisionMatrix source(corrupt);
-
-  EXPECT_THROW(target.insertAllowedCollisionMatrix(source), std::runtime_error);  // NOLINT
-}
-
-TEST(TesseractCommonUnit, CollisionMarginPairDataApplyModifyThrowsOnHashCollision)  // NOLINT
-{
-  tesseract::common::CollisionMarginPairData target;
-  target.setCollisionMargin("link1", "link2", 0.01);
-
-  tesseract::common::PairsCollisionMarginData corrupt;
-  const tesseract::common::LinkIdPair key("link1", "link2");
-  corrupt[key] = tesseract::common::PairMarginEntry{ "other_a", "other_b", 0.02 };
-  tesseract::common::CollisionMarginPairData source(corrupt);
-
-  EXPECT_THROW(target.apply(source, tesseract::common::CollisionMarginPairOverrideType::MODIFY),  // NOLINT
-               std::runtime_error);
 }
 
 TEST(TesseractCommonUnit, HashCollisionsResolveLikeAHashMap)  // NOLINT
@@ -5164,11 +5128,9 @@ TEST(TesseractCommonUnit, JointStateByJointIdConstructorUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, MarginDataYamlDecodeDuplicatePairUnit)  // NOLINT
 {
-  // Covers common/yaml_extensions.h:886-888 — the duplicate-pair (already-inserted) branch
-  // of the PairsCollisionMarginData decoder. LinkIdPair canonicalizes both permutations to
-  // the same key, so two YAML entries for the same pair trigger the !inserted branch. The
-  // checkPairHashCollision helper returns benignly when the names match (confirmed in
-  // common/src/types.cpp:32-43), so the subsequent margin update line executes.
+  // Covers the duplicate-pair (already-inserted) branch of the PairsCollisionMarginData
+  // decoder. LinkIdPair canonicalizes both permutations to the same key, so two YAML
+  // entries for the same pair trigger the !inserted branch and the second margin wins.
   const std::string yaml_string = R"(
     [linkA, linkB]: 0.01
     [linkB, linkA]: 0.02
@@ -5184,8 +5146,8 @@ TEST(TesseractCommonUnit, MarginDataYamlDecodeDuplicatePairUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
 {
-  // Covers common/yaml_extensions.h:963-965 — same duplicate-pair branch but for the
-  // AllowedCollisionEntries decoder; the second entry's reason string wins.
+  // Same duplicate-pair branch but for the AllowedCollisionEntries decoder; the second
+  // entry's reason string wins.
   const std::string yaml_string = R"(
     [linkA, linkB]: "first"
     [linkB, linkA]: "second"
@@ -5201,10 +5163,9 @@ TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
 
 TEST(TesseractCommonUnit, PairsCollisionMarginDataDecodeDoesNotFalsePositiveCollision)  // NOLINT
 {
-  // Regression: the YAML decoder for PairsCollisionMarginData read entry.name1/name2
-  // after std::move(entry) into try_emplace — on duplicate keys with matching names,
-  // checkPairHashCollision compared empty moved-from names against the stored real
-  // names and threw a false-positive collision error.
+  // Regression: the YAML decoder for PairsCollisionMarginData previously read
+  // entry.name1/name2 after std::move(entry) into try_emplace, so a duplicate-key
+  // decode would falsely report a hash collision from the moved-from (empty) names.
   const std::string yaml_doc = R"(
 [link_a, link_b]: 0.05
 [link_a, link_b]: 0.10
@@ -5219,10 +5180,9 @@ TEST(TesseractCommonUnit, PairsCollisionMarginDataDecodeDoesNotFalsePositiveColl
 
 TEST(TesseractCommonUnit, AllowedCollisionEntriesDecodeDoesNotFalsePositiveCollision)  // NOLINT
 {
-  // Regression: the YAML decoder for AllowedCollisionEntries read entry.name1/name2
-  // after std::move(entry) into try_emplace — on duplicate keys with matching names,
-  // checkPairHashCollision compared empty moved-from names against the stored real
-  // names and threw a false-positive collision error.
+  // Regression: the YAML decoder for AllowedCollisionEntries previously read
+  // entry.name1/name2 after std::move(entry) into try_emplace, so a duplicate-key
+  // decode would falsely report a hash collision from the moved-from (empty) names.
   const std::string yaml_doc = R"(
 [link_a, link_b]: first_reason
 [link_a, link_b]: second_reason
@@ -5232,6 +5192,50 @@ TEST(TesseractCommonUnit, AllowedCollisionEntriesDecodeDoesNotFalsePositiveColli
   EXPECT_NO_THROW(data = node.as<tesseract::common::AllowedCollisionEntries>());  // NOLINT
   ASSERT_EQ(data.size(), 1U);
   EXPECT_EQ(data.begin()->second.reason, "second_reason");
+}
+
+TEST(AllowedCollisionMatrixUnit, CollidingPairsCoexist)  // NOLINT
+{
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const tesseract::common::LinkId x("link_x");
+  tesseract::common::AllowedCollisionMatrix acm;
+  acm.addAllowedCollision(a, x, "reason_a");
+  acm.addAllowedCollision(b, x, "reason_b");  // previously threw std::runtime_error
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2U);
+  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(a, x)));
+  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(b, x)));
+  acm.removeAllowedCollision(a, x);
+  EXPECT_FALSE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(a, x)));
+  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(b, x)));
+}
+
+TEST(AllowedCollisionMatrixUnit, PerLinkRemoveIsNameExact)  // NOLINT
+{
+  // removeAllowedCollision(LinkId) must not sweep away pairs of a hash-colliding other link.
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const tesseract::common::LinkId x("link_x");
+  tesseract::common::AllowedCollisionMatrix acm;
+  acm.addAllowedCollision(a, x, "reason_a");
+  acm.addAllowedCollision(b, x, "reason_b");
+  acm.removeAllowedCollision(a);
+  EXPECT_FALSE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(a, x)));
+  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(b, x)));
+}
+
+TEST(CollisionMarginPairDataUnit, CollidingPairsCoexist)  // NOLINT
+{
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const tesseract::common::LinkId x("link_x");
+  tesseract::common::CollisionMarginPairData margins;
+  margins.setCollisionMargin(a, x, 0.01);
+  margins.setCollisionMargin(b, x, 0.02);  // previously threw
+  ASSERT_TRUE(margins.getCollisionMargin(a, x).has_value());
+  ASSERT_TRUE(margins.getCollisionMargin(b, x).has_value());
+  EXPECT_DOUBLE_EQ(*margins.getCollisionMargin(a, x), 0.01);
+  EXPECT_DOUBLE_EQ(*margins.getCollisionMargin(b, x), 0.02);
 }
 
 int main(int argc, char** argv)

@@ -880,17 +880,13 @@ struct convert<tesseract::common::PairsCollisionMarginData>
       auto entry = (id1.value() <= id2.value()) ?
                        tesseract::common::PairMarginEntry{ std::move(name1), std::move(name2), margin } :
                        tesseract::common::PairMarginEntry{ std::move(name2), std::move(name1), margin };
+      // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
+      // always a genuine re-add of the same named pair — just refresh the payload.
       auto [existing, inserted] = rhs.try_emplace(pair_key);
       if (inserted)
-      {
         existing->second = std::move(entry);
-      }
       else
-      {
-        tesseract::common::checkPairHashCollision(
-            "MarginData (YAML)", entry.name1, entry.name2, existing->second.name1, existing->second.name2);
         existing->second.margin = entry.margin;
-      }
     }
     return true;
   }
@@ -961,17 +957,13 @@ struct convert<tesseract::common::AllowedCollisionEntries>
       auto entry = (id1.value() <= id2.value()) ?
                        tesseract::common::ACMEntry{ std::move(name1), std::move(name2), std::move(reason) } :
                        tesseract::common::ACMEntry{ std::move(name2), std::move(name1), std::move(reason) };
+      // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
+      // always a genuine re-add of the same named pair — just refresh the payload.
       auto [existing, inserted] = rhs.try_emplace(pair_key);
       if (inserted)
-      {
         existing->second = std::move(entry);
-      }
       else
-      {
-        tesseract::common::checkPairHashCollision(
-            "ACM (YAML)", entry.name1, entry.name2, existing->second.name1, existing->second.name2);
         existing->second.reason = std::move(entry.reason);
-      }
     }
     return true;
   }
