@@ -81,7 +81,9 @@ bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator)
 {
   // do not distance check geoms part of the same object / link / attached body
-  if (pair.first_id() == pair.second_id())
+  // (full LinkId compare, not just the raw value: two different link names sharing a hash
+  // value must not be treated as a self-pair)
+  if (pair.first() == pair.second())
     return true;
 
   return validator != nullptr && (*validator)(pair);
