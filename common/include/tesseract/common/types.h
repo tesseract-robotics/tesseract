@@ -161,56 +161,69 @@ inline const LinkId INVALID_LINK_ID{};
 inline const JointId INVALID_JOINT_ID{};
 
 /**
- * @brief Canonically ordered pair of id values with cached hash.
+ * @brief Canonically ordered pair of ids with cached combined hash — the key type for
+ *        pair-keyed maps (ACM, collision margins, collision coefficients).
  *
- * Holds only the two NameIdValue id values (not the source NameId names) plus a
- * cached combined hash. The constructor guarantees first_id() <= second_id()
- * regardless of argument order, so OrderedIdPair(a, b) == OrderedIdPair(b, a).
+ * Stores the two full NameIds (values AND names) so pair equality can confirm names whenever
+ * the 64-bit values match — the same hybrid scheme as NameId::operator==. This makes every
+ * pair-keyed container watertight against hash collisions: colliding pairs compare unequal
+ * and coexist as distinct keys, exactly as in a string-keyed hash map.
+ *
+ * Canonicalization orders by (value, then name on value ties), so OrderedIdPair(a, b) ==
+ * OrderedIdPair(b, a) holds even when a and b collide on the hash value.
  */
 template <typename Tag>
 struct OrderedIdPair
 {
   OrderedIdPair() = default;
-  OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b) : OrderedIdPair(a.value(), b.value()) {}
-  OrderedIdPair(NameIdValue a, NameIdValue b)
-    : first_id_(a <= b ? a : b), second_id_(a <= b ? b : a), hash_(combineHash(first_id_, second_id_))
+  OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b)
+    : OrderedIdPair(a, b, (a.value() < b.value()) || (a.value() == b.value() && a.name() <= b.name()))
   {
   }
 
-  [[nodiscard]] constexpr NameIdValue first_id() const noexcept { return first_id_; }
-  [[nodiscard]] constexpr NameIdValue second_id() const noexcept { return second_id_; }
-  [[nodiscard]] constexpr std::size_t hash() const noexcept { return hash_; }
+  [[nodiscard]] const NameId<Tag>& first() const noexcept { return first_; }
+  [[nodiscard]] const NameId<Tag>& second() const noexcept { return second_; }
+  [[nodiscard]] NameIdValue first_id() const noexcept { return first_.value(); }
+  [[nodiscard]] NameIdValue second_id() const noexcept { return second_.value(); }
+  [[nodiscard]] std::size_t hash() const noexcept { return hash_; }
 
-  constexpr bool operator==(const OrderedIdPair& other) const noexcept
+  bool operator==(const OrderedIdPair& other) const noexcept
   {
-    return first_id_ == other.first_id_ && second_id_ == other.second_id_;
+    return first_ == other.first_ && second_ == other.second_;  // hybrid via NameId::operator==
   }
-  constexpr bool operator!=(const OrderedIdPair& other) const noexcept { return !(*this == other); }
+  bool operator!=(const OrderedIdPair& other) const noexcept { return !(*this == other); }
 
-  constexpr bool operator<(const OrderedIdPair& other) const noexcept
+  bool operator<(const OrderedIdPair& other) const noexcept
   {
-    if (first_id_ != other.first_id_)
-      return first_id_ < other.first_id_;
-    return second_id_ < other.second_id_;
+    if (first_ != other.first_)
+      return first_ < other.first_;
+    return second_ < other.second_;
+  }
+
+  /** @brief Mix two id values into one bucket hash (shared with OrderedIdPairView lookups). */
+  static std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
+  {
+    auto h = static_cast<std::size_t>(f);
+    h ^= static_cast<std::size_t>(s) + std::size_t{ 0x9e3779b97f4a7c15ULL } + (h << 6) + (h >> 2);
+    return h;
   }
 
 private:
-  NameIdValue first_id_{ 0 };
-  NameIdValue second_id_{ 0 };
-  std::size_t hash_{ 0 };
-
-  static constexpr std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
+  /** @brief Delegation target: canonical order already decided, so members initialize directly. */
+  OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b, bool a_first)
+    : first_(a_first ? a : b), second_(a_first ? b : a), hash_(combineHash(first_.value(), second_.value()))
   {
-    auto h = static_cast<std::size_t>(f);
-    h ^= static_cast<std::size_t>(s) + std::size_t{ 0x9e3779b9 } + (h << 6) + (h >> 2);
-    return h;
   }
+
+  NameId<Tag> first_;
+  NameId<Tag> second_;
+  std::size_t hash_{ 0 };
 };
 
 using LinkIdPair = OrderedIdPair<LinkTag>;
 
-static_assert(sizeof(LinkIdPair) == (2 * sizeof(NameIdValue)) + sizeof(std::size_t),
-              "LinkIdPair must be two NameIdValue ids plus cached pair hash");
+static_assert(sizeof(LinkIdPair) == (2 * sizeof(LinkId)) + sizeof(std::size_t),
+              "LinkIdPair is two full NameIds plus the cached pair hash");
 
 /** @brief Return the two names canonically ordered to match OrderedIdPair(a, b). */
 template <typename Tag>
