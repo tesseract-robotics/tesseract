@@ -109,15 +109,45 @@ struct NameId
 
   [[nodiscard]] constexpr bool isValid() const noexcept { return value_ != 0; }
 
-  constexpr bool operator==(const NameId& other) const noexcept { return value_ == other.value_; }
-  constexpr bool operator!=(const NameId& other) const noexcept { return value_ != other.value_; }
+  /**
+   * @brief Watertight (hybrid) equality: compare the cached hash value first; only when the
+   *        values match, confirm with the name strings. Two distinct names that collide on the
+   *        64-bit hash therefore compare UNEQUAL, so hash-keyed containers keep them as distinct
+   *        keys and resolve the collision exactly like a string-keyed hash map would.
+   * @details Load-bearing invariant: every valid NameId carries the name it was constructed
+   *          from (the string constructors are the only public way to obtain a valid id), so
+   *          the name is always available for the confirming compare.
+   */
+  bool operator==(const NameId& other) const noexcept { return value_ == other.value_ && name_ == other.name_; }
+  bool operator!=(const NameId& other) const noexcept { return !(*this == other); }
 
   /**
-   * @brief Order by hash value, NOT by name. This is hash-random — useful for ordered containers
-   *        (std::map / std::set keyed on NameId) but produces no human-meaningful ordering. If
-   *        you need lexicographic order, sort by name() explicitly.
+   * @brief Order by hash value, NOT by name — hash-random, useful for ordered containers but
+   *        produces no human-meaningful ordering (sort by name() explicitly for display).
+   *        Value ties (hash collisions) are broken by name so ordering is consistent with
+   *        operator== (a strict weak ordering whose equivalence is exactly hybrid equality).
    */
-  constexpr bool operator<(const NameId& other) const noexcept { return value_ < other.value_; }
+  bool operator<(const NameId& other) const noexcept
+  {
+    if (value_ != other.value_)
+      return value_ < other.value_;
+    return name_ < other.name_;
+  }
+
+  /**
+   * @brief Test-only factory: construct an id with an explicit value/name combination.
+   * @details Exists so unit tests can manufacture hash collisions (two names sharing one
+   *          value), which cannot be produced from real strings on demand. Never use outside
+   *          tests: an id whose value was not derived from its name breaks the "value is a
+   *          function of the name" property every container in the framework relies on.
+   */
+  [[nodiscard]] static NameId createWithValueForTesting(NameIdValue value, std::string name)
+  {
+    NameId id;
+    id.value_ = value;
+    id.name_ = std::move(name);
+    return id;
+  }
 
 private:
   NameIdValue value_{ 0 };
