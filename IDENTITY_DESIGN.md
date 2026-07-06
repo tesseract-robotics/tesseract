@@ -2,7 +2,19 @@
 
 **Status:** In progress — mostly done in all repos.
 
-Runtime identity for links and joints in Tesseract is a type-tagged integer hash (currently 64-bit), not a string. This document explains what that means, why it was done, and — most importantly — how hash collisions are detected at insertion time and where the residual trust boundaries lie.
+> **Interim truth-banner (feature/watertight-identity):** the collision-handling design
+> described below is out of date. As of this branch, hash collisions are no longer
+> *detected and thrown at insertion*; they are **resolved by hybrid equality** — colliding
+> names compare unequal via `NameId::operator==` / `OrderedIdPair::operator==` and coexist as
+> distinct keys, exactly like a string-keyed hash map. `checkHashCollision`,
+> `checkPairHashCollision`, `orderedPairNames`, `insertEntryChecked`, and the entry
+> `name1`/`name2` fields described below **no longer exist**. `LinkIdPair` now stores two full
+> `NameId`s plus a cached hash (~88 bytes), not the 24-byte value-only pair described here. The
+> full rewrite of this document is deferred to the Phase-2 container decision (see
+> `IDENTITY_BENCHMARKS.md`); until then, this banner governs wherever the text below conflicts
+> with it.
+
+Runtime identity for links and joints in Tesseract is a type-tagged integer hash (currently 64-bit), not a string. This document explains what that means, why it was done, and — most importantly — how hash collisions were originally intended to be detected at insertion time and where the residual trust boundaries lie. **See the banner above: the collision-handling mechanism has since changed to hybrid-equality resolution.**
 
 ## The identity types
 

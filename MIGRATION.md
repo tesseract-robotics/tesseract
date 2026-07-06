@@ -274,3 +274,15 @@ echo "   consolidated into a single call listing all needed COMPONENTS."
 echo ""
 echo "Migration complete. Review changes with 'git diff' and rebuild."
 ```
+
+## feature/watertight-identity API changes
+
+`ACMEntry` and `PairMarginEntry` (and, in the `trajopt` repo, `PairCoeffEntry`) lost their
+`name1`/`name2` fields — the fat `LinkIdPair` key is now the single source of names, so callers
+read `key.first().name()` / `key.second().name()` instead. `getAlphabeticalACMEntries` now
+returns the new `srdf::AlphabeticalACMEntry` type rather than the old entry struct.
+`checkHashCollision`, `checkPairHashCollision`, and `orderedPairNames` have been deleted, along
+with the raw-value constructor of `OrderedIdPair` (construct from two `NameId`s instead); the
+private `insertEntryChecked` helper was renamed `insertEntry`. The collision-throw-on-hash-
+collision behavior described in `IDENTITY_DESIGN.md` has been removed: colliding names now
+resolve via hybrid equality and coexist as distinct keys rather than throwing at insertion time.
