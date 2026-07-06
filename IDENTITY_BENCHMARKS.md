@@ -77,6 +77,6 @@ BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_BulletDiscreteBVHManager_ACTIVE_OBJ_64/re
 BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_BulletDiscreteBVHManager_ACTIVE_OBJ_512/real_time_mean            88.6 ns
 ```
 
-## Phase 2 — boost::unordered_flat_map + transparent view lookups (after Task 11)
+## Phase 2 — boost::unordered_flat_map + transparent view lookups (deferred — pending real-data benchmarking)
 
 (pending)

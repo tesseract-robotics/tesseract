@@ -204,7 +204,7 @@ struct OrderedIdPair
   static std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
   {
     auto h = static_cast<std::size_t>(f);
-    h ^= static_cast<std::size_t>(s) + std::size_t{ 0x9e3779b97f4a7c15ULL } + (h << 6) + (h >> 2);
+    h ^= static_cast<std::size_t>(s) + static_cast<std::size_t>(0x9e3779b97f4a7c15ULL) + (h << 6) + (h >> 2);
     return h;
   }
 
