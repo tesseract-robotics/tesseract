@@ -32,15 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::geometry
 {
-static void validateGrid(const Eigen::AlignedBox3d& domain, const Eigen::Vector3i& dimensions)
-{
-  if (dimensions.x() < 2 || dimensions.y() < 2 || dimensions.z() < 2)
-    throw std::runtime_error("SignedDistanceField: dimensions must be >= 2 on every axis");
-
-  if ((domain.max().array() <= domain.min().array()).any())
-    throw std::runtime_error("SignedDistanceField: domain max must exceed domain min on every axis");
-}
-
 /** @brief Sample a batched distance function on the regular lattice spanning the domain. */
 static std::vector<double> sampleGrid(const BatchedSignedDistanceFunction& sampler,
                                       const Eigen::AlignedBox3d& domain,
@@ -77,13 +68,7 @@ SignedDistanceField::SignedDistanceField(const Eigen::AlignedBox3d& domain,
   , scale_(scale)
   , margin_(margin)
 {
-  validateGrid(domain_, dimensions_);
-
-  const auto expected = static_cast<std::size_t>(dimensions_.x()) * static_cast<std::size_t>(dimensions_.y()) *
-                        static_cast<std::size_t>(dimensions_.z());
-  if (distances_.size() != expected)
-    throw std::runtime_error("SignedDistanceField: distances has " + std::to_string(distances_.size()) +
-                             " values but the grid requires " + std::to_string(expected));
+  validate();
 }
 
 SignedDistanceField::SignedDistanceField(const Eigen::AlignedBox3d& domain,
@@ -98,9 +83,29 @@ SignedDistanceField::SignedDistanceField(const Eigen::AlignedBox3d& domain,
   , scale_(scale)
   , margin_(margin)
 {
-  validateGrid(domain_, dimensions_);
+  validateDomainAndDimensions();
   if (sampler_ == nullptr)
     throw std::runtime_error("SignedDistanceField: sampler must not be null");
+}
+
+void SignedDistanceField::validateDomainAndDimensions() const
+{
+  if (dimensions_.x() < 2 || dimensions_.y() < 2 || dimensions_.z() < 2)
+    throw std::runtime_error("SignedDistanceField: dimensions must be >= 2 on every axis");
+
+  if ((domain_.max().array() <= domain_.min().array()).any())
+    throw std::runtime_error("SignedDistanceField: domain max must exceed domain min on every axis");
+}
+
+void SignedDistanceField::validate() const
+{
+  validateDomainAndDimensions();
+
+  const auto expected = static_cast<std::size_t>(dimensions_.x()) * static_cast<std::size_t>(dimensions_.y()) *
+                        static_cast<std::size_t>(dimensions_.z());
+  if (distances_.size() != expected)
+    throw std::runtime_error("SignedDistanceField: distances has " + std::to_string(distances_.size()) +
+                             " values but the grid requires " + std::to_string(expected));
 }
 
 const Eigen::AlignedBox3d& SignedDistanceField::getDomain() const { return domain_; }

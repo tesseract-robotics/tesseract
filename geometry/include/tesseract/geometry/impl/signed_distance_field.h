@@ -163,6 +163,12 @@ public:
   bool operator!=(const SignedDistanceField& rhs) const;
 
 private:
+  /** @brief Throw if the domain is degenerate or any dimension is < 2. */
+  void validateDomainAndDimensions() const;
+
+  /** @brief Throw if the domain/dimensions are invalid or distances.size() != dimensions.prod(). */
+  void validate() const;
+
   Eigen::AlignedBox3d domain_;
   Eigen::Vector3i dimensions_{ 0, 0, 0 };
   /// Sampled grid. Empty on a lazy field until discretized; @c mutable so discretize() can memoize on a const field.
