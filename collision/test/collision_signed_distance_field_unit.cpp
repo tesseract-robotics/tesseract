@@ -177,6 +177,200 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHPositiveDistanc
   runSDFPositiveDistanceTest(checker);
 }
 
+void addCapsuleObjects(DiscreteContactManager& checker)
+{
+  CollisionShapesConst sdf_shapes{ makeSphereSDF() };
+  tesseract::common::VectorIsometry3d sdf_poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf_link", 0, sdf_shapes, sdf_poses, true);
+
+  // Probe capsule: radius 0.1, cylindrical length 0.2 (bullet axis = z)
+  CollisionShapesConst capsule_shapes{ std::make_shared<tesseract::geometry::Capsule>(0.1, 0.2) };
+  tesseract::common::VectorIsometry3d capsule_poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("capsule_link", 0, capsule_shapes, capsule_poses, true);
+
+  checker.setActiveCollisionObjects({ "sdf_link", "capsule_link" });
+  checker.setDefaultCollisionMargin(0.0);
+}
+
+void runSDFCapsuleTest(DiscreteContactManager& checker)
+{
+  // Capsules are checked by sampling the field along the axis segment with a radius offset. The
+  // capsule axis is z, so at x = 0.45 the deepest sample is the axis midpoint:
+  // SDF(0.45,0,0) - radius = -0.05 - 0.1 = -0.15, same as the sphere probe.
+  addCapsuleObjects(checker);
+
+  tesseract::common::TransformMap location;
+  location["sdf_link"] = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d capsule_tf = Eigen::Isometry3d::Identity();
+  capsule_tf.translation().x() = 0.45;
+  location["capsule_link"] = capsule_tf;
+  checker.setCollisionObjectsTransform(location);
+
+  ContactResultMap result;
+  ContactResultVector result_vector;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_LT(result_vector[0].distance, 0.0);
+  EXPECT_NEAR(result_vector[0].distance, -0.15, 0.02);
+
+  const Eigen::Vector3d& normal = result_vector[0].normal;
+  EXPECT_NEAR(normal.norm(), 1.0, 1e-3);
+  EXPECT_NEAR(std::abs(normal.x()), 1.0, 0.05);
+
+  // Positive-distance (separation) contact inside the margin band, mirroring the sphere case:
+  // at x = 0.63 the axis midpoint separation is 0.13 - 0.1 = +0.03 < the 0.05 margin.
+  checker.setDefaultCollisionMargin(0.05);
+  capsule_tf.translation().x() = 0.63;
+  checker.setCollisionObjectsTransform("capsule_link", capsule_tf);
+
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_GT(result_vector[0].distance, 0.0);
+  EXPECT_NEAR(result_vector[0].distance, 0.03, 0.02);
+
+  // Separation outside the margin band -> no contact.
+  capsule_tf.translation().x() = 0.75;
+  checker.setCollisionObjectsTransform("capsule_link", capsule_tf);
+
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  EXPECT_TRUE(result_vector.empty());
+}
+
+void runSDFBoxTest(DiscreteContactManager& checker)
+{
+  // Polyhedral probes are the third distinct query branch (vertex list, no radius offset): the
+  // field is sampled at the box's 8 corners and the reported distance is the field value there.
+  CollisionShapesConst sdf_shapes{ makeSphereSDF() };
+  tesseract::common::VectorIsometry3d sdf_poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf_link", 0, sdf_shapes, sdf_poses, true);
+
+  // Probe box with side 0.2 (half extents 0.1); BULLET_MARGIN is zero so the corners are exact.
+  CollisionShapesConst box_shapes{ std::make_shared<tesseract::geometry::Box>(0.2, 0.2, 0.2) };
+  tesseract::common::VectorIsometry3d box_poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("box_link", 0, box_shapes, box_poses, true);
+
+  checker.setActiveCollisionObjects({ "sdf_link", "box_link" });
+  checker.setDefaultCollisionMargin(0.0);
+
+  // Penetration: box center at x = 0.5 puts the four inner corners at (0.4, +/-0.1, +/-0.1),
+  // ||corner|| = sqrt(0.18) ~= 0.4243, so SDF(corner) ~= 0.4243 - 0.5 = -0.0757.
+  tesseract::common::TransformMap location;
+  location["sdf_link"] = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d box_tf = Eigen::Isometry3d::Identity();
+  box_tf.translation().x() = 0.5;
+  location["box_link"] = box_tf;
+  checker.setCollisionObjectsTransform(location);
+
+  ContactResultMap result;
+  ContactResultVector result_vector;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_LT(result_vector[0].distance, 0.0);
+  EXPECT_NEAR(result_vector[0].distance, -0.0757, 0.02);
+
+  // The normal is the field gradient at the reported corner: radial, ~(0.943, +/-0.236, +/-0.236)
+  // at the penetration pose. The corner picked among the four symmetric ones is arbitrary, so only
+  // the x-component and unit length are asserted.
+  const Eigen::Vector3d& normal = result_vector[0].normal;
+  EXPECT_NEAR(normal.norm(), 1.0, 1e-3);
+  EXPECT_NEAR(std::abs(normal.x()), 0.943, 0.05);
+
+  // Positive-distance contact inside the margin band: box center at x = 0.62 puts the inner
+  // corners at (0.52, +/-0.1, +/-0.1), ||corner|| ~= 0.5389 -> separation ~= +0.0389 < 0.05.
+  checker.setDefaultCollisionMargin(0.05);
+  box_tf.translation().x() = 0.62;
+  checker.setCollisionObjectsTransform("box_link", box_tf);
+
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_GT(result_vector[0].distance, 0.0);
+  EXPECT_NEAR(result_vector[0].distance, 0.0389, 0.02);
+
+  // Separation outside the margin band: box center at x = 0.7 -> nearest corner separation
+  // ~= sqrt(0.38) - 0.5 = +0.1164 > 0.05 -> no contact.
+  box_tf.translation().x() = 0.7;
+  checker.setCollisionObjectsTransform("box_link", box_tf);
+
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  EXPECT_TRUE(result_vector.empty());
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleCapsule)  // NOLINT
+{
+  BulletDiscreteSimpleManager checker;
+  runSDFCapsuleTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHCapsule)  // NOLINT
+{
+  BulletDiscreteBVHManager checker;
+  runSDFCapsuleTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleBox)  // NOLINT
+{
+  BulletDiscreteSimpleManager checker;
+  runSDFBoxTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHBox)  // NOLINT
+{
+  BulletDiscreteBVHManager checker;
+  runSDFBoxTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, NonPolyhedralProbeUnsupported)  // NOLINT
+{
+  // Bullet's SDF narrowphase samples the field at the convex shape's query points, which only
+  // exist for spheres, capsules and polyhedral shapes. Other non-polyhedral probes
+  // (cylinder/cone) produce no contacts even when overlapping; a warning is logged once per
+  // pair. This locks in that documented limitation so a behavior change is caught.
+  BulletDiscreteSimpleManager checker;
+
+  CollisionShapesConst sdf_shapes{ makeSphereSDF() };
+  tesseract::common::VectorIsometry3d sdf_poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf_link", 0, sdf_shapes, sdf_poses, true);
+
+  CollisionShapesConst cylinder_shapes{ std::make_shared<tesseract::geometry::Cylinder>(0.1, 0.2) };
+  tesseract::common::VectorIsometry3d cylinder_poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("cylinder_link", 0, cylinder_shapes, cylinder_poses, true);
+
+  checker.setActiveCollisionObjects({ "sdf_link", "cylinder_link" });
+  checker.setDefaultCollisionMargin(0.0);
+
+  // Cylinder center inside the SDF surface -- a supported probe would report penetration here.
+  tesseract::common::TransformMap location;
+  location["sdf_link"] = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d cylinder_tf = Eigen::Isometry3d::Identity();
+  cylinder_tf.translation().x() = 0.45;
+  location["cylinder_link"] = cylinder_tf;
+  checker.setCollisionObjectsTransform(location);
+
+  ContactResultMap result;
+  ContactResultVector result_vector;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  EXPECT_TRUE(result_vector.empty());
+}
+
 TEST(TesseractCollisionSignedDistanceFieldUnit, CastManagerRejects)  // NOLINT
 {
   // The cast/continuous manager only supports convex shapes; an SDF (concave) must be rejected
