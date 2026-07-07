@@ -77,6 +77,38 @@ BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_BulletDiscreteBVHManager_ACTIVE_OBJ_64/re
 BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_BulletDiscreteBVHManager_ACTIVE_OBJ_512/real_time_mean            88.6 ns
 ```
 
+## Phase 1 follow-up — per-pair margin hoist in trajopt_ifopt (2026-07-07)
+
+The three trajopt_ifopt gradient loops iterate the pair-keyed `ContactResultMap` with the key
+in scope and already hoisted the coeff lookup per pair, but re-derived the margin per contact
+through a two-id lookup (one fat `LinkIdPair` construction = 2 heap string copies per contact,
+see `BM_MarginLookup_TwoIds` above). Fixed in trajopt commit `538ce4bd`: margin hoisted per
+pair next to the coeff, and the now-trivial per-contact `getGradient`/`calcGradientData`
+virtuals deleted (the loops call the free `trajopt_common::getGradient` directly, also removing
+a per-contact virtual dispatch). Behavior bit-identical; trajopt_ifopt 37/37, trajopt_sqp
+45/45 tests.
+
+Whole-solve benchmarks, same machine, 5 repetitions, medians compared (single-threaded only —
+the multi-threaded families are unusable on WSL2: 5.3–88% CV, and the last "before" family
+additionally overlapped a rebuild). Invocations:
+
+```
+trajopt_sqp_solve_benchmarks --benchmark_repetitions=5 --benchmark_report_aggregates_only=true   # measurement
+trajopt_solve_benchmarks     --benchmark_repetitions=5 --benchmark_report_aggregates_only=true   # control (sco path, untouched)
+```
+
+| Benchmark (real_time_median) | Before | After | Delta |
+|---|---|---|---|
+| `BM_TRAJOPT_IFOPT_SIMPLE_COLLISION_SOLVE` | 289 us | 268 us | **-7.3%** |
+| `BM_TRAJOPT_IFOPT_PLANNING_SOLVE` | 24.2 ms | 22.9 ms | **-5.4%** |
+| `BM_TRAJOPT_SIMPLE_COLLISION_SOLVE` (control) | 314 us | 307 us | -2.2% (noise) |
+| `BM_TRAJOPT_PLANNING_SOLVE` (control) | 19573 ms | 19688 ms | +0.6% (noise) |
+
+Both measurement deltas exceed their run-to-run CVs (2.3–3.0%); both control deltas sit within
+theirs (2.7–3.5%), confirming the effect is confined to the changed evaluators. The win is the
+expected one: 2 heap allocations + ~40 ns of pair construction eliminated per contact per
+gradient pass, plus one virtual dispatch.
+
 ## Phase 2 — boost::unordered_flat_map + transparent view lookups (deferred — pending real-data benchmarking)
 
 (pending)
