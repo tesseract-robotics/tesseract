@@ -73,7 +73,7 @@ std::optional<double> CollisionMarginPairData::getMaxCollisionMargin() const { r
 
 std::optional<double> CollisionMarginPairData::getMaxCollisionMargin(const LinkId& obj_id) const
 {
-  auto it = object_max_margins_.find(obj_id.value());
+  auto it = object_max_margins_.find(obj_id);
   if (it != object_max_margins_.end())
     return it->second;
 
@@ -135,16 +135,16 @@ void CollisionMarginPairData::updateMaxMargins()
     max_collision_margin_ = std::max(max_collision_margin_.value(), entry.margin);  // NOLINT
 
     // Update max margin for obj1
-    auto it1 = object_max_margins_.find(key.first_id());
+    auto it1 = object_max_margins_.find(key.first());
     if (it1 == object_max_margins_.end())
-      object_max_margins_[key.first_id()] = entry.margin;
+      object_max_margins_[key.first()] = entry.margin;
     else
       it1->second = std::max(it1->second, entry.margin);
 
     // Update max margin for obj2
-    auto it2 = object_max_margins_.find(key.second_id());
+    auto it2 = object_max_margins_.find(key.second());
     if (it2 == object_max_margins_.end())
-      object_max_margins_[key.second_id()] = entry.margin;
+      object_max_margins_[key.second()] = entry.margin;
     else
       it2->second = std::max(it2->second, entry.margin);
   }
