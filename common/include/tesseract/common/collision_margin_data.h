@@ -29,7 +29,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
-#include <string>
 #include <unordered_map>
 #include <optional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -170,8 +169,9 @@ private:
   /** @brief Stores the largest collision margin */
   std::optional<double> max_collision_margin_;
 
-  /** @brief Stores the maximum collision margin for each object */
-  std::unordered_map<NameIdValue, double> object_max_margins_;
+  /** @brief Stores the maximum collision margin for each object, keyed by full LinkId (hybrid
+   *  value+name equality) so hash-colliding links do not merge into one max-margin entry */
+  std::unordered_map<LinkId, double> object_max_margins_;
 
   /** @brief Set the margin for a given contact pair without updating the max margins */
   void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);

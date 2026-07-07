@@ -5224,6 +5224,22 @@ TEST(CollisionMarginPairDataUnit, CollidingPairsCoexist)  // NOLINT
   EXPECT_DOUBLE_EQ(*margins.getCollisionMargin(b, x), 0.02);
 }
 
+TEST(CollisionMarginPairDataUnit, ObjectMaxMarginIsNameExact)  // NOLINT
+{
+  // object_max_margins_ must not merge hash-colliding links: each link keeps its own max.
+  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
+  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const tesseract::common::LinkId x("link_x");
+  tesseract::common::CollisionMarginPairData margins;
+  margins.setCollisionMargin(a, x, 0.05);
+  margins.setCollisionMargin(b, x, 0.01);
+  ASSERT_TRUE(margins.getMaxCollisionMargin(a).has_value());
+  ASSERT_TRUE(margins.getMaxCollisionMargin(b).has_value());
+  EXPECT_DOUBLE_EQ(*margins.getMaxCollisionMargin(a), 0.05);
+  EXPECT_DOUBLE_EQ(*margins.getMaxCollisionMargin(b), 0.01);  // pre-fix: merged to 0.05
+  EXPECT_DOUBLE_EQ(*margins.getMaxCollisionMargin(x), 0.05);  // x participates in both pairs
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
