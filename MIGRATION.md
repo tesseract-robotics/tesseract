@@ -289,4 +289,6 @@ resolve via hybrid equality and coexist as distinct keys rather than throwing at
 In the `trajopt` repo, the per-contact `DiscreteCollisionEvaluator::getGradient` and
 `ContinuousCollisionEvaluator::calcGradientData` virtuals were removed — the collision margin is
 now resolved once per pair in `calcCollisions`/`calcCollisionData`; call the free
-`trajopt_common::getGradient` overloads directly instead.
+`trajopt_common::getGradient` overloads directly instead. The uncalled 4-argument two-timestep
+`CollisionEvaluator::GetGradient(dofvals0, dofvals1, contact_result, isTimestep1)` convenience
+wrapper was also removed; use the 6-argument overload taking `margin` and `coeff` explicitly.
