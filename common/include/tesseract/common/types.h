@@ -67,6 +67,14 @@ namespace tesseract::common
  */
 using NameIdValue = std::uint64_t;
 
+/**
+ * @brief The NameIdValue reserved for invalid (default-constructed, empty-name) NameIds.
+ *
+ * No valid id ever carries this value: a name whose hash lands on it is remapped at
+ * construction (see the NameId string constructor).
+ */
+inline constexpr NameIdValue INVALID_NAME_ID_VALUE{ 0 };
+
 struct LinkTag
 {
 };
@@ -93,7 +101,7 @@ struct NameId
     if (!name.empty())
     {
       auto h = static_cast<NameIdValue>(std::hash<std::string>{}(name));
-      value_ = (h == 0) ? NameIdValue{ 1 } : h;
+      value_ = (h == INVALID_NAME_ID_VALUE) ? INVALID_NAME_ID_VALUE + 1 : h;
       name_ = name;
     }
   }
@@ -101,13 +109,13 @@ struct NameId
   // NOLINTNEXTLINE(google-explicit-constructor)
   TESSERACT_NAMEID_EXPLICIT NameId(const char* name) : NameId(name != nullptr ? std::string(name) : std::string{}) {}
 
-  /** @brief The numeric hash of the name. Zero means invalid/default-constructed. */
+  /** @brief The numeric hash of the name. INVALID_NAME_ID_VALUE means invalid/default-constructed. */
   [[nodiscard]] constexpr NameIdValue value() const noexcept { return value_; }
 
   /** @brief Access the original name string. Empty for default-constructed (invalid) IDs. */
   [[nodiscard]] const std::string& name() const noexcept { return name_; }
 
-  [[nodiscard]] constexpr bool isValid() const noexcept { return value_ != 0; }
+  [[nodiscard]] constexpr bool isValid() const noexcept { return value_ != INVALID_NAME_ID_VALUE; }
 
   /**
    * @brief Watertight (hybrid) equality: compare the cached hash value first; only when the
@@ -150,7 +158,7 @@ struct NameId
   }
 
 private:
-  NameIdValue value_{ 0 };
+  NameIdValue value_{ INVALID_NAME_ID_VALUE };
   std::string name_;
 };
 
@@ -222,7 +230,7 @@ private:
 
   NameId<Tag> first_;
   NameId<Tag> second_;
-  std::size_t hash_{ 0 };
+  std::size_t hash_{ combineHash(INVALID_NAME_ID_VALUE, INVALID_NAME_ID_VALUE) };
 };
 
 using LinkIdPair = OrderedIdPair<LinkTag>;
