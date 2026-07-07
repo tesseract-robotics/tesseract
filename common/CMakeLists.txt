@@ -52,7 +52,6 @@ add_library(
   src/schema_registry.cpp
   src/schema_registration.cpp
   src/yaml_extensions.cpp
-  src/types.cpp
   src/stopwatch.cpp
   src/timer.cpp
   src/yaml_utils.cpp)

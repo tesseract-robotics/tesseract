@@ -1,20 +1,6 @@
 # Identity Design: NameId, LinkId, JointId
 
-**Status:** In progress — mostly done in all repos.
-
-> **Interim truth-banner (feature/watertight-identity):** the collision-handling design
-> described below is out of date. As of this branch, hash collisions are no longer
-> *detected and thrown at insertion*; they are **resolved by hybrid equality** — colliding
-> names compare unequal via `NameId::operator==` / `OrderedIdPair::operator==` and coexist as
-> distinct keys, exactly like a string-keyed hash map. `checkHashCollision`,
-> `checkPairHashCollision`, `orderedPairNames`, `insertEntryChecked`, and the entry
-> `name1`/`name2` fields described below **no longer exist**. `LinkIdPair` now stores two full
-> `NameId`s plus a cached hash (~88 bytes), not the 24-byte value-only pair described here. The
-> full rewrite of this document is deferred to the Phase-2 container decision (see
-> `IDENTITY_BENCHMARKS.md`); until then, this banner governs wherever the text below conflicts
-> with it.
-
-Runtime identity for links and joints in Tesseract is a type-tagged integer hash (currently 64-bit), not a string. This document explains what that means, why it was done, and — most importantly — how hash collisions were originally intended to be detected at insertion time and where the residual trust boundaries lie. **See the banner above: the collision-handling mechanism has since changed to hybrid-equality resolution.**
+Runtime identity for links and joints in Tesseract is a type-tagged integer hash paired with the name it was computed from. The hash drives container lookup; the name confirms equality and serves display and serialization. This document explains what that means, why it was done, and how hash collisions are resolved — deterministically, with the same semantics as a string-keyed hash map.
 
 ## The identity types
 
@@ -25,31 +11,43 @@ using NameIdValue = std::uint64_t;       // typedef so the width can be widened 
 
 template <typename Tag>
 struct NameId {
-  NameId();                              // invalid (value == 0)
+  NameId();                              // invalid (value == 0, empty name)
   NameId(const std::string&);            // hashes the name, retains it
-  NameIdValue value() const noexcept;    // the hash
-  const std::string& name() const;       // original string, for display / serialization
+  NameId(const char*);                   // ditto; nullptr yields the invalid id
+  NameIdValue value() const noexcept;    // the hash; 0 means invalid
+  const std::string& name() const;       // original string; empty for invalid ids
   bool isValid() const noexcept;         // value != 0
-  bool operator==(const NameId&) const noexcept;  // value-based
+  bool operator==(const NameId&) const;  // hybrid: value first, name confirms
+  bool operator<(const NameId&) const;   // by value; name breaks value ties
+  static NameId createWithValueForTesting(NameIdValue, std::string);  // tests only
 };
 
 using LinkId  = NameId<LinkTag>;
 using JointId = NameId<JointTag>;
+inline const LinkId  INVALID_LINK_ID{};
+inline const JointId INVALID_JOINT_ID{};
 
 template <typename Tag>
-struct OrderedIdPair {
-  OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b);
-  // Canonicalizes so (a,b) == (b,a); caches the combined pair hash.
+struct OrderedIdPair {              // two full NameIds + cached combined hash
+  OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b);  // canonicalizes: (a,b) == (b,a)
+  const NameId<Tag>& first() const;
+  const NameId<Tag>& second() const;
+  std::size_t hash() const;         // computed once at construction
+  static std::size_t combineHash(NameIdValue, NameIdValue);   // the mixing function
 };
 
 using LinkIdPair = OrderedIdPair<LinkTag>;
 ```
 
-The source name is retained on the `NameId` so public APIs, error messages, and on-disk serialization continue to speak strings. The hash drives lookup and equality; the name stays available for everything that needs to address humans or files.
+The source name is retained on the `NameId` so public APIs, error messages, and on-disk serialization continue to speak strings. The hash drives lookup; the name stays available for everything that needs to address humans or files — and for the confirming compare in `operator==` (see "Equality and hash-collision resolution").
 
-The numeric type behind a `NameId` is exposed as `NameIdValue` rather than spelled `uint64_t` everywhere, so a future widening only requires changing the typedef and a different hash function — *not* every downstream caller. Note that `std::hash<std::string>` itself returns `std::size_t`, so widening `NameIdValue` past 64 bits is preparation only; producing a wider hash also requires switching off `std::hash<std::string>` to something like xxh128.
+The numeric type behind a `NameId` is exposed as `NameIdValue` rather than spelled `uint64_t` everywhere, so a future widening only requires changing the typedef and a different hash function — *not* every downstream caller. Note that `std::hash<std::string>` itself returns `std::size_t`, so widening `NameIdValue` past 64 bits is preparation only; producing a wider hash also requires switching off `std::hash<std::string>` (e.g. to xxh128), and the cached pair hash in `OrderedIdPair` stays a `std::size_t` bucket hash regardless.
 
 `NameId` exposes no mutating methods after construction; instances are safe to share across threads.
+
+**The invalid id.** A default-constructed `NameId`, an empty string, and a `nullptr` `const char*` all yield the invalid id: `value() == INVALID_NAME_ID_VALUE` (0), `name()` empty, `isValid() == false`. All invalid ids compare equal to each other and unequal to every valid id. The value is reserved for this state — in the astronomically unlikely event a real name hashes onto it, its value is remapped off it at construction (harmless: equality confirms names anyway). Use `INVALID_LINK_ID` / `INVALID_JOINT_ID` when an explicit sentinel reads better than `{}`.
+
+**Test-only escape hatch.** `createWithValueForTesting` constructs an id with an explicit value/name combination so unit tests can manufacture hash collisions on demand. Never use it outside tests: an id whose value is not a function of its name breaks the invariant every container in the framework relies on.
 
 ## Type safety
 
@@ -65,7 +63,7 @@ This compile-time check fires where the implicit string-to-ID conversion is disa
 
 The same tag scheme extends to `OrderedIdPair<Tag>`: `LinkIdPair` cannot be formed from `JointId`s by accident.
 
-Note one footgun: `NameId::operator<` orders by hash value, not by name. Ordered containers (`std::map`, `std::set`) work but produce no human-meaningful key order — sort by `name()` explicitly when display order matters.
+Note one footgun: `NameId::operator<` orders by hash value (name only breaks value ties), not by name. Ordered containers (`std::map`, `std::set`) work but produce no human-meaningful key order — sort by `name()` explicitly when display order matters.
 
 ## Implicit string conversion: implicit by default, explicit inside Tesseract
 
@@ -80,6 +78,19 @@ Each of Tesseract's own production libraries adds `TESSERACT_NAMEID_NO_IMPLICIT`
 
 The CMake plumbing lives in `common/cmake/tesseract_macros.cmake` (variable `TESSERACT_COMPILE_DEFINITIONS_PRIVATE`) and is applied via `target_compile_definitions(<lib> PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})` on each production library. New libraries added to Tesseract should follow the same pattern.
 
+## Equality and hash-collision resolution
+
+`std::hash<std::string>` produces a `std::size_t` (64 bits on this platform), so two distinct names *can* hash to the same value. The design resolves this the way a string-keyed hash map does, rather than trying to detect it:
+
+- **Hybrid equality.** `NameId::operator==` compares the cached values first; only when the values match does it confirm with the name strings. Two colliding names therefore compare **unequal**, so every hash-keyed container keeps them as distinct keys — they land in the same bucket and are separated by the equality probe, which is precisely how `std::unordered_map<std::string, …>` handles a bucket collision. There is nothing to detect, no error path, and no way for a collision to silently alias two links.
+- **Load-bearing invariant:** every valid `NameId` carries the name it was constructed from. The string constructors are the only public way to obtain a valid id, so the confirming compare always has both names available. (This is exactly the invariant `createWithValueForTesting` exists to violate — in tests only.)
+- **Pairs are watertight the same way.** `OrderedIdPair` stores the two full `NameId`s, so pair equality is hybrid via the components. Canonicalization orders by value and breaks value ties by name, so `LinkIdPair(a, b) == LinkIdPair(b, a)` holds even when `a` and `b` collide.
+- **Ordering is consistent.** `operator<` on both types breaks value ties by name, giving a strict weak ordering whose equivalence classes are exactly hybrid equality — safe for `std::map`/`std::set` and for sorting.
+
+The practical consequence of a collision is a performance footnote, not a correctness event: the colliding ids share a bucket and pay a string compare to disambiguate, exactly as colliding strings would. At realistic scene sizes (fewer than 10^4 names) the 64-bit birthday bound puts the probability of even one collision around 10^-12 — and equality already pays one string compare on every *genuine* match anyway (see Performance), so the marginal cost is nil.
+
+The SRDF parser's name verification (`tesseract::srdf::isRegisteredLink` / `isRegisteredJoint` in `srdf/src/utils.cpp`) is typo protection, not collision handling: it checks that a parsed name exists in the scene graph, and under hybrid equality that check is name-exact. Structural entries (groups, group states, calibration) abort SRDF load on an unknown name; advisory entries (disabled collisions, per-pair margins) warn and skip.
+
 ## Performance
 
 The migration was motivated by profiling that showed string hashing and comparison dominating hot paths such as ACM queries and FK/IK state lookups. With string keys, every lookup paid:
@@ -91,109 +102,68 @@ The migration was motivated by profiling that showed string hashing and comparis
 With `NameId` keys:
 
 - `std::hash<NameId>` is the identity function — it returns the pre-computed `NameIdValue`
-- equality and probe comparisons are `NameIdValue` compares
+- a probe that *misses* short-circuits on the value compare and never touches the strings
+- a probe that *hits* pays one confirming string compare (the price of watertight equality)
 - constructing a lookup key is free if you already hold a `NameId`
 
-Both standard (`std::hash<NameId>`) and boost (`hash_value` ADL) hash entry points are provided, so `NameId` works as a key in both `std::unordered_map` and `boost::unordered_flat_map` without spelling a hasher.
+Both standard (`std::hash<NameId>`) and boost (`hash_value` ADL) hash entry points are provided, so `NameId` works as a key in both `std::unordered_map` and boost's hashed containers without spelling a hasher.
 
 Hash computation is front-loaded at `NameId` construction (once) and then amortized over every subsequent lookup. For structures like `SceneGraph::link_map_`, `SceneGraph::joint_map_`, `SceneState::joints`, `LinkIdTransformMap`, and the ACM, that ratio is very favorable.
 
 The corollary: inline construction at lookup sites (`map.find(LinkId("base"))`, or the implicit `map.find("base")`) is discouraged. It pays the same `std::string` + hash cost as the old string-keyed API, and the precomputed-hash win is only realized when the same `NameId` is constructed once and reused across many lookups.
 
-Per-pair keys avoid the per-lookup double-hash-and-combine cost as well as the per-entry string allocation. `LinkIdPair` is `2 * sizeof(NameIdValue) + sizeof(std::size_t)` bytes (24 bytes today) — two `NameIdValue` IDs plus a cached `size_t` pair hash, computed once at construction — regardless of name length. The old per-pair key stored two `std::string`s per entry and had to hash both strings plus combine the hashes on every lookup. This applies to the pair key only; single-ID keys retain their name, and ACM/margin entries retain `name1`/`name2` in the value for collision detection (see Trade-offs).
+**Pair keys are heavier than single ids.** `LinkIdPair` stores two full `NameId`s plus the cached combined hash (`sizeof(LinkIdPair) == 2 * sizeof(NameId) + sizeof(std::size_t)`, ~88 bytes on libstdc++) — the names are what make pair equality watertight. Constructing a pair copies both name strings (two heap allocations for non-SSO names), so the single-id corollary applies with more force: in a hot loop, construct the pair once per pair and reuse it across lookups rather than calling the two-id convenience overloads per element. The pair hash itself is computed once at construction by `OrderedIdPair::combineHash`, a boost-style mixer over the two id values using the 64-bit golden-ratio constant `0x9e3779b97f4a7c15`; lookups just return the cached result. Measured costs for all of these paths are recorded in `IDENTITY_BENCHMARKS.md`.
 
 The migration is not a universal win. Constructing a `NameId` from a string is *slightly* more expensive than constructing a `std::string` because it hashes. Code that builds an identity and never looks anything up (rare) pays without benefit. Parse-heavy paths (URDF/SRDF/YAML load) are dominated by parsing itself, so the extra hash is in the noise.
 
-Beyond raw speed, the migration is an API-consistency effort: every public interface that previously accepted a name string has an ID-accepting overload. The goal is for IDs to be the primary currency end-to-end so callers never have to retain strings solely to feed downstream string APIs.
+Beyond raw speed, the migration is an API-consistency effort: every public interface that previously accepted a name string has an ID-accepting overload. IDs are the primary currency end-to-end, so callers never have to retain strings solely to feed downstream string APIs.
+
+## Display and formatting
+
+`NameId` deliberately has no `operator<<`, `to_string`, or formatter. Anything user-facing should print `id.name()`; debugging output that cares about bucket behavior can print `id.value()`. Keeping the choice explicit at every print site avoids baking either representation into logs by accident.
+
+Helpers `toIds` / `toNames` (`types.h`) convert name lists to id vectors and any container of ids back to names at API boundaries.
 
 ## Serialization and interoperability
 
-**Hashes are runtime-only.** They are deterministic within a single process, but **not** stable across builds, across libc++ versions, or across architectures. They are never persisted.
+**Hash values are runtime-only.** They are deterministic within a single process, but **not** stable across builds, standard-library versions, or architectures. They are never persisted.
 
 The on-disk schemas were not changed by the migration. Existing serialized data loads on the new code without conversion, and files written by the new code remain readable by pre-migration tooling.
 
-- **Cereal** stores ACM and margin data as `std::map<std::pair<std::string, std::string>, …>` and reconstructs the hash on load via the checked `add*` / `set*` entry points. See `common/include/tesseract/common/cereal_serialization.h`.
-- **YAML** encodes pair keys as two-element name sequences and decodes by re-hashing, again with collision checks. See `common/include/tesseract/common/yaml_extensions.h`.
+- **Cereal** stores ACM and margin data as `std::map<std::pair<std::string, std::string>, …>` — names from the pair key — and reconstructs the ids on load via the plain `add*` / `set*` entry points. See `common/include/tesseract/common/cereal_serialization.h`.
+- **YAML** encodes pair keys as two-element name sequences and decodes by re-hashing. See `common/include/tesseract/common/yaml_extensions.h`.
 - **URDF / SRDF** remain string-based on disk.
 
 Users must not persist `NameId::value()`. It is a cache, not a key.
 
-## Hash collision risk and prevention
-
-`std::hash<std::string>` produces a `std::size_t` (currently 64 bits on this platform), so collisions are mathematically possible, though astronomically rare for typical robot link/joint names. The design guarantees that any collision will be **detected at insertion time** and surfaced through the call site's existing error policy — either a `std::runtime_error` from the checked write paths in `tesseract::common`, or a `false` from SRDF name verification that callers handle per-context (throw for structural entries, warn-and-skip for advisory ones; see SRDF subsection). It cannot become silent value aliasing in any container that uses a checked write path.
-
-There are two layers of risk and two layers of defense.
-
-### Layer 1 — single-ID collision in the SceneGraph
-
-All link/joint insertion routes through `SceneGraph::addLinkHelper` / `addJointHelper` in `scene_graph/src/graph.cpp`. Each does a hash-keyed lookup in `link_map_` / `joint_map_` and delegates to `common::checkHashCollision`, which throws `std::runtime_error` citing both names when the stored name differs from the name being inserted.
-
-Because the scene graph is the authoritative identity registry, every downstream map keyed on `LinkId` / `JointId` — `LinkIdTransformMap`, `JointIdTransformMap`, `SceneState::joints`, kinematics group vectors, kdl_parser internal maps — is populated from IDs that already passed through that gate. The guarantee propagates.
-
-The SRDF parser has an additional safeguard: every place that resolves a parsed name routes through `tesseract::srdf::isRegisteredLink` / `isRegisteredJoint` (`srdf/src/utils.cpp`), which returns false both when the name is unknown and when it hash-collides with an already-loaded scene-graph link or joint of a different name — indistinguishable by design, since both are equally disqualifying for SRDF name resolution. Call sites handle the false return per-context:
-
-- **Structural entries** (`groups.cpp`, `group_states.cpp`, `configs.cpp` — group definitions, group-state joint references, calibration-joint references) wrap a `std::runtime_error` and abort SRDF load. Proceeding with one missing would corrupt the planner's view of the robot, so a loud failure is the right answer.
-- **Advisory entries** (`disabled_collisions.cpp`, `collision_margins.cpp` — disabled-collision hints and per-pair collision-margin overrides) log a warning and skip. These are refinements over the URDF; the planner remains correct without them, just less efficient or more conservative. Bricking SRDF load over one bad entry would be worse than dropping that one refinement.
-
-A genuine hash collision (rather than a typo) against an advisory entry therefore results in a dropped entry with a "not known to URDF" warning that is, strictly, misleading — the link *is* known; it hash-collides with another known link of the same hash. This is the one place the broader "detected and surfaced" guarantee yields to a "detected and skipped" policy, by design.
-
-### Layer 2 — pair-ID collision in ACM and CollisionMarginPairData
-
-`AllowedCollisionMatrix` and `CollisionMarginPairData` key on `LinkIdPair`. The stored entries carry the original names (`ACMEntry::name1/name2`, `PairMarginEntry::name1/name2`), which makes collision detection possible: when a write finds an existing entry at the same key, `common::checkPairHashCollision` compares the two incoming names against the two stored names — canonicalized in either order — and throws if they don't match.
-
-Every mutation path routes through a single private helper per container (`insertEntryChecked`), so collision detection is not an optional add-on bolted onto some paths. The covered paths:
-
-- `addAllowedCollision` / `setCollisionMargin` — incremental setters
-- `insertAllowedCollisionMatrix` — ACM-to-ACM merge
-- `CollisionMarginPairData::apply(..., MODIFY)` — margin merge
-- Bulk constructors taking `AllowedCollisionEntries` / `PairsCollisionMarginData`
-- YAML decoders for those two container types
-- Cereal load paths — transitively, because they delegate to the incremental setters
-
-Any future mutation path has one obvious place to route through.
-
-### What is intentionally *not* guaranteed
-
-- Collision detection requires both colliding entries to be *added to the same container at some point*. If only one name of a colliding pair ever appears in a given run, there is nothing to detect.
-- `CollisionMarginPairData::apply(..., REPLACE)` and assignment adopt the source verbatim. The source's own write path is the trust boundary; a corrupt source becomes a corrupt target.
-
-### Sister structures outside core tesseract
-
-`trajopt_common::CollisionCoeffData` wraps `PairsCollisionCoeffData` (`std::unordered_map<LinkIdPair, PairCoeffEntry>`) and mirrors the same threat model. Its single write path, `CollisionCoeffData::setCollisionCoeff`, uses `try_emplace` + `checkPairHashCollision("CollisionCoeffData", ...)` — the same idiom as ACM/margin. All other population routes into the container funnel through that setter:
-
-- YAML decoder (`trajopt_common/include/trajopt_common/yaml_extensions.h`)
-- Cereal load (`trajopt_common/include/trajopt_common/cereal_serialization.h`)
-- JSON problem-description loader (`trajopt/src/problem_description.cpp`)
-
-There is no bulk constructor from `PairsCollisionCoeffData`, no `apply(..., MODIFY)`, and no direct `lookup_table_` write outside the setter. The source of populated data is never the ACM or SceneGraph — it is user-supplied JSON/YAML/code — so the check is applied exactly where it matters.
-
-Net: trajopt_common's pair-keyed container inherits the same single-point-of-enforcement guarantee as the two containers in `tesseract::common`, just via the incremental-setter route rather than a private `insertEntryChecked` helper.
-
-This is a convention enforced by code review — nothing in the type system prevents a future sister structure added to planning/ifopt/sco from skipping the collision check. A worthwhile follow-up would be to extract the pattern as a reusable template (a checked pair-keyed map type that bakes `try_emplace` + `checkPairHashCollision` into its setters), converting the convention into a compile-time guarantee for new code.
-
 ## Alternatives considered
 
-Two alternative encodings were weighed and rejected.
+### Detect-and-throw at insertion (the original design, superseded)
+
+The first iteration of this migration kept value-only equality and instead tried to *detect* collisions at container-insertion time: scene-graph inserts compared stored vs incoming names and threw on mismatch, and the pair-keyed containers (ACM, margins, coefficients) carried redundant `name1`/`name2` fields in their values so checked write paths could do the same. Superseded by hybrid equality because detection is inherently partial and resolution is total:
+
+- Detection only fires when both colliding names reach the *same container* through a *checked path*; bulk-replace and assignment adopted data unverified, and the checked-write idiom in each container was a convention new code could silently skip.
+- It added a failure mode (throw on insert) that string keys never had, and the redundant name fields bloated every entry.
+- Hybrid equality has none of these gaps: it is a property of the key type itself, so every container — present and future, core or downstream — is watertight by construction, with no error path and no coverage to audit.
 
 ### 128-bit UUIDs
 
 Two variants. **Randomly-generated UUIDs** would require a registry to assign and persist a name → UUID mapping. That defeats the decoupled-construction property the design centers on: `LinkId("base")` could not be a free-standing value computable in a test, parser, or offline tool without consulting that registry.
 
-**Name-based UUIDs** (UUIDv5: SHA-1 of namespace + name) are essentially a 128-bit hash and would give much stronger collision resistance at the equality layer — birthday bound around ~2^64 distinct names, vs ~2^32 for the 64-bit `std::hash<std::string>`. However:
+**Name-based UUIDs** (UUIDv5: SHA-1 of namespace + name) are essentially a 128-bit hash and would push the birthday bound out to ~2^64 distinct names. However:
 
-- A 128-bit value cannot be used directly as the `std::unordered_map` hash. `std::hash` returns `std::size_t` (64-bit), so a 128-bit UUID would be reduced to a 64-bit bucket index for the actual lookup. Bucket-level distribution is therefore identical to plain 64-bit hashing — the only practical win is at the `operator==` step after a bucket hit.
-- `value()` would no longer be identity-hashable. `std::hash<NameId>` would need a non-trivial specialization or a separately cached 64-bit hash field.
-- Per-key storage doubles in every pair-keyed map (32 bytes per `LinkIdPair` instead of 16, plus the cached pair-hash).
-- SHA-1 at construction is materially more expensive than `std::hash<std::string>`.
+- A 128-bit value cannot be used directly as the `std::unordered_map` hash. `std::hash` returns `std::size_t` (64-bit), so a 128-bit UUID would be reduced to a 64-bit bucket index for the actual lookup. Bucket-level distribution is therefore identical to plain 64-bit hashing.
+- `value()` would no longer be identity-hashable, per-key storage grows, and SHA-1 at construction is materially more expensive than `std::hash<std::string>`.
+- Most importantly, a wider hash buys nothing correctness-wise: hybrid equality already makes collisions harmless, so the stronger hash would only shave the (already negligible) chance of an extra confirming string compare.
 
-Given that the 64-bit collision probability for realistic scene sizes (< 10^4 names) is already negligible and `checkHashCollision` / `checkPairHashCollision` are the safety net for the residual, the extra cost was not justified.
+A related idea, a **construction-time interning registry** (probe on collision, guaranteeing process-wide value↔name injectivity), was rejected for the same registry reason plus unbounded growth: entries can never be evicted without reference-counting every live `NameId`.
 
 ### `std::shared_ptr<std::string>` for the name slot
 
 Replacing the inline `std::string` with a `std::shared_ptr<std::string>` would shrink `sizeof(NameId)` (one pointer + control-block pointer ≈ 16 bytes vs a typical libstdc++ `std::string` of ~32 bytes) and make `NameId` copies cheap. Rejected because:
 
 - Atomic reference-counting on every copy is expensive on the hot paths that move IDs around — exactly where the original perf motivation lives.
-- An extra indirection on every `name()` access.
+- An extra indirection on every `name()` access — now including the confirming compare in `operator==`.
 - To get the deduplication benefit (shared storage across multiple `NameId`s carrying the same name) you need a global intern table, which loses the decoupled-construction property again.
 - Without dedup, every `NameId` still allocates its own string, so the optimization only pays off on the rare copy-heavy case. In practice IDs land in a map once and rarely move; the target is small.
 
@@ -201,27 +171,26 @@ Replacing the inline `std::string` with a `std::shared_ptr<std::string>` would s
 
 **Gained**
 
-- Hot-path lookups (ACM, FK, IK, state queries) are faster — integer hash + integer compare instead of string hash + string compare.
-- `LinkIdPair` storage is a fixed `2 * sizeof(NameIdValue) + sizeof(std::size_t)` bytes (24 today) regardless of name length.
+- Hot-path lookups (ACM, FK, IK, state queries) are faster — integer hash, and integer compare on every probe miss — instead of string hash + string compare throughout.
+- Deterministic, watertight identity: hash collisions resolve like a string-keyed map, as a property of the key type. No detection machinery, no throw-on-insert failure mode, nothing for new containers to opt into.
 - Compile-time separation of link and joint identity via tag types catches a class of mix-up bugs that the old string API could not.
-- Centralized collision detection — each ACM/margin container has exactly one private helper that every mutation path goes through. Future additions get safety by default.
 - End-to-end API consistency — the ID is the primary currency; strings are needed only at parse/serialize boundaries and for display.
 
 **Given up**
 
-- `sizeof(NameId)` is larger than `sizeof(std::string)` on typical standard libraries (an extra `NameIdValue` alongside the string). For storage of a `NameId` outside a map, this is a small loss.
+- `sizeof(NameId)` is larger than `sizeof(std::string)` (an extra `NameIdValue` alongside the string), and `LinkIdPair` is ~88 bytes — it carries both names so pair equality can confirm them. Pair construction copies two strings; hot loops should construct pairs once and reuse them.
+- Equality *hits* pay one string compare (misses don't) — the price of watertight semantics.
 - Hash cost is paid at `NameId` construction rather than per lookup. Code that constructs a `NameId` and never looks anything up pays without benefit.
-- The on-disk format is still string-based, so entries carry both the `LinkIdPair` key *and* the names — a small amount of redundancy. This redundancy is also what makes collision detection possible, so it is a deliberate cost.
-- A new failure mode — `std::runtime_error` on hash collision during insertion — did not exist with string keys. Extremely unlikely to trigger in practice, but possible.
 
 ## Quick reference
 
 | Concern | Where |
 |---|---|
-| Type definitions, helpers | `common/include/tesseract/common/types.h`, `common/src/types.cpp` |
-| Single-ID collision enforcement | `common/src/types.cpp` (`checkHashCollision`); `scene_graph/src/graph.cpp` (`addLinkHelper`, `addJointHelper`) |
-| ACM write paths | `common/src/allowed_collision_matrix.cpp` (`insertEntryChecked`) |
-| Margin write paths | `common/src/collision_margin_data.cpp` (`insertEntryChecked`) |
+| Type definitions, helpers, hash hooks | `common/include/tesseract/common/types.h` (header-only) |
+| Scene-graph identity registry | `scene_graph/src/graph.cpp` (`addLinkHelper`, `addJointHelper`) |
+| ACM write paths | `common/src/allowed_collision_matrix.cpp` |
+| Margin write paths | `common/src/collision_margin_data.cpp` |
 | YAML decoders | `common/include/tesseract/common/yaml_extensions.h` |
 | Cereal string-compat format | `common/include/tesseract/common/cereal_serialization.h` |
 | SRDF name verification | `srdf/src/utils.cpp` (`isRegisteredLink`, `isRegisteredJoint`); call sites in `srdf/src/{groups,group_states,disabled_collisions,collision_margins,configs}.cpp` |
+| Benchmark record | `IDENTITY_BENCHMARKS.md` |
