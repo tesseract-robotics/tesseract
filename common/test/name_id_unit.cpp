@@ -145,6 +145,22 @@ TEST(NameIdTest, LessThan)  // NOLINT
   EXPECT_FALSE(a < a);
 }
 
+// ======================== Display ========================
+
+TEST(NameIdTest, StreamInsertionWritesName)  // NOLINT
+{
+  std::ostringstream oss;
+  oss << "link " << LinkId("base_link") << " and joint " << JointId("joint_1");
+  EXPECT_EQ(oss.str(), "link base_link and joint joint_1");
+}
+
+TEST(NameIdTest, StreamInsertionInvalidIdWritesNothing)  // NOLINT
+{
+  std::ostringstream oss;
+  oss << INVALID_LINK_ID;
+  EXPECT_TRUE(oss.str().empty());
+}
+
 // ======================== LinkIdPair ========================
 
 TEST(LinkIdPairTest, MakeCanonical)  // NOLINT

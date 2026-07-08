@@ -881,8 +881,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
 
         // Add specific contact information
         ss << std::setw(longest_substep_width) << substep_string;
-        ss << std::setw(longest_link1_width) << collision.second.front().link_ids[0].name();
-        ss << std::setw(longest_link2_width) << collision.second.front().link_ids[1].name();
+        ss << std::setw(longest_link1_width) << collision.second.front().link_ids[0];
+        ss << std::setw(longest_link2_width) << collision.second.front().link_ids[1];
         ss << std::setw(longest_distance_width) << collision.second.front().distance;
         ss << "\n";
         line_number++;
@@ -1014,7 +1014,7 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
 
   for (std::size_t i = 0; i < link_ids.size(); ++i)
   {
-    ss << std::setw(5) << i << std::setw(column_width) << link_ids[i].name() << "|";
+    ss << std::setw(5) << i << std::setw(column_width) << link_ids[i] << "|";
     for (std::size_t j = 0; j < link_ids.size(); ++j)
     {
       if (i == j)
@@ -1071,9 +1071,8 @@ std::stringstream ContactTrajectoryResults::condensedSummary() const
         const auto& first_contact = collision_pair.second.front();
 
         // Format: "14.4: [link_a, link_b]->0.001"
-        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": ["
-           << first_contact.link_ids[0].name() << ", " << first_contact.link_ids[1].name() << "] @ "
-           << std::setprecision(4) << first_contact.distance << "\n";
+        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": [" << first_contact.link_ids[0]
+           << ", " << first_contact.link_ids[1] << "] @ " << std::setprecision(4) << first_contact.distance << "\n";
 
         found_first_collision = true;
         break;

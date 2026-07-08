@@ -124,7 +124,7 @@ bool AllowedCollisionMatrix::operator!=(const AllowedCollisionMatrix& rhs) const
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
 {
   for (const auto& [key, entry] : acm.getAllAllowedCollisions())
-    os << "link=" << key.first().name() << " link=" << key.second().name() << " reason=" << entry.reason << "\n";
+    os << "link=" << key.first() << " link=" << key.second() << " reason=" << entry.reason << "\n";
   return os;
 }
 }  // namespace tesseract::common

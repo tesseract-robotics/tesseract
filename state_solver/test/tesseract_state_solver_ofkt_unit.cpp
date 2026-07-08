@@ -246,14 +246,14 @@ TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
   for (const auto& link_id : solver.getLinkIds())
   {
     auto id = LinkId(link_id);
-    EXPECT_TRUE(state.link_transforms.count(id) > 0) << "Missing LinkId entry for link: " << link_id.name();
+    EXPECT_TRUE(state.link_transforms.count(id) > 0) << "Missing LinkId entry for link: " << link_id;
   }
 
   // joints is keyed by JointId
   for (const auto& joint_id : solver.getActiveJointIds())
   {
     auto jid = JointId(joint_id);
-    EXPECT_TRUE(state.joints.count(jid) > 0) << "Missing JointId entry for joint: " << joint_id.name();
+    EXPECT_TRUE(state.joints.count(jid) > 0) << "Missing JointId entry for joint: " << joint_id;
   }
 
   // Verify getState(ids, values) also produces LinkIdTransformMap
@@ -303,9 +303,9 @@ TEST(TesseractStateSolverUnit, KDLSegmentIdCacheCopyUnit)  // NOLINT
   EXPECT_EQ(clone_state.link_transforms.size(), expected_transforms.size());
   for (const auto& [link_id, expected_tf] : expected_transforms)
   {
-    ASSERT_TRUE(clone_state.link_transforms.count(link_id) > 0) << "Missing link: " << link_id.name();
+    ASSERT_TRUE(clone_state.link_transforms.count(link_id) > 0) << "Missing link: " << link_id;
     EXPECT_TRUE(clone_state.link_transforms.at(link_id).isApprox(expected_tf, 1e-6))
-        << "Transform mismatch for link: " << link_id.name();
+        << "Transform mismatch for link: " << link_id;
   }
 
   // Repeat via clone() (which internally uses copy-construction / operator=).
@@ -318,9 +318,9 @@ TEST(TesseractStateSolverUnit, KDLSegmentIdCacheCopyUnit)  // NOLINT
   EXPECT_EQ(clone2_state.link_transforms.size(), expected_transforms.size());
   for (const auto& [link_id, expected_tf] : expected_transforms)
   {
-    ASSERT_TRUE(clone2_state.link_transforms.count(link_id) > 0) << "Missing link: " << link_id.name();
+    ASSERT_TRUE(clone2_state.link_transforms.count(link_id) > 0) << "Missing link: " << link_id;
     EXPECT_TRUE(clone2_state.link_transforms.at(link_id).isApprox(expected_tf, 1e-6))
-        << "Transform mismatch for link: " << link_id.name();
+        << "Transform mismatch for link: " << link_id;
   }
 }
 
@@ -346,7 +346,7 @@ TEST(TesseractStateSolverUnit, OFKTIsActiveLinkIdMatchesActiveSetUnit)  // NOLIN
   for (const auto& link_id : solver.getLinkIds())
   {
     const bool expected = active_set.count(link_id) > 0;
-    EXPECT_EQ(solver.isActiveLinkId(link_id), expected) << "Mismatch for link: " << link_id.name();
+    EXPECT_EQ(solver.isActiveLinkId(link_id), expected) << "Mismatch for link: " << link_id;
   }
 
   // Probe an id that does not exist in the scene — must return false, not throw.

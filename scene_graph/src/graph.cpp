@@ -1322,15 +1322,15 @@ std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 {
   os << "Links:" << "\n";
   for (const auto& l : path.links)
-    os << "  " << l.name() << "\n";
+    os << "  " << l << "\n";
 
   os << "Joints:" << "\n";
   for (const auto& j : path.joints)
-    os << "  " << j.name() << "\n";
+    os << "  " << j << "\n";
 
   os << "Active Joints:" << "\n";
   for (const auto& j : path.active_joints)
-    os << "  " << j.name() << "\n";
+    os << "  " << j << "\n";
   return os;
 }
 
