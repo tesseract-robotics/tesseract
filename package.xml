@@ -52,6 +52,7 @@
   <depend>bullet</depend>
   <depend>bullet-extras</depend>
   <build_depend>libfcl-dev</build_depend>
+  <build_export_depend>libfcl-dev</build_export_depend>
   <exec_depend>libfcl</exec_depend>
 
   <!-- Kinematics -->
