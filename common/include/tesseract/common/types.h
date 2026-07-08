@@ -191,6 +191,25 @@ struct OrderedIdPair
   {
   }
 
+  /**
+   * @brief In-place equivalent of *this = OrderedIdPair(a, b): re-canonicalizes and reuses the
+   *        existing ids' string capacity, so reassigning a long-lived pair performs no allocation
+   *        once capacity suffices.
+   */
+  void assign(const NameId<Tag>& a, const NameId<Tag>& b)
+  {
+    if (&a == &first_ || &a == &second_ || &b == &first_ || &b == &second_)
+    {
+      *this = OrderedIdPair(a, b);
+      return;
+    }
+
+    const bool a_first = (a.value() < b.value()) || (a.value() == b.value() && a.name() <= b.name());
+    first_ = a_first ? a : b;
+    second_ = a_first ? b : a;
+    hash_ = combineHash(first_.value(), second_.value());
+  }
+
   [[nodiscard]] const NameId<Tag>& first() const noexcept { return first_; }
   [[nodiscard]] const NameId<Tag>& second() const noexcept { return second_; }
   [[nodiscard]] NameIdValue first_id() const noexcept { return first_.value(); }

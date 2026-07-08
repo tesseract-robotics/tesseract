@@ -220,6 +220,75 @@ TEST(LinkIdPairTest, CanonicalOrdering)  // NOLINT
   EXPECT_LE(ab.first_id(), ab.second_id());
 }
 
+TEST(LinkIdPairTest, AssignMatchesConstructor)  // NOLINT
+{
+  const LinkId a = LinkId("link_a");
+  const LinkId b = LinkId("link_b");
+  const LinkIdPair constructed = LinkIdPair(a, b);
+
+  LinkIdPair assigned;
+  assigned.assign(a, b);
+  EXPECT_EQ(assigned, constructed);
+  EXPECT_EQ(assigned.hash(), constructed.hash());
+
+  assigned.assign(b, a);
+  EXPECT_EQ(assigned, constructed);
+  EXPECT_EQ(assigned.hash(), constructed.hash());
+}
+
+TEST(LinkIdPairTest, AssignReusesScratch)  // NOLINT
+{
+  // One scratch pair reassigned repeatedly, including shorter names over longer ones
+  LinkIdPair scratch;
+  scratch.assign(LinkId("a_rather_long_link_name_beyond_sso"), LinkId("another_rather_long_link_name"));
+  EXPECT_EQ(scratch, LinkIdPair(LinkId("a_rather_long_link_name_beyond_sso"), LinkId("another_rather_long_link_name")));
+
+  scratch.assign(LinkId("x"), LinkId("y"));
+  const LinkIdPair expected = LinkIdPair(LinkId("x"), LinkId("y"));
+  EXPECT_EQ(scratch, expected);
+  EXPECT_EQ(scratch.hash(), expected.hash());
+}
+
+TEST(LinkIdPairTest, AssignCanonicalizesCollisionTies)  // NOLINT
+{
+  // Two distinct names sharing one hash value: ordering must fall back to the names
+  const auto a = LinkId::createWithValueForTesting(42, "link_a");
+  const auto b = LinkId::createWithValueForTesting(42, "link_b");
+
+  LinkIdPair assigned;
+  assigned.assign(b, a);
+  EXPECT_EQ(assigned.first().name(), "link_a");
+  EXPECT_EQ(assigned.second().name(), "link_b");
+  EXPECT_EQ(assigned, LinkIdPair(a, b));
+}
+
+TEST(LinkIdPairTest, AssignAliasSafe)  // NOLINT
+{
+  const LinkId a = LinkId("link_a");
+  const LinkId b = LinkId("link_b");
+  const LinkId c = LinkId("link_c");
+
+  LinkIdPair pair = LinkIdPair(a, b);
+  pair.assign(pair.first(), pair.second());
+  EXPECT_EQ(pair, LinkIdPair(a, b));
+
+  pair.assign(pair.second(), pair.first());
+  EXPECT_EQ(pair, LinkIdPair(a, b));
+
+  // One-sided alias: one argument references a member, the other does not
+  const LinkIdPair expected = LinkIdPair(c, pair.first());
+  pair.assign(c, pair.first());
+  EXPECT_EQ(pair, expected);
+}
+
+TEST(LinkIdPairTest, AssignInvalidIds)  // NOLINT
+{
+  LinkIdPair pair = LinkIdPair(LinkId("a"), LinkId("b"));
+  pair.assign(LinkId(), LinkId());
+  EXPECT_EQ(pair, LinkIdPair());
+  EXPECT_EQ(pair.hash(), LinkIdPair().hash());
+}
+
 // ======================== Cereal serialization ========================
 
 TEST(NameIdTest, CerealRoundTripValid)  // NOLINT

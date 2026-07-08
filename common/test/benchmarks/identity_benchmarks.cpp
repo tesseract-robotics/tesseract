@@ -49,6 +49,21 @@ static void BM_PairConstruction(benchmark::State& state)
 }
 BENCHMARK(BM_PairConstruction);
 
+// Cost of refilling a long-lived scratch pair (thread_local + assign shape).
+static void BM_PairAssign(benchmark::State& state)
+{
+  const auto ids = makeLinkIds(64);
+  LinkIdPair pair;
+  std::size_t i = 0;
+  for (auto _ : state)
+  {
+    pair.assign(ids[i & 63U], ids[(i + 7) & 63U]);
+    benchmark::DoNotOptimize(pair);
+    ++i;
+  }
+}
+BENCHMARK(BM_PairAssign);
+
 // ACM hit with a preconstructed pair (construct-once-reuse shape).
 static void BM_AcmIsAllowed_PreconstructedPair_Hit(benchmark::State& state)
 {
