@@ -56,8 +56,7 @@
   <exec_depend>libfcl</exec_depend>
 
   <!-- Kinematics -->
-  <build_depend>opw_kinematics</build_depend>
-  <build_export_depend>opw_kinematics</build_export_depend>
+  <depend>opw_kinematics</depend>
 
   <!-- Test dependencies -->
   <test_depend>gtest</test_depend>
