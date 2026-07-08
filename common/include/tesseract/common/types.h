@@ -195,9 +195,16 @@ struct OrderedIdPair
   [[nodiscard]] NameIdValue second_id() const noexcept { return second_.value(); }
   [[nodiscard]] std::size_t hash() const noexcept { return hash_; }
 
+  /**
+   * @brief Hybrid equality, evaluated values-first: both cached hash values are compared before
+   *        any name string, so mismatched pairs are rejected on integer compares alone.
+   *        Semantically identical to `first_ == other.first_ && second_ == other.second_` — the
+   *        same conjunction NameId::operator== defines, just reordered.
+   */
   bool operator==(const OrderedIdPair& other) const noexcept
   {
-    return first_ == other.first_ && second_ == other.second_;  // hybrid via NameId::operator==
+    return first_.value() == other.first_.value() && second_.value() == other.second_.value() &&
+           first_.name() == other.first_.name() && second_.name() == other.second_.name();
   }
   bool operator!=(const OrderedIdPair& other) const noexcept { return !(*this == other); }
 
