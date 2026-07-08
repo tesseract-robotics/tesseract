@@ -39,8 +39,7 @@
   <depend>yaml-cpp</depend>
   <depend>boost_plugin_loader</depend>
   <depend>liboctomap-dev</depend>
-  <build_depend>cereal</build_depend>
-  <build_export_depend>cereal</build_export_depend>
+  <depend>cereal</depend>
   <build_depend>assimp-dev</build_depend>
   <build_export_depend>assimp-dev</build_export_depend>
   <exec_depend>assimp</exec_depend>
