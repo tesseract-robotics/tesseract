@@ -1160,7 +1160,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealSaveRejectsInvalidLinkIds)  // NOL
   ContactResultMap result_map;
   // Use addContactResult with a default ContactResult — link_ids are INVALID_LINK_ID, so
   // names are empty.
-  result_map.addContactResult(LinkIdPair(LinkId("real_a"), LinkId("real_b")), ContactResult{});
+  result_map.addContactResult({ LinkId("real_a"), LinkId("real_b") }, ContactResult{});
 
   std::stringstream ss;
   cereal::JSONOutputArchive ar(ss);
@@ -2493,14 +2493,14 @@ TEST(TesseractCoreUnit, ACMContactAllowedValidatorLinkIdUnit)  // NOLINT
   tesseract::common::ACMContactAllowedValidator validator(acm);
 
   // Allowed pairs
-  EXPECT_TRUE(validator(tesseract::common::LinkIdPair("link_a", "link_b")));
-  EXPECT_TRUE(validator(tesseract::common::LinkIdPair("link_b", "link_a")));
-  EXPECT_TRUE(validator(tesseract::common::LinkIdPair("link_c", "link_d")));
+  EXPECT_TRUE(validator({ "link_a", "link_b" }));
+  EXPECT_TRUE(validator({ "link_b", "link_a" }));
+  EXPECT_TRUE(validator({ "link_c", "link_d" }));
 
   // Disallowed pairs
-  EXPECT_FALSE(validator(tesseract::common::LinkIdPair("link_a", "link_c")));
-  EXPECT_FALSE(validator(tesseract::common::LinkIdPair("link_a", "link_d")));
-  EXPECT_FALSE(validator(tesseract::common::LinkIdPair("link_x", "link_y")));
+  EXPECT_FALSE(validator({ "link_a", "link_c" }));
+  EXPECT_FALSE(validator({ "link_a", "link_d" }));
+  EXPECT_FALSE(validator({ "link_x", "link_y" }));
 }
 
 TEST(TesseractCoreUnit, ProcessResultLinkIdPairKeyUnit)  // NOLINT

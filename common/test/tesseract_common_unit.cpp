@@ -3181,12 +3181,8 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
 
 TEST(TesseractCommonUnit, ACMDuplicatePairInsertDoesNotFalsePositiveCollision)  // NOLINT
 {
-  // Regression: insertEntry previously moved `entry` into try_emplace and then read stale
-  // fields on the !inserted branch to feed a since-retired hash-collision check. With a
-  // moved-from entry, those reads saw empty strings, so a benign duplicate-name insert was
-  // wrongly reported as a hash collision. The collision check is gone now (fat LinkIdPair
-  // keys make it unreachable), but the duplicate-insert-doesn't-corrupt-state behavior this
-  // test verifies still matters.
+  // Inserting the same named pair twice must update the entry in place: no throw, no state
+  // corruption, one entry holding the latest reason.
   tesseract::common::AllowedCollisionMatrix acm;
   ASSERT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "first"));
   EXPECT_NO_THROW(acm.addAllowedCollision("link_a", "link_b", "second")) << "duplicate insert unexpectedly threw";
@@ -5042,7 +5038,7 @@ TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
   // Entry values preserve original names
   const auto& entries = acm.getAllAllowedCollisions();
   EXPECT_EQ(entries.size(), 1);
-  const auto it = entries.find(LinkIdPair(id_a, id_b));
+  const auto it = entries.find({ id_a, id_b });
   ASSERT_NE(it, entries.end());
   // Names should be canonical (alphabetical within LinkIdPair ordering)
   EXPECT_FALSE(it->first.first().name().empty());
@@ -5074,7 +5070,7 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   const auto& pair_data = margin_data.getCollisionMarginPairData();
   const auto& margins = pair_data.getCollisionMargins();
   EXPECT_EQ(margins.size(), 1);
-  const auto it = margins.find(LinkIdPair(id_x, id_y));
+  const auto it = margins.find({ id_x, id_y });
   ASSERT_NE(it, margins.end());
   EXPECT_FALSE(it->first.first().name().empty());
   EXPECT_FALSE(it->first.second().name().empty());
@@ -5127,7 +5123,7 @@ TEST(TesseractCommonUnit, MarginDataYamlDecodeDuplicatePairUnit)  // NOLINT
   ASSERT_EQ(data.size(), 1U);
   const auto id1 = tesseract::common::LinkId("linkA");
   const auto id2 = tesseract::common::LinkId("linkB");
-  EXPECT_NEAR(data.at(tesseract::common::LinkIdPair(id1, id2)).margin, 0.02, 1e-9);
+  EXPECT_NEAR(data.at({ id1, id2 }).margin, 0.02, 1e-9);
 }
 
 TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
@@ -5144,7 +5140,7 @@ TEST(TesseractCommonUnit, AcmYamlDecodeDuplicatePairUnit)  // NOLINT
   ASSERT_EQ(data.size(), 1U);
   const auto id1 = tesseract::common::LinkId("linkA");
   const auto id2 = tesseract::common::LinkId("linkB");
-  EXPECT_EQ(data.at(tesseract::common::LinkIdPair(id1, id2)).reason, "second");
+  EXPECT_EQ(data.at({ id1, id2 }).reason, "second");
 }
 
 TEST(TesseractCommonUnit, PairsCollisionMarginDataDecodeDoesNotFalsePositiveCollision)  // NOLINT
@@ -5189,11 +5185,11 @@ TEST(AllowedCollisionMatrixUnit, CollidingPairsCoexist)  // NOLINT
   acm.addAllowedCollision(a, x, "reason_a");
   acm.addAllowedCollision(b, x, "reason_b");  // previously threw std::runtime_error
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2U);
-  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(a, x)));
-  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(b, x)));
+  EXPECT_TRUE(acm.isCollisionAllowed({ a, x }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ b, x }));
   acm.removeAllowedCollision(a, x);
-  EXPECT_FALSE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(a, x)));
-  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(b, x)));
+  EXPECT_FALSE(acm.isCollisionAllowed({ a, x }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ b, x }));
 }
 
 TEST(AllowedCollisionMatrixUnit, PerLinkRemoveIsNameExact)  // NOLINT
@@ -5206,8 +5202,8 @@ TEST(AllowedCollisionMatrixUnit, PerLinkRemoveIsNameExact)  // NOLINT
   acm.addAllowedCollision(a, x, "reason_a");
   acm.addAllowedCollision(b, x, "reason_b");
   acm.removeAllowedCollision(a);
-  EXPECT_FALSE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(a, x)));
-  EXPECT_TRUE(acm.isCollisionAllowed(tesseract::common::LinkIdPair(b, x)));
+  EXPECT_FALSE(acm.isCollisionAllowed({ a, x }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ b, x }));
 }
 
 TEST(CollisionMarginPairDataUnit, CollidingPairsCoexist)  // NOLINT

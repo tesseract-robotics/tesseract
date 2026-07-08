@@ -397,14 +397,6 @@ public:
   bool isCollisionAllowed(const tesseract::common::LinkIdPair& pair) const;
 
   /**
-   * @brief Convenience overload; forwards to the pair-based primary.
-   */
-  bool isCollisionAllowed(const tesseract::common::LinkId& link_id1, const tesseract::common::LinkId& link_id2) const
-  {
-    return isCollisionAllowed(tesseract::common::LinkIdPair(link_id1, link_id2));
-  }
-
-  /**
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
