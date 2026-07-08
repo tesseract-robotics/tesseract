@@ -22,7 +22,7 @@ inline void verifyLinkIdsConsistency(const ContactResultVector& results)
     {
       EXPECT_FALSE(r.link_ids[i].name().empty()) << "link_ids[" << i << "] has empty name";
       EXPECT_NE(r.link_ids[i], tesseract::common::INVALID_LINK_ID)
-          << "link_ids[" << i << "] is INVALID (name=" << r.link_ids[i].name() << ")";
+          << "link_ids[" << i << "] is INVALID (name=" << r.link_ids[i] << ")";
     }
   }
 }

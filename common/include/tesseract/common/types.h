@@ -29,6 +29,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cstdint>
 #include <functional>
+#include <iosfwd>
 #include <string>
 #include <utility>
 #include <vector>
@@ -256,6 +257,13 @@ template <typename Tag>
 std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
 {
   return p.hash();
+}
+
+/** @brief Stream insertion: writes exactly id.name(). Print value() explicitly where the numeric id matters. */
+template <typename Tag>
+std::ostream& operator<<(std::ostream& os, const NameId<Tag>& id)
+{
+  return os << id.name();
 }
 
 /** @brief Convert a vector of strings to a vector of NameId<Tag> */

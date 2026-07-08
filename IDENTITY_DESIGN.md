@@ -120,7 +120,9 @@ Beyond raw speed, the migration is an API-consistency effort: every public inter
 
 ## Display and formatting
 
-`NameId` deliberately has no `operator<<`, `to_string`, or formatter. Anything user-facing should print `id.name()`; debugging output that cares about bucket behavior can print `id.value()`. Keeping the choice explicit at every print site avoids baking either representation into logs by accident.
+The name is the display representation. `NameId` has an `operator<<` that writes exactly `id.name()` — nothing more — so ids compose into log lines and error messages the same way the raw string used to. Debugging output that cares about bucket behavior prints `id.value()` explicitly; there is deliberately no `to_string` or formatter beyond the stream inserter.
+
+`OrderedIdPair` has no inserter: pair formatting varies by context (separator, ordering, surrounding text), so print the two names explicitly.
 
 Helpers `toIds` / `toNames` (`types.h`) convert name lists to id vectors and any container of ids back to names at API boundaries.
 

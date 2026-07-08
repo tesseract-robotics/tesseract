@@ -247,10 +247,10 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
     if (working_frames_set_.count(tip_link_pose.working_frame) == 0)
     {
       std::stringstream ss;
-      ss << "Specified working frame (" << tip_link_pose.working_frame.name()
+      ss << "Specified working frame (" << tip_link_pose.working_frame
          << ") is not in the list of identified working frames. Available working frames are: [";
       for (const auto& f : working_frames_)
-        ss << f.name() << ", ";
+        ss << f << ", ";
       ss << "].";
       throw std::runtime_error(ss.str());
     }
@@ -260,10 +260,9 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
     if (tip_it == inv_tip_links_map_.end())
     {
       std::stringstream ss;
-      ss << "Failed to find specified tip link (" << tip_link_pose.tip_link_id.name()
-         << "). Available tip links are: [";
+      ss << "Failed to find specified tip link (" << tip_link_pose.tip_link_id << "). Available tip links are: [";
       for (const auto& pair : inv_tip_links_map_)
-        ss << pair.first.name() << ", ";
+        ss << pair.first << ", ";
       ss << "].";
       throw std::runtime_error(ss.str());
     }
