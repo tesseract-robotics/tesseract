@@ -109,6 +109,37 @@ theirs (2.7–3.5%), confirming the effect is confined to the changed evaluators
 expected one: 2 heap allocations + ~40 ns of pair construction eliminated per contact per
 gradient pass, plus one virtual dispatch.
 
+## Phase 1 follow-up — Finding 3: pair scratch on the Bullet/narrowphase path (2026-07-08)
+
+Restores the upstream string-era `TESSERACT_THREAD_LOCAL`-scratch idiom on the Phase-1 fat pair
+via the new `OrderedIdPair::assign` (in-place re-canonicalize; reuses the held ids' string
+capacity, so steady state is zero allocations):
+
+- Bullet `addDiscreteSingleResult`/`addCastSingleResult` per-contact-point keys (scratch at the
+  call sites; `processResult` copies the key on insert).
+- Inside the two-id overloads `CollisionMarginPairData::getCollisionMargin`,
+  `CollisionMarginData::getCollisionMargin`, and `setCollisionMarginHelper` — matching where
+  upstream kept its scratch, and transparently fixing the Bullet bridged-manifold ctor plus
+  every other two-id margin caller with zero call-site churn.
+
+Micro (same invocation as above; means):
+
+| Benchmark | Phase 1 | After | Delta |
+|---|---|---|---|
+| `BM_PairAssign` (new) | — | 10.3 ns | vs 33.9 ns `BM_PairConstruction` same run: **-70%**, zero allocations |
+| `BM_MarginLookup_TwoIds` | 44.0 ns | 29.6 ns | **-33%** |
+| `BM_AcmIsAllowed_TwoIds_Hit` | 46.2 ns | 45.3 ns | unchanged (ACM two-id overload deliberately not converted; no hot callers remain after the ifopt hoist) |
+
+The residual vs Phase 0's 6.73 ns margin lookup is TLS access + two capacity-reusing byte
+copies + `combineHash`; Phase 2's transparent views target that remainder.
+
+Macro subset (exact invocation from the Phase-1 reference above): cross-session comparison is
+**inconclusive** — the untouched control families (`SET_COLLISION_OBJECTS_TRANSFORM_*`, no pair
+construction on that path) drifted +4-15% vs the reference, so the session baselines differ;
+the contact-test families moved within the same band. An attributable macro number needs a
+back-to-back stash A/B in one session (not yet run). Tests: tesseract 837 (one unrelated flaky,
+passes on rerun) + coal 253, all green.
+
 ## Phase 2 — boost::unordered_flat_map + transparent view lookups (deferred — pending real-data benchmarking)
 
 (pending)

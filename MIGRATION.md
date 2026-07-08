@@ -286,6 +286,10 @@ with the raw-value constructor of `OrderedIdPair` (construct from two `NameId`s 
 private `insertEntryChecked` helper was renamed `insertEntry`. The collision-throw-on-hash-
 collision behavior described in `IDENTITY_DESIGN.md` has been removed: colliding names now
 resolve via hybrid equality and coexist as distinct keys rather than throwing at insertion time.
+`OrderedIdPair` gained an in-place `assign(a, b)`: paired with a `TESSERACT_THREAD_LOCAL`
+scratch pair it is the sanctioned idiom for repeated pair-keyed lookups, re-canonicalizing while
+reusing the held ids' string capacity so steady-state reassignment performs no allocation
+(replaces the string era's `makeOrderedLinkPair` out-param pattern).
 In the `trajopt` repo, the per-contact `DiscreteCollisionEvaluator::getGradient` and
 `ContinuousCollisionEvaluator::calcGradientData` virtuals were removed — the collision margin is
 now resolved once per pair in `calcCollisions`/`calcCollisionData`; call the free
