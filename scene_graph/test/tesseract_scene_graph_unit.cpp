@@ -507,10 +507,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphRemoveAllowedCollisionUnit)  //
 
   SceneGraph g = createTestSceneGraph();
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 4);
-  EXPECT_TRUE(g.isCollisionAllowed("link_1", "link_2"));
+  EXPECT_TRUE(g.isCollisionAllowed({ "link_1", "link_2" }));
 
   g.removeAllowedCollision("link_1", "link_2");
-  EXPECT_FALSE(g.isCollisionAllowed("link_1", "link_2"));
+  EXPECT_FALSE(g.isCollisionAllowed({ "link_1", "link_2" }));
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 3);
 
   g.clearAllowedCollisions();
@@ -592,22 +592,20 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphAcmIdOverloadsUnit)  // NOLINT
 
   // Test addAllowedCollision with LinkId
   g.addAllowedCollision("link_1", "link_4", "TestReason");
-  EXPECT_TRUE(g.isCollisionAllowed("link_1", "link_4"));
-  EXPECT_TRUE(g.isCollisionAllowed("link_1", "link_4"));
+  EXPECT_TRUE(g.isCollisionAllowed({ "link_1", "link_4" }));
 
   // Test removeAllowedCollision(LinkId, LinkId)
   g.removeAllowedCollision("link_1", "link_4");
-  EXPECT_FALSE(g.isCollisionAllowed("link_1", "link_4"));
-  EXPECT_FALSE(g.isCollisionAllowed("link_1", "link_4"));
+  EXPECT_FALSE(g.isCollisionAllowed({ "link_1", "link_4" }));
 
   // Test removeAllowedCollision(LinkId) — removes all pairs involving this link
-  EXPECT_TRUE(g.isCollisionAllowed("link_1", "link_2"));
+  EXPECT_TRUE(g.isCollisionAllowed({ "link_1", "link_2" }));
   g.removeAllowedCollision("link_1");
-  EXPECT_FALSE(g.isCollisionAllowed("link_1", "link_2"));
+  EXPECT_FALSE(g.isCollisionAllowed({ "link_1", "link_2" }));
 
   // Verify other collisions still exist
-  EXPECT_TRUE(g.isCollisionAllowed("link_2", "link_3"));
-  EXPECT_TRUE(g.isCollisionAllowed("link_2", "link_5"));
+  EXPECT_TRUE(g.isCollisionAllowed({ "link_2", "link_3" }));
+  EXPECT_TRUE(g.isCollisionAllowed({ "link_2", "link_5" }));
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphChangeJointOriginUnit)  // NOLINT
@@ -1829,14 +1827,14 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
   acm.addAllowedCollision("link1", "link3", "test");
   g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
-  EXPECT_TRUE(g.isCollisionAllowed("link1", "link2"));
-  EXPECT_TRUE(g.isCollisionAllowed("link1", "link3"));
+  EXPECT_TRUE(g.isCollisionAllowed({ "link1", "link2" }));
+  EXPECT_TRUE(g.isCollisionAllowed({ "link1", "link3" }));
 
   tesseract::scene_graph::SceneGraph ng = buildTestSceneGraph();
   ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
   EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
-  EXPECT_TRUE(ng.isCollisionAllowed("link1", "link2"));
-  EXPECT_TRUE(ng.isCollisionAllowed("link1", "link3"));
+  EXPECT_TRUE(ng.isCollisionAllowed({ "link1", "link2" }));
+  EXPECT_TRUE(ng.isCollisionAllowed({ "link1", "link3" }));
 
   std::string prefix = "r1::";
 

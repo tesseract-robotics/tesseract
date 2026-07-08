@@ -2511,9 +2511,9 @@ TEST(TesseractSRDFUnit, GetAlphabeticalACMEntriesUnit)  // NOLINT
   // *not* alphabetical. getAlphabeticalACMEntries must resolve each entry's names from its pair
   // key, normalize so name1<=name2 alphabetically, then sort entries by (name1, name2).
   tesseract::common::AllowedCollisionEntries entries;
-  entries[tesseract::common::LinkIdPair("gamma", "beta")] = tesseract::common::ACMEntry{ "r_bg" };
-  entries[tesseract::common::LinkIdPair("delta", "alpha")] = tesseract::common::ACMEntry{ "r_ad" };
-  entries[tesseract::common::LinkIdPair("beta", "alpha")] = tesseract::common::ACMEntry{ "r_ba" };
+  entries[{ "gamma", "beta" }] = tesseract::common::ACMEntry{ "r_bg" };
+  entries[{ "delta", "alpha" }] = tesseract::common::ACMEntry{ "r_ad" };
+  entries[{ "beta", "alpha" }] = tesseract::common::ACMEntry{ "r_ba" };
 
   auto sorted = tesseract::srdf::getAlphabeticalACMEntries(entries);
 
