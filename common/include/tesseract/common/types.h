@@ -3,6 +3,7 @@
  * @brief Common Tesseract Types
  *
  * @author Levi Armstrong
+ * @author Roelof Oomen
  * @date January 18, 2018
  *
  * @copyright Copyright (c) 2017, Southwest Research Institute
@@ -95,8 +96,6 @@ struct NameId
 {
   NameId() = default;
 
-  // Pass by value so rvalue arguments (including the temporary built by the const char*
-  // constructor) move into name_ instead of being copied.
   // NOLINTNEXTLINE(google-explicit-constructor)
   TESSERACT_NAMEID_EXPLICIT NameId(std::string name)
   {
@@ -197,12 +196,7 @@ struct OrderedIdPair
   [[nodiscard]] NameIdValue second_id() const noexcept { return second_.value(); }
   [[nodiscard]] std::size_t hash() const noexcept { return hash_; }
 
-  /**
-   * @brief Hybrid equality, evaluated values-first: both cached hash values are compared before
-   *        any name string, so mismatched pairs are rejected on integer compares alone.
-   *        Semantically identical to `first_ == other.first_ && second_ == other.second_` — the
-   *        same conjunction NameId::operator== defines, just reordered.
-   */
+  /** @brief Hybrid equality: both values are compared first, the names confirm on matches. */
   bool operator==(const OrderedIdPair& other) const noexcept
   {
     return first_.value() == other.first_.value() && second_.value() == other.second_.value() &&
@@ -210,11 +204,7 @@ struct OrderedIdPair
   }
   bool operator!=(const OrderedIdPair& other) const noexcept { return !(*this == other); }
 
-  /**
-   * @brief Lexicographic by (first, second) under NameId ordering (value, then name on value
-   *        ties) — evaluated values-first like operator==, with a single traversal per name
-   *        tie-break. Its equivalence is exactly pair hybrid equality.
-   */
+  /** @brief Lexicographic by (first, second) under NameId ordering; consistent with operator==. */
   bool operator<(const OrderedIdPair& other) const noexcept
   {
     if (first_.value() != other.first_.value())
@@ -227,12 +217,10 @@ struct OrderedIdPair
   }
 
   /**
-   * @brief Mix two id values into one bucket hash.
-   * @details Public and static so heterogeneous lookups (a planned non-owning pair view, see
-   *          IDENTITY_BENCHMARKS.md Phase 2) can compute the same bucket hash without
-   *          constructing an OrderedIdPair.
+   * @brief Mix two id values into one bucket hash. Public so callers can compute a pair's hash
+   *        from two ids without constructing an OrderedIdPair.
    */
-  static std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
+  static constexpr std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
   {
     auto h = static_cast<std::size_t>(f);
     h ^= static_cast<std::size_t>(s) + static_cast<std::size_t>(0x9e3779b97f4a7c15ULL) + (h << 6) + (h >> 2);
@@ -263,12 +251,7 @@ constexpr std::size_t hash_value(const NameId<Tag>& id) noexcept
   return static_cast<std::size_t>(id.value());
 }
 
-/**
- * @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map).
- * @details Not constexpr: it calls the non-constexpr OrderedIdPair::hash() accessor. A constexpr
- *          function that can never produce a constant expression is ill-formed, no diagnostic
- *          required — some compilers (e.g. MSVC) reject it outright.
- */
+/** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
 template <typename Tag>
 std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
 {
@@ -315,7 +298,6 @@ struct hash<tesseract::common::NameId<Tag>>
 template <typename Tag>
 struct hash<tesseract::common::OrderedIdPair<Tag>>
 {
-  // Not constexpr: OrderedIdPair::hash() is not constexpr (see the hash_value ADL hook above).
   std::size_t operator()(const tesseract::common::OrderedIdPair<Tag>& p) const noexcept { return p.hash(); }
 };
 
