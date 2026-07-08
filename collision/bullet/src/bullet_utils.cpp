@@ -504,6 +504,8 @@ CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
   setWorldTransform(trans);
 }
 
+const tesseract::common::LinkId& CollisionObjectWrapper::getLinkId() const { return m_link_id; }
+
 const int& CollisionObjectWrapper::getTypeID() const { return m_type_id; }
 
 bool CollisionObjectWrapper::sameObject(const CollisionObjectWrapper& other) const
@@ -696,6 +698,17 @@ btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow)
 
 bool needsCollisionCheck(const COW& cow1,
                          const COW& cow2,
+                         const tesseract::common::LinkIdPair& pair,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                         bool verbose)
+{
+  return cow1.m_enabled && cow2.m_enabled && (cow2.m_collisionFilterGroup & cow1.m_collisionFilterMask) &&  // NOLINT
+         (cow1.m_collisionFilterGroup & cow2.m_collisionFilterMask) &&                                      // NOLINT
+         !isContactAllowed(pair, validator, verbose);
+}
+
+bool needsCollisionCheck(const COW& cow1,
+                         const COW& cow2,
                          const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                          bool verbose)
 {
@@ -716,7 +729,8 @@ btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  auto key = tesseract::common::LinkIdPair(cd0->getLinkId(), cd1->getLinkId());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkIdPair key;
+  key.assign(cd0->getLinkId(), cd1->getLinkId());
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());
 
@@ -857,7 +871,8 @@ btScalar addCastSingleResult(btManifoldPoint& cp,
   const auto* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());    // NOLINT
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());    // NOLINT
 
-  auto key = tesseract::common::LinkIdPair(cd0->getLinkId(), cd1->getLinkId());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkIdPair key;
+  key.assign(cd0->getLinkId(), cd1->getLinkId());
 
   const auto it = collisions.res->find(key);
   bool found = (it != collisions.res->end() && !it->second.empty());

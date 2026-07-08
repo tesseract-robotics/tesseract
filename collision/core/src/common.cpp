@@ -25,6 +25,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cassert>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>
@@ -78,15 +79,59 @@ bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active, c
 }
 
 bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
-                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator)
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                      bool verbose)
 {
   // do not distance check geoms part of the same object / link / attached body
-  // (full LinkId compare, not just the raw value: two different link names sharing a hash
-  // value must not be treated as a self-pair)
   if (pair.first() == pair.second())
     return true;
 
-  return validator != nullptr && (*validator)(pair);
+  if (validator != nullptr && (*validator)(pair))
+  {
+    if (verbose)
+    {
+      CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
+                              pair.first().name().c_str(),
+                              pair.second().name().c_str());
+    }
+    return true;
+  }
+
+  if (verbose)
+  {
+    CONSOLE_BRIDGE_logError(
+        "Actually checking collisions between %s and %s", pair.first().name().c_str(), pair.second().name().c_str());
+  }
+
+  return false;
+}
+
+bool isContactAllowed(const tesseract::common::LinkId& id1,
+                      const tesseract::common::LinkId& id2,
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                      bool verbose)
+{
+  // do not distance check geoms part of the same object / link / attached body
+  if (id1 == id2)
+    return true;
+
+  if (validator != nullptr && (*validator)(tesseract::common::LinkIdPair(id1, id2)))
+  {
+    if (verbose)
+    {
+      CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
+                              id1.name().c_str(),
+                              id2.name().c_str());
+    }
+    return true;
+  }
+
+  if (verbose)
+  {
+    CONSOLE_BRIDGE_logError("Actually checking collisions between %s and %s", id1.name().c_str(), id2.name().c_str());
+  }
+
+  return false;
 }
 
 ContactResult* processResult(ContactTestData& cdata,

@@ -21,6 +21,7 @@
  * limitations under the License.
  */
 
+#include <tesseract/common/macros.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/collision_margin_data.h>
 #include <cassert>
@@ -43,7 +44,8 @@ void CollisionMarginPairData::setCollisionMargin(const LinkId& id1, const LinkId
 
 void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin)
 {
-  const LinkIdPair key(id1, id2);
+  TESSERACT_THREAD_LOCAL LinkIdPair key;
+  key.assign(id1, id2);
   insertEntry(key, PairMarginEntry{ margin });
 }
 
@@ -66,7 +68,9 @@ std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkIdPa
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
 {
-  return getCollisionMargin(LinkIdPair(id1, id2));
+  TESSERACT_THREAD_LOCAL LinkIdPair key;
+  key.assign(id1, id2);
+  return getCollisionMargin(key);
 }
 
 std::optional<double> CollisionMarginPairData::getMaxCollisionMargin() const { return max_collision_margin_; }
@@ -247,7 +251,9 @@ double CollisionMarginData::getCollisionMargin(const LinkIdPair& pair) const
 
 double CollisionMarginData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
 {
-  return getCollisionMargin(LinkIdPair(id1, id2));
+  TESSERACT_THREAD_LOCAL LinkIdPair key;
+  key.assign(id1, id2);
+  return getCollisionMargin(key);
 }
 
 const CollisionMarginPairData& CollisionMarginData::getCollisionMarginPairData() const { return pair_margins_; }
