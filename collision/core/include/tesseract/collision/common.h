@@ -29,7 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_set>
 #include <vector>
 #include <Eigen/Geometry>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
@@ -59,39 +58,29 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
 bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active, const tesseract::common::LinkId& id);
 
 /**
- * @brief Determine if contact is allowed between two objects (hot-path primary).
- * @details This overload does not log diagnostic messages because the pair stores only numeric ids and not the
- *          link names. Use the (LinkId, LinkId) overload to enable verbose name-based logging.
- * @param pair Canonically ordered link-id pair
+ * @brief Determine if contact is allowed between two objects.
+ * @param pair The LinkId pair
  * @param validator The contact allowed validator
+ * @param verbose If true print debug information
  * @return True if contact is allowed between the two object, otherwise false.
  */
 bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
-                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator);
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                      bool verbose = false);
 
 /**
- * @brief Convenience overload that owns the verbose name-based diagnostic logging.
- * @details Forwards the allowed/disallowed decision to the pair-based primary, then logs by link name when
- *          verbose is true.
+ * @brief Determine if contact is allowed between two objects (two-id overload; constructs the pair only when a
+ * validator decision requires it, and logs in caller argument order).
+ * @param id1 The id of the first object
+ * @param id2 The id of the second object
+ * @param validator The contact allowed validator
+ * @param verbose If true print debug information
+ * @return True if contact is allowed between the two object, otherwise false.
  */
-inline bool isContactAllowed(const tesseract::common::LinkId& id1,
-                             const tesseract::common::LinkId& id2,
-                             const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
-                             bool verbose = false)
-{
-  const bool allowed = isContactAllowed(tesseract::common::LinkIdPair(id1, id2), validator);
-  if (verbose && id1 != id2)
-  {
-    if (allowed)
-      CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
-                              id1.name().c_str(),
-                              id2.name().c_str());
-    else
-      CONSOLE_BRIDGE_logError(
-          "Actually checking collisions between '%s' and '%s'", id1.name().c_str(), id2.name().c_str());
-  }
-  return allowed;
-}
+bool isContactAllowed(const tesseract::common::LinkId& id1,
+                      const tesseract::common::LinkId& id2,
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                      bool verbose = false);
 
 /**
  * @brief processResult Processes the ContactResult based on the information in the ContactTestData

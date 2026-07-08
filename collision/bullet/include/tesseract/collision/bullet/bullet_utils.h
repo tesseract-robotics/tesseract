@@ -105,7 +105,7 @@ public:
   bool m_enabled{ true };
 
   /** @brief Get the collision object id */
-  const tesseract::common::LinkId& getLinkId() const { return m_link_id; }
+  const tesseract::common::LinkId& getLinkId() const;
   /** @brief Get a user defined type */
   const int& getTypeID() const;
   /** \brief Check if two CollisionObjectWrapper objects point to the same source object */
@@ -208,6 +208,22 @@ btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow);
 
 /**
  * @brief This is used to check if a collision check is required between the provided two collision objects
+ * @param cow1 The first collision object
+ * @param cow2 The second collision object
+ * @param pair The link id pair of the two collision objects
+ * @param validator  The contact allowed validator
+ * @param verbose Indicate if verbose information should be printed to the terminal
+ * @return True if the two collision objects should be checked for collision, otherwise false
+ */
+bool needsCollisionCheck(const COW& cow1,
+                         const COW& cow2,
+                         const tesseract::common::LinkIdPair& pair,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                         bool verbose = false);
+
+/**
+ * @brief This is used to check if a collision check is required between the provided two collision objects
+ * (convenience overload; constructs the link id pair only when a validator decision requires it).
  * @param cow1 The first collision object
  * @param cow2 The second collision object
  * @param validator  The contact allowed validator

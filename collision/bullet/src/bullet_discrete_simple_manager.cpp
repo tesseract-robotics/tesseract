@@ -320,7 +320,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
       if (aabb_check)
       {
         const tesseract::common::LinkIdPair link_pair(cow1->getLinkId(), cow2->getLinkId());
-        bool needs_collision = needsCollisionCheck(*cow1, *cow2, contact_test_data_.validator, false);
+        bool needs_collision = needsCollisionCheck(*cow1, *cow2, link_pair, contact_test_data_.validator, false);
 
         if (needs_collision)
         {
