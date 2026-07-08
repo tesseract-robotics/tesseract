@@ -95,14 +95,16 @@ struct NameId
 {
   NameId() = default;
 
+  // Pass by value so rvalue arguments (including the temporary built by the const char*
+  // constructor) move into name_ instead of being copied.
   // NOLINTNEXTLINE(google-explicit-constructor)
-  TESSERACT_NAMEID_EXPLICIT NameId(const std::string& name)
+  TESSERACT_NAMEID_EXPLICIT NameId(std::string name)
   {
     if (!name.empty())
     {
       auto h = static_cast<NameIdValue>(std::hash<std::string>{}(name));
       value_ = (h == INVALID_NAME_ID_VALUE) ? INVALID_NAME_ID_VALUE + 1 : h;
-      name_ = name;
+      name_ = std::move(name);
     }
   }
 
@@ -208,11 +210,20 @@ struct OrderedIdPair
   }
   bool operator!=(const OrderedIdPair& other) const noexcept { return !(*this == other); }
 
+  /**
+   * @brief Lexicographic by (first, second) under NameId ordering (value, then name on value
+   *        ties) — evaluated values-first like operator==, with a single traversal per name
+   *        tie-break. Its equivalence is exactly pair hybrid equality.
+   */
   bool operator<(const OrderedIdPair& other) const noexcept
   {
-    if (first_ != other.first_)
-      return first_ < other.first_;
-    return second_ < other.second_;
+    if (first_.value() != other.first_.value())
+      return first_.value() < other.first_.value();
+    if (const int cmp = first_.name().compare(other.first_.name()); cmp != 0)
+      return cmp < 0;
+    if (second_.value() != other.second_.value())
+      return second_.value() < other.second_.value();
+    return second_.name() < other.second_.name();
   }
 
   /**
