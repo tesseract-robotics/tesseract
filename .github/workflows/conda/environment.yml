@@ -4,3 +4,4 @@ channels:
 dependencies:
   - conda-smithy
   - rattler-build
+  - vtk-base <9.6
