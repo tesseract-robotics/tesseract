@@ -180,7 +180,7 @@ Replacing the inline `std::string` with a `std::shared_ptr<std::string>` would s
 
 **Given up**
 
-- `sizeof(NameId)` is larger than `sizeof(std::string)` (an extra `NameIdValue` alongside the string), and `LinkIdPair` is ~88 bytes — it carries both names so pair equality can confirm them. Pair construction copies two strings; hot loops should construct pairs once and reuse them.
+- `sizeof(NameId)` is larger than `sizeof(std::string)` (an extra `NameIdValue` alongside the string), and `LinkIdPair` is ~88 bytes — it carries both names so pair equality can confirm them. Pair construction copies two strings; hot loops should construct pairs once and reuse them. In aggregate the footprint growth is small: `ContactResult` goes from 768 to 784 bytes (+2.1%) versus the string era, and no allocation is added — the retained name is the same heap allocation the old `link_names` made, so the only new cost is the inline 8-byte hash per id. Pair keys are the wider growth (88 vs 64 bytes) but scale with colliding link *pairs*, not contact points: `ContactResultMap` stores a `ContactResultVector` per key. Sizes are libstdc++/x86-64.
 - Equality *hits* pay one string compare (misses don't) — the price of watertight semantics.
 - Hash cost is paid at `NameId` construction rather than per lookup. Code that constructs a `NameId` and never looks anything up pays without benefit.
 
