@@ -66,6 +66,7 @@
 
 #include <console_bridge/console.h>
 
+#include <unordered_set>
 #include <utility>
 
 namespace tesseract::environment
@@ -615,19 +616,18 @@ Environment::Implementation::getStaticLinkNames(const std::vector<std::string>& 
 std::vector<common::LinkId>
 Environment::Implementation::getStaticLinkIds(const std::vector<common::JointId>& joint_ids) const
 {
-  std::vector<common::LinkId> active_link_ids = scene_graph->getJointChildrenIds(joint_ids);
-  std::vector<common::LinkId> full_link_ids = state_solver->getLinkIds();
+  const std::vector<common::LinkId> active_link_ids = scene_graph->getJointChildrenIds(joint_ids);
+  const std::vector<common::LinkId> full_link_ids = state_solver->getLinkIds();
+  const std::unordered_set<common::LinkId> active_link_ids_set(active_link_ids.begin(), active_link_ids.end());
+
+  // Static links in state solver order, consistent with the joint-less getStaticLinkIds overload
   std::vector<common::LinkId> static_link_ids;
   static_link_ids.reserve(full_link_ids.size());
-
-  std::sort(active_link_ids.begin(), active_link_ids.end());
-  std::sort(full_link_ids.begin(), full_link_ids.end());
-
-  std::set_difference(full_link_ids.begin(),
-                      full_link_ids.end(),
-                      active_link_ids.begin(),
-                      active_link_ids.end(),
-                      std::inserter(static_link_ids, static_link_ids.begin()));
+  for (const auto& link_id : full_link_ids)
+  {
+    if (active_link_ids_set.count(link_id) == 0)
+      static_link_ids.push_back(link_id);
+  }
 
   return static_link_ids;
 }
