@@ -60,12 +60,7 @@ namespace tesseract::common
 // ---------------------------------------------------------------------------
 
 /**
- * @brief Underlying numeric type for NameId hash values.
- *
- * Aliased so the width can be widened later without churning every public API
- * and downstream caller. Note: hashes are produced by std::hash<std::string>,
- * which returns std::size_t, so a wider NameIdValue alone does not widen the
- * hash — a different hash function would also be required.
+ * @brief Underlying numeric type for NameId hash values, as produced by std::hash<std::string>.
  */
 using NameIdValue = std::uint64_t;
 
