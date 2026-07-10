@@ -44,8 +44,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // definitions PRIVATE) to make the constructors explicit in their own TUs,
 // forcing internal call sites to either avoid string-keyed paths entirely or
 // be explicit about when they construct an id from a string. Templates are
-// instantiated per-TU, so the differing explicit-ness across TUs is a
-// compile-time check only — it has no ABI/ODR impact.
+// instantiated per-TU, so the check is compile-time only. Formally the
+// differing token sequences across TUs are an ODR violation (ill-formed, no
+// diagnostic required) — a deliberate, benign one: explicit affects overload
+// resolution only, not layout or codegen. C++20 modules would reject it.
 // ---------------------------------------------------------------------------
 #ifdef TESSERACT_NAMEID_NO_IMPLICIT
 #define TESSERACT_NAMEID_EXPLICIT explicit

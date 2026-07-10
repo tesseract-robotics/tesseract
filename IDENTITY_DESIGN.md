@@ -74,7 +74,9 @@ Each of Tesseract's own production libraries adds `TESSERACT_NAMEID_NO_IMPLICIT`
 - Inside Tesseract source files (`*/src/*.cpp` for `common`, `geometry`, `scene_graph`, `state_solver_*`, `collision*`, `kinematics*`, `srdf`, `urdf`, `environment`, `visualization`), any string-to-ID construction must be spelled out — `LinkId("base")` rather than `"base"`. The compiler surfaces every place an internal pathway is still going through strings, which is exactly what we want to migrate away from.
 - Tests, examples, and downstream consumers (including templates instantiated in their TUs) keep the convenience of implicit conversion. The library's public API remains string-friendly.
 
-`NameId` is a class template, so its constructors are inline and instantiated per TU. Differing explicit-ness across TUs is a compile-time check — the constructor bodies are identical, so there is no ABI/ODR impact.
+The flip side of that convenience: existing downstream string call sites keep compiling unchanged — and keep paying the string-era cost of a string copy + hash per call. Upgrading and recompiling makes nothing faster by itself; the performance win requires constructing ids once and reusing them (see Performance).
+
+`NameId` is a class template, so its constructors are inline and instantiated per TU and the check is compile-time only. Formally the differing token sequences across TUs are an ODR violation (ill-formed, no diagnostic required) — a deliberate, benign one: `explicit` affects overload resolution only, not layout or codegen, so all instantiations produce identical object code. C++20 modules would reject the scheme, so the toggle would have to be retired if Tesseract ever adopts them.
 
 The CMake plumbing lives in `common/cmake/tesseract_macros.cmake` (variable `TESSERACT_COMPILE_DEFINITIONS_PRIVATE`) and is applied via `target_compile_definitions(<lib> PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})` on each production library. New libraries added to Tesseract should follow the same pattern.
 
