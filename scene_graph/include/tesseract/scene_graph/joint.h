@@ -207,7 +207,7 @@ public:
   using ConstPtr = std::shared_ptr<const JointMimic>;
 
   JointMimic() = default;
-  JointMimic(double offset, double multiplier, std::string joint_name);
+  JointMimic(double offset, double multiplier, common::JointId joint_id);
   ~JointMimic() = default;
 
   JointMimic(const JointMimic&) = default;
@@ -217,7 +217,7 @@ public:
 
   double offset{ 0 };
   double multiplier{ 1.0 };
-  std::string joint_name;
+  common::JointId joint_id;
 
   void clear();
 

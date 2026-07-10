@@ -168,8 +168,8 @@ std::ostream& operator<<(std::ostream& os, const JointCalibration& calibration)
 /*********************************************************/
 /******                  JointMimic                  *****/
 /*********************************************************/
-JointMimic::JointMimic(double offset, double multiplier, std::string joint_name)
-  : offset(offset), multiplier(multiplier), joint_name(std::move(joint_name))
+JointMimic::JointMimic(double offset, double multiplier, common::JointId joint_id)
+  : offset(offset), multiplier(multiplier), joint_id(std::move(joint_id))
 {
 }
 
@@ -177,7 +177,7 @@ void JointMimic::clear()
 {
   offset = 0.0;
   multiplier = 1.0;
-  joint_name.clear();
+  joint_id = common::JointId();
 }
 
 bool JointMimic::operator==(const JointMimic& rhs) const
@@ -185,7 +185,7 @@ bool JointMimic::operator==(const JointMimic& rhs) const
   bool equal = true;
   equal &= tesseract::common::almostEqualRelativeAndAbs(offset, rhs.offset);
   equal &= tesseract::common::almostEqualRelativeAndAbs(multiplier, rhs.multiplier);
-  equal &= joint_name == rhs.joint_name;
+  equal &= joint_id == rhs.joint_id;
 
   return equal;
 }
@@ -193,7 +193,7 @@ bool JointMimic::operator!=(const JointMimic& rhs) const { return !operator==(rh
 
 std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
 {
-  os << "joint_name=" << mimic.joint_name << " offset=" << mimic.offset << " multiplier=" << mimic.multiplier;
+  os << "joint_id=" << mimic.joint_id << " offset=" << mimic.offset << " multiplier=" << mimic.multiplier;
   return os;
 }
 
