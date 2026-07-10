@@ -139,22 +139,12 @@ struct NameId
     return name_ < other.name_;
   }
 
-  /**
-   * @brief Test-only factory: construct an id with an explicit value/name combination.
-   * @details Exists so unit tests can manufacture hash collisions (two names sharing one
-   *          value), which cannot be produced from real strings on demand. Never use outside
-   *          tests: an id whose value was not derived from its name breaks the "value is a
-   *          function of the name" property every container in the framework relies on.
-   */
-  [[nodiscard]] static NameId createWithValueForTesting(NameIdValue value, std::string name)
-  {
-    NameId id;
-    id.value_ = value;
-    id.name_ = std::move(name);
-    return id;
-  }
-
 private:
+  /**
+   * @brief Test-only backdoor for manufacturing hash collisions (ids whose value is not derived from the name).
+   */
+  friend struct NameIdTestAccess;
+
   NameIdValue value_{ INVALID_NAME_ID_VALUE };
   std::string name_;
 };

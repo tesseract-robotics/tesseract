@@ -26,6 +26,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/serialization.h>
 #include <tesseract/common/cereal_serialization.h>
 #include <tesseract/common/unit_test_utils.h>
+#include "name_id_testing.h"
 
 class TestProfile : public tesseract::common::Profile
 {
@@ -3219,8 +3220,8 @@ TEST(TesseractCommonUnit, HashCollisionsResolveLikeAHashMap)  // NOLINT
 {
   // Replaces the retired checkHashCollision tests: collisions are no longer detected-and-thrown,
   // they are resolved by hybrid equality — colliding ids are simply distinct keys.
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(7, "collide_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(7, "collide_b");
+  const auto a = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(7, "collide_a");
+  const auto b = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(7, "collide_b");
   std::unordered_map<tesseract::common::LinkId, std::string> map;
   map[a] = "a";
   map[b] = "b";
@@ -5178,8 +5179,8 @@ TEST(TesseractCommonUnit, AllowedCollisionEntriesDecodeDoesNotFalsePositiveColli
 
 TEST(AllowedCollisionMatrixUnit, CollidingPairsCoexist)  // NOLINT
 {
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const auto a = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_a");
+  const auto b = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_b");
   const tesseract::common::LinkId x("link_x");
   tesseract::common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision(a, x, "reason_a");
@@ -5195,8 +5196,8 @@ TEST(AllowedCollisionMatrixUnit, CollidingPairsCoexist)  // NOLINT
 TEST(AllowedCollisionMatrixUnit, PerLinkRemoveIsNameExact)  // NOLINT
 {
   // removeAllowedCollision(LinkId) must not sweep away pairs of a hash-colliding other link.
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const auto a = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_a");
+  const auto b = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_b");
   const tesseract::common::LinkId x("link_x");
   tesseract::common::AllowedCollisionMatrix acm;
   acm.addAllowedCollision(a, x, "reason_a");
@@ -5208,8 +5209,8 @@ TEST(AllowedCollisionMatrixUnit, PerLinkRemoveIsNameExact)  // NOLINT
 
 TEST(CollisionMarginPairDataUnit, CollidingPairsCoexist)  // NOLINT
 {
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const auto a = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_a");
+  const auto b = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_b");
   const tesseract::common::LinkId x("link_x");
   tesseract::common::CollisionMarginPairData margins;
   margins.setCollisionMargin(a, x, 0.01);
@@ -5223,8 +5224,8 @@ TEST(CollisionMarginPairDataUnit, CollidingPairsCoexist)  // NOLINT
 TEST(CollisionMarginPairDataUnit, ObjectMaxMarginIsNameExact)  // NOLINT
 {
   // object_max_margins_ must not merge hash-colliding links: each link keeps its own max.
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "collide_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "collide_b");
+  const auto a = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_a");
+  const auto b = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(42, "collide_b");
   const tesseract::common::LinkId x("link_x");
   tesseract::common::CollisionMarginPairData margins;
   margins.setCollisionMargin(a, x, 0.05);
