@@ -170,8 +170,8 @@ TEST(LinkIdPairTest, MakeCanonical)  // NOLINT
   const LinkIdPair ab = LinkIdPair(a, b);
   const LinkIdPair ba = LinkIdPair(b, a);
   EXPECT_EQ(ab, ba);
-  // Canonical ordering: first_id <= second_id
-  EXPECT_LE(ab.first_id(), ab.second_id());
+  // Canonical ordering: first <= second by value
+  EXPECT_LE(ab.first().value(), ab.second().value());
 }
 
 TEST(LinkIdPairTest, Equality)  // NOLINT
@@ -206,7 +206,7 @@ TEST(LinkIdPairTest, SameLinkPair)  // NOLINT
 {
   const LinkId a = LinkId("self");
   const LinkIdPair pair = LinkIdPair(a, a);
-  EXPECT_EQ(pair.first_id(), pair.second_id());
+  EXPECT_EQ(pair.first(), pair.second());
 }
 
 TEST(LinkIdPairTest, CanonicalOrdering)  // NOLINT
@@ -215,9 +215,9 @@ TEST(LinkIdPairTest, CanonicalOrdering)  // NOLINT
   const LinkId b = LinkId("link_b");
   const LinkIdPair ab = LinkIdPair(a, b);
   const LinkIdPair ba = LinkIdPair(b, a);
-  EXPECT_EQ(ab.first_id(), ba.first_id());
-  EXPECT_EQ(ab.second_id(), ba.second_id());
-  EXPECT_LE(ab.first_id(), ab.second_id());
+  EXPECT_EQ(ab.first(), ba.first());
+  EXPECT_EQ(ab.second(), ba.second());
+  EXPECT_LE(ab.first().value(), ab.second().value());
 }
 
 TEST(LinkIdPairTest, AssignMatchesConstructor)  // NOLINT
@@ -482,9 +482,8 @@ TEST(OrderedIdPairHybrid, KeyCarriesNames)  // NOLINT
   const tesseract::common::LinkId d("link_d");
   const tesseract::common::LinkIdPair p(c, d);
   EXPECT_TRUE(p == tesseract::common::LinkIdPair(d, c));
-  // first()/second() expose the full ids; first_id()/second_id() remain value shorthands.
-  EXPECT_EQ(p.first_id(), p.first().value());
-  EXPECT_EQ(p.second_id(), p.second().value());
+  EXPECT_EQ(p.first().name(), "link_c");
+  EXPECT_EQ(p.second().name(), "link_d");
 }
 
 int main(int argc, char** argv)

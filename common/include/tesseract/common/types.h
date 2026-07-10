@@ -212,8 +212,6 @@ struct OrderedIdPair
 
   [[nodiscard]] const NameId<Tag>& first() const noexcept { return first_; }
   [[nodiscard]] const NameId<Tag>& second() const noexcept { return second_; }
-  [[nodiscard]] NameIdValue first_id() const noexcept { return first_.value(); }
-  [[nodiscard]] NameIdValue second_id() const noexcept { return second_.value(); }
   [[nodiscard]] std::size_t hash() const noexcept { return hash_; }
 
   /** @brief Hybrid equality: both values are compared first, the names confirm on matches. */
