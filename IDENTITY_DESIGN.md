@@ -7,7 +7,7 @@ Runtime identity for links and joints in Tesseract is a type-tagged integer hash
 All of identity lives in `common/include/tesseract/common/types.h`:
 
 ```cpp
-using NameIdValue = std::uint64_t;       // typedef so the width can be widened later
+using NameIdValue = std::uint64_t;       // the hash value type
 
 template <typename Tag>
 struct NameId {
@@ -41,7 +41,7 @@ using LinkIdPair = OrderedIdPair<LinkTag>;
 
 The source name is retained on the `NameId` so public APIs, error messages, and on-disk serialization continue to speak strings. The hash drives lookup; the name stays available for everything that needs to address humans or files — and for the confirming compare in `operator==` (see "Equality and hash-collision resolution").
 
-The numeric type behind a `NameId` is exposed as `NameIdValue` rather than spelled `uint64_t` everywhere, so a future widening only requires changing the typedef and a different hash function — *not* every downstream caller. Note that `std::hash<std::string>` itself returns `std::size_t`, so widening `NameIdValue` past 64 bits is preparation only; producing a wider hash also requires switching off `std::hash<std::string>` (e.g. to xxh128), and the cached pair hash in `OrderedIdPair` stays a `std::size_t` bucket hash regardless.
+The numeric type behind a `NameId` is exposed as `NameIdValue` rather than spelled `uint64_t` everywhere, so the value type is named once at API boundaries and defined in one place.
 
 `NameId` exposes no mutating methods after construction; instances are safe to share across threads.
 
