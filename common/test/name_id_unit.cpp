@@ -18,6 +18,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/types.h>
 #include <tesseract/common/cereal_serialization.h>
+#include "name_id_testing.h"
 
 using namespace tesseract::common;
 
@@ -252,8 +253,8 @@ TEST(LinkIdPairTest, AssignReusesScratch)  // NOLINT
 TEST(LinkIdPairTest, AssignCanonicalizesCollisionTies)  // NOLINT
 {
   // Two distinct names sharing one hash value: ordering must fall back to the names
-  const auto a = LinkId::createWithValueForTesting(42, "link_a");
-  const auto b = LinkId::createWithValueForTesting(42, "link_b");
+  const auto a = NameIdTestAccess::create<LinkId>(42, "link_a");
+  const auto b = NameIdTestAccess::create<LinkId>(42, "link_b");
 
   LinkIdPair assigned;
   assigned.assign(b, a);
@@ -402,8 +403,8 @@ TEST(NameIdTest, ConstructorJointId)  // NOLINT
 
 TEST(NameIdHybridEquality, CollidingNamesCompareUnequal)  // NOLINT
 {
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  const auto a = NameIdTestAccess::create<LinkId>(42, "link_a");
+  const auto b = NameIdTestAccess::create<LinkId>(42, "link_b");
   EXPECT_EQ(a.value(), b.value());
   EXPECT_FALSE(a == b);
   EXPECT_TRUE(a != b);
@@ -423,8 +424,8 @@ TEST(NameIdHybridEquality, SameNameCompareEqual)  // NOLINT
 
 TEST(NameIdHybridEquality, CollidingIdsCoexistInUnorderedMap)  // NOLINT
 {
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  const auto a = NameIdTestAccess::create<LinkId>(42, "link_a");
+  const auto b = NameIdTestAccess::create<LinkId>(42, "link_b");
   std::unordered_map<tesseract::common::LinkId, int> map;
   map[a] = 1;
   map[b] = 2;
@@ -437,8 +438,8 @@ TEST(NameIdHybridEquality, CollidingIdsCoexistInUnorderedMap)  // NOLINT
 
 TEST(NameIdHybridEquality, CollidingIdsCoexistInOrderedMap)  // NOLINT
 {
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  const auto a = NameIdTestAccess::create<LinkId>(42, "link_a");
+  const auto b = NameIdTestAccess::create<LinkId>(42, "link_b");
   std::map<tesseract::common::LinkId, int> map;  // exercises hybrid operator<
   map[a] = 1;
   map[b] = 2;
@@ -451,8 +452,8 @@ TEST(NameIdHybridEquality, CollidingIdsCoexistInOrderedMap)  // NOLINT
 
 TEST(OrderedIdPairHybrid, CollidingPairsCompareUnequalAndCoexist)  // NOLINT
 {
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  const auto a = NameIdTestAccess::create<LinkId>(42, "link_a");
+  const auto b = NameIdTestAccess::create<LinkId>(42, "link_b");
   const tesseract::common::LinkId x("some_other_link");
   const tesseract::common::LinkIdPair pa(a, x);
   const tesseract::common::LinkIdPair pb(b, x);
@@ -469,8 +470,8 @@ TEST(OrderedIdPairHybrid, CollidingPairsCompareUnequalAndCoexist)  // NOLINT
 TEST(OrderedIdPairHybrid, CanonicalizationIsArgumentOrderIndependentUnderCollision)  // NOLINT
 {
   // Colliding values tie-break on name, so (a,b) and (b,a) still canonicalize identically.
-  const auto a = tesseract::common::LinkId::createWithValueForTesting(42, "link_a");
-  const auto b = tesseract::common::LinkId::createWithValueForTesting(42, "link_b");
+  const auto a = NameIdTestAccess::create<LinkId>(42, "link_a");
+  const auto b = NameIdTestAccess::create<LinkId>(42, "link_b");
   EXPECT_TRUE(tesseract::common::LinkIdPair(a, b) == tesseract::common::LinkIdPair(b, a));
   EXPECT_EQ(tesseract::common::LinkIdPair(a, b).first().name(), "link_a");
   EXPECT_EQ(tesseract::common::LinkIdPair(b, a).first().name(), "link_a");

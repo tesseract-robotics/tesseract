@@ -19,7 +19,7 @@ struct NameId {
   bool isValid() const noexcept;         // value != 0
   bool operator==(const NameId&) const;  // hybrid: value first, name confirms
   bool operator<(const NameId&) const;   // by value; name breaks value ties
-  static NameId createWithValueForTesting(NameIdValue, std::string);  // tests only
+  friend struct NameIdTestAccess;        // test-only backdoor, defined only in test headers
 };
 
 using LinkId  = NameId<LinkTag>;
@@ -47,7 +47,7 @@ The numeric type behind a `NameId` is exposed as `NameIdValue` rather than spell
 
 **The invalid id.** A default-constructed `NameId`, an empty string, and a `nullptr` `const char*` all yield the invalid id: `value() == INVALID_NAME_ID_VALUE` (0), `name()` empty, `isValid() == false`. All invalid ids compare equal to each other and unequal to every valid id. The value is reserved for this state — in the astronomically unlikely event a real name hashes onto it, its value is remapped off it at construction (harmless: equality confirms names anyway). Use `INVALID_LINK_ID` / `INVALID_JOINT_ID` when an explicit sentinel reads better than `{}`.
 
-**Test-only escape hatch.** `createWithValueForTesting` constructs an id with an explicit value/name combination so unit tests can manufacture hash collisions on demand. Never use it outside tests: an id whose value is not a function of its name breaks the invariant every container in the framework relies on.
+**Test-only escape hatch.** `NameIdTestAccess::create<IdT>` constructs an id with an explicit value/name combination so unit tests can manufacture hash collisions on demand. The struct is a friend of `NameId` defined only in test-local `name_id_testing.h` headers, so production code cannot name the operation — an id whose value is not a function of its name would break the invariant every container in the framework relies on.
 
 ## Type safety
 
@@ -83,7 +83,7 @@ The CMake plumbing lives in `common/cmake/tesseract_macros.cmake` (variable `TES
 `std::hash<std::string>` produces a `std::size_t` (64 bits on this platform), so two distinct names *can* hash to the same value. The design resolves this the way a string-keyed hash map does, rather than trying to detect it:
 
 - **Hybrid equality.** `NameId::operator==` compares the cached values first; only when the values match does it confirm with the name strings. Two colliding names therefore compare **unequal**, so every hash-keyed container keeps them as distinct keys — they land in the same bucket and are separated by the equality probe, which is precisely how `std::unordered_map<std::string, …>` handles a bucket collision. There is nothing to detect, no error path, and no way for a collision to silently alias two links.
-- **Load-bearing invariant:** every valid `NameId` carries the name it was constructed from. The string constructors are the only public way to obtain a valid id, so the confirming compare always has both names available. (This is exactly the invariant `createWithValueForTesting` exists to violate — in tests only.)
+- **Load-bearing invariant:** every valid `NameId` carries the name it was constructed from. The string constructors are the only public way to obtain a valid id, so the confirming compare always has both names available. (This is exactly the invariant `NameIdTestAccess` exists to violate — in tests only.)
 - **Pairs are watertight the same way.** `OrderedIdPair` stores the two full `NameId`s, so pair equality is hybrid via the components. Canonicalization orders by value and breaks value ties by name, so `LinkIdPair(a, b) == LinkIdPair(b, a)` holds even when `a` and `b` collide.
 - **Ordering is consistent.** `operator<` on both types breaks value ties by name, giving a strict weak ordering whose equivalence classes are exactly hybrid equality — safe for `std::map`/`std::set` and for sorting.
 
