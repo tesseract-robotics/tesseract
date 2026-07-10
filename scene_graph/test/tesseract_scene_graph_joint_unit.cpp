@@ -1,8 +1,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <iostream>
-#include <fstream>
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -111,16 +109,16 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointMimicUnit)  // NOLINT
 
   EXPECT_NEAR(j.offset, 0, 1e-6);
   EXPECT_NEAR(j.multiplier, 1, 1e-6);
-  EXPECT_TRUE(j.joint_name.empty());
+  EXPECT_FALSE(j.joint_id.isValid());
 
   j.offset = 1;
   j.multiplier = 2;
-  j.joint_name = "joint_name";
+  j.joint_id = "joint_0";
   j.clear();
 
   EXPECT_NEAR(j.offset, 0, 1e-6);
   EXPECT_NEAR(j.multiplier, 1, 1e-6);
-  EXPECT_TRUE(j.joint_name.empty());
+  EXPECT_FALSE(j.joint_id.isValid());
 
   std::ostringstream s;
   s << j;
@@ -161,7 +159,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
   joint_1.calibration->falling = 0.1;
   joint_1.mimic = std::make_shared<JointMimic>();
   joint_1.mimic->offset = 0.5;
-  joint_1.mimic->joint_name = "joint_0";
+  joint_1.mimic->joint_id = "joint_0";
   joint_1.mimic->multiplier = 1.5;
   joint_1.safety = std::make_shared<JointSafety>();
   joint_1.safety->soft_lower_limit = -0.5;
@@ -191,7 +189,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointUnit)  // NOLINT
   EXPECT_NEAR(joint_1_clone.calibration->falling, 0.1, 1e-6);
   EXPECT_TRUE(joint_1_clone.mimic != joint_1.mimic);
   EXPECT_NEAR(joint_1_clone.mimic->offset, 0.5, 1e-6);
-  EXPECT_EQ(joint_1_clone.mimic->joint_name, "joint_0");
+  EXPECT_EQ(joint_1_clone.mimic->joint_id, "joint_0");
   EXPECT_NEAR(joint_1_clone.mimic->multiplier, 1.5, 1e-6);
   EXPECT_NEAR(joint_1_clone.safety->soft_lower_limit, -0.5, 1e-6);
   EXPECT_NEAR(joint_1_clone.safety->soft_upper_limit, 0.5, 1e-6);

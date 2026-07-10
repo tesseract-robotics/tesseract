@@ -161,7 +161,7 @@ void serialize(Archive& ar, JointMimic& obj)
 {
   ar(cereal::make_nvp("offset", obj.offset));
   ar(cereal::make_nvp("multiplier", obj.multiplier));
-  ar(cereal::make_nvp("joint_name", obj.joint_name));
+  ar(cereal::make_nvp("joint_name", obj.joint_id));
 }
 
 template <class Archive>
