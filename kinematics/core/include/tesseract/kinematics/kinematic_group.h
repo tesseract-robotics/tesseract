@@ -106,7 +106,7 @@ public:
    * @brief Calculates joint solutions given a pose.
    * @details If redundant solutions are needed see utility function getRedundantSolutions.
    * @param tip_link_poses The input information to solve inverse kinematics for. There must be an input for each link
-   * provided in getTipLinkNames
+   * provided in getAllPossibleTipLinkIds
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
@@ -127,7 +127,7 @@ public:
    * @details If redundant solutions are needed see utility function getRedundantSolutions.
    * @param solutions The object to populated with solutions
    * @param tip_link_poses The input information to solve inverse kinematics for. There must be an input for each link
-   * provided in getTipLinkNames
+   * provided in getAllPossibleTipLinkIds
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
