@@ -70,6 +70,20 @@ whole override surface at once — for scale, migrating the Coal collision backe
   capacity, so steady-state reassignment performs no allocation. Paired with a
   `TESSERACT_THREAD_LOCAL` scratch pair it is the sanctioned idiom for pair-keyed lookups in hot
   loops (it replaces the string era's `makeOrderedLinkPair` out-param pattern).
+- **Planner mid-layer: hoist the id vector out of the kinematics group once.** Fetching names
+  and letting the callee re-hash them costs an allocation and a hash per joint, per call:
+
+      // Before: N string allocations, then N hashes inside the waypoint constructor
+      const std::vector<std::string> joint_names = manip->getJointNames();
+      assignSolution(mi, joint_names, values, format_as_input);
+
+      // After: no allocation, no hashing
+      const std::vector<JointId>& joint_ids = manip->getJointIds();
+      assignSolution(mi, joint_ids, values, format_as_input);
+
+  In the `tesseract_planning` repo, every planning mid-layer helper that takes
+  `const std::vector<std::string>&` has a `const std::vector<JointId>&` twin; the string form is
+  a one-line `toIds` shim over it.
 
 ## Iteration order is unspecified (and changed vs. the string era)
 
