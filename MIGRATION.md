@@ -1,5 +1,9 @@
 # Migration Guide
 
+This guide covers the single-package CMake restructure (include paths, targets, `find_package`).
+The API migration from string link/joint names to `LinkId`/`JointId` is covered in
+`IDENTITY_MIGRATION.md`.
+
 ## Single Package with Components
 
 Previously, tesseract was split into many separate CMake packages (`tesseract_common`, `tesseract_collision`, `tesseract_kinematics`, etc.). Now it is a **single CMake package** called `tesseract` with components.
@@ -274,25 +278,3 @@ echo "   consolidated into a single call listing all needed COMPONENTS."
 echo ""
 echo "Migration complete. Review changes with 'git diff' and rebuild."
 ```
-
-## feature/watertight-identity API changes
-
-`ACMEntry` and `PairMarginEntry` (and, in the `trajopt` repo, `PairCoeffEntry`) lost their
-`name1`/`name2` fields — the fat `LinkIdPair` key is now the single source of names, so callers
-read `key.first().name()` / `key.second().name()` instead. `getAlphabeticalACMEntries` now
-returns the new `srdf::AlphabeticalACMEntry` type rather than the old entry struct.
-`checkHashCollision`, `checkPairHashCollision`, and `orderedPairNames` have been deleted, along
-with the raw-value constructor of `OrderedIdPair` (construct from two `NameId`s instead); the
-private `insertEntryChecked` helper was renamed `insertEntry`. The collision-throw-on-hash-
-collision behavior described in `IDENTITY_DESIGN.md` has been removed: colliding names now
-resolve via hybrid equality and coexist as distinct keys rather than throwing at insertion time.
-`OrderedIdPair` gained an in-place `assign(a, b)`: paired with a `TESSERACT_THREAD_LOCAL`
-scratch pair it is the sanctioned idiom for repeated pair-keyed lookups, re-canonicalizing while
-reusing the held ids' string capacity so steady-state reassignment performs no allocation
-(replaces the string era's `makeOrderedLinkPair` out-param pattern).
-In the `trajopt` repo, the per-contact `DiscreteCollisionEvaluator::getGradient` and
-`ContinuousCollisionEvaluator::calcGradientData` virtuals were removed — the collision margin is
-now resolved once per pair in `calcCollisions`/`calcCollisionData`; call the free
-`trajopt_common::getGradient` overloads directly instead. The uncalled 4-argument two-timestep
-`CollisionEvaluator::GetGradient(dofvals0, dofvals1, contact_result, isTimestep1)` convenience
-wrapper was also removed; use the 6-argument overload taking `margin` and `coeff` explicitly.
