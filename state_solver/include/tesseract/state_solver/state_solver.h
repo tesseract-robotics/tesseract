@@ -64,7 +64,7 @@ public:
 
   /**
    * @brief Set the current state of the solver
-   * @details This must be the same size and order as what is returned by getJointNames
+   * @details This must be the same size and order as what is returned by getJointIds
    * @param joint_values The joint values
    */
   virtual void setState(const Eigen::Ref<const Eigen::VectorXd>& joint_values,
@@ -87,7 +87,7 @@ public:
 
   /**
    * @brief Get the state of the solver given the joint values
-   * @details This must be the same size and order as what is returned by getJointNames
+   * @details This must be the same size and order as what is returned by getJointIds
    * @param joint_values The joint values
    * @param floating_joint_values The floating joint origin transform
    */
@@ -128,7 +128,7 @@ public:
                                  const tesseract::common::JointIdTransformMap& floating_joint_values) const = 0;
 
   /**
-   * @brief Get link transforms using joint IDs instead of names
+   * @brief Get link transforms without applying floating joint values
    * @param link_transforms The link_transforms to populate with data.
    * @param joint_ids A list of joint IDs to change.
    * @param joint_values The joint values
@@ -145,7 +145,7 @@ public:
 
   /**
    * @brief Get the jacobian for a link identified by LinkId
-   * @details This must be the same size and order as what is returned by getJointNames
+   * @details This must be the same size and order as what is returned by getJointIds
    * @param joint_values The joint values
    * @param link_id The link ID to calculate the jacobian for
    * @param floating_joint_values The floating joint origin transform
@@ -211,7 +211,7 @@ public:
 
   /**
    * @brief Get all of the links transforms
-   * @details Order should be the same as getLinkNames()
+   * @details Order should be the same as getLinkIds()
    * @return Get a vector of transforms for all links.
    */
   virtual tesseract::common::VectorIsometry3d getLinkTransforms() const = 0;

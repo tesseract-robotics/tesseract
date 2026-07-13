@@ -66,7 +66,7 @@ public:
    * active link. For example a robot with an external positioner where the pose is relative to the tip link of the
    * positioner.
    * @note Redundant joint solutions can be provided by the utility function getRedundantSolutions
-   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkNames and relative to the
+   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkIds and relative to the
    * working frame of the kinematics group for which to solve inverse kinematics
    * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
@@ -83,7 +83,7 @@ public:
    * positioner.
    * @note Redundant joint solutions can be provided by the utility function getRedundantSolutions
    * @param solutions The object to store the calculated solutions
-   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkNames and relative to the
+   * @param tip_link_poses A map of poses corresponding to each tip link provided in getTipLinkIds and relative to the
    * working frame of the kinematics group for which to solve inverse kinematics
    * @param seed Vector of seed joint angles (size must match number of joints in kinematic object)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
