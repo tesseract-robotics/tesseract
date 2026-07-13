@@ -65,7 +65,7 @@ public:
   using ConstUPtr = std::unique_ptr<const OFKTStateSolver>;
 
   OFKTStateSolver(const tesseract::scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
-  OFKTStateSolver(const std::string& root_name);
+  OFKTStateSolver(const tesseract::common::LinkId& root_link);
   ~OFKTStateSolver() override = default;
   OFKTStateSolver(const OFKTStateSolver& other);
   OFKTStateSolver& operator=(const OFKTStateSolver& other);
