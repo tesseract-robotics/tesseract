@@ -171,6 +171,22 @@ Replacing the inline `std::string` with a `std::shared_ptr<std::string>` would s
 - To get the deduplication benefit (shared storage across multiple `NameId`s carrying the same name) you need a global intern table, which loses the decoupled-construction property again.
 - Without dedup, every `NameId` still allocates its own string, so the optimization only pays off on the rare copy-heavy case. In practice IDs land in a map once and rarely move; the target is small.
 
+### Dense per-model integer indices
+
+The approach used by MoveIt, Pinocchio, and RBDL: the model assigns each link and joint a small contiguous index at load time (link → `0..N-1`), and per-link data lives in plain vectors indexed directly. Where it applies, this is the strongest design in the space — no hashing, no hash maps, no collisions, pair keys are two ints, and dense vector access beats even an identity-hash bucket probe. It was rejected because it presupposes a fixed model, and Tesseract's central object is a mutable one:
+
+- **An index is meaningless without the model that assigned it.** `LinkId("base")` is a free-standing value, computable in a test, a parser, or an offline tool before any `Environment` exists. A dense index can only be obtained by asking a specific loaded model, which reintroduces the registry coupling rejected above for UUIDs and interning.
+- **The environment mutates at runtime.** Links and joints are added and removed via Commands. Removing a link either invalidates every index above it — silently corrupting ids held by callers, contact results, and cached maps — or forces tombstones and a free-list, at which point the indices are no longer dense and the vectors lose the properties that made them the win.
+- **Ids cross model boundaries.** Environments are cloned per planning thread, contact results produced against one state are inspected against a later one, and ACM/margin entries are authored against names in SRDF before a model is loaded. Name-derived values are stable across all of these; per-model indices are not, so every such boundary would need an index↔name translation layer — the string maps this design removes.
+
+MoveIt-style indices work because the robot model there is immutable after load. For a fixed-topology inner loop built on top of Tesseract, dense indices remain a valid caller-side optimization; they could not be the identity type of the core API.
+
+### Heterogeneous string lookup (transparent keys)
+
+The cheap, orthogonal fix for one specific string-era cost: keep string keys but give the containers transparent comparators/hashers (`std::less<>`, C++20 `is_transparent` heterogeneous lookup), so lookups accept `std::string_view` and never allocate a temporary `std::string`. A few lines of container plumbing, no API change.
+
+Rejected as the identity design because it removes only the temporary-key allocation, not the lookup cost itself: every probe still pays the `O(len)` string hash plus a string compare per bucket candidate — the costs profiling flagged — and it offers nothing for link/joint type safety or for pair keys. It is complementary rather than competing: the same transparent-lookup machinery works with `NameId` keys wherever a string-keyed boundary remains.
+
 ## Trade-offs
 
 **Gained**
