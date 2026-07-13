@@ -481,7 +481,7 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
   Eigen::VectorXd positons = Eigen::VectorXd::Constant(3, 5);
   tesseract::common::JointState joint_state(joint_names, positons);
-  EXPECT_TRUE(joint_state.getJointIds() == tesseract::common::toIds<tesseract::common::JointId>(joint_names));
+  EXPECT_TRUE(tesseract::common::toNames(joint_state.getJointIds()) == joint_names);
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
