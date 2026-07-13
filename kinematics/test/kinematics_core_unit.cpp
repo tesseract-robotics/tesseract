@@ -851,7 +851,7 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
   }
 }
 
-TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentAndNameAccessorsUnit)  // NOLINT
+TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentUnit)  // NOLINT
 {
   using tesseract::common::JointId;
   using tesseract::common::LinkId;
@@ -868,15 +868,7 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentAndNameAccessorsUnit)  // 
 
   tesseract::kinematics::JointGroup jg_a("manipulator_a", joint_ids, *scene_graph, scene_state);
 
-  // String-name accessors (string overloads that go via toNames(ids)).
-  const std::vector<std::string> joint_names = jg_a.getJointNames();
-  EXPECT_EQ(joint_names.size(), joint_ids.size());
-  for (std::size_t i = 0; i < joint_ids.size(); ++i)
-    EXPECT_EQ(joint_names[i], joint_ids[i].name());
-
-  const std::vector<std::string> link_names = jg_a.getLinkNames();
-  EXPECT_FALSE(link_names.empty());
-  EXPECT_EQ(link_names.size(), jg_a.getLinkIds().size());
+  EXPECT_FALSE(jg_a.getLinkIds().empty());
 
   // Copy-assignment body (L142–147 in joint_group.cpp).
   const std::vector<JointId> subset{ joint_ids[0], joint_ids[1], joint_ids[2] };

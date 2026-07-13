@@ -56,9 +56,6 @@ public:
   /** @brief The joint IDs corresponding to the position vector. */
   std::vector<JointId> joint_ids;
 
-  /** @brief Get joint names derived from joint_ids */
-  std::vector<std::string> getJointNames() const;
-
   /** @brief Get the joint IDs */
   const std::vector<JointId>& getJointIds() const;
 

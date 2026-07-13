@@ -481,7 +481,7 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
   Eigen::VectorXd positons = Eigen::VectorXd::Constant(3, 5);
   tesseract::common::JointState joint_state(joint_names, positons);
-  EXPECT_TRUE(joint_state.getJointNames() == joint_names);
+  EXPECT_TRUE(joint_state.getJointIds() == tesseract::common::toIds<tesseract::common::JointId>(joint_names));
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
@@ -5101,12 +5101,6 @@ TEST(TesseractCommonUnit, JointStateByJointIdConstructorUnit)  // NOLINT
 
   // Values preserved on the direct-ID path.
   EXPECT_TRUE(js.position.isApprox(pos));
-
-  // String-name accessor stays consistent with the id-based constructor.
-  const std::vector<std::string> names = js.getJointNames();
-  EXPECT_EQ(names.size(), ids.size());
-  for (std::size_t i = 0; i < ids.size(); ++i)
-    EXPECT_EQ(names[i], ids[i].name());
 }
 
 TEST(TesseractCommonUnit, MarginDataYamlDecodeDuplicatePairUnit)  // NOLINT

@@ -301,11 +301,7 @@ bool JointGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
 
 const std::vector<tesseract::common::JointId>& JointGroup::getJointIds() const { return joint_ids_; }
 
-std::vector<std::string> JointGroup::getJointNames() const { return tesseract::common::toNames(joint_ids_); }
-
 const std::vector<tesseract::common::LinkId>& JointGroup::getLinkIds() const { return link_ids_; }
-
-std::vector<std::string> JointGroup::getLinkNames() const { return tesseract::common::toNames(link_ids_); }
 
 const std::vector<tesseract::common::LinkId>& JointGroup::getActiveLinkIds() const { return active_link_ids_; }
 
