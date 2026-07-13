@@ -177,9 +177,9 @@ OFKTStateSolver::OFKTStateSolver(const tesseract::scene_graph::SceneGraph& scene
   initHelper(scene_graph, prefix);
 }
 
-OFKTStateSolver::OFKTStateSolver(const std::string& root_name)
+OFKTStateSolver::OFKTStateSolver(const tesseract::common::LinkId& root_link)
 {
-  root_ = std::make_unique<OFKTRootNode>(LinkId(root_name));
+  root_ = std::make_unique<OFKTRootNode>(root_link);
   link_map_[root_->getLinkId()] = root_.get();
   link_ids_ = { root_->getLinkId() };
   current_state_.link_transforms[root_->getLinkId()] = root_->getWorldTransformation();
@@ -992,8 +992,8 @@ bool OFKTStateSolver::updateRequired(Eigen::Isometry3d& updated_parent_world_tf,
   {
     auto it = floating_joints.find(node->getJointId());
     if (it == floating_joints.end())
-      throw std::runtime_error("OFKTStateSolver: internal inconsistency - FLOATING node '" +
-                               node->getJointId().name() + "' has no entry in floating_joints map");
+      throw std::runtime_error("OFKTStateSolver: internal inconsistency - FLOATING node '" + node->getJointId().name() +
+                               "' has no entry in floating_joints map");
     const auto& tf = it->second;
     updated_parent_world_tf = parent_world_tf * tf;
     return (!tf.isApprox(node->getLocalTransformation(), 1e-8));
