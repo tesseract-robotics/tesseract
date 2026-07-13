@@ -139,22 +139,10 @@ public:
   const std::vector<tesseract::common::JointId>& getJointIds() const;
 
   /**
-   * @brief Get list of joint names for kinematic object
-   * @return A vector of joint names
-   */
-  std::vector<std::string> getJointNames() const;
-
-  /**
    * @brief Get list of all link ids (with and without geometry) for kinematic object
    * @return A vector of link ids
    */
   const std::vector<tesseract::common::LinkId>& getLinkIds() const;
-
-  /**
-   * @brief Get list of all link names (with and without geometry) for kinematic object
-   * @return A vector of link names
-   */
-  std::vector<std::string> getLinkNames() const;
 
   /**
    * @brief Get list of active link ids (with and without geometry) for kinematic object

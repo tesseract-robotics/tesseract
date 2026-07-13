@@ -18,7 +18,9 @@ restructure (include paths, targets, `find_package`) is covered separately in `M
 - **`Environment` keeps its string conveniences**: `setState`/`getState` accept
   `std::vector<std::string>` and `std::unordered_map<std::string, double>`, group APIs stay
   keyed by group-name strings, and most name getters remain alongside the id getters.
-  `JointGroup` keeps `getJointNames()` / `getLinkNames()`.
+  `JointGroup` and `JointState`, however, are id-only: `getJointNames()` / `getLinkNames()` are
+  gone, and `getJointIds()` / `getLinkIds()` are the sole accessors. Convert with `toNames` at a
+  boundary that genuinely needs strings.
 
 ## The core surface changes
 
@@ -70,16 +72,14 @@ whole override surface at once — for scale, migrating the Coal collision backe
   capacity, so steady-state reassignment performs no allocation. Paired with a
   `TESSERACT_THREAD_LOCAL` scratch pair it is the sanctioned idiom for pair-keyed lookups in hot
   loops (it replaces the string era's `makeOrderedLinkPair` out-param pattern).
-- **Planner mid-layer: hoist the id vector out of the kinematics group once.** Fetching names
-  and letting the callee re-hash them costs an allocation and a hash per joint, per call:
+- **Planner mid-layer: hoist the id vector out of the kinematics group once.** `JointGroup`
+  returns ids by const reference, so binding them costs nothing:
 
-      // Before: N string allocations, then N hashes inside the waypoint constructor
-      const std::vector<std::string> joint_names = manip->getJointNames();
-      assignSolution(mi, joint_names, values, format_as_input);
-
-      // After: no allocation, no hashing
       const std::vector<JointId>& joint_ids = manip->getJointIds();
       assignSolution(mi, joint_ids, values, format_as_input);
+
+  Do not convert them to names to feed a string overload — that reintroduces an allocation per
+  joint plus a re-hash inside the callee.
 
   In the `tesseract_planning` repo, every planning mid-layer helper that takes
   `const std::vector<std::string>&` has a `const std::vector<JointId>&` twin; the string form is

@@ -138,8 +138,8 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
     msg << "*****************************\n";
 
     std::string header = "Trans. Dist. (m), tol, Angle Dist. (rad), tol";
-    for (const auto& jn : manip.getJointNames())
-      header += ", " + jn;
+    for (const auto& joint_id : manip.getJointIds())
+      header += ", " + joint_id.name();
 
     msg << header << "\n";
     for (const auto& d : failed_data)
