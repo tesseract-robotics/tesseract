@@ -18,9 +18,6 @@ restructure (include paths, targets, `find_package`) is covered separately in `M
 - **`Environment` keeps its string conveniences**: `setState`/`getState` accept
   `std::vector<std::string>` and `std::unordered_map<std::string, double>`, group APIs stay
   keyed by group-name strings, and most name getters remain alongside the id getters.
-  `JointGroup` and `JointState`, however, are id-only: `getJointNames()` / `getLinkNames()` are
-  gone, and `getJointIds()` / `getLinkIds()` are the sole accessors. Convert with `toNames` at a
-  boundary that genuinely needs strings.
 
 ## The core surface changes
 
@@ -42,6 +39,10 @@ restructure (include paths, targets, `find_package`) is covered separately in `M
 - **`Joint` link references are ids**: `child_link_name` / `parent_link_name` →
   `child_link_id` / `parent_link_id` (`LinkId`); `JointMimic::joint_name` → `joint_id`
   (`JointId`). Cereal keys are unchanged, so old archives load.
+- **`JointGroup` and `JointState` are id-only.** `JointGroup::getJointNames()` and
+  `JointGroup::getLinkNames()` are gone; `JointState::getJointNames()` is gone (`JointState` never
+  had a link-name getter). `getJointIds()` / `getLinkIds()` are the sole accessors. Convert with
+  `toNames` at a boundary that genuinely needs strings.
 - **Collection-returning APIs return ids**, not name vectors:
   `DiscreteContactManager::getCollisionObjects()` → `std::vector<LinkId>`,
   `JointGroup::calcFwdKin()` → `LinkIdTransformMap`,
