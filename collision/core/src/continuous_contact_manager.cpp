@@ -27,6 +27,8 @@
 #include <tesseract/common/types.h>
 
 #include <cassert>
+#include <stdexcept>
+#include <string>
 
 namespace tesseract::collision
 {
@@ -38,6 +40,17 @@ void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<st
     setCollisionObjectsTransform(tesseract::common::LinkId(names[i]), poses[i]);
 }
 
+void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                                            const tesseract::common::VectorIsometry3d& poses)
+{
+  if (ids.size() != poses.size())
+    throw std::runtime_error("ContinuousContactManager, setCollisionObjectsTransform received " +
+                             std::to_string(ids.size()) + " ids but " + std::to_string(poses.size()) + " poses!");
+
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    setCollisionObjectsTransform(ids[i], poses[i]);
+}
+
 void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
                                                             const tesseract::common::VectorIsometry3d& pose1,
                                                             const tesseract::common::VectorIsometry3d& pose2)
@@ -46,6 +59,19 @@ void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<st
   assert(names.size() == pose2.size());
   for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(tesseract::common::LinkId(names[i]), pose1[i], pose2[i]);
+}
+
+void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                                            const tesseract::common::VectorIsometry3d& pose1,
+                                                            const tesseract::common::VectorIsometry3d& pose2)
+{
+  if (ids.size() != pose1.size() || ids.size() != pose2.size())
+    throw std::runtime_error("ContinuousContactManager, setCollisionObjectsTransform received " +
+                             std::to_string(ids.size()) + " ids but " + std::to_string(pose1.size()) +
+                             " start poses and " + std::to_string(pose2.size()) + " end poses!");
+
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    setCollisionObjectsTransform(ids[i], pose1[i], pose2[i]);
 }
 
 void ContinuousContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
