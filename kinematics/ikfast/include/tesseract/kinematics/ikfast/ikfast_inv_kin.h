@@ -49,10 +49,10 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  * class FanucP50iBInvKinematics : public tesseract::kinematics::IKFastInvKin
  * {
  * public:
- *   FanucP50iBInvKinematics(const std::string base_link_name,
- *                           const std::string tip_link_name,
- *                           const std::vector<std::string> joint_names,
- *                           const std::string name)
+ *   FanucP50iBInvKinematics(tesseract::common::LinkId base_link_id,
+ *                           tesseract::common::LinkId tip_link_id,
+ *                           const std::vector<tesseract::common::JointId>& joint_ids,
+ *                           std::string solver_name);
  * };
  *
  * Cpp File:
@@ -63,11 +63,11 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  *
  * namespace fanuc_p50ib_15_ikfast_wrapper
  * {
- *   FanucP50iBInvKinematics::FanucP50iBInvKinematics(const std::string base_link_name,
- *                                                    const std::string tip_link_name,
- *                                                    const std::vector<std::string> joint_names
- *                                                    const std::string name)
- *   : FanucP50iBInvKinematics(base_link_name, tip_link_name, joint_names, name, joint_limits)
+ *   FanucP50iBInvKinematics::FanucP50iBInvKinematics(tesseract::common::LinkId base_link_id,
+ *                                                    tesseract::common::LinkId tip_link_id,
+ *                                                    const std::vector<tesseract::common::JointId>& joint_ids,
+ *                                                    std::string solver_name)
+ *   : IKFastInvKin(std::move(base_link_id), std::move(tip_link_id), joint_ids, std::move(solver_name))
  *   {}
  * }
  *
@@ -92,10 +92,11 @@ public:
 
   /**
    * @brief Construct IKFast Inverse Kinematics
-   * @param base_link_name The name of the base link for the kinematic chain
-   * @param tip_link_name The name of the tip link for the kinematic chain
-   * @param joint_names The joint names for the kinematic chain
+   * @param base_link_id The id of the base link for the kinematic chain
+   * @param tip_link_id The id of the tip link for the kinematic chain
+   * @param joint_ids The joint ids for the kinematic chain
    * @param solver_name The solver name of the kinematic chain
+   * @param free_joint_states The free joint states
    */
   IKFastInvKin(tesseract::common::LinkId base_link_id,
                tesseract::common::LinkId tip_link_id,
