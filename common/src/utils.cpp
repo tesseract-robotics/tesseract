@@ -575,22 +575,4 @@ std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
   return results;
 }
 
-std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
-                                              const AllowedCollisionEntries& acm_entries,
-                                              bool remove_duplicates)
-{
-  std::vector<LinkId> ids;
-  ids.reserve(link_names.size());
-  for (const auto& n : link_names)
-    ids.emplace_back(n);
-
-  auto id_results = getAllowedCollisions(ids, acm_entries, remove_duplicates);
-
-  std::vector<std::string> out;
-  out.reserve(id_results.size());
-  for (const auto& id : id_results)
-    out.push_back(id.name());
-  return out;
-}
-
 }  // namespace tesseract::common
