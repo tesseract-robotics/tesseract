@@ -223,7 +223,7 @@ bool needsCollisionCheck(const COW& cow1,
 
 /**
  * @brief This is used to check if a collision check is required between the provided two collision objects
- * (convenience overload; constructs the link id pair only when a validator decision requires it).
+ * (convenience overload; resolves the link id pair only when a validator decision requires it).
  * @param cow1 The first collision object
  * @param cow2 The second collision object
  * @param validator  The contact allowed validator

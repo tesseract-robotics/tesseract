@@ -290,6 +290,9 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
   contact_test_data_.req = request;
   contact_test_data_.done = false;
 
+  // Reusing a single pair across the loop keeps the candidate-pair lookups allocation-free.
+  tesseract::common::LinkIdPair link_pair;
+
   for (auto cow1_iter = cows_.begin(); cow1_iter != (cows_.end() - 1); cow1_iter++)
   {
     const COW::Ptr& cow1 = *cow1_iter;
@@ -319,7 +322,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 
       if (aabb_check)
       {
-        const tesseract::common::LinkIdPair link_pair(cow1->getLinkId(), cow2->getLinkId());
+        link_pair.assign(cow1->getLinkId(), cow2->getLinkId());
         bool needs_collision = needsCollisionCheck(*cow1, *cow2, link_pair, contact_test_data_.validator, false);
 
         if (needs_collision)
