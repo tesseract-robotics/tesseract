@@ -69,7 +69,7 @@ bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
                       bool verbose = false);
 
 /**
- * @brief Determine if contact is allowed between two objects (two-id overload; constructs the pair only when a
+ * @brief Determine if contact is allowed between two objects (two-id overload; resolves the pair only when a
  * validator decision requires it, and logs in caller argument order).
  * @param id1 The id of the first object
  * @param id2 The id of the second object

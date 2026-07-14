@@ -46,6 +46,9 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
   std::vector<tesseract::common::LinkIdPair> clp;
   clp.reserve(num_pairs);
 
+  // Reusing a single pair across the loops keeps the rejected candidates allocation-free.
+  tesseract::common::LinkIdPair pair;
+
   // Create active to active pairs
   for (std::size_t i = 0; i < active_links.size() - 1; ++i)
   {
@@ -53,7 +56,7 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
     {
       const auto& l2 = active_links[j];
-      auto pair = tesseract::common::LinkIdPair(l1, l2);
+      pair.assign(l1, l2);
       if (validator == nullptr || !(*validator)(pair))
         clp.push_back(pair);
     }
@@ -64,7 +67,7 @@ getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_lin
   {
     for (const auto& l2 : static_links)
     {
-      auto pair = tesseract::common::LinkIdPair(l1, l2);
+      pair.assign(l1, l2);
       if (validator == nullptr || !(*validator)(pair))
         clp.push_back(pair);
     }
@@ -115,15 +118,22 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
   if (id1 == id2)
     return true;
 
-  if (validator != nullptr && (*validator)(tesseract::common::LinkIdPair(id1, id2)))
+  if (validator != nullptr)
   {
-    if (verbose)
+    // Reusing a long-lived pair keeps the broadphase filter path allocation-free.
+    TESSERACT_THREAD_LOCAL tesseract::common::LinkIdPair key;
+    key.assign(id1, id2);
+
+    if ((*validator)(key))
     {
-      CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
-                              id1.name().c_str(),
-                              id2.name().c_str());
+      if (verbose)
+      {
+        CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
+                                id1.name().c_str(),
+                                id2.name().c_str());
+      }
+      return true;
     }
-    return true;
   }
 
   if (verbose)

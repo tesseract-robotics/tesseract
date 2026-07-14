@@ -235,7 +235,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkIdPair link_pair;
+  link_pair.assign(cd1->getLinkId(), cd2->getLinkId());
 
   if (!needsCollisionCheck(cd1, cd2, link_pair, cdata->validator))
     return false;
@@ -298,7 +299,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  auto link_pair = tesseract::common::LinkIdPair(cd1->getLinkId(), cd2->getLinkId());
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkIdPair link_pair;
+  link_pair.assign(cd1->getLinkId(), cd2->getLinkId());
 
   if (!needsCollisionCheck(cd1, cd2, link_pair, cdata->validator))
     return false;
