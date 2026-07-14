@@ -15,6 +15,8 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <stdexcept>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/test_suite/get_collision_objects_transform_unit.hpp>
@@ -54,6 +56,23 @@ TEST(TesseractCollisionUnit, BulletCastBVHGetCollisionObjectsTransform)  // NOLI
 {
   BulletCastBVHManager checker;
   test_suite::runContinuousGetCollisionObjectsTransformUnit(checker);
+}
+
+TEST(TesseractCollisionUnit, DiscreteSetCollisionObjectsTransformSizeMismatch)  // NOLINT
+{
+  BulletDiscreteSimpleManager checker;
+  const std::vector<tesseract::common::LinkId> ids{ "link_a", "link_b" };
+  const tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  EXPECT_THROW(checker.setCollisionObjectsTransform(ids, poses), std::runtime_error);  // NOLINT
+}
+
+TEST(TesseractCollisionUnit, ContinuousSetCollisionObjectsTransformSizeMismatch)  // NOLINT
+{
+  BulletCastSimpleManager checker;
+  const std::vector<tesseract::common::LinkId> ids{ "link_a", "link_b" };
+  const tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  EXPECT_THROW(checker.setCollisionObjectsTransform(ids, poses), std::runtime_error);         // NOLINT
+  EXPECT_THROW(checker.setCollisionObjectsTransform(ids, poses, poses), std::runtime_error);  // NOLINT
 }
 
 int main(int argc, char** argv)

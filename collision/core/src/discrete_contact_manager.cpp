@@ -27,6 +27,8 @@
 #include <tesseract/common/types.h>
 
 #include <cassert>
+#include <stdexcept>
+#include <string>
 
 namespace tesseract::collision
 {
@@ -36,6 +38,17 @@ void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<std:
   assert(names.size() == poses.size());
   for (auto i = 0U; i < names.size(); ++i)
     setCollisionObjectsTransform(tesseract::common::LinkId(names[i]), poses[i]);
+}
+
+void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                                          const tesseract::common::VectorIsometry3d& poses)
+{
+  if (ids.size() != poses.size())
+    throw std::runtime_error("DiscreteContactManager, setCollisionObjectsTransform received " +
+                             std::to_string(ids.size()) + " ids but " + std::to_string(poses.size()) + " poses!");
+
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    setCollisionObjectsTransform(ids[i], poses[i]);
 }
 
 void DiscreteContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)

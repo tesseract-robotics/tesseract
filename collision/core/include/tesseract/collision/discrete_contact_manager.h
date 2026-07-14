@@ -158,6 +158,15 @@ public:
                                             const tesseract::common::VectorIsometry3d& poses);
 
   /**
+   * @brief Set a series of collision object's transforms
+   * @param ids The LinkIds of the objects
+   * @param poses The poses, one per id
+   * @throws std::runtime_error if ids and poses differ in size
+   */
+  virtual void setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::VectorIsometry3d& poses);
+
+  /**
    * @brief Get all collision objects
    * @return A list of collision object IDs
    */

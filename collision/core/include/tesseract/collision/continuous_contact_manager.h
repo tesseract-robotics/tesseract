@@ -164,6 +164,15 @@ public:
                                             const tesseract::common::VectorIsometry3d& poses);
 
   /**
+   * @brief Set a series of collision object's transforms
+   * @param ids The LinkIds of the objects
+   * @param poses The poses, one per id
+   * @throws std::runtime_error if ids and poses differ in size
+   */
+  virtual void setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::VectorIsometry3d& poses);
+
+  /**
    * @brief Set a single cast(moving) collision object's transforms
    *
    * This should only be used for moving objects. Use the base
@@ -187,6 +196,17 @@ public:
 
   /** @brief Set a series of cast collision object's transforms by name (delegates to LinkId overload) */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const tesseract::common::VectorIsometry3d& pose1,
+                                            const tesseract::common::VectorIsometry3d& pose2);
+
+  /**
+   * @brief Set a series of cast(moving) collision object's transforms
+   * @param ids The LinkIds of the objects
+   * @param pose1 The start poses, one per id
+   * @param pose2 The end poses, one per id
+   * @throws std::runtime_error if ids, pose1, and pose2 differ in size
+   */
+  virtual void setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
                                             const tesseract::common::VectorIsometry3d& pose1,
                                             const tesseract::common::VectorIsometry3d& pose2);
 

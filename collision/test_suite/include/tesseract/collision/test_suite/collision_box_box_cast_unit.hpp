@@ -154,7 +154,7 @@ inline void runTest(ContinuousContactManager& checker)
   end_pos.translation()(1) = 3.8;
   start_poses.push_back(start_pos);
   end_poses.push_back(end_pos);
-  checker.setCollisionObjectsTransform({ "moving_box_link" }, start_poses, end_poses);
+  checker.setCollisionObjectsTransform(std::vector<std::string>{ "moving_box_link" }, start_poses, end_poses);
 
   std::vector<ContactTestType> test_types = { ContactTestType::ALL, ContactTestType::CLOSEST, ContactTestType::FIRST };
 
