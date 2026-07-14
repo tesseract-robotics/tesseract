@@ -136,9 +136,11 @@ public:
                                    const std::vector<double>& joint_values,
                                    const tesseract::common::JointIdTransformMap& floating_joints = {}) const
   {
-    Eigen::VectorXd values =
-        Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size()));
-    return setEnvironmentState(monitor_namespace, joint_ids, values, floating_joints);
+    return setEnvironmentState(
+        monitor_namespace,
+        joint_ids,
+        Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size())),
+        floating_joints);
   }
 
   /**
@@ -164,9 +166,10 @@ public:
                       const std::vector<double>& joint_values,
                       const tesseract::common::JointIdTransformMap& floating_joints = {}) const
   {
-    Eigen::VectorXd values =
-        Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size()));
-    return setEnvironmentState(joint_ids, values, floating_joints);
+    return setEnvironmentState(
+        joint_ids,
+        Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size())),
+        floating_joints);
   }
 
   /**
