@@ -31,6 +31,10 @@ restructure (include paths, targets, `find_package`) is covered separately in `M
   `tesseract::common::ContactAllowedValidator` and implement
   `bool operator()(const LinkIdPair&) const` (`tesseract/common/contact_allowed_validator.h`);
   ACM- and combining-validators are provided.
+- **`AllowedCollisionMatrix::isCollisionAllowed(LinkId, LinkId)` is removed.** The pair form is the
+  only spelling: `acm.isCollisionAllowed({ id1, id2 })`. The two-id convenience constructed a fat
+  `LinkIdPair` — two heap string copies — on every call, while reading like the allocation-free
+  two-id margin lookups it sat next to; spelling the pair at the call site makes that cost visible.
 - **`SceneState`'s four maps are id-keyed**: `joints`
   (`std::unordered_map<JointId, double>`), `link_transforms` (`LinkIdTransformMap`),
   `joint_transforms` and `floating_joints` (`JointIdTransformMap`).
@@ -68,11 +72,21 @@ whole override surface at once — for scale, migrating the Coal collision backe
   construction plus hash per call). The migration's win is realized only when a `NameId` is
   constructed once and reused across many lookups. Hoist ids out of loops and store them in
   members instead of re-converting names per call.
-- **Repeated pair-keyed lookups: `assign` into a thread-local scratch pair.** `OrderedIdPair`
-  has an in-place `assign(a, b)` that re-canonicalizes while reusing the held ids' string
-  capacity, so steady-state reassignment performs no allocation. Paired with a
-  `TESSERACT_THREAD_LOCAL` scratch pair it is the sanctioned idiom for pair-keyed lookups in hot
-  loops (it replaces the string era's `makeOrderedLinkPair` out-param pattern).
+- **Repeated pair-keyed lookups: `assign` into a reused scratch pair.** A `LinkIdPair` owns two
+  names, so constructing one costs two heap string copies. `OrderedIdPair` has an in-place
+  `assign(a, b)` that re-canonicalizes while reusing the held ids' string capacity, so
+  steady-state reassignment performs no allocation. The rule the core now follows, and which
+  a collision or kinematics backend should follow too:
+
+  > A lookup never manufactures a `LinkIdPair`. Only an insertion does.
+
+  Where a pair is a container's key, its cost is irreducible. Where it is only a lookup key, reuse
+  one: declare it above the loop and `assign` per iteration; or, if the hot code is a callback
+  object invoked per candidate pair, hold the scratch as a member. Fall back to a
+  `TESSERACT_THREAD_LOCAL` scratch only when neither a loop nor an owning object is in scope —
+  it works, but adds a guard check and `__tls_get_addr` per access. (This replaces the string
+  era's `makeOrderedLinkPair` out-param pattern.) A backend written the obvious way manufactures
+  a pair per candidate pair; all three in-tree backends did before they were swept.
 - **Planner mid-layer: hoist the id vector out of the kinematics group once.** `JointGroup`
   returns ids by const reference, so binding them costs nothing:
 

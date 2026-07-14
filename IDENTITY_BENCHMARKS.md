@@ -128,7 +128,11 @@ Micro (same invocation as above; means):
 |---|---|---|---|
 | `BM_PairAssign` (new) | — | 10.3 ns | vs 33.9 ns `BM_PairConstruction` same run: **-70%**, zero allocations |
 | `BM_MarginLookup_TwoIds` | 44.0 ns | 29.6 ns | **-33%** |
-| `BM_AcmIsAllowed_TwoIds_Hit` | 46.2 ns | 45.3 ns | unchanged (ACM two-id overload deliberately not converted; no hot callers remain after the ifopt hoist) |
+| `BM_AcmIsAllowed_TwoIds_Hit` | 46.2 ns | 45.3 ns | unchanged (overload not converted; since deleted — see the 2026-07-14 sweep) |
+
+The ACM two-id overload was left unconverted here because no hot callers remained after the ifopt
+hoist. `BM_AcmIsAllowed_TwoIds_Hit` now spells the pair construction at the call site, so it
+measures the same work and its numbers stay comparable.
 
 The residual vs Phase 0's 6.73 ns margin lookup is TLS access + two capacity-reusing byte
 copies + `combineHash`; Phase 2's transparent views target that remainder.
@@ -139,6 +143,41 @@ construction on that path) drifted +4-15% vs the reference, so the session basel
 the contact-test families moved within the same band. An attributable macro number needs a
 back-to-back stash A/B in one session (not yet run). Tests: tesseract 837 (one unrelated flaky,
 passes on rerun) + coal 253, all green.
+
+## Phase 1 follow-up — pair-construction sweep (2026-07-14)
+
+Finding 3 fixed the sites it found; this sweep looked for the rest, and establishes the invariant
+they all satisfy:
+
+> **A lookup never manufactures a `LinkIdPair`. Only an insertion does.**
+
+An owning pair costs two heap string copies (~33 ns, `BM_PairConstruction`). Where a pair is the
+map's *key*, that cost is irreducible — the container owns it. Where a pair is merely a *lookup
+key*, it is pure waste, and `assign` into a reused pair removes it (10.3 ns, zero allocations,
+`BM_PairAssign`). The danger is that the two read identically at the call site, which is why the
+rule is stated rather than left to taste. Three variants, in order of preference:
+
+- **Loop-hoisted scratch** — an owning pair declared above the loop, `assign`ed per iteration.
+  Cheapest: no thread-local machinery at all. Used in `BulletDiscreteSimpleManager::contactTest`,
+  `BulletCastSimpleManager::contactTest`, `getCollisionObjectPairs`, the three sco evaluation
+  loops in trajopt `collision_terms.cpp`, and the Qt ACM-generation handler.
+- **Callback member** — where the hot code is a callback object with a per-query lifetime, the
+  object owns the scratch. Used by the Coal plugin's `CollisionCallback`; same cost as a hoist.
+- **`TESSERACT_THREAD_LOCAL` scratch** — the fallback where neither a loop nor an owning object is
+  in scope, because the function is called once per candidate pair from someone else's broadphase.
+  Used inside the two-id `getCollisionMargin`/`isContactAllowed` and the two FCL callbacks. Costs
+  a guard check plus `__tls_get_addr` on top of the assign.
+
+The two-id `AllowedCollisionMatrix::isCollisionAllowed` was **deleted** rather than scratched: it
+had no non-test callers, and an unconverted two-id overload sitting beside the allocation-free
+two-id margin twin is a perf trap — it silently builds a fat pair while reading like the cheap
+idiom. The ACM's two-id `addAllowedCollision`/`removeAllowedCollision` are deliberately kept: they
+are cold mutations whose key the map owns regardless, so there is no hidden cost to expose.
+
+Not benchmarked in isolation (each site is a few nanoseconds against a contact test); the point is
+the invariant, and that the manager-side residual which the sco cache-arrays plan had deferred to
+Phase 2 turned out not to need it. Plugin authors: a third-party backend written the obvious way
+will manufacture a pair per candidate exactly as all three of ours did.
 
 ## Phase 2 — boost::unordered_flat_map + transparent view lookups (deferred — pending real-data benchmarking)
 
