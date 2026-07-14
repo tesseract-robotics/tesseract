@@ -6215,12 +6215,12 @@ class FakeMonitor : public tesseract::environment::EnvironmentMonitorInterface
 public:
   using EnvironmentMonitorInterface::EnvironmentMonitorInterface;
 
-  // Keep the inline string-wrapper overloads visible in this derived class
+  // Keep the inline delegating overloads visible in this derived class
   // (otherwise name-hiding from the ID overrides below would shadow them).
   using EnvironmentMonitorInterface::setEnvironmentState;
 
-  // Counters for the ID-taking setEnvironmentState overloads that the string
-  // wrappers are expected to delegate to.
+  // Counters for how many times each ID-taking setEnvironmentState override is invoked,
+  // whether directly or via one of the inline delegating overloads.
   mutable int id_setstate_ns_id_calls = 0;
   mutable int id_setstate_ns_vec_calls = 0;
   mutable int id_setstate_ns_fj_calls = 0;
@@ -6274,7 +6274,6 @@ public:
     return {};
   }
 
-  // ID overloads that the string wrappers delegate to.
   bool setEnvironmentState(const std::string& /*monitor_namespace*/,
                            const tesseract::scene_graph::SceneState::JointValues& /*joints*/,
                            const tesseract::common::JointIdTransformMap& /*floating_joints*/) const override
@@ -6327,28 +6326,30 @@ public:
 };
 }  // namespace
 
-TEST(TesseractEnvironmentUnit, EnvMonitorInterfaceStringOverloads)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvMonitorInterfaceDelegatingOverloads)  // NOLINT
 {
   FakeMonitor m("test_env");
 
-  std::unordered_map<std::string, double> joints_map{ { "j1", 0.0 } };
-  std::vector<std::string> names{ "j1" };
+  tesseract::scene_graph::SceneState::JointValues joints_map{ { "j1", 0.0 } };
+  std::vector<tesseract::common::JointId> ids{ "j1" };
   std::vector<double> vals{ 0.0 };
   Eigen::VectorXd evals(1);
   evals << 0.0;
 
-  // Namespace + string overloads (three of them).
-  EXPECT_TRUE(m.setEnvironmentState("ns", joints_map));
+  tesseract::common::JointIdTransformMap floating;
+
+  // Namespace overloads.
+  EXPECT_TRUE(m.setEnvironmentState("ns", joints_map, floating));
   EXPECT_EQ(m.id_setstate_ns_id_calls, 1);
 
-  EXPECT_TRUE(m.setEnvironmentState("ns", names, vals));
-  EXPECT_TRUE(m.setEnvironmentState("ns", names, evals));
+  EXPECT_TRUE(m.setEnvironmentState("ns", ids, vals));
+  EXPECT_TRUE(m.setEnvironmentState("ns", ids, evals, floating));
   EXPECT_EQ(m.id_setstate_ns_vec_calls, 2);
 
-  // All-namespaces overloads (three of them).
-  auto r1 = m.setEnvironmentState(joints_map);
-  auto r2 = m.setEnvironmentState(names, vals);
-  auto r3 = m.setEnvironmentState(names, evals);
+  // All-namespaces overloads.
+  auto r1 = m.setEnvironmentState(joints_map, floating);
+  auto r2 = m.setEnvironmentState(ids, vals);
+  auto r3 = m.setEnvironmentState(ids, evals, floating);
   EXPECT_TRUE(r1.empty());
   EXPECT_TRUE(r2.empty());
   EXPECT_TRUE(r3.empty());
