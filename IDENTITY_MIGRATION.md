@@ -19,6 +19,16 @@ restructure (include paths, targets, `find_package`) is covered separately in `M
   `std::vector<std::string>` and `std::unordered_map<std::string, double>`, group APIs stay
   keyed by group-name strings, and most name getters remain alongside the id getters.
 
+## The governing rule
+
+Every method kept the shape it had before — same parameters, same return type, same overload
+set — just id-based instead of string-based. Where a string form and an id form existed in
+parallel, the string form was removed; the id form was already there and is now the only one.
+Where **only** a string form existed, it was converted to take or return ids. There is no
+deprecation period for either case: a name-typed call site becomes a compile error, not a
+silent behavior change, because `std::vector<std::string>` does not implicitly convert to
+`std::vector<LinkId>` or `std::vector<JointId>`.
+
 ## The core surface changes
 
 - **`ContactResult::link_names` → `link_ids`** — renamed *and* retyped to
@@ -52,6 +62,48 @@ restructure (include paths, targets, `find_package`) is covered separately in `M
   `JointGroup::calcFwdKin()` → `LinkIdTransformMap`,
   `KinematicGroup::getAllPossibleTipLinkIds()`, `JointGroup::getJointIds()` / `getLinkIds()`,
   and the like. Convert at your boundary with `toNames` where a string list is needed.
+- **`checkTrajectory` is id-only.** The `const std::vector<std::string>& joint_names` overloads
+  (both the discrete and the continuous contact-manager forms) are gone. What remains: the
+  `const std::vector<JointId>&` overload and the `const JointGroup&` overload, for each manager
+  type.
+- **`getAllowedCollisions` is id-only.** The `std::vector<std::string>` overload is gone; call the
+  `std::vector<LinkId>` overload instead.
+- **`tesseract::common::JointState` has no joint-name constructor.** Construct from
+  `std::vector<JointId>` plus a position vector. Brace-initializing that vector from string
+  literals still compiles in any translation unit that does not define
+  `TESSERACT_NAMEID_NO_IMPLICIT`.
+
+## The planning surface changes (`tesseract_planning`)
+
+- **The waypoint polys (joint and state) expose `setJointIds`/`getJointIds` only.** Both
+  `setNames` and `getNames` are gone from every layer of the type-erasure stack and from the
+  installed `test_suite/*.hpp` conformance headers. A caller that needs names for display or
+  logging converts at its own boundary: `tesseract::common::toNames(wp.getJointIds())` — this is
+  what the Qt tree items now do.
+- **The `command_language` free functions are id-only.** `getJointPosition`,
+  `formatJointPosition`, and `checkJointPositionFormat` no longer have string delegates; call the
+  id overload and convert at your own boundary if you only have names.
+
+## The ROS surface changes (`tesseract_rosutils`)
+
+`tesseract_rosutils` now speaks ids on both sides of the ROS message boundary:
+
+- **`fromMsg` gained id-keyed `SceneState::JointValues` twins** — one from
+  `sensor_msgs::msg::JointState`, one from a `std::vector<tesseract_msgs::msg::StringDoublePair>`.
+- **`toEigen(const sensor_msgs::msg::JointState&, …)` takes `const std::vector<JointId>&`** and
+  orders its output by that id list — same contract as before, id-spelled.
+- **Deleted:** `toIdJointValues`, both string-keyed `toMsg` forms, and both string-keyed `fromMsg`
+  forms.
+
+The removal most likely to affect a downstream ROS consumer is
+`bool fromMsg(std::unordered_map<std::string, double>&, const sensor_msgs::msg::JointState&)`.
+Take the id-keyed twin, `fromMsg(SceneState::JointValues&, const sensor_msgs::msg::JointState&)`,
+and read `id.name()` off its keys if you still need names.
+
+The general path for any ROS message field that used to hand you a name is the same one that
+applies everywhere else in this guide: convert at your own boundary with `toIds<JointId>` (or
+take the id-keyed message conversion directly, where one exists) and hold onto the ids from
+there.
 
 ## Plugin authors
 
