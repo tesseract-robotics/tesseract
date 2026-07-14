@@ -18,11 +18,11 @@ TEST(TesseractCommonUtilsUnit, TestGetAllowedCollisions)  // NOLINT
   acm.addAllowedCollision("link10", "link11", "test");
   acm.addAllowedCollision("dummy", "dummy", "link1");
 
-  std::vector<std::string> link_names{ "link1", "link3", "cause_duplicate" };
+  std::vector<tesseract::common::LinkId> link_ids{ "link1", "link3", "cause_duplicate" };
 
   // Removing duplicates: Expect link1, link2, link3, link4, cause_duplicate
   {
-    auto results = tesseract::common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions());
+    auto results = tesseract::common::getAllowedCollisions(link_ids, acm.getAllAllowedCollisions());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());
@@ -35,7 +35,7 @@ TEST(TesseractCommonUtilsUnit, TestGetAllowedCollisions)  // NOLINT
   }
   // Not removing duplicates: Expect link1, link2, link3, link4, cause_duplicate, link1
   {
-    auto results = tesseract::common::getAllowedCollisions(link_names, acm.getAllAllowedCollisions(), false);
+    auto results = tesseract::common::getAllowedCollisions(link_ids, acm.getAllAllowedCollisions(), false);
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link1") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link2") != results.end());
     EXPECT_TRUE(std::find(results.begin(), results.end(), "link3") != results.end());
@@ -48,7 +48,7 @@ TEST(TesseractCommonUtilsUnit, TestGetAllowedCollisions)  // NOLINT
   }
 }
 
-/// Testing the LinkId-based getAllowedCollisions overload (Id-primary; string overload delegates).
+/// Testing the LinkId-based getAllowedCollisions overload.
 TEST(TesseractCommonUtilsUnit, GetAllowedCollisionsLinkIdOverload)  // NOLINT
 {
   using namespace tesseract::common;
@@ -66,12 +66,6 @@ TEST(TesseractCommonUtilsUnit, GetAllowedCollisionsLinkIdOverload)  // NOLINT
     for (const auto& id : results)
       result_names.insert(id.name());
     EXPECT_EQ(result_names, (std::set<std::string>{ "b", "c" }));
-
-    // String overload returns the same set of names (delegation).
-    std::vector<std::string> str_query{ "a" };
-    auto str_results = getAllowedCollisions(str_query, acm.getAllAllowedCollisions(), true);
-    std::set<std::string> str_set(str_results.begin(), str_results.end());
-    EXPECT_EQ(str_set, result_names);
   }
 
   // Query both endpoints of the same entry: with dedup, neither should be reported twice.
