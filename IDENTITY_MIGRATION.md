@@ -75,6 +75,20 @@ silent behavior change, because `std::vector<std::string>` does not implicitly c
 
 ## The planning surface changes (`tesseract_planning`)
 
+- **`JointWaypoint` and `StateWaypoint` no longer construct from joint names.** The
+  `std::vector<std::string>` constructors are gone; construct from `std::vector<JointId>`. The
+  `std::initializer_list` constructors survive, retyped to `JointId`, so the brace-literal
+  convenience still works where the implicit conversion is available:
+  `JointWaypoint({ "j1", "j2" }, { 1.0, 2.0 })`. What no longer compiles is the case that mattered —
+  handing a waypoint a `std::vector<std::string>` you are already holding. That is a compile error,
+  not a silent per-joint hash.
+
+  One honest caveat: the implicit conversion is gated **per translation unit**
+  (`TESSERACT_NAMEID_NO_IMPLICIT`), not per argument, so in a TU where it is available a braced list
+  can still mix in a `std::string` variable — `{ name_var, "j2" }` — and it will convert. C++ overload
+  resolution cannot distinguish a literal from a variable of the same type. Tesseract's own libraries
+  define the macro and so are held to the explicit spelling; downstream code that wants the same
+  guarantee should define it too.
 - **The waypoint polys (joint and state) expose `setJointIds`/`getJointIds` only.** Both
   `setNames` and `getNames` are gone from every layer of the type-erasure stack and from the
   installed `test_suite/*.hpp` conformance headers. A caller that needs names for display or
