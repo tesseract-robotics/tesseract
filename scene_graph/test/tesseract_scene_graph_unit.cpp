@@ -1696,8 +1696,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
+        { entry.first.first().name(), entry.first.second().name() }));
   }
 
   // Save Graph
@@ -1763,8 +1763,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
+        { entry.first.first().name(), entry.first.second().name() }));
   }
 }
 
@@ -1808,10 +1808,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first().name(),
-                                                                   prefix + entry.first.second().name()));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
+        { entry.first.first().name(), entry.first.second().name() }));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
+        { prefix + entry.first.first().name(), prefix + entry.first.second().name() }));
   }
 
   // Save Graph
@@ -1868,10 +1868,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(
-        ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first().name(), entry.first.second().name()));
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first().name(),
-                                                                   prefix + entry.first.second().name()));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
+        { entry.first.first().name(), entry.first.second().name() }));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
+        { prefix + entry.first.first().name(), prefix + entry.first.second().name() }));
   }
 
   // Save Graph

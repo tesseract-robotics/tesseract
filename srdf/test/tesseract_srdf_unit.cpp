@@ -334,14 +334,14 @@ TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
   tesseract::common::AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
 
   // collision between link1 and link2 should be allowed
-  EXPECT_TRUE(acm->isCollisionAllowed("link_1", "link_2"));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "link_1", "link_2" }));
 
   // collision between link1 and link2 should be allowed
-  EXPECT_FALSE(acm->isCollisionAllowed("base_link", "link_5"));
+  EXPECT_FALSE(acm->isCollisionAllowed({ "base_link", "link_5" }));
 
   g.removeAllowedCollision("link_1", "link_2");
   // now collision link1 and link2 is not allowed anymore
-  EXPECT_FALSE(acm->isCollisionAllowed("link_1", "link_2"));
+  EXPECT_FALSE(acm->isCollisionAllowed({ "link_1", "link_2" }));
 
   g.clearAllowedCollisions();
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), 0);
@@ -753,9 +753,9 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
 
   tesseract::common::AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
-  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
-  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
-  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "base_link", "link_1" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "base_link", "link_2" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "base_link", "link_3" }));
 
   EXPECT_TRUE(srdf.collision_margin_data != nullptr);
   EXPECT_NEAR(srdf.collision_margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
@@ -915,9 +915,9 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
   EXPECT_TRUE(element != nullptr);
 
   tesseract::common::AllowedCollisionMatrix acm = parseDisabledCollisions(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_1"));
-  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_2"));
-  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_3"));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "base_link", "link_1" }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "base_link", "link_2" }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "base_link", "link_3" }));
 
   // Now test failures
   auto is_failure = [g](const std::string& xml_string) {

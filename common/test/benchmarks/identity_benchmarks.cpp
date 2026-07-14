@@ -109,7 +109,7 @@ static void BM_AcmIsAllowed_TwoIds_Hit(benchmark::State& state)
   std::size_t i = 0;
   for (auto _ : state)
   {
-    benchmark::DoNotOptimize(acm.isCollisionAllowed(ids[i & 63U], ids[(i + 7) & 63U]));
+    benchmark::DoNotOptimize(acm.isCollisionAllowed({ ids[i & 63U], ids[(i + 7) & 63U] }));
     ++i;
   }
 }

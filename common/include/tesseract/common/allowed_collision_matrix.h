@@ -106,14 +106,6 @@ public:
   virtual bool isCollisionAllowed(const LinkIdPair& pair) const;
 
   /**
-   * @brief Convenience overload; forwards to the pair-based primary.
-   */
-  bool isCollisionAllowed(const LinkId& link_id1, const LinkId& link_id2) const
-  {
-    return isCollisionAllowed(LinkIdPair(link_id1, link_id2));
-  }
-
-  /**
    * @brief Clears the list of allowed collisions, so that no collision will be
    *        allowed.
    */
