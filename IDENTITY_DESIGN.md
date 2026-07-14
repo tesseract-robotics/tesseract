@@ -72,7 +72,9 @@ Note one footgun: `NameId::operator<` orders by hash value (name only breaks val
 Each of Tesseract's own production libraries adds `TESSERACT_NAMEID_NO_IMPLICIT` as a **PRIVATE** compile definition, so the constructors are explicit only in the libraries' own translation units. In practice this means:
 
 - Inside Tesseract source files (`*/src/*.cpp` for `common`, `geometry`, `scene_graph`, `state_solver_*`, `collision*`, `kinematics*`, `srdf`, `urdf`, `environment`, `visualization`), any string-to-ID construction must be spelled out — `LinkId("base")` rather than `"base"`. The compiler surfaces every place an internal pathway is still going through strings, which is exactly what we want to migrate away from.
-- Tests, examples, and downstream consumers (including templates instantiated in their TUs) keep the convenience of implicit conversion. The library's public API remains string-friendly.
+- Tests, examples, benchmarks, and downstream consumers (including templates instantiated in their TUs) keep the convenience of implicit conversion. The library's public API remains string-friendly.
+
+That convenience is meant to be used. In Tesseract's own tests, examples and benchmarks, construct ids implicitly from literals — `std::vector<JointId> joint_ids = { "joint_1", "joint_2" };` — rather than spelling out `JointId("joint_1")`. The explicit form is the *diagnostic* the production libraries opt into, not a house style; writing it in a TU that does not define `TESSERACT_NAMEID_NO_IMPLICIT` only adds noise.
 
 The flip side of that convenience: existing downstream string call sites keep compiling unchanged — and keep paying the string-era cost of a string copy + hash per call. Upgrading and recompiling makes nothing faster by itself; the performance win requires constructing ids once and reusing them (see Performance).
 
