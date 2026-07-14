@@ -26,7 +26,6 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <string>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -97,25 +96,6 @@ void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_result
 
 /**
  * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
- * @param contacts A vector of ContactMap where each index corresponds to a segment in the trajectory. The length should
- * be trajectory size minus one.
- * @param manager A continuous contact manager
- * @param state_solver The environment state solver
- * @param joint_names JointNames corresponding to the values in traj (must be in same order)
- * @param traj The joint values at each time step
- * @param config CollisionCheckConfig used to specify collision check settings
- * @return ContactTrajectoryResults containing contact step/substep locations and joint values.
- */
-tesseract::collision::ContactTrajectoryResults
-checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
-                tesseract::collision::ContinuousContactManager& manager,
-                const tesseract::scene_graph::StateSolver& state_solver,
-                const std::vector<std::string>& joint_names,
-                const tesseract::common::TrajArray& traj,
-                const tesseract::collision::CollisionCheckConfig& config);
-
-/**
- * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
  * @param contacts A vector of ContactMap where each index corresponds to a segment in the trajectory.
  * @param manager A continuous contact manager
  * @param state_solver The environment state solver
@@ -146,25 +126,6 @@ tesseract::collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                 tesseract::collision::ContinuousContactManager& manager,
                 const tesseract::kinematics::JointGroup& manip,
-                const tesseract::common::TrajArray& traj,
-                const tesseract::collision::CollisionCheckConfig& config);
-
-/**
- * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
- * @param contacts A vector of ContactMap where each index corresponds to a segment in the trajectory, except the last
- * which is the end state. The length should be the same size as the input trajectory.
- * @param manager A continuous contact manager
- * @param state_solver The environment state solver
- * @param joint_names JointNames corresponding to the values in traj (must be in same order)
- * @param traj The joint values at each time step
- * @param config CollisionCheckConfig used to specify collision check settings
- * @return ContactTrajectoryResults containing contact step/substep locations and joint values.
- */
-tesseract::collision::ContactTrajectoryResults
-checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
-                tesseract::collision::DiscreteContactManager& manager,
-                const tesseract::scene_graph::StateSolver& state_solver,
-                const std::vector<std::string>& joint_names,
                 const tesseract::common::TrajArray& traj,
                 const tesseract::collision::CollisionCheckConfig& config);
 

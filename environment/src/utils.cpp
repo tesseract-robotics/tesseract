@@ -408,18 +408,6 @@ tesseract::collision::ContactTrajectoryResults
 checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                 tesseract::collision::ContinuousContactManager& manager,
                 const tesseract::scene_graph::StateSolver& state_solver,
-                const std::vector<std::string>& joint_names,
-                const tesseract::common::TrajArray& traj,
-                const tesseract::collision::CollisionCheckConfig& config)
-{
-  return checkTrajectory(
-      contacts, manager, state_solver, tesseract::common::toIds<tesseract::common::JointId>(joint_names), traj, config);
-}
-
-tesseract::collision::ContactTrajectoryResults
-checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
-                tesseract::collision::ContinuousContactManager& manager,
-                const tesseract::scene_graph::StateSolver& state_solver,
                 const std::vector<tesseract::common::JointId>& joint_ids,
                 const tesseract::common::TrajArray& traj,
                 const tesseract::collision::CollisionCheckConfig& config)
@@ -781,18 +769,6 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
     std::cout << traj_contacts.trajectoryCollisionResultsTable().str();
 
   return traj_contacts;
-}
-
-tesseract::collision::ContactTrajectoryResults
-checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
-                tesseract::collision::DiscreteContactManager& manager,
-                const tesseract::scene_graph::StateSolver& state_solver,
-                const std::vector<std::string>& joint_names,
-                const tesseract::common::TrajArray& traj,
-                const tesseract::collision::CollisionCheckConfig& config)
-{
-  return checkTrajectory(
-      contacts, manager, state_solver, tesseract::common::toIds<tesseract::common::JointId>(joint_names), traj, config);
 }
 
 tesseract::collision::ContactTrajectoryResults
