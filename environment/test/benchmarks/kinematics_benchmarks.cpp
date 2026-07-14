@@ -122,14 +122,14 @@ int main(int argc, char** argv)
   env->setResourceLocator(std::make_shared<tesseract::common::GeneralResourceLocator>());
 
   // Set the robot initial state
-  std::vector<tesseract::common::JointId> joint_names;
-  joint_names.emplace_back("joint_a1");
-  joint_names.emplace_back("joint_a2");
-  joint_names.emplace_back("joint_a3");
-  joint_names.emplace_back("joint_a4");
-  joint_names.emplace_back("joint_a5");
-  joint_names.emplace_back("joint_a6");
-  joint_names.emplace_back("joint_a7");
+  std::vector<tesseract::common::JointId> joint_ids;
+  joint_ids.emplace_back("joint_a1");
+  joint_ids.emplace_back("joint_a2");
+  joint_ids.emplace_back("joint_a3");
+  joint_ids.emplace_back("joint_a4");
+  joint_ids.emplace_back("joint_a5");
+  joint_ids.emplace_back("joint_a6");
+  joint_ids.emplace_back("joint_a7");
 
   Eigen::VectorXd joint_start_pos(7);
   joint_start_pos(0) = -0.4;
@@ -172,9 +172,9 @@ int main(int argc, char** argv)
 
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn = [local_ss, joint_names](
-                         const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
-      return local_ss->getState(joint_names, state).link_transforms;
+    CalcStateFn fn =
+        [local_ss, joint_ids](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
+      return local_ss->getState(joint_ids, state).link_transforms;
     };
 
     std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_GET_STATE_JN_JV_SS =
@@ -187,9 +187,9 @@ int main(int argc, char** argv)
   }
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn = [local_ss, joint_names](
-                         const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
-      local_ss->setState(joint_names, state);
+    CalcStateFn fn =
+        [local_ss, joint_ids](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
+      local_ss->setState(joint_ids, state);
       return local_ss->getState().link_transforms;
     };
 
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
         BM_GET_JACOBIAN_JN_JV_SS = BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS";
     // NOLINTNEXTLINE
-    benchmark::RegisterBenchmark(name.c_str(), BM_GET_JACOBIAN_JN_JV_SS, state_solver, joint_names, traj, tip_link)
+    benchmark::RegisterBenchmark(name.c_str(), BM_GET_JACOBIAN_JN_JV_SS, state_solver, joint_ids, traj, tip_link)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }

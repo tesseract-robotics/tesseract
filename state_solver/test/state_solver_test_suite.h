@@ -127,13 +127,13 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
     else if (i < 6)
     {
       base_random_state = base_solver.getRandomState();
-      std::vector<JointId> joint_names = base_solver.getActiveJointIds();
-      Eigen::VectorXd joint_values = base_random_state.getJointValues(joint_names);
-      comp_state_const = comp_solver.getState(joint_names, joint_values);
+      std::vector<JointId> joint_ids = base_solver.getActiveJointIds();
+      Eigen::VectorXd joint_values = base_random_state.getJointValues(joint_ids);
+      comp_state_const = comp_solver.getState(joint_ids, joint_values);
 
-      base_solver.getLinkTransforms(base_link_transforms, joint_names, joint_values);
-      comp_solver.getLinkTransforms(comp_link_transforms, joint_names, joint_values);
-      comp_solver.setState(joint_names, joint_values);
+      base_solver.getLinkTransforms(base_link_transforms, joint_ids, joint_values);
+      comp_solver.getLinkTransforms(comp_link_transforms, joint_ids, joint_values);
+      comp_solver.setState(joint_ids, joint_values);
     }
     else if (i < 10)
     {
@@ -142,8 +142,8 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
       Eigen::VectorXd active_jv = base_random_state.getJointValues(active_jn);
       comp_state_const = comp_solver.getState(active_jn, active_jv);
 
-      std::vector<JointId> joint_names = comp_solver.getActiveJointIds();
-      Eigen::VectorXd joint_values = base_random_state.getJointValues(joint_names);
+      std::vector<JointId> joint_ids = comp_solver.getActiveJointIds();
+      Eigen::VectorXd joint_values = base_random_state.getJointValues(joint_ids);
       comp_solver.setState(joint_values);
     }
 
@@ -179,13 +179,13 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
       EXPECT_TRUE(base_random_state.link_transforms[comp_link_ids.at(j)].isApprox(comp_link_tf.at(j), 1e-6));
     }
 
-    for (const auto& from_link_name : comp_link_ids)
+    for (const auto& from_link_id : comp_link_ids)
     {
-      for (const auto& to_link_name : comp_link_ids)
+      for (const auto& to_link_id : comp_link_ids)
       {
-        Eigen::Isometry3d comp_tf = comp_solver.getRelativeLinkTransform(from_link_name, to_link_name);
-        Eigen::Isometry3d base_tf = base_random_state.link_transforms[from_link_name].inverse() *
-                                    base_random_state.link_transforms[to_link_name];
+        Eigen::Isometry3d comp_tf = comp_solver.getRelativeLinkTransform(from_link_id, to_link_id);
+        Eigen::Isometry3d base_tf =
+            base_random_state.link_transforms[from_link_id].inverse() * base_random_state.link_transforms[to_link_id];
         EXPECT_TRUE(base_tf.isApprox(comp_tf, 1e-6));
       }
     }
@@ -216,7 +216,7 @@ inline void runCompareStateSolverLimits(const SceneGraph& scene_graph, const Sta
  * @param jacobian (Return) The jacobian which gets filled out.
  * @param state_solver          The state solver object
  * @param joint_values The joint values for which to calculate the jacobian
- * @param link_name    The link_name for which the jacobian should be calculated
+ * @param link_id    The link_id for which the jacobian should be calculated
  * @param link_point   The point on the link for which to calculate the jacobian
  */
 inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
@@ -275,7 +275,7 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
  * @brief Run a kinematic jacobian test
  * @param state_solver The state solver object
  * @param jvals The joint values to calculate the jacobian about
- * @param link_name Name of link to calculate jacobian. If empty it will use the function that does not require link
+ * @param link_id Name of link to calculate jacobian. If empty it will use the function that does not require link
  * name
  * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
  * point.
@@ -385,9 +385,9 @@ inline void runJacobianTest()
   auto state_solver = S(*scene_graph);
   StateSolver::UPtr state_solver_clone = state_solver.clone();
 
-  std::vector<JointId> joint_names_empty;
-  std::vector<LinkId> link_names = { "base_link", "link_1", "link_2", "link_3", "link_4",
-                                     "link_5",    "link_6", "link_7", "tool0" };
+  std::vector<JointId> joint_ids_empty;
+  std::vector<LinkId> link_ids = { "base_link", "link_1", "link_2", "link_3", "link_4",
+                                   "link_5",    "link_6", "link_7", "tool0" };
 
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
@@ -419,20 +419,20 @@ inline void runJacobianTest()
   ///////////////////////////
   {
     Eigen::Vector3d link_point(0, 0, 0);
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, joint_ids_empty, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
       runCompareJacobian(
-          *state_solver_clone, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+          *state_solver_clone, joint_ids_empty, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
     }
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        state_solver, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        state_solver, joint_ids_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        *state_solver_clone, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        *state_solver_clone, joint_ids_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
 
   ///////////////////////////
@@ -443,20 +443,20 @@ inline void runJacobianTest()
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, joint_ids_empty, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
       runCompareJacobian(
-          *state_solver_clone, joint_names_empty, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+          *state_solver_clone, joint_ids_empty, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
     }
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        state_solver, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        state_solver, joint_ids_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        *state_solver_clone, joint_names_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        *state_solver_clone, joint_ids_empty, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -474,19 +474,18 @@ inline void runJacobianTest()
     change_base.translation() = Eigen::Vector3d(0, 0, 0);
     change_base.translation()[k] = 1;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, joint_names_empty, jvals, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, joint_ids_empty, jvals, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, joint_ids_empty, jvals, link_id, link_point, change_base);
     }
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runCompareJacobian(state_solver, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_ids_empty, jvals, "", link_point, change_base));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
-        runCompareJacobian(*state_solver_clone, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
+        runCompareJacobian(*state_solver_clone, joint_ids_empty, jvals, "", link_point, change_base));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -505,43 +504,42 @@ inline void runJacobianTest()
     change_base(1, 1) = 0;
     change_base.translation() = link_point;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names_empty, jvals, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, joint_names_empty, jvals, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, joint_ids_empty, jvals, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, joint_ids_empty, jvals, link_id, link_point, change_base);
     }
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runCompareJacobian(state_solver, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_ids_empty, jvals, "", link_point, change_base));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
-        runCompareJacobian(*state_solver_clone, joint_names_empty, jvals, "", link_point, change_base));  // NOLINT
+        runCompareJacobian(*state_solver_clone, joint_ids_empty, jvals, "", link_point, change_base));  // NOLINT
   }
 
   /////////////////////////////////
   // Test Jacobian with joint names
   /////////////////////////////////
-  std::vector<JointId> joint_names = state_solver.getActiveJointIds();
+  std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
   {
     Eigen::Vector3d link_point(0, 0, 0);
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
     }
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
-        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        *state_solver_clone, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        *state_solver_clone, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
 
   ///////////////////////////
@@ -552,22 +550,22 @@ inline void runJacobianTest()
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
     }
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
-        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        *state_solver_clone, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        *state_solver_clone, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -585,21 +583,20 @@ inline void runJacobianTest()
     change_base.translation() = Eigen::Vector3d(0, 0, 0);
     change_base.translation()[k] = 1;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, change_base);
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, change_base);
     }
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, change_base));  // NOLINT
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runCompareJacobian(*state_solver_clone, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(*state_solver_clone, joint_ids, jvals, "", link_point, change_base));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -618,27 +615,26 @@ inline void runJacobianTest()
     change_base(1, 1) = 0;
     change_base.translation() = link_point;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, change_base);
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, change_base);
     }
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, change_base));  // NOLINT
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runCompareJacobian(*state_solver_clone, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(*state_solver_clone, joint_ids, jvals, "", link_point, change_base));  // NOLINT
   }
 
   ////////////////////////////////////////////////////
   // Test Jacobian with joint names in different order
   ///////////////////////////////////////////////////
-  std::reverse(joint_names.begin(), joint_names.end());
+  std::reverse(joint_ids.begin(), joint_ids.end());
   jvals(0) = -0.7;
   jvals(1) = 0.6;
   jvals(2) = -0.5;
@@ -649,22 +645,22 @@ inline void runJacobianTest()
 
   {
     Eigen::Vector3d link_point(0, 0, 0);
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
     }
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
-        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        *state_solver_clone, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        *state_solver_clone, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
 
   ///////////////////////////
@@ -675,22 +671,22 @@ inline void runJacobianTest()
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, Eigen::Isometry3d::Identity());
     }
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(
-        runCompareJacobian(state_solver, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
     // NOLINTNEXTLINE
     EXPECT_ANY_THROW(runCompareJacobian(
-        *state_solver_clone, joint_names, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
+        *state_solver_clone, joint_ids, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -708,20 +704,19 @@ inline void runJacobianTest()
     change_base.translation() = Eigen::Vector3d(0, 0, 0);
     change_base.translation()[k] = 1;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, change_base);
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, change_base);
     }
 
-    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, change_base));  // NOLINT
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runCompareJacobian(*state_solver_clone, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(*state_solver_clone, joint_ids, jvals, "", link_point, change_base));  // NOLINT
   }
 
   ///////////////////////////////////////////
@@ -740,20 +735,19 @@ inline void runJacobianTest()
     change_base(1, 1) = 0;
     change_base.translation() = link_point;
 
-    for (const auto& link_name : link_names)
+    for (const auto& link_id : link_ids)
     {
-      runCompareJacobian(state_solver, joint_names, jvals, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, joint_names, jvals, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, joint_ids, jvals, link_id, link_point, change_base);
 
-      runCompareJacobian(state_solver, jv_map, link_name, link_point, change_base);
-      runCompareJacobian(*state_solver_clone, jv_map, link_name, link_point, change_base);
+      runCompareJacobian(state_solver, jv_map, link_id, link_point, change_base);
+      runCompareJacobian(*state_solver_clone, jv_map, link_id, link_point, change_base);
     }
 
-    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(state_solver, joint_ids, jvals, "", link_point, change_base));  // NOLINT
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        runCompareJacobian(*state_solver_clone, joint_names, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runCompareJacobian(*state_solver_clone, joint_ids, jvals, "", link_point, change_base));  // NOLINT
   }
 }
 
@@ -888,10 +882,10 @@ void runAddandRemoveLinkTest()
   StateSolver::UPtr state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  std::vector<JointId> joint_names = state_solver.getActiveJointIds();
+  std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
   SceneState state = state_solver.getState();
   // Fixed joints are not listed
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   // Fixed joints are not listed
@@ -910,10 +904,10 @@ void runAddandRemoveLinkTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
   // Fixed joints are not listed
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name2) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
   EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
@@ -935,9 +929,9 @@ void runAddandRemoveLinkTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) == state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
@@ -999,10 +993,10 @@ void runAddandRemoveLinkTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
   // Fixed joints are not listed
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   // Fixed joints are not listed
@@ -1020,10 +1014,10 @@ void runAddandRemoveLinkTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
   // Fixed joints are not listed
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name2) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name2) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name2) != state.joint_transforms.end());
   EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
@@ -1045,9 +1039,9 @@ void runAddandRemoveLinkTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) == state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
@@ -1166,9 +1160,9 @@ void runAddSceneGraphTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  std::vector<JointId> joint_names = state_solver.getActiveJointIds();
+  std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
   SceneState state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), subgraph_joint_name) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), subgraph_joint_name) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(subgraph->getRoot()) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(subgraph_joint_name) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(subgraph_joint_name) == state.joints.end());
@@ -1205,9 +1199,9 @@ void runAddSceneGraphTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), prefix + subgraph_joint_name) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) != state.joint_transforms.end());
   EXPECT_TRUE(state.floating_joints.find(prefix + subgraph_joint_name) != state.floating_joints.end());
@@ -1232,9 +1226,9 @@ void runAddSceneGraphTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
 
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), prefix + subgraph_joint_name) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), prefix + subgraph_joint_name) == joint_ids.end());
   state = state_solver.getState();
   EXPECT_TRUE(state.link_transforms.find(prefix + subgraph->getRoot().name()) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(prefix + subgraph_joint_name) != state.joint_transforms.end());
@@ -1411,10 +1405,10 @@ void runMoveJointTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  std::vector<JointId> joint_names = state_solver.getActiveJointIds();
+  std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name2) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
@@ -1437,10 +1431,10 @@ void runMoveJointTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name2) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
@@ -1532,10 +1526,10 @@ void runMoveLinkTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  std::vector<JointId> joint_names = state_solver.getActiveJointIds();
+  std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name2) == joint_ids.end());
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.floating_joints.find(joint_name1) != state.floating_joints.end());
@@ -1563,11 +1557,11 @@ void runMoveLinkTest()
   state_solver_clone = state_solver.clone();
   runCompareStateSolver(*base_state_solver, *state_solver_clone);
 
-  joint_names = state_solver.getActiveJointIds();
+  joint_ids = state_solver.getActiveJointIds();
   state = state_solver.getState();
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) == joint_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), moved_joint_name) == joint_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name2) == joint_names.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name1) == joint_ids.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), moved_joint_name) == joint_ids.end());
+  EXPECT_TRUE(std::find(joint_ids.begin(), joint_ids.end(), joint_name2) == joint_ids.end());
 
   EXPECT_TRUE(state.link_transforms.find(link_name1) != state.link_transforms.end());
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) == state.joint_transforms.end());
@@ -1631,8 +1625,8 @@ void runChangeJointLimitsTest()
   EXPECT_TRUE(state_solver.changeJointJerkLimits("joint_a1", new_jerk));
 
   {
-    std::vector<JointId> joint_names = state_solver.getActiveJointIds();
-    long idx = std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), "joint_a1"));
+    std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
+    long idx = std::distance(joint_ids.begin(), std::find(joint_ids.begin(), joint_ids.end(), "joint_a1"));
     auto limits = state_solver.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
@@ -1648,8 +1642,8 @@ void runChangeJointLimitsTest()
     StateSolver::UPtr temp = state_solver.clone();
     S& state_solver_clone = static_cast<S&>(*temp);
 
-    std::vector<JointId> joint_names = state_solver_clone.getActiveJointIds();
-    long idx = std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), "joint_a1"));
+    std::vector<JointId> joint_ids = state_solver_clone.getActiveJointIds();
+    long idx = std::distance(joint_ids.begin(), std::find(joint_ids.begin(), joint_ids.end(), "joint_a1"));
     auto limits = state_solver_clone.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
@@ -1673,8 +1667,8 @@ void runChangeJointLimitsTest()
   EXPECT_FALSE(state_solver.changeJointJerkLimits("joint_does_not_exist", new_jerk_err));
 
   {
-    std::vector<JointId> joint_names = state_solver.getActiveJointIds();
-    long idx = std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), "joint_a1"));
+    std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
+    long idx = std::distance(joint_ids.begin(), std::find(joint_ids.begin(), joint_ids.end(), "joint_a1"));
     auto limits = state_solver.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
@@ -1690,8 +1684,8 @@ void runChangeJointLimitsTest()
     StateSolver::UPtr temp = state_solver.clone();
     S& state_solver_clone = static_cast<S&>(*temp);
 
-    std::vector<JointId> joint_names = state_solver_clone.getActiveJointIds();
-    long idx = std::distance(joint_names.begin(), std::find(joint_names.begin(), joint_names.end(), "joint_a1"));
+    std::vector<JointId> joint_ids = state_solver_clone.getActiveJointIds();
+    long idx = std::distance(joint_ids.begin(), std::find(joint_ids.begin(), joint_ids.end(), "joint_a1"));
     auto limits = state_solver_clone.getLimits();
     EXPECT_NEAR(limits.joint_limits(idx, 0), new_lower, 1e-5);
     EXPECT_NEAR(limits.joint_limits(idx, 1), new_upper, 1e-5);
