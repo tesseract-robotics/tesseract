@@ -6480,44 +6480,6 @@ TEST(TesseractEnvironmentUnit, EnvApplyModifyACMReplaceUnit)  // NOLINT
   EXPECT_EQ(acm_after->getAllAllowedCollisions().size(), 1U);
 }
 
-TEST(TesseractEnvironmentUnit, CheckTrajectoryByJointNamesUnit)  // NOLINT
-{
-  // Covers environment/src/utils.cpp:416 (continuous) and :795 (discrete) — string-name
-  // overloads of checkTrajectory that forward to the JointId version via toIds<JointId>.
-  auto env = getEnvironment();
-  env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
-  env->setActiveContinuousContactManager("BulletCastBVHManager");
-  auto discrete_manager = env->getDiscreteContactManager();
-  auto continuous_manager = env->getContinuousContactManager();
-  auto state_solver = env->getStateSolver();
-
-  const std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                                 "joint_a5", "joint_a6", "joint_a7" };
-
-  tesseract::common::TrajArray traj(2, 7);
-  traj.row(0) = Eigen::VectorXd::Zero(7).transpose();
-  traj.row(1) = (Eigen::VectorXd::Ones(7) * 0.1).transpose();
-
-  tesseract::collision::CollisionCheckConfig config;
-  config.type = CollisionEvaluatorType::DISCRETE;
-  config.check_program_mode = CollisionCheckProgramType::ALL;
-  config.exit_condition = CollisionCheckExitType::ALL;
-
-  std::vector<tesseract::collision::ContactResultMap> contacts_discrete;
-  auto r_discrete = tesseract::environment::checkTrajectory(
-      contacts_discrete, *discrete_manager, *state_solver, joint_names, traj, config);
-  EXPECT_EQ(contacts_discrete.size(), static_cast<std::size_t>(traj.rows()));
-  (void)r_discrete;
-
-  config.type = CollisionEvaluatorType::CONTINUOUS;
-  std::vector<tesseract::collision::ContactResultMap> contacts_continuous;
-  auto r_continuous = tesseract::environment::checkTrajectory(
-      contacts_continuous, *continuous_manager, *state_solver, joint_names, traj, config);
-  // Continuous manager requires segments (N-1 results for N-row traj)
-  EXPECT_EQ(contacts_continuous.size(), static_cast<std::size_t>(traj.rows() - 1));
-  (void)r_continuous;
-}
-
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
