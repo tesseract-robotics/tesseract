@@ -79,12 +79,11 @@ whole override surface at once — for scale, migrating the Coal collision backe
       const std::vector<JointId>& joint_ids = manip->getJointIds();
       assignSolution(mi, joint_ids, values, format_as_input);
 
-  Do not convert them to names to feed a string overload — that reintroduces an allocation per
-  joint plus a re-hash inside the callee.
-
-  In the `tesseract_planning` repo, every planning mid-layer helper that takes
-  `const std::vector<std::string>&` has a `const std::vector<JointId>&` twin; the string form is
-  a one-line `toIds` shim over it.
+  The planning mid-layer in `tesseract_planning` — `assignSolution`, `assignTrajectory`,
+  `getInterpolatedInstructions` — takes ids only; there is no string overload to fall back on.
+  Passing a name vector is a compile error rather than a silent per-joint allocation and re-hash
+  inside the callee. If names are all you hold, convert once at your own boundary with
+  `toIds<JointId>` and keep the ids.
 
 ## Iteration order is unspecified (and changed vs. the string era)
 
