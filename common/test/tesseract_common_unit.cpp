@@ -3090,27 +3090,27 @@ TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
 
   acm.addAllowedCollision("link1", "link2", "test");
   // collision between link1 and link2 should be allowed
-  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "link1", "link2" }));
   // but now between link2 and link3
-  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+  EXPECT_FALSE(acm.isCollisionAllowed({ "link2", "link3" }));
 
   tesseract::common::AllowedCollisionMatrix acm_copy(acm);
   EXPECT_TRUE(acm_copy == acm);
   // collision between link1 and link2 should be allowed
-  EXPECT_TRUE(acm_copy.isCollisionAllowed("link1", "link2"));
+  EXPECT_TRUE(acm_copy.isCollisionAllowed({ "link1", "link2" }));
   // but now between link2 and link3
-  EXPECT_FALSE(acm_copy.isCollisionAllowed("link2", "link3"));
+  EXPECT_FALSE(acm_copy.isCollisionAllowed({ "link2", "link3" }));
 
   tesseract::common::AllowedCollisionMatrix acm_move(std::move(acm_copy));
   EXPECT_TRUE(acm_move == acm);
   // collision between link1 and link2 should be allowed
-  EXPECT_TRUE(acm_move.isCollisionAllowed("link1", "link2"));
+  EXPECT_TRUE(acm_move.isCollisionAllowed({ "link1", "link2" }));
   // but now between link2 and link3
-  EXPECT_FALSE(acm_move.isCollisionAllowed("link2", "link3"));
+  EXPECT_FALSE(acm_move.isCollisionAllowed({ "link2", "link3" }));
 
   acm.removeAllowedCollision("link1", "link2");
   // now collision link1 and link2 is not allowed anymore
-  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
+  EXPECT_FALSE(acm.isCollisionAllowed({ "link1", "link2" }));
 
   acm.addAllowedCollision("link3", "link3", "test");
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
@@ -3124,17 +3124,17 @@ TEST(TesseractCommonUnit, TestAllowedCollisionMatrix)  // NOLINT
   acm.insertAllowedCollisionMatrix(acm2);
 
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
-  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
-  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link3"));
-  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "link1", "link2" }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "link1", "link3" }));
+  EXPECT_FALSE(acm.isCollisionAllowed({ "link2", "link3" }));
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
 
   acm.addAllowedCollision("link2", "link3", "test");
   acm.removeAllowedCollision("link1");
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
-  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
-  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link3"));
-  EXPECT_TRUE(acm.isCollisionAllowed("link2", "link3"));
+  EXPECT_FALSE(acm.isCollisionAllowed({ "link1", "link2" }));
+  EXPECT_FALSE(acm.isCollisionAllowed({ "link1", "link3" }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "link2", "link3" }));
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
 
   // ostream
@@ -3159,8 +3159,8 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
 
   AllowedCollisionMatrix acm;
   acm.addAllowedCollision(key, entry);
-  EXPECT_TRUE(acm.isCollisionAllowed(link_a, link_b));
-  EXPECT_TRUE(acm.isCollisionAllowed(link_b, link_a));  // symmetric
+  EXPECT_TRUE(acm.isCollisionAllowed({ link_a, link_b }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ link_b, link_a }));  // symmetric
   ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
   const auto& [stored_key, stored_entry] = *acm.getAllAllowedCollisions().begin();
   EXPECT_EQ(stored_key, key);
@@ -4352,16 +4352,16 @@ TEST(TesseractCommonUnit, YamlAllowedCollisionMatrix)  // NOLINT
     YAML::Node n(data_original);
     auto data = n.as<tesseract::common::AllowedCollisionMatrix>();
     EXPECT_EQ(data.getAllAllowedCollisions().size(), 2U);
-    EXPECT_EQ(data.isCollisionAllowed("link1", "link2"), data_original.isCollisionAllowed("link1", "link2"));
-    EXPECT_EQ(data.isCollisionAllowed("base", "tool0"), data_original.isCollisionAllowed("base", "tool0"));
+    EXPECT_EQ(data.isCollisionAllowed({ "link1", "link2" }), data_original.isCollisionAllowed({ "link1", "link2" }));
+    EXPECT_EQ(data.isCollisionAllowed({ "base", "tool0" }), data_original.isCollisionAllowed({ "base", "tool0" }));
   }
 
   {
     YAML::Node n = YAML::Load(yaml_string);
     auto data = n.as<tesseract::common::AllowedCollisionMatrix>();
     EXPECT_EQ(data.getAllAllowedCollisions().size(), 2U);
-    EXPECT_EQ(data.isCollisionAllowed("link1", "link2"), data_original.isCollisionAllowed("link1", "link2"));
-    EXPECT_EQ(data.isCollisionAllowed("base", "tool0"), data_original.isCollisionAllowed("base", "tool0"));
+    EXPECT_EQ(data.isCollisionAllowed({ "link1", "link2" }), data_original.isCollisionAllowed({ "link1", "link2" }));
+    EXPECT_EQ(data.isCollisionAllowed({ "base", "tool0" }), data_original.isCollisionAllowed({ "base", "tool0" }));
   }
 }
 
@@ -5022,19 +5022,19 @@ TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
   acm.addAllowedCollision("link_a", "link_b", "test_reason");
 
   // Tier 3 (string) — already tested above, verify again
-  EXPECT_TRUE(acm.isCollisionAllowed("link_a", "link_b"));
-  EXPECT_TRUE(acm.isCollisionAllowed("link_b", "link_a"));  // order invariant
+  EXPECT_TRUE(acm.isCollisionAllowed({ "link_a", "link_b" }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "link_b", "link_a" }));  // order invariant
 
   // Tier 1 (LinkId) — same result via integer lookup
   const LinkId id_a = LinkId("link_a");
   const LinkId id_b = LinkId("link_b");
-  EXPECT_TRUE(acm.isCollisionAllowed(id_a, id_b));
-  EXPECT_TRUE(acm.isCollisionAllowed(id_b, id_a));
+  EXPECT_TRUE(acm.isCollisionAllowed({ id_a, id_b }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ id_b, id_a }));
 
   // Non-existent pair
   const LinkId id_c = LinkId("link_c");
-  EXPECT_FALSE(acm.isCollisionAllowed(id_a, id_c));
-  EXPECT_FALSE(acm.isCollisionAllowed("link_a", "link_c"));
+  EXPECT_FALSE(acm.isCollisionAllowed({ id_a, id_c }));
+  EXPECT_FALSE(acm.isCollisionAllowed({ "link_a", "link_c" }));
 
   // Entry values preserve original names
   const auto& entries = acm.getAllAllowedCollisions();

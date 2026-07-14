@@ -607,13 +607,13 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   std::string r = "Unit Test";
 
   tesseract::common::AllowedCollisionMatrix::ConstPtr acm = env->getAllowedCollisionMatrix();
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, "base_link"));
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_2"));
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_3"));
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_4"));
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_5"));
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_6"));
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, "link_7"));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, "base_link" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, "link_2" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, "link_3" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, "link_4" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, "link_5" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, "link_6" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, "link_7" }));
   EXPECT_EQ(env->getRevision(), 3);
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 3);
@@ -624,12 +624,12 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   auto cmd_remove = std::make_shared<ModifyAllowedCollisionsCommand>(remove_ac, ModifyAllowedCollisionsType::REMOVE);
   EXPECT_EQ(cmd_remove->getType(), CommandType::MODIFY_ALLOWED_COLLISIONS);
   EXPECT_EQ(cmd_remove->getAllowedCollisionMatrix().getAllAllowedCollisions().size(), 1);
-  EXPECT_TRUE(cmd_remove->getAllowedCollisionMatrix().isCollisionAllowed(l1, l2));
+  EXPECT_TRUE(cmd_remove->getAllowedCollisionMatrix().isCollisionAllowed({ l1, l2 }));
 
   EXPECT_TRUE(env->applyCommand(cmd_remove));
   EXPECT_EQ(callback_counter, 2);
 
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, l2));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, l2 }));
   EXPECT_EQ(env->getRevision(), 4);
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 4);
@@ -641,12 +641,12 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   auto cmd_add = std::make_shared<ModifyAllowedCollisionsCommand>(add_ac, ModifyAllowedCollisionsType::ADD);
   EXPECT_EQ(cmd_add->getType(), CommandType::MODIFY_ALLOWED_COLLISIONS);
   EXPECT_EQ(cmd_add->getAllowedCollisionMatrix().getAllAllowedCollisions().size(), 1);
-  EXPECT_TRUE(cmd_add->getAllowedCollisionMatrix().isCollisionAllowed(l1, l2));
+  EXPECT_TRUE(cmd_add->getAllowedCollisionMatrix().isCollisionAllowed({ l1, l2 }));
 
   EXPECT_TRUE(env->applyCommand(cmd_add));
   EXPECT_EQ(callback_counter, 4);
 
-  EXPECT_TRUE(acm->isCollisionAllowed(l1, l2));
+  EXPECT_TRUE(acm->isCollisionAllowed({ l1, l2 }));
   EXPECT_EQ(env->getRevision(), 5);
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 5);
@@ -660,13 +660,13 @@ TEST(TesseractEnvironmentUnit, EnvAddAndRemoveAllowedCollisionCommandUnit)  // N
   EXPECT_TRUE(env->applyCommand(cmd_remove_link));
   EXPECT_EQ(callback_counter, 6);
 
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "base_link"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_2"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_3"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_4"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_5"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_6"));
-  EXPECT_FALSE(acm->isCollisionAllowed(l1, "link_7"));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, "base_link" }));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, "link_2" }));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, "link_3" }));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, "link_4" }));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, "link_5" }));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, "link_6" }));
+  EXPECT_FALSE(acm->isCollisionAllowed({ l1, "link_7" }));
   EXPECT_EQ(env->getRevision(), 6);
   EXPECT_EQ(env->getInitRevision(), 3);
   EXPECT_EQ(env->getCommandHistory().size(), 6);
@@ -6463,7 +6463,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyModifyACMReplaceUnit)  // NOLINT
   // Confirm fixture already has some allowed collisions
   auto acm = env->getAllowedCollisionMatrix();
   ASSERT_FALSE(acm->getAllAllowedCollisions().empty());
-  ASSERT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));  // pre-seeded from iiwa srdf
+  ASSERT_TRUE(acm->isCollisionAllowed({ "base_link", "link_1" }));  // pre-seeded from iiwa srdf
 
   // Build a replacement ACM with only one pair that was NOT previously allowed
   tesseract::common::AllowedCollisionMatrix replacement;
@@ -6474,9 +6474,9 @@ TEST(TesseractEnvironmentUnit, EnvApplyModifyACMReplaceUnit)  // NOLINT
 
   auto acm_after = env->getAllowedCollisionMatrix();
   // Old entries cleared
-  EXPECT_FALSE(acm_after->isCollisionAllowed("base_link", "link_1"));
+  EXPECT_FALSE(acm_after->isCollisionAllowed({ "base_link", "link_1" }));
   // New entry present
-  EXPECT_TRUE(acm_after->isCollisionAllowed("link_2", "link_7"));
+  EXPECT_TRUE(acm_after->isCollisionAllowed({ "link_2", "link_7" }));
   EXPECT_EQ(acm_after->getAllAllowedCollisions().size(), 1U);
 }
 
