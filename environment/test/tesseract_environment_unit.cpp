@@ -2440,14 +2440,14 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
   // Check that all links got cloned
   std::vector<tesseract::common::LinkId> link_ids = env->getLinkIds();
   std::vector<tesseract::common::LinkId> clone_link_ids = clone->getLinkIds();
-  for (const auto& name : link_ids)
-    EXPECT_TRUE(std::find(clone_link_ids.begin(), clone_link_ids.end(), name) != clone_link_ids.end());
+  for (const auto& link_id : link_ids)
+    EXPECT_TRUE(std::find(clone_link_ids.begin(), clone_link_ids.end(), link_id) != clone_link_ids.end());
 
   // Check that all joints got cloned
   std::vector<tesseract::common::JointId> joint_ids = env->getJointIds();
   std::vector<tesseract::common::JointId> clone_joint_ids = clone->getJointIds();
-  for (const auto& name : joint_ids)
-    EXPECT_TRUE(std::find(clone_joint_ids.begin(), clone_joint_ids.end(), name) != clone_joint_ids.end());
+  for (const auto& joint_id : joint_ids)
+    EXPECT_TRUE(std::find(clone_joint_ids.begin(), clone_joint_ids.end(), joint_id) != clone_joint_ids.end());
 
   // Check that the command history is preserved
   auto history = env->getCommandHistory();
@@ -2463,16 +2463,16 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
     std::vector<tesseract::common::LinkId> active_link_ids = env->getActiveLinkIds();
     std::vector<tesseract::common::LinkId> clone_active_link_ids = clone->getActiveLinkIds();
     EXPECT_EQ(active_link_ids.size(), clone_active_link_ids.size());
-    for (const auto& name : active_link_ids)
-      EXPECT_TRUE(std::find(clone_active_link_ids.begin(), clone_active_link_ids.end(), name) !=
+    for (const auto& link_id : active_link_ids)
+      EXPECT_TRUE(std::find(clone_active_link_ids.begin(), clone_active_link_ids.end(), link_id) !=
                   clone_active_link_ids.end());
 
     // Check static links
     std::vector<tesseract::common::LinkId> static_link_ids = env->getStaticLinkIds();
     std::vector<tesseract::common::LinkId> clone_static_link_ids = clone->getStaticLinkIds();
     EXPECT_EQ(static_link_ids.size(), clone_static_link_ids.size());
-    for (const auto& name : static_link_ids)
-      EXPECT_TRUE(std::find(clone_static_link_ids.begin(), clone_static_link_ids.end(), name) !=
+    for (const auto& link_id : static_link_ids)
+      EXPECT_TRUE(std::find(clone_static_link_ids.begin(), clone_static_link_ids.end(), link_id) !=
                   clone_static_link_ids.end());
   }
   {
@@ -2484,8 +2484,8 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
     EXPECT_TRUE(tesseract::common::isIdentical(clone_active_link_ids, clone->getActiveLinkIds(), false));
 
     EXPECT_EQ(active_link_ids.size(), clone_active_link_ids.size());
-    for (const auto& name : active_link_ids)
-      EXPECT_TRUE(std::find(clone_active_link_ids.begin(), clone_active_link_ids.end(), name) !=
+    for (const auto& link_id : active_link_ids)
+      EXPECT_TRUE(std::find(clone_active_link_ids.begin(), clone_active_link_ids.end(), link_id) !=
                   clone_active_link_ids.end());
 
     // Check static links with joint ids
@@ -2496,16 +2496,16 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
     EXPECT_TRUE(tesseract::common::isIdentical(clone_static_link_ids, clone->getStaticLinkIds(), false));
 
     EXPECT_EQ(static_link_ids.size(), clone_static_link_ids.size());
-    for (const auto& name : static_link_ids)
-      EXPECT_TRUE(std::find(clone_static_link_ids.begin(), clone_static_link_ids.end(), name) !=
+    for (const auto& link_id : static_link_ids)
+      EXPECT_TRUE(std::find(clone_static_link_ids.begin(), clone_static_link_ids.end(), link_id) !=
                   clone_static_link_ids.end());
   }
 
   // Check active joints
   std::vector<tesseract::common::JointId> active_joint_ids = env->getActiveJointIds();
   std::vector<tesseract::common::JointId> clone_active_joint_ids = clone->getActiveJointIds();
-  for (const auto& name : active_joint_ids)
-    EXPECT_TRUE(std::find(clone_active_joint_ids.begin(), clone_active_joint_ids.end(), name) !=
+  for (const auto& joint_id : active_joint_ids)
+    EXPECT_TRUE(std::find(clone_active_joint_ids.begin(), clone_active_joint_ids.end(), joint_id) !=
                 clone_active_joint_ids.end());
 
   // Check that the state is preserved
@@ -2826,7 +2826,7 @@ TEST(TesseractEnvironmentUnit, getActiveLinkIdsRecursiveUnit)  // NOLINT
   EXPECT_TRUE(tesseract::common::isIdentical(active_links, target_active_links, false));
 }
 
-TEST(TesseractEnvironmentUnit, GetActiveLinkNamesByJointNamesNoRecursiveLockUnit)  // NOLINT
+TEST(TesseractEnvironmentUnit, GetActiveLinkIdsByJointIdsNoRecursiveLockUnit)  // NOLINT
 {
   // The joint-filtered active link query must not recursively shared_lock mutex_ (UB per the
   // C++ standard, even if glibc's pthread_rwlock historically tolerates it). Hammering the
@@ -6073,9 +6073,8 @@ TEST(TesseractEnvironmentUnit, EnvJointIdOverloadsUnit)  // NOLINT
   auto env = getEnvironment();
 
   // The IIWA fixture defines 7 active joints.
-  const std::vector<JointId> active_joint_ids = { JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
-                                                  JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
-                                                  JointId("joint_a7") };
+  const std::vector<JointId> active_joint_ids = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                                  "joint_a5", "joint_a6", "joint_a7" };
   Eigen::VectorXd jvals = Eigen::VectorXd::Zero(7);
   jvals[0] = 0.1;
   jvals[2] = -0.15;
@@ -6339,7 +6338,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyAddSceneGraphSrdfCalibrationUnit)  // NOL
   EXPECT_TRUE(j->parent_to_joint_origin_transform.isApprox(cal_tf, 1e-6));
 }
 
-TEST(TesseractEnvironmentUnit, EnvCurrentFloatingJointValuesByNameUnit)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvCurrentFloatingJointValuesByIdUnit)  // NOLINT
 {
   // The by-id overload of getCurrentFloatingJointValues returns only the requested joints.
   using tesseract::common::JointId;
@@ -6349,7 +6348,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentFloatingJointValuesByNameUnit)  // NOLI
   using tesseract::scene_graph::SceneGraph;
 
   auto sg = std::make_shared<SceneGraph>();
-  sg->setName("env_floating_value_by_name");
+  sg->setName("env_floating_value_by_id");
   sg->addLink(Link("base_link"));
   sg->addLink(Link("end_link"));
 
@@ -6362,10 +6361,10 @@ TEST(TesseractEnvironmentUnit, EnvCurrentFloatingJointValuesByNameUnit)  // NOLI
   auto env = std::make_shared<Environment>();
   ASSERT_TRUE(env->init(*sg));
 
-  auto m = env->getCurrentFloatingJointValues(std::vector<tesseract::common::JointId>{ "floating_1" });
+  auto m = env->getCurrentFloatingJointValues(std::vector<JointId>{ "floating_1" });
   EXPECT_EQ(m.size(), 1U);
-  ASSERT_EQ(m.count(JointId("floating_1")), 1U);
-  EXPECT_TRUE(m.at(JointId("floating_1")).isApprox(Eigen::Isometry3d::Identity(), 1e-6));
+  ASSERT_EQ(m.count("floating_1"), 1U);
+  EXPECT_TRUE(m.at("floating_1").isApprox(Eigen::Isometry3d::Identity(), 1e-6));
 }
 
 TEST(TesseractEnvironmentUnit, EnvFindTcpOffsetByGroupTcpUnit)  // NOLINT
