@@ -164,8 +164,8 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, RopRepFactoryMissingPositionerJointUnit)  // NOLINT
 {
-  // Covers rop_factory.cpp:140 and rep_factory.cpp:138 — "positioner sample resolution
-  // missing joint" throw when the sample_res_map has the correct count but contains
+  // The ROP and REP factories throw "positioner sample resolution missing joint" when
+  // the sample_res_map has the correct count but contains
   // joint names that do not match the fwd_kin positioner joint ids. The sample names
   // must still refer to real scene-graph joints (to pass the earlier getJoint check),
   // so we pick abb-manipulator joints while the positioner fwd_kin reports the
@@ -240,7 +240,7 @@ manipulator:
     info.class_name = "ROPInvKinFactory";
     info.config = YAML::Load(rop_config);
     // KinematicsPluginFactory::createInvKin wraps the throw and returns nullptr after logging,
-    // but the target throw inside ROPInvKinFactory::create is still executed (coverage hit).
+    // but the target throw inside ROPInvKinFactory::create still executes.
     EXPECT_EQ(factory.createInvKin("ROPInvKinFactory", info, *rop_sg, state), nullptr);
   }
 

@@ -238,8 +238,7 @@ TEST(TesseractSceneGraphSerializationUnit, SceneState)  // NOLINT
 
 TEST(TesseractSceneGraphSerializationUnit, SceneStateWithFloatingJoints)  // NOLINT
 {
-  // Covers scene_graph/cereal_serialization.h:32 and :62 — the non-empty floating_joints
-  // save/load loop bodies.
+  // SceneState round trips a non-empty floating_joints map through save/load.
   auto object = std::make_shared<SceneState>();
   Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
   tf.translate(Eigen::Vector3d(0.5, -0.25, 1.0));

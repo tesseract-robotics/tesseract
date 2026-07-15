@@ -850,7 +850,7 @@ TEST(TesseractSRDFUnit, SaveLoadRoundTripPreservesMultiplePairMargins)  // NOLIN
 
   ASSERT_TRUE(srdf_loaded.collision_margin_data != nullptr);
   EXPECT_NEAR(srdf_loaded.collision_margin_data->getDefaultCollisionMargin(), 0.05, 1e-6);
-  // All 3 pairs must survive the round-trip — fails before F1 fix (only 1 pair is kept).
+  // All 3 pairs must survive the round-trip (a bug formerly kept only 1).
   EXPECT_EQ(srdf_loaded.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 3U);
   EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_a", "link_b"), 0.01, 1e-6);
   EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_b", "link_c"), 0.02, 1e-6);
@@ -889,8 +889,8 @@ TEST(TesseractSRDFUnit, ParseCollisionMarginsSkipsUnknownLinkAfterWarn)  // NOLI
   EXPECT_NO_THROW(margin_data = parseCollisionMargins(g, element, std::array<int, 3>({ 1, 0, 0 })));  // NOLINT
   ASSERT_TRUE(margin_data != nullptr);
 
-  // After F3 fix: only the valid (a,b) pair is kept; the ghost entry is skipped.
-  // Before the fix: 2 pairs are kept (the ghost entry is inserted despite the warn).
+  // Only the valid (a,b) pair is kept; the ghost entry is skipped.
+  // A bug formerly kept 2 pairs (the ghost entry was inserted despite the warn).
   EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 1U);
 }
 

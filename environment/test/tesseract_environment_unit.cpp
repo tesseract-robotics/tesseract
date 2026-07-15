@@ -931,10 +931,9 @@ void runEnvAddTrajectoryLinkMultiState(AddTrajectoryLinkCommand::Method method)
   // Get the environment
   auto env = getEnvironment();
 
-  // Build a trajectory that (a) spans more than two states so the per-state loop
-  // body at environment.cpp:1383-1439 runs repeatedly, and (b) changes its joint
-  // ID set between states so the !isIdentical branch at environment.cpp:1407 is
-  // taken in addition to the joint_ids.empty() path.
+  // Build a trajectory that (a) spans more than two states, so AddTrajectoryLinkCommand's
+  // per-state loop body runs repeatedly, and (b) changes its joint ID set between states, so
+  // the loop re-resolves the joint ids on the !isIdentical path as well as the empty path.
   tesseract::common::JointTrajectory trajectory;
   trajectory.push_back(tesseract::common::JointState({ "joint_a1", "joint_a2" }, Eigen::VectorXd::Zero(2)));
   trajectory.push_back(
@@ -6347,8 +6346,8 @@ TEST(TesseractEnvironmentUnit, EnvSetActiveContinuousManagerMixedLinks)  // NOLI
   ASSERT_FALSE(env->getActiveLinkNames().empty());
   ASSERT_FALSE(env->getStaticLinkNames().empty());
 
-  // Attaching a continuous manager triggers cloneCollisionManager() + currentStateChanged(),
-  // which exercises environment.cpp:1075-1081 and :705-711 respectively.
+  // Attaching a continuous manager triggers cloneCollisionManager() and currentStateChanged(),
+  // which seed and then update the manager's collision object transforms.
   ASSERT_TRUE(env->setActiveContinuousContactManager("BulletCastBVHManager"));
   auto mgr = env->getContinuousContactManager();
   ASSERT_NE(mgr, nullptr);
@@ -6367,7 +6366,7 @@ TEST(TesseractEnvironmentUnit, EnvSetActiveContinuousManagerMixedLinks)  // NOLI
 
 TEST(TesseractEnvironmentUnit, EnvApplyAddSceneGraphSrdfCalibrationUnit)  // NOLINT
 {
-  // Covers environment.cpp:126 — SRDF calibration_info -> ChangeJointOriginCommand loop.
+  // An SRDF's calibration_info is applied at init as ChangeJointOriginCommands.
   tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = getSceneGraph(locator);
   ASSERT_TRUE(scene_graph != nullptr);
@@ -6391,7 +6390,7 @@ TEST(TesseractEnvironmentUnit, EnvApplyAddSceneGraphSrdfCalibrationUnit)  // NOL
 
 TEST(TesseractEnvironmentUnit, EnvCurrentFloatingJointValuesByNameUnit)  // NOLINT
 {
-  // Covers environment.cpp:599 — Implementation::getCurrentFloatingJointValues(names) wrapper.
+  // The by-name overload of getCurrentFloatingJointValues returns only the requested joints.
   using tesseract::common::JointId;
   using tesseract::scene_graph::Joint;
   using tesseract::scene_graph::JointType;
@@ -6420,7 +6419,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentFloatingJointValuesByNameUnit)  // NOLI
 
 TEST(TesseractEnvironmentUnit, EnvFindTcpOffsetByGroupTcpUnit)  // NOLINT
 {
-  // Covers environment.cpp:893 — findTCPOffset via kinematics_information.group_tcps.
+  // findTCPOffset resolves a TCP name against kinematics_information.group_tcps.
   // iiwa.srdf defines group_tcps for "manipulator" with names "laser" and "welder".
   auto env = getEnvironment();
 
@@ -6440,7 +6439,7 @@ TEST(TesseractEnvironmentUnit, EnvFindTcpOffsetByGroupTcpUnit)  // NOLINT
 
 TEST(TesseractEnvironmentUnit, EnvApplyModifyACMReplaceUnit)  // NOLINT
 {
-  // Covers environment.cpp:1882-1883 — ModifyAllowedCollisionsType::REPLACE branch.
+  // ModifyAllowedCollisionsCommand with type REPLACE discards the existing ACM entries.
   auto env = getEnvironment();
 
   // Confirm fixture already has some allowed collisions

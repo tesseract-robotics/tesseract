@@ -42,9 +42,9 @@ void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
   id = NameId<Tag>(value);
 }
 
-// OrderedIdPair has no cereal specialization on purpose — its NameIdValue ids are
-// not stable across builds. Serialize wrapping containers (AllowedCollisionMatrix,
-// CollisionMarginPairData) using the key's name-bearing NameIds and rebuild the pair on load.
+// OrderedIdPair has no cereal specialization: its NameIdValue ids are hashes that are not stable
+// across builds. Wrapping containers (AllowedCollisionMatrix, CollisionMarginPairData) serialize
+// the key's name-bearing NameIds instead and rebuild the pair on load.
 
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
@@ -132,7 +132,8 @@ void serialize(Archive& ar, CombinedContactAllowedValidator& obj)
 template <class Archive>
 void serialize(Archive& ar, JointState& obj)
 {
-  // NVP key kept as "joint_names" for archive compat with master; field was renamed to joint_ids during Id migration.
+  // Keep the "joint_names" archive key though the field is joint_ids: a NameId serializes as its
+  // name string (see save_minimal), so the on-disk key stays stable and portable across builds.
   ar(cereal::make_nvp("joint_names", obj.joint_ids));
   ar(cereal::make_nvp("position", obj.position));
   ar(cereal::make_nvp("velocity", obj.velocity));
