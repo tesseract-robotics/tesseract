@@ -14,6 +14,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/ply_io.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
 inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false, int num_interations = 10)
@@ -44,7 +46,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   double delta = 0.55;
 
   std::size_t t = 5;  // Because of unit test runtime this was reduced from 10 to 5.
-  std::vector<std::string> link_names;
+  std::vector<tesseract::common::LinkId> link_names;
   tesseract::common::LinkIdTransformMap location;
   for (std::size_t x = 0; x < t; ++x)
   {
@@ -72,8 +74,8 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   // Check if they are in collision
   checker.setActiveCollisionObjects(link_names);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(link_names, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(link_names.begin(), link_names.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

@@ -2,6 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <unordered_set>
 #include <vector>
 #include <omp.h>
 #include <cmath>
@@ -530,17 +531,12 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
 
     // Test after clone if active list correct
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
-    const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
-    auto d_active_list = discrete_manager->getActiveCollisionObjectNames();
-    std::sort(d_active_list.begin(), d_active_list.end());
-    auto e_sorted = e_active_list;
-    std::sort(e_sorted.begin(), e_sorted.end());
-    EXPECT_EQ(e_sorted, d_active_list);
+    const std::vector<tesseract::common::LinkId> e_active_list = env->getActiveLinkIds();
+    const std::unordered_set<tesseract::common::LinkId> expected(e_active_list.begin(), e_active_list.end());
+    EXPECT_EQ(discrete_manager->getActiveCollisionObjectIds(), expected);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    auto c_active_list = cast_manager->getActiveCollisionObjectNames();
-    std::sort(c_active_list.begin(), c_active_list.end());
-    EXPECT_EQ(e_sorted, c_active_list);
+    EXPECT_EQ(cast_manager->getActiveCollisionObjectIds(), expected);
   }
 
   {  // Get the environment
@@ -548,17 +544,12 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
 
     // Test after clone if active list correct
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
-    const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
-    auto d_active_list = discrete_manager->getActiveCollisionObjectNames();
-    std::sort(d_active_list.begin(), d_active_list.end());
-    auto e_sorted = e_active_list;
-    std::sort(e_sorted.begin(), e_sorted.end());
-    EXPECT_EQ(e_sorted, d_active_list);
+    const std::vector<tesseract::common::LinkId> e_active_list = env->getActiveLinkIds();
+    const std::unordered_set<tesseract::common::LinkId> expected(e_active_list.begin(), e_active_list.end());
+    EXPECT_EQ(discrete_manager->getActiveCollisionObjectIds(), expected);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    auto c_active_list = cast_manager->getActiveCollisionObjectNames();
-    std::sort(c_active_list.begin(), c_active_list.end());
-    EXPECT_EQ(e_sorted, c_active_list);
+    EXPECT_EQ(cast_manager->getActiveCollisionObjectIds(), expected);
   }
 
   {  // Get the environment
@@ -566,17 +557,12 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
 
     // Test after clone if active list correct
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
-    const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
-    auto d_active_list = discrete_manager->getActiveCollisionObjectNames();
-    std::sort(d_active_list.begin(), d_active_list.end());
-    auto e_sorted = e_active_list;
-    std::sort(e_sorted.begin(), e_sorted.end());
-    EXPECT_EQ(e_sorted, d_active_list);
+    const std::vector<tesseract::common::LinkId> e_active_list = env->getActiveLinkIds();
+    const std::unordered_set<tesseract::common::LinkId> expected(e_active_list.begin(), e_active_list.end());
+    EXPECT_EQ(discrete_manager->getActiveCollisionObjectIds(), expected);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    auto c_active_list = cast_manager->getActiveCollisionObjectNames();
-    std::sort(c_active_list.begin(), c_active_list.end());
-    EXPECT_EQ(e_sorted, c_active_list);
+    EXPECT_EQ(cast_manager->getActiveCollisionObjectIds(), expected);
   }
 }
 

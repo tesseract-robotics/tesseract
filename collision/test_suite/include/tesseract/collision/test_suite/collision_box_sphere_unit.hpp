@@ -8,6 +8,8 @@
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/ply_io.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
 namespace detail
@@ -131,10 +133,10 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "box_link", "sphere_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "box_link", "sphere_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -244,10 +246,10 @@ inline void runTestConvex(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "box_link", "sphere_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "box_link", "sphere_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

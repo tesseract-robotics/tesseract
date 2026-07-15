@@ -128,7 +128,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
   {
     auto contact_manager_config = default_contact_manager_config;
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.1m in collision
@@ -177,7 +177,7 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
   {
     auto contact_manager_config = default_contact_manager_config;
     ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.1m in collision
@@ -255,7 +255,7 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
   {
     auto contact_manager_config = default_contact_manager_config;
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.05m away from each other
@@ -301,7 +301,7 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
   {
     auto contact_manager_config = default_contact_manager_config;
     ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.05m away from each other

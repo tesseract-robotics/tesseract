@@ -116,7 +116,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentDiscreteCollisionTest)  //
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
     {  // Check for collisions
       tesseract::collision::ContactResultMap collision;
-      std::vector<std::string> active_links = { "link_n1" };
+      std::vector<tesseract::common::LinkId> active_links = { "link_n1" };
       manager->setActiveCollisionObjects(active_links);
       manager->contactTest(collision, collision_check_config.contact_request);
       EXPECT_FALSE(collision.empty());
@@ -140,7 +140,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentDiscreteCollisionTest)  //
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
     {  // Check for collisions
       tesseract::collision::ContactResultMap collision;
-      std::vector<std::string> active_links = { "link_n1" };
+      std::vector<tesseract::common::LinkId> active_links = { "link_n1" };
       manager->setActiveCollisionObjects(active_links);
       manager->contactTest(collision, collision_check_config.contact_request);
       EXPECT_FALSE(collision.empty());
@@ -176,7 +176,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentContinuousCollisionTest)  
   ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
   {  // Check for collisions
     tesseract::collision::ContactResultMap collision;
-    std::vector<std::string> active_links = { "link_n1" };
+    std::vector<tesseract::common::LinkId> active_links = { "link_n1" };
     manager->setActiveCollisionObjects(active_links);
     manager->contactTest(collision, collision_check_config.contact_request);
     EXPECT_FALSE(collision.empty());
@@ -214,7 +214,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentClearDiscreteCollisionTest
   DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
   {  // Check for collisions
     tesseract::collision::ContactResultMap collision;
-    std::vector<std::string> active_links = { "link_n1" };
+    std::vector<tesseract::common::LinkId> active_links = { "link_n1" };
     manager->setActiveCollisionObjects(active_links);
     manager->contactTest(collision, collision_check_config.contact_request);
     EXPECT_FALSE(collision.empty());
@@ -250,7 +250,7 @@ TEST(TesseractEnvironmentCollisionUnit, runEnvironmentClearContinuousCollisionTe
   ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
   {  // Check for collisions
     tesseract::collision::ContactResultMap collision;
-    std::vector<std::string> active_links = { "link_n1" };
+    std::vector<tesseract::common::LinkId> active_links = { "link_n1" };
     manager->setActiveCollisionObjects(active_links);
     manager->contactTest(collision, collision_check_config.contact_request);
     EXPECT_FALSE(collision.empty());
