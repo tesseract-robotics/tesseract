@@ -34,11 +34,13 @@ RUN --mount=type=tmpfs,target=${WORKSPACE_DIR} --mount=type=bind,target=${WORKSP
   cd ${WORKSPACE_DIR} \
   && if [ "$TAG" = "focal" ]; then \
        vcs import src < src/tesseract/dependencies_focal.repos --shallow; \
+       rosdep install --from-paths ${WORKSPACE_DIR}/src --skip-keys libcereal-dev --skip-keys libfcl-dev -iry; \
+     elif [ "$TAG" = "jammy" ]; then \
+       vcs import src < src/tesseract/dependencies_jammy.repos --shallow; \
+       rosdep install --from-paths ${WORKSPACE_DIR}/src --skip-keys libcereal-dev -iry; \
      else \
        vcs import src < src/tesseract/dependencies.repos --shallow; \
+       rosdep install --from-paths ${WORKSPACE_DIR}/src -iry; \
      fi \
-  && rosdep install \
-    --from-paths ${WORKSPACE_DIR}/src \
-    -iry \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && cp -r ${WORKSPACE_DIR}/install ${INSTALL_DIR}
