@@ -55,7 +55,7 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
-  // NVP key kept as "link_names" for archive compat with master; field was renamed to link_ids during Id migration.
+  // Keep the "link_names" archive key though the field is link_ids (the ids serialize as their names).
   ar(cereal::make_nvp("link_names", g.link_ids));
   ar(cereal::make_nvp("shape_id", g.shape_id));
   ar(cereal::make_nvp("subshape_id", g.subshape_id));
@@ -75,30 +75,23 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 template <class Archive>
 void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
 {
-  // Master-compatible wire format: sorted std::map keyed by canonical-ordered name pair under
-  // NVP "container". The internal LinkIdPair key is reconstructed on load from each
-  // ContactResult's link_ids[0/1] names (LinkId's save_minimal persists the original name).
-  // OrderedIdPair has no cereal specialization on purpose — its NameIdValue ids are not stable
-  // across builds, so we serialize the names instead.
-  //
-  // Note on canonicalization: we sort the (a,b) name pair here for deterministic output of *this*
-  // branch's archives only. Master canonicalizes by call-site convention (insertion order from
-  // the contact-test loop), so the resulting on-disk byte sequence is not guaranteed to match
-  // master byte-for-byte — the wire *shape* (NVP "container", keyed string pair, ContactResult
-  // value layout) is what matters for cross-build load compatibility.
+  // String-keyed wire format: a sorted std::map under NVP "container", keyed by the (a,b) link-name
+  // pair. The LinkIdPair key is rebuilt on load from each ContactResult's link_ids[0/1] names
+  // (LinkId::save_minimal persists the name). OrderedIdPair has no cereal specialization of its own
+  // because its NameIdValue ids are hashes, not stable across builds, so the names are serialized
+  // instead. The pair is sorted only for deterministic output; the load path does not depend on order.
   using KeyT = std::pair<std::string, std::string>;
   using MappedT = tesseract::collision::ContactResultVector;
   tesseract::common::AlignedMap<KeyT, MappedT> container;
   for (const auto& [key, results] : g.getContainer())
   {
     if (results.empty())
-      continue;  // Master also dropped empty buckets; preserve that.
+      continue;  // Empty buckets are not persisted.
     const auto& names = results.front().link_ids;
     // Defensive guard against silent archive corruption: the wire key is derived from the stored
     // ContactResult's link_ids names. A default-constructed ContactResult (link_ids of
     // INVALID_LINK_ID) would silently emit ("","") as the key, dropping the original LinkIdPair
-    // identity. The previous (LinkIdPair, results) format did not have this footgun, so callers
-    // must populate link_ids before insertion.
+    // identity, so callers must populate link_ids before insertion.
     if (names[0].name().empty() || names[1].name().empty())
       throw std::runtime_error("ContactResultMap cereal save: stored ContactResult has empty/invalid "
                                "link_ids; cannot persist key — caller must populate link_ids before "
@@ -198,7 +191,7 @@ template <class Archive>
 void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 {
   ar(cereal::make_nvp("steps", g.steps));
-  // NVP key kept as "joint_names" for archive compat with master; field was renamed to joint_ids during Id migration.
+  // Keep the "joint_names" archive key though the field is joint_ids (the ids serialize as their names).
   ar(cereal::make_nvp("joint_names", g.joint_ids));
   ar(cereal::make_nvp("total_steps", g.total_steps));
 }

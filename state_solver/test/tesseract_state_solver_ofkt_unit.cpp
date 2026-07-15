@@ -178,10 +178,10 @@ TEST(TesseractStateSolverUnit, OFKTSetFloatingJointStateUnit)  // NOLINT
   test_suite::runSetFloatingJointStateTest<OFKTStateSolver>();
 }
 
-// All OFKT entrypoints that overlay user-supplied floating-joint values used to call bare .at(),
-// throwing std::out_of_range with no context. Verify the safety-sweep replacement throws a
-// std::runtime_error whose message names the offending joint id, so callers can identify the
-// bad entry instead of debugging a context-free out_of_range.
+// All OFKT entrypoints that overlay user-supplied floating-joint values formerly called bare
+// .at(), throwing std::out_of_range with no context. Verify they now throw a std::runtime_error
+// whose message names the offending joint id, so callers can identify the bad entry instead of
+// debugging a context-free out_of_range.
 TEST(TesseractStateSolverUnit, OFKTApplyFloatingValuesUnknownIdThrows)  // NOLINT
 {
   using tesseract::common::JointId;
@@ -223,7 +223,7 @@ TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT
 }
 
 // =============================================================================
-// Phase 2 test additions — SceneState integer-keyed tests
+// SceneState integer-keyed tests
 // =============================================================================
 
 TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT

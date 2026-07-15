@@ -19,6 +19,9 @@
 
 namespace tesseract::scene_graph
 {
+// The cereal NVP keys below keep their original "..._name" spelling even where the field is now an
+// id: a NameId serializes as its name string (see common save_minimal), so the on-disk archive key
+// stays stable and portable. Do not rename a key to match a renamed field — it breaks old archives.
 template <class Archive>
 void save(Archive& ar, const SceneState& obj)
 {
@@ -118,7 +121,7 @@ void serialize(Archive& ar, Link& obj)
   ar(cereal::make_nvp("collision", obj.collision));
   ar(cereal::make_nvp("visible", obj.visible));
   ar(cereal::make_nvp("collision_enabled", obj.collision_enabled));
-  ar(cereal::make_nvp("name", obj.id_));
+  ar(cereal::make_nvp("name", obj.id_));  // name key; field is an id
 }
 
 template <class Archive>
@@ -161,7 +164,7 @@ void serialize(Archive& ar, JointMimic& obj)
 {
   ar(cereal::make_nvp("offset", obj.offset));
   ar(cereal::make_nvp("multiplier", obj.multiplier));
-  ar(cereal::make_nvp("joint_name", obj.joint_id));
+  ar(cereal::make_nvp("joint_name", obj.joint_id));  // name key; field is an id
 }
 
 template <class Archive>
@@ -169,15 +172,15 @@ void serialize(Archive& ar, Joint& obj)
 {
   ar(cereal::make_nvp("type", obj.type));
   ar(cereal::make_nvp("axis", obj.axis));
-  ar(cereal::make_nvp("child_link_name", obj.child_link_id));
-  ar(cereal::make_nvp("parent_link_name", obj.parent_link_id));
+  ar(cereal::make_nvp("child_link_name", obj.child_link_id));    // name key; field is an id
+  ar(cereal::make_nvp("parent_link_name", obj.parent_link_id));  // name key; field is an id
   ar(cereal::make_nvp("parent_to_joint_origin_transform", obj.parent_to_joint_origin_transform));
   ar(cereal::make_nvp("dynamics", obj.dynamics));
   ar(cereal::make_nvp("limits", obj.limits));
   ar(cereal::make_nvp("safety", obj.safety));
   ar(cereal::make_nvp("calibration", obj.calibration));
   ar(cereal::make_nvp("mimic", obj.mimic));
-  ar(cereal::make_nvp("name", obj.id_));
+  ar(cereal::make_nvp("name", obj.id_));  // name key; field is an id
 }
 
 template <class Archive>

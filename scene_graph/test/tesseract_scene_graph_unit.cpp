@@ -1391,8 +1391,8 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnit)  // NOLINT
 
   std::vector<Joint::ConstPtr> active_joints = g.getActiveJoints();
 
-  // Explicit subset: exclude joint_3 so its parent link_3 (added via joint_2) hits
-  // the "downstream fixed segment" branch in kdl_sub_tree_builder (kdl_parser.cpp:416-424).
+  // Explicit subset: exclude joint_3 so its parent link_3 (added via joint_2) hits the
+  // "downstream fixed segment" branch in kdl_sub_tree_builder.
   // Using a literal subset avoids depending on std::unordered_map iteration order.
   const std::vector<JointId> subset{ JointId("joint_1"), JointId("joint_2"), JointId("joint_4") };
 
@@ -1420,7 +1420,7 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
   SceneGraph g = buildTestSceneGraph();
 
   // Parse the full tree twice to produce two structurally-identical KDLTreeData
-  // instances. This exercises the operator== body (kdl_parser.cpp L198-L216).
+  // instances, exercising KDLTreeData::operator==.
   KDLTreeData a = parseSceneGraph(g);
   KDLTreeData b = parseSceneGraph(g);
 
@@ -1436,7 +1436,7 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
   }
 
   // Inject a floating-joint value into one side to exercise the isometry_equal
-  // branch of the isIdenticalMap comparison (L212-L213). buildTestSceneGraph()
+  // branch of the isIdenticalMap comparison. buildTestSceneGraph()
   // contains no FLOATING joints, so floating_joint_values is empty on both
   // sides; directly populate `b` to force the map comparison to differ.
   {
@@ -1473,13 +1473,11 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
   }
 }
 
-// Exercises the sub-tree builder constructor when the provided
-// floating_joint_values map is non-empty. Covers kdl_parser.cpp:310 — the loop
-// that copies entries into data_.floating_joint_values (previously used .at()
-// on the empty destination map, which threw std::out_of_range).
-// buildTestSceneGraph()'s joint_3 is REVOLUTE, so this test does not exercise
-// the DFS FLOATING branch at L349-350; see KDLParserSubTreeFloatingJointDfsUnit
-// below for that.
+// Exercises the sub-tree builder constructor when the provided floating_joint_values
+// map is non-empty, so its entries are copied into the sub-tree's own map. A prior
+// implementation used .at() on the empty destination map and threw std::out_of_range.
+// buildTestSceneGraph()'s joint_3 is REVOLUTE, so this test does not exercise the DFS
+// FLOATING branch in discover_vertex; see KDLParserSubTreeFloatingJointDfsUnit below.
 TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
@@ -1499,7 +1497,7 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
   fj_tf.translation().y() = -0.25;
   floating[JointId("joint_3")] = fj_tf;
 
-  // Pre-fix this call threw std::out_of_range from the .at() in the constructor.
+  // Regression: this call must not throw std::out_of_range when floating values are supplied.
   KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
 
   ASSERT_EQ(data.floating_joint_values.count(JointId("joint_3")), 1U);
@@ -1508,10 +1506,10 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
   EXPECT_EQ(data.tree.getNrOfJoints(), subset.size());
 }
 
-// Exercises kdl_parser.cpp:349-350 — the DFS FLOATING branch in discover_vertex
-// that reads the transform back out of data_.floating_joint_values while
-// building the segment for a FLOATING joint's child link. Requires an actual
-// FLOATING joint in the graph, which buildTestSceneGraph() does not provide.
+// Exercises the DFS FLOATING branch in discover_vertex that reads the transform back
+// out of the sub-tree's floating_joint_values while building the segment for a FLOATING
+// joint's child link. Requires an actual FLOATING joint in the graph, which
+// buildTestSceneGraph() does not provide.
 TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointDfsUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
@@ -1588,7 +1586,7 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingJointValueThrows)  // N
 
 TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingFloatingJointValueThrows)  // NOLINT
 {
-  // Regression test (B2 follow-up): the FLOATING-joint sibling of the joint_values bug.
+  // Regression test: the FLOATING-joint sibling of the joint_values bug.
   // discover_vertex must throw std::runtime_error (naming the offending joint) when
   // floating_joint_values is missing an entry for a FLOATING joint reachable from the root.
   // Before the fix, .at() on data_.floating_joint_values threw bare std::out_of_range without

@@ -30,7 +30,7 @@ public:
 /**
  * @brief Build a ContactResult whose link_ids match the given key names.
  *
- * Required for ContactResultMap cereal round-trip tests: the master-compatible wire format
+ * Required for ContactResultMap cereal round-trip tests: the string-keyed wire format
  * persists each entry's link names from results.front().link_ids[0/1].name(), and rebuilds
  * the LinkIdPair key on load. Default-constructed ContactResult has empty link_ids and would
  * collapse all keys to ("","") on the wire.
@@ -167,8 +167,8 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
     EXPECT_NO_THROW(config.validate());  // NOLINT
   }
 
-  {  // Covers cereal_serialization.h:118 and :134 — the non-empty modify_object_enabled
-     // save/load loop bodies in ContactManagerConfig.
+  {  // ContactManagerConfig round trips a non-empty modify_object_enabled map through
+     // save/load.
     tesseract::collision::ContactManagerConfig config;
     config.modify_object_enabled["link_a"] = true;
     config.modify_object_enabled["link_b"] = false;
@@ -178,8 +178,8 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactManagerConfigYamlDecodeNonMapModifyObjectEnabledUnit)  // NOLINT
 {
-  // Covers collision/core/yaml_extensions.h:283 — the `!n.IsMap()` negative branch in the
-  // ContactManagerConfig decoder (modify_object_enabled is present but not a map).
+  // The ContactManagerConfig decoder rejects a modify_object_enabled entry that is present
+  // but is not a map.
   const std::string yaml_string = R"(
     default_margin: 0.1
     modify_object_enabled: [1, 2, 3]
@@ -341,7 +341,7 @@ TEST(TesseractCoreUnit, isContactAllowedUnit)  // NOLINT
   EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "base_link", validator, false));
   EXPECT_FALSE(tesseract::collision::isContactAllowed("base_link", "link_2", validator, false));
   EXPECT_TRUE(tesseract::collision::isContactAllowed("base_link", "link_1", validator, true));
-  // Covers collision/core/src/common.cpp:102 — non-allowed pair + verbose logging branch.
+  // A non-allowed pair with verbose logging enabled.
   EXPECT_FALSE(tesseract::collision::isContactAllowed("base_link", "link_2", validator, true));
 }
 
@@ -493,7 +493,7 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
     tesseract::common::testSerialization<tesseract::collision::ContactResultMap>(result_map, "ContactResultMap");
   }
 
-  // Named link IDs so we can populate ContactResult::link_ids — the master-compatible
+  // Named link IDs so we can populate ContactResult::link_ids — the string-keyed
   // ContactResultMap cereal save extracts names from results.front().link_ids[0/1] and the
   // load reconstructs the LinkIdPair key from those names. Default-constructed ContactResult
   // would collapse all map keys to ("","") on the wire.
@@ -1020,10 +1020,10 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactResultMapCerealUsesMasterWireFormat)  // NOLINT
 {
-  // Regression: master persists ContactResultMap as a string-keyed std::map under NVP "container".
-  // The current branch's hash-based LinkIdPair cereal would have leaked NameIdValue digits onto
-  // the wire (not stable across builds); this test pins the master-compatible format and the
-  // round-trip recovery of the LinkIdPair key from the per-result link names.
+  // ContactResultMap persists as a string-keyed std::map under NVP "container". Serializing the
+  // LinkIdPair key by its raw NameIdValue would leak hash digits onto the wire (not stable across
+  // builds); this test pins the string-keyed format and the round-trip recovery of the LinkIdPair
+  // key from the per-result link names.
   using namespace tesseract::collision;
   using namespace tesseract::common;
 
@@ -1040,7 +1040,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesMasterWireFormat)  // NOLINT
     ar(cereal::make_nvp("contact_result_map", original));
   }
   const std::string archive_text = ss.str();
-  // Master wire format: NVP key "container" + string names, no raw hash digits.
+  // Wire format: NVP key "container" + string names, no raw hash digits.
   EXPECT_NE(archive_text.find("container"), std::string::npos) << archive_text;
   EXPECT_NE(archive_text.find("link_a"), std::string::npos) << archive_text;
   EXPECT_NE(archive_text.find("link_b"), std::string::npos) << archive_text;
@@ -1067,11 +1067,11 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesMasterWireFormat)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLINT
 {
-  // Cross-archive load test: a hand-crafted JSON literal that mimics what master's
-  // ContactResultMap save produces (NVP "container", string-pair keys, ContactResult value).
-  // This proves the wire format is byte-readable across implementations, not merely a
-  // local round-trip fixed-point on this branch. A partner test
-  // (ContactResultMapCerealUsesMasterWireFormat, above) pins the structural shape on save.
+  // Cross-archive load test: a hand-crafted JSON literal in the string-keyed ContactResultMap
+  // format (NVP "container", string-pair keys, ContactResult value). This proves the wire format
+  // is byte-readable independently of the writer, not merely a local save/load round-trip
+  // fixed-point. A partner test (ContactResultMapCerealUsesStringKeyedWireFormat, above) pins the
+  // structural shape on save.
   using namespace tesseract::collision;
   using namespace tesseract::common;
 
@@ -1141,7 +1141,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLI
 
   ASSERT_EQ(loaded.size(), 1U);
   const auto& [stored_key, stored_results] = *loaded.getContainer().begin();
-  // LinkIdPair key reconstructed from the string names in the master-format JSON.
+  // LinkIdPair key reconstructed from the string names in the JSON literal.
   EXPECT_EQ(stored_key, LinkIdPair(LinkId("master_link_x"), LinkId("master_link_y")));
   ASSERT_EQ(stored_results.size(), 1U);
   EXPECT_EQ(stored_results[0].link_ids[0].name(), "master_link_x");
@@ -1151,7 +1151,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLI
 
 TEST(TesseractCoreUnit, ContactResultMapCerealSaveRejectsInvalidLinkIds)  // NOLINT
 {
-  // Defensive guard: the master-compatible save path derives the on-disk key from the stored
+  // Defensive guard: the save path derives the on-disk key from the stored
   // ContactResult's link_ids names. A default-constructed ContactResult would silently emit
   // ("","") on the wire and lose the LinkIdPair identity. Confirm save throws instead.
   using namespace tesseract::collision;
@@ -2380,7 +2380,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 }
 
 // =============================================================================
-// Phase 2 test additions — Integer link/joint ID tests
+// Integer link/joint ID tests
 // =============================================================================
 
 TEST(TesseractCoreUnit, ContactResultLinkIdsUnit)  // NOLINT

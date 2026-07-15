@@ -101,7 +101,7 @@ static void BM_AcmIsAllowed_PreconstructedPair_Miss(benchmark::State& state)
 }
 BENCHMARK(BM_AcmIsAllowed_PreconstructedPair_Miss);
 
-// ACM hit via the two-id overload (gradient-eval shape; interim fat-pair cost shows up here).
+// ACM hit via the two-id overload (gradient-eval shape).
 static void BM_AcmIsAllowed_TwoIds_Hit(benchmark::State& state)
 {
   const auto ids = makeLinkIds(64);

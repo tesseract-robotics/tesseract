@@ -167,7 +167,7 @@ TEST(TesseractSRDFSerializeUnit, SRDFModelJsonRoundTripPerField)  // NOLINT
   auto srdf = getSRDFModel(graph, locator);
 
   // Populate collision_margin_data and calibration_info — the SRDF fixture leaves both empty,
-  // and per-field round-trip coverage requires non-default values for every member.
+  // so give every member a non-default value to exercise per-field round-tripping.
   srdf->collision_margin_data = std::make_shared<tesseract::common::CollisionMarginData>(0.05);
   srdf->collision_margin_data->setCollisionMargin(LinkId("link_1"), LinkId("link_2"), 0.01);
   srdf->collision_margin_data->setCollisionMargin(LinkId("link_3"), LinkId("link_4"), 0.02);

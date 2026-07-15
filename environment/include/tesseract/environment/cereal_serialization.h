@@ -19,6 +19,9 @@
 
 namespace tesseract::environment
 {
+// The cereal NVP keys below keep their original "..._name" spelling even where the field is now an
+// id: a NameId serializes as its name string (see common save_minimal), so the on-disk archive key
+// stays stable and portable. Do not rename a key to match a renamed field — it breaks old archives.
 template <class Archive>
 void serialize(Archive& ar, Command& obj)
 {
@@ -61,11 +64,8 @@ template <class Archive>
 void serialize(Archive& ar, AddTrajectoryLinkCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "link_name" for archive compat with master; field was renamed to link_id_ during Id migration.
-  ar(cereal::make_nvp("link_name", obj.link_id_));
-  // NVP key kept as "parent_link_name" for archive compat with master; field was renamed to
-  // parent_link_id_ during Id migration.
-  ar(cereal::make_nvp("parent_link_name", obj.parent_link_id_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));  // name key; field is an id
+  ar(cereal::make_nvp("parent_link_name", obj.parent_link_id_));  // name key; field is an id
   ar(cereal::make_nvp("trajectory", obj.trajectory_));
   ar(cereal::make_nvp("replace_allowed", obj.replace_allowed_));
   ar(cereal::make_nvp("method", obj.method_));
@@ -91,8 +91,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeJointOriginCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "joint_name" for archive compat with master; field was renamed to joint_id_ during Id migration.
-  ar(cereal::make_nvp("joint_name", obj.joint_id_));
+  ar(cereal::make_nvp("joint_name", obj.joint_id_));  // name key; field is an id
   ar(cereal::make_nvp("origin", obj.origin_));
 }
 
@@ -114,8 +113,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeLinkCollisionEnabledCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "link_name" for archive compat with master; field was renamed to link_id_ during Id migration.
-  ar(cereal::make_nvp("link_name", obj.link_id_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));  // name key; field is an id
   ar(cereal::make_nvp("enabled", obj.enabled_));
 }
 
@@ -123,8 +121,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeLinkOriginCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "link_name" for archive compat with master; field was renamed to link_id_ during Id migration.
-  ar(cereal::make_nvp("link_name", obj.link_id_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));  // name key; field is an id
   ar(cereal::make_nvp("origin", obj.origin_));
 }
 
@@ -132,8 +129,7 @@ template <class Archive>
 void serialize(Archive& ar, ChangeLinkVisibilityCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "link_name" for archive compat with master; field was renamed to link_id_ during Id migration.
-  ar(cereal::make_nvp("link_name", obj.link_id_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));  // name key; field is an id
   ar(cereal::make_nvp("enabled", obj.enabled_));
 }
 
@@ -149,8 +145,7 @@ template <class Archive>
 void serialize(Archive& ar, MoveJointCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "joint_name" for archive compat with master; field was renamed to joint_id_ during Id migration.
-  ar(cereal::make_nvp("joint_name", obj.joint_id_));
+  ar(cereal::make_nvp("joint_name", obj.joint_id_));  // name key; field is an id
   ar(cereal::make_nvp("parent_link", obj.parent_link_));
 }
 
@@ -165,24 +160,21 @@ template <class Archive>
 void serialize(Archive& ar, RemoveAllowedCollisionLinkCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "link_name" for archive compat with master; field was renamed to link_id_ during Id migration.
-  ar(cereal::make_nvp("link_name", obj.link_id_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));  // name key; field is an id
 }
 
 template <class Archive>
 void serialize(Archive& ar, RemoveJointCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "joint_name" for archive compat with master; field was renamed to joint_id_ during Id migration.
-  ar(cereal::make_nvp("joint_name", obj.joint_id_));
+  ar(cereal::make_nvp("joint_name", obj.joint_id_));  // name key; field is an id
 }
 
 template <class Archive>
 void serialize(Archive& ar, RemoveLinkCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  // NVP key kept as "link_name" for archive compat with master; field was renamed to link_id_ during Id migration.
-  ar(cereal::make_nvp("link_name", obj.link_id_));
+  ar(cereal::make_nvp("link_name", obj.link_id_));  // name key; field is an id
 }
 
 template <class Archive>

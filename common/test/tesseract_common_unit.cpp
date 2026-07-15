@@ -3012,16 +3012,15 @@ TEST(TesseractCommonUnit, calcJacobianTransformErrorDiff_AxisFlipPath)  // NOLIN
   });
 }
 
-// Direct coverage of the public applyTolerances helper. The toleranced-jacobian tests above
-// only reach applyTolerances through the calcJacobianTransformErrorDiff call sites, which now
-// short-circuit when both tolerance vectors are empty — the empty-both early-return inside
-// applyTolerances is therefore unreachable from those tests but is still part of the documented
-// public API contract for external callers.
+// Direct test of the public applyTolerances helper — in particular the empty-both no-op, which
+// external callers rely on but the toleranced-jacobian tests above never reach (their
+// calcJacobianTransformErrorDiff call sites short-circuit before applyTolerances when both
+// tolerance vectors are empty).
 TEST(TesseractCommonUnit, applyTolerances)  // NOLINT
 {
   using tesseract::common::applyTolerances;
 
-  // Both tolerances empty → no-op (the previously uncovered early-return path).
+  // Both tolerances empty → no-op.
   {
     Eigen::VectorXd v(3);
     v << -2.0, 0.0, 3.0;
@@ -3150,8 +3149,8 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
   using tesseract::common::LinkIdPair;
 
   // Build the canonical (key, entry) the same way the two-LinkId overload would, then
-  // re-insert via the pair-based overload. This mirrors the F6/G2 caller pattern
-  // (iterating an existing AllowedCollisionEntries map).
+  // re-insert via the pair-based overload, mirroring a caller that iterates an existing
+  // AllowedCollisionEntries map.
   const LinkId link_a("link_a");
   const LinkId link_b("link_b");
   const LinkIdPair key(link_a, link_b);
@@ -3218,8 +3217,8 @@ TEST(TesseractCommonUnit, TestAllowedCollisionEntriesCompare)  // NOLINT
 
 TEST(TesseractCommonUnit, HashCollisionsResolveLikeAHashMap)  // NOLINT
 {
-  // Replaces the retired checkHashCollision tests: collisions are no longer detected-and-thrown,
-  // they are resolved by hybrid equality — colliding ids are simply distinct keys.
+  // Hash collisions are not detected-and-thrown; they are resolved by hybrid equality —
+  // colliding ids are simply distinct keys.
   const auto a = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(7, "collide_a");
   const auto b = tesseract::common::NameIdTestAccess::create<tesseract::common::LinkId>(7, "collide_b");
   std::unordered_map<tesseract::common::LinkId, std::string> map;

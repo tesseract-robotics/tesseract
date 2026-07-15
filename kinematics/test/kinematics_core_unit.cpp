@@ -550,7 +550,7 @@ TEST(TesseractKinematicsUnit, dampedPInv_EmptyMatrix)
 }
 
 // =============================================================================
-// Phase 2 test additions — Integer link/joint ID tests for JointGroup
+// Integer link/joint ID tests for JointGroup
 // =============================================================================
 
 TEST(TesseractKinematicsUnit, JointGroupCalcFwdKinLinkIdUnit)  // NOLINT
@@ -870,7 +870,7 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentUnit)  // NOLINT
 
   EXPECT_FALSE(jg_a.getLinkIds().empty());
 
-  // Copy-assignment body (L142–147 in joint_group.cpp).
+  // Exercises JointGroup copy-assignment.
   const std::vector<JointId> subset{ joint_ids[0], joint_ids[1], joint_ids[2] };
   tesseract::kinematics::JointGroup jg_b("sub_manipulator", subset, *scene_graph, scene_state);
   EXPECT_EQ(jg_b.numJoints(), static_cast<Eigen::Index>(subset.size()));
@@ -887,7 +887,7 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentUnit)  // NOLINT
 #pragma GCC diagnostic pop
   EXPECT_EQ(jg_b.getJointIds(), joint_ids);
 
-  // Missing-joint throw (joint_group.cpp:54).
+  // JointGroup throws when a joint id is not in the scene graph.
   std::vector<JointId> with_bogus = joint_ids;
   with_bogus.emplace_back("does_not_exist_in_graph");
   EXPECT_THROW(tesseract::kinematics::JointGroup("bad_group", with_bogus, *scene_graph, scene_state),
@@ -896,11 +896,12 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentUnit)  // NOLINT
 
 TEST(TesseractKinematicsUnit, KinematicGroupConstructorMismatchedIdsUnit)  // NOLINT
 {
-  // Covers kinematic_group.cpp:121 — the "joint_ids does not match inverse kinematics object" throw.
-  // The existing KinematicGroupConstructorThrowsUnit's "mismatched" case fails in the JointGroup
-  // base class (bogus_joint not in scene graph) and never reaches L121. Here we keep the
-  // KinematicGroup's joint_ids all valid scene-graph joints, but have the FakeInvKin report a
-  // different (same-count) joint set, which reaches the inner set-equality check.
+  // KinematicGroup throws "joint_ids does not match inverse kinematics object!" when its joint
+  // ids disagree with the inverse kinematics object's. KinematicGroupConstructorThrowsUnit's
+  // "mismatched" case cannot reach that check: it fails earlier in the JointGroup base class
+  // because bogus_joint is not in the scene graph. Here every joint id is a valid scene-graph
+  // joint but the FakeInvKin reports a different (same-count) joint set, reaching the inner
+  // set-equality check.
   using tesseract::common::JointId;
   using tesseract::common::LinkId;
 
