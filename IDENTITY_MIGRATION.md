@@ -130,6 +130,17 @@ validator hook all speak ids (`tesseract/collision/discrete_contact_manager.h`,
 whole override surface at once — for scale, migrating the Coal collision backend touched roughly
 1,400 added and 900 removed lines.
 
+The `std::string` conveniences on both managers are gone.
+`setActiveCollisionObjects(const std::vector<std::string>&)` and
+`getActiveCollisionObjectNames()` are deleted — call `setActiveCollisionObjects`
+with a `std::vector<LinkId>` and `getActiveCollisionObjectIds()` instead. The
+parallel-array `setCollisionObjectsTransform(const std::vector<std::string>&, ...)`
+overloads are replaced by `std::vector<LinkId>` equivalents, which throw
+`std::runtime_error` on an id/pose size mismatch rather than reading out of bounds.
+They remain `virtual` and non-pure: override them if your backend can apply a bulk
+update more cheaply than one call per object. Build a `std::vector<LinkId>` at your
+boundary with `toIds<LinkId>(names)`.
+
 ## Migration idioms
 
 - **Bridge with `toIds` / `toNames`** (`tesseract/common/types.h`). `toIds<LinkId>(names)`
