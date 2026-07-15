@@ -49,7 +49,6 @@ namespace tesseract::geometry
  * @param domain_max Maximum corner of the sampled domain (must exceed @p domain_min on every axis)
  * @param dimensions Number of samples along each axis (each must be >= 2)
  * @param scale Local scaling applied to the field
- * @param margin Collision margin
  * @return A SignedDistanceField holding the sampled grid
  * @throw std::runtime_error on an invalid domain or dimensions
  */
@@ -57,16 +56,14 @@ SignedDistanceField::Ptr createDiscreteSignedDistanceField(const SignedDistanceF
                                                            const Eigen::Vector3d& domain_min,
                                                            const Eigen::Vector3d& domain_max,
                                                            const Eigen::Vector3i& dimensions,
-                                                           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-                                                           double margin = 0.0);
+                                                           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
 /** @brief Batched overload — every grid sample position is handed to @p sdf in one call. */
 SignedDistanceField::Ptr createDiscreteSignedDistanceField(const BatchedSignedDistanceFunction& sdf,
                                                            const Eigen::Vector3d& domain_min,
                                                            const Eigen::Vector3d& domain_max,
                                                            const Eigen::Vector3i& dimensions,
-                                                           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-                                                           double margin = 0.0);
+                                                           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
 /**
  * @brief Create a lazily-evaluated @ref SignedDistanceField backed by a distance function.
@@ -83,21 +80,19 @@ SignedDistanceField::Ptr createSignedDistanceField(const SignedDistanceFunction&
                                                    const Eigen::Vector3d& domain_min,
                                                    const Eigen::Vector3d& domain_max,
                                                    const Eigen::Vector3i& dimensions,
-                                                   const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-                                                   double margin = 0.0);
+                                                   const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
 /** @brief Batched overload — the sampler receives every grid sample position in one call. */
 SignedDistanceField::Ptr createSignedDistanceField(const BatchedSignedDistanceFunction& sdf,
                                                    const Eigen::Vector3d& domain_min,
                                                    const Eigen::Vector3d& domain_max,
                                                    const Eigen::Vector3i& dimensions,
-                                                   const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-                                                   double margin = 0.0);
+                                                   const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
 /**
  * @brief Serialize a field's grid (domain, dimensions, distances) to a backend-neutral byte blob.
- * @details The local @c scale and @c margin are NOT stored; they are carried alongside the field
- * (e.g. as URDF attributes) and supplied on load. This is the format written/read for @c .sdf files.
+ * @details The local @c scale is not stored; it is carried alongside the field (e.g. as a URDF
+ * attribute) and supplied on load. This is the format written/read for @c .sdf files.
  */
 std::vector<std::uint8_t> writeSignedDistanceFieldData(const SignedDistanceField& sdf);
 
@@ -106,11 +101,9 @@ std::vector<std::uint8_t> writeSignedDistanceFieldData(const SignedDistanceField
  * @ref writeSignedDistanceFieldData.
  * @param data The serialized grid blob
  * @param scale Local scaling applied to the field
- * @param margin Collision margin
  * @throw std::runtime_error if the blob is malformed
  */
 SignedDistanceField::Ptr readSignedDistanceFieldData(const std::vector<std::uint8_t>& data,
-                                                     const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-                                                     double margin = 0.0);
+                                                     const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 }  // namespace tesseract::geometry
 #endif  // TESSERACT_GEOMETRY_SIGNED_DISTANCE_FIELD_UTILS_H

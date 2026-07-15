@@ -51,21 +51,19 @@ SignedDistanceField::Ptr createDiscreteSignedDistanceField(const SignedDistanceF
                                                            const Eigen::Vector3d& domain_min,
                                                            const Eigen::Vector3d& domain_max,
                                                            const Eigen::Vector3i& dimensions,
-                                                           const Eigen::Vector3d& scale,
-                                                           double margin)
+                                                           const Eigen::Vector3d& scale)
 {
-  return createDiscreteSignedDistanceField(toBatched(sdf), domain_min, domain_max, dimensions, scale, margin);
+  return createDiscreteSignedDistanceField(toBatched(sdf), domain_min, domain_max, dimensions, scale);
 }
 
 SignedDistanceField::Ptr createDiscreteSignedDistanceField(const BatchedSignedDistanceFunction& sdf,
                                                            const Eigen::Vector3d& domain_min,
                                                            const Eigen::Vector3d& domain_max,
                                                            const Eigen::Vector3i& dimensions,
-                                                           const Eigen::Vector3d& scale,
-                                                           double margin)
+                                                           const Eigen::Vector3d& scale)
 {
   // Eager: a pre-discretized lazy field, i.e. sample the grid up front so it is immediately serializable.
-  auto field = createSignedDistanceField(sdf, domain_min, domain_max, dimensions, scale, margin);
+  auto field = createSignedDistanceField(sdf, domain_min, domain_max, dimensions, scale);
   field->discretize();
   return field;
 }
@@ -74,21 +72,18 @@ SignedDistanceField::Ptr createSignedDistanceField(const SignedDistanceFunction&
                                                    const Eigen::Vector3d& domain_min,
                                                    const Eigen::Vector3d& domain_max,
                                                    const Eigen::Vector3i& dimensions,
-                                                   const Eigen::Vector3d& scale,
-                                                   double margin)
+                                                   const Eigen::Vector3d& scale)
 {
-  return createSignedDistanceField(toBatched(sdf), domain_min, domain_max, dimensions, scale, margin);
+  return createSignedDistanceField(toBatched(sdf), domain_min, domain_max, dimensions, scale);
 }
 
 SignedDistanceField::Ptr createSignedDistanceField(const BatchedSignedDistanceFunction& sdf,
                                                    const Eigen::Vector3d& domain_min,
                                                    const Eigen::Vector3d& domain_max,
                                                    const Eigen::Vector3i& dimensions,
-                                                   const Eigen::Vector3d& scale,
-                                                   double margin)
+                                                   const Eigen::Vector3d& scale)
 {
-  return std::make_shared<SignedDistanceField>(
-      Eigen::AlignedBox3d(domain_min, domain_max), dimensions, sdf, scale, margin);
+  return std::make_shared<SignedDistanceField>(Eigen::AlignedBox3d(domain_min, domain_max), dimensions, sdf, scale);
 }
 
 std::vector<std::uint8_t> writeSignedDistanceFieldData(const SignedDistanceField& sdf)
@@ -115,8 +110,7 @@ std::vector<std::uint8_t> writeSignedDistanceFieldData(const SignedDistanceField
 }
 
 SignedDistanceField::Ptr readSignedDistanceFieldData(const std::vector<std::uint8_t>& data,
-                                                     const Eigen::Vector3d& scale,
-                                                     double margin)
+                                                     const Eigen::Vector3d& scale)
 {
   std::size_t offset = 0;
 
@@ -145,7 +139,7 @@ SignedDistanceField::Ptr readSignedDistanceFieldData(const std::vector<std::uint
     value = tesseract::common::readBytes<double>(data, offset);
 
   return std::make_shared<SignedDistanceField>(
-      Eigen::AlignedBox3d(domain_min, domain_max), dimensions, std::move(distances), scale, margin);
+      Eigen::AlignedBox3d(domain_min, domain_max), dimensions, std::move(distances), scale);
 }
 
 }  // namespace tesseract::geometry

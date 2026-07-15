@@ -212,7 +212,7 @@ TEST(TesseractGeometrySerializeUnit, SignedDistanceField)  // NOLINT
   const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));
   const Eigen::Vector3i dims(2, 2, 2);
   const std::vector<double> distances{ -0.5, -0.4, -0.3, -0.2, 0.1, 0.2, 0.3, 0.4 };
-  auto object = std::make_shared<SignedDistanceField>(domain, dims, distances, Eigen::Vector3d(1.0, 2.0, 3.0), 0.02);
+  auto object = std::make_shared<SignedDistanceField>(domain, dims, distances, Eigen::Vector3d(1.0, 2.0, 3.0));
   tesseract::common::testSerialization<SignedDistanceField>(*object, "SignedDistanceField");
   tesseract::common::testSerializationDerivedClass<Geometry, SignedDistanceField>(object, "SignedDistanceField");
 }

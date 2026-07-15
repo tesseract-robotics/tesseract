@@ -391,19 +391,17 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, CreateShapePrimitiveBranches)  /
     EXPECT_EQ(createShapePrimitive(geom), nullptr);
   }
 
-  // Valid field with a positive margin -> non-null shape with that margin applied.
+  // Valid field -> non-null shape.
   {
     const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
     auto geom = tesseract::geometry::createDiscreteSignedDistanceField(sphere,
                                                                        Eigen::Vector3d(-1, -1, -1),
                                                                        Eigen::Vector3d(1, 1, 1),
                                                                        Eigen::Vector3i(8, 8, 8),
-                                                                       Eigen::Vector3d(1, 1, 1),
-                                                                       0.05);
+                                                                       Eigen::Vector3d(1, 1, 1));
     auto shape = createShapePrimitive(geom);
     ASSERT_NE(shape, nullptr);
     ASSERT_NE(shape->top_level, nullptr);
-    EXPECT_NEAR(static_cast<double>(shape->top_level->getMargin()), 0.05, 1e-5);
   }
 }
 

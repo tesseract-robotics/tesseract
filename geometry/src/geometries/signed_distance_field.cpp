@@ -59,14 +59,12 @@ static std::vector<double> sampleGrid(const BatchedSignedDistanceFunction& sampl
 SignedDistanceField::SignedDistanceField(const Eigen::AlignedBox3d& domain,
                                          const Eigen::Vector3i& dimensions,  // NOLINT
                                          std::vector<double> distances,
-                                         const Eigen::Vector3d& scale,  // NOLINT
-                                         double margin)
+                                         const Eigen::Vector3d& scale)  // NOLINT
   : Geometry(GeometryType::SIGNED_DISTANCE_FIELD)
   , domain_(domain)
   , dimensions_(dimensions)
   , distances_(std::move(distances))
   , scale_(scale)
-  , margin_(margin)
 {
   validate();
 }
@@ -74,14 +72,12 @@ SignedDistanceField::SignedDistanceField(const Eigen::AlignedBox3d& domain,
 SignedDistanceField::SignedDistanceField(const Eigen::AlignedBox3d& domain,
                                          const Eigen::Vector3i& dimensions,  // NOLINT
                                          BatchedSignedDistanceFunction sampler,
-                                         const Eigen::Vector3d& scale,  // NOLINT
-                                         double margin)
+                                         const Eigen::Vector3d& scale)  // NOLINT
   : Geometry(GeometryType::SIGNED_DISTANCE_FIELD)
   , domain_(domain)
   , dimensions_(dimensions)
   , sampler_(std::move(sampler))
   , scale_(scale)
-  , margin_(margin)
 {
   validateDomainAndDimensions();
   if (sampler_ == nullptr)
@@ -119,8 +115,6 @@ const std::vector<double>& SignedDistanceField::getDistances() const
 }
 
 const Eigen::Vector3d& SignedDistanceField::getScale() const { return scale_; }
-
-double SignedDistanceField::getMargin() const { return margin_; }
 
 bool SignedDistanceField::isDiscretized() const { return !distances_.empty(); }
 
@@ -191,8 +185,8 @@ double SignedDistanceField::getDistance(const Eigen::Vector3d& point) const
 Geometry::Ptr SignedDistanceField::clone() const
 {
   if (sampler_ != nullptr)
-    return std::make_shared<SignedDistanceField>(domain_, dimensions_, sampler_, scale_, margin_);
-  return std::make_shared<SignedDistanceField>(domain_, dimensions_, distances_, scale_, margin_);
+    return std::make_shared<SignedDistanceField>(domain_, dimensions_, sampler_, scale_);
+  return std::make_shared<SignedDistanceField>(domain_, dimensions_, distances_, scale_);
 }
 
 bool SignedDistanceField::operator==(const SignedDistanceField& rhs) const
@@ -208,7 +202,6 @@ bool SignedDistanceField::operator==(const SignedDistanceField& rhs) const
   equal &= domain_.max().isApprox(rhs.domain_.max(), 1e-5);
   equal &= distances_ == rhs.distances_;
   equal &= scale_.isApprox(rhs.scale_, 1e-5);
-  equal &= tesseract::common::almostEqualRelativeAndAbs(margin_, rhs.margin_);
   return equal;
 }
 bool SignedDistanceField::operator!=(const SignedDistanceField& rhs) const { return !operator==(rhs); }

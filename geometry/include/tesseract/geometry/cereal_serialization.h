@@ -135,7 +135,6 @@ void serialize(Archive& ar, SignedDistanceField& obj)
   ar(cereal::make_nvp("dim_z", obj.dimensions_.z()));
   ar(cereal::make_nvp("distances", obj.distances_));
   ar(cereal::make_nvp("scale", obj.scale_));
-  ar(cereal::make_nvp("margin", obj.margin_));
 
   if (Archive::is_loading::value)
     obj.validate();

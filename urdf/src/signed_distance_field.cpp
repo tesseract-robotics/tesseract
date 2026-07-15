@@ -79,13 +79,6 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
     scale = Eigen::Vector3d(sx, sy, sz);
   }
 
-  double margin{ 0.0 };
-  if (xml_element->Attribute("margin") != nullptr)
-  {
-    if (xml_element->QueryDoubleAttribute("margin", &margin) != tinyxml2::XML_SUCCESS || !(margin >= 0))
-      std::throw_with_nested(std::runtime_error("SignedDistanceField: Failed parsing attribute 'margin'!"));
-  }
-
   tesseract::common::Resource::Ptr resource = locator.locateResource(filename);
   if (resource == nullptr)
     std::throw_with_nested(std::runtime_error("SignedDistanceField: Missing resource '" + filename + "'!"));
@@ -97,7 +90,7 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
   tesseract::geometry::SignedDistanceField::Ptr geom;
   try
   {
-    geom = tesseract::geometry::readSignedDistanceFieldData(data, scale, margin);
+    geom = tesseract::geometry::readSignedDistanceFieldData(data, scale);
   }
   catch (...)
   {
@@ -137,9 +130,6 @@ tinyxml2::XMLElement* writeSignedDistanceField(const tesseract::geometry::Signed
     scale_string << sdf->getScale().format(eigen_format);
     xml_element->SetAttribute("scale", scale_string.str().c_str());
   }
-
-  if (sdf->getMargin() != 0.0)
-    xml_element->SetAttribute("margin", toString(sdf->getMargin()).c_str());
 
   return xml_element;
 }

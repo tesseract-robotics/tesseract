@@ -88,13 +88,11 @@ public:
    * size == dimensions.prod(). Sample (i,j,k) sits at domain.min() + (i,j,k)/(dimensions-1) *
    * (domain.max() - domain.min())
    * @param scale Local scaling applied to the field
-   * @param margin Collision margin
    */
   SignedDistanceField(const Eigen::AlignedBox3d& domain,
                       const Eigen::Vector3i& dimensions,
                       std::vector<double> distances,
-                      const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-                      double margin = 0.0);
+                      const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
   /**
    * @brief Construct a lazily-evaluated field backed by a distance function.
@@ -111,13 +109,11 @@ public:
    * @param dimensions The number of samples along each axis to discretize (>= 2 on every axis)
    * @param sampler The batched signed distance function (negative inside) in the field's local frame
    * @param scale Local scaling applied to the field
-   * @param margin Collision margin
    */
   SignedDistanceField(const Eigen::AlignedBox3d& domain,
                       const Eigen::Vector3i& dimensions,
                       BatchedSignedDistanceFunction sampler,
-                      const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
-                      double margin = 0.0);
+                      const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
   SignedDistanceField() = default;
   ~SignedDistanceField() override = default;
@@ -136,9 +132,6 @@ public:
 
   /** @brief Get the local scaling applied to the field */
   const Eigen::Vector3d& getScale() const;
-
-  /** @brief Get the collision margin */
-  double getMargin() const;
 
   /**
    * @brief Get the signed distance at a point in the field's local frame.
@@ -176,7 +169,6 @@ private:
   /// Source of truth for a lazy field; null on a grid-backed field. Not serialized.
   BatchedSignedDistanceFunction sampler_;
   Eigen::Vector3d scale_{ 1, 1, 1 };
-  double margin_{ 0.0 };
 
   template <class Archive>
   friend void ::tesseract::geometry::serialize(Archive& ar, SignedDistanceField& obj);

@@ -641,15 +641,13 @@ TEST(TesseractGeometryUnit, SignedDistanceField)  // NOLINT
   const Eigen::Vector3i dims(2, 2, 2);
   const std::vector<double> distances{ -0.5, -0.4, -0.3, -0.2, 0.1, 0.2, 0.3, 0.4 };
   const Eigen::Vector3d scale(1.0, 2.0, 3.0);
-  const double margin = 0.01;
 
-  auto geom = std::make_shared<T>(domain, dims, distances, scale, margin);
+  auto geom = std::make_shared<T>(domain, dims, distances, scale);
   EXPECT_EQ(geom->getDistances(), distances);
   EXPECT_EQ(geom->getDimensions(), dims);
   EXPECT_TRUE(geom->getDomain().min().isApprox(domain.min(), 1e-9));
   EXPECT_TRUE(geom->getDomain().max().isApprox(domain.max(), 1e-9));
   EXPECT_TRUE(geom->getScale().isApprox(scale, 1e-5));
-  EXPECT_NEAR(geom->getMargin(), margin, 1e-5);
   EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
   EXPECT_FALSE(geom->getUUID().is_nil());
 
@@ -670,7 +668,6 @@ TEST(TesseractGeometryUnit, SignedDistanceField)  // NOLINT
   auto geom_clone = geom->clone();
   EXPECT_EQ(std::static_pointer_cast<T>(geom_clone)->getDistances(), distances);
   EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getScale().isApprox(scale, 1e-5));
-  EXPECT_NEAR(std::static_pointer_cast<T>(geom_clone)->getMargin(), margin, 1e-5);
   EXPECT_EQ(geom_clone->getType(), tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
   EXPECT_FALSE(geom_clone->getUUID().is_nil());
   EXPECT_NE(geom_clone->getUUID(), geom->getUUID());
@@ -683,23 +680,21 @@ TEST(TesseractGeometryUnit, SignedDistanceField)  // NOLINT
   // operator== / operator!=
   EXPECT_TRUE(*geom == *std::static_pointer_cast<T>(geom_clone));
   EXPECT_FALSE(*geom != *std::static_pointer_cast<T>(geom_clone));
-  EXPECT_TRUE(*geom != T(domain, dims, other, scale, margin));
+  EXPECT_TRUE(*geom != T(domain, dims, other, scale));
 
   // Test isIdentical
   EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *geom_clone));
-  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, other, scale, margin)));
-  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, distances, Eigen::Vector3d(1, 1, 1), margin)));
-  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, distances, scale, 0.5)));
+  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, other, scale)));
+  EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, distances, Eigen::Vector3d(1, 1, 1))));
 
   // The grid round-trips through the backend-neutral binary serialization.
   const std::vector<std::uint8_t> blob = tesseract::geometry::writeSignedDistanceFieldData(*geom);
-  auto geom_rt = tesseract::geometry::readSignedDistanceFieldData(blob, scale, margin);
+  auto geom_rt = tesseract::geometry::readSignedDistanceFieldData(blob, scale);
   EXPECT_EQ(geom_rt->getDistances(), distances);
   EXPECT_EQ(geom_rt->getDimensions(), dims);
   EXPECT_TRUE(geom_rt->getDomain().min().isApprox(domain.min(), 1e-9));
   EXPECT_TRUE(geom_rt->getDomain().max().isApprox(domain.max(), 1e-9));
   EXPECT_TRUE(geom_rt->getScale().isApprox(scale, 1e-5));
-  EXPECT_NEAR(geom_rt->getMargin(), margin, 1e-9);
 
   // A malformed blob is rejected.
   EXPECT_ANY_THROW(
@@ -743,7 +738,6 @@ TEST(TesseractGeometryUnit, SignedDistanceFieldSamplerBatched)  // NOLINT
   const Eigen::Vector3d dmax(1, 1, 1);
   const Eigen::Vector3i dims(4, 4, 4);
   const Eigen::Vector3d scale(1.0, 2.0, 3.0);
-  const double margin = 0.01;
 
   const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
   const tesseract::geometry::BatchedSignedDistanceFunction sphere_batched =
@@ -756,14 +750,12 @@ TEST(TesseractGeometryUnit, SignedDistanceFieldSamplerBatched)  // NOLINT
       };
 
   // Per-point and batched sampling must produce identical grids (same nodes, same order).
-  auto geom = tesseract::geometry::createDiscreteSignedDistanceField(sphere, dmin, dmax, dims, scale, margin);
-  auto geom_batched =
-      tesseract::geometry::createDiscreteSignedDistanceField(sphere_batched, dmin, dmax, dims, scale, margin);
+  auto geom = tesseract::geometry::createDiscreteSignedDistanceField(sphere, dmin, dmax, dims, scale);
+  auto geom_batched = tesseract::geometry::createDiscreteSignedDistanceField(sphere_batched, dmin, dmax, dims, scale);
   EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD);
   EXPECT_EQ(geom->getDistances(), geom_batched->getDistances());
   EXPECT_EQ(geom->getDimensions(), dims);
   EXPECT_TRUE(geom->getScale().isApprox(scale, 1e-5));
-  EXPECT_NEAR(geom->getMargin(), margin, 1e-9);
 
   // A batched function that returns the wrong number of values is rejected.
   const tesseract::geometry::BatchedSignedDistanceFunction wrong_count = [](const std::vector<Eigen::Vector3d>&) {

@@ -580,10 +580,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
       const auto& sdf = std::static_pointer_cast<const tesseract::geometry::SignedDistanceField>(geom);
       shape = createShapePrimitive(sdf);
       if (shape != nullptr)
-      {
-        const auto margin = (sdf->getMargin() > 0.0) ? static_cast<btScalar>(sdf->getMargin()) : BULLET_MARGIN;
-        shape->top_level->setMargin(margin);
-      }
+        shape->top_level->setMargin(BULLET_MARGIN);
       break;
     }
     // LCOV_EXCL_START

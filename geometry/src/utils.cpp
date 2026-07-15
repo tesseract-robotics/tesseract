@@ -225,9 +225,6 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       if (!s1.getScale().isApprox(s2.getScale(), std::numeric_limits<double>::epsilon()))
         return false;
 
-      if (std::abs(s1.getMargin() - s2.getMargin()) > std::numeric_limits<double>::epsilon())
-        return false;
-
       break;
     }
     case GeometryType::COMPOUND_MESH:

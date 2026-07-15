@@ -16,7 +16,7 @@ TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
   tesseract::common::GeneralResourceLocator resource_locator;
   const std::string sdf_url = "package://tesseract/support/meshes/sphere.sdf";
 
-  {  // Filename only -> defaults for scale and margin
+  {  // Filename only -> default scale
     std::string str = R"(<tesseract:signed_distance_field filename=")" + sdf_url + R"(" extra="0 0 0"/>)";
     tesseract::geometry::SignedDistanceField::Ptr geom;
     EXPECT_TRUE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
@@ -28,11 +28,10 @@ TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
     EXPECT_TRUE(geom != nullptr);
     EXPECT_FALSE(geom->getDistances().empty());
     EXPECT_TRUE(geom->getScale().isOnes());
-    EXPECT_NEAR(geom->getMargin(), 0.0, 1e-5);
   }
 
-  {  // Scale and margin set
-    std::string str = R"(<tesseract:signed_distance_field filename=")" + sdf_url + R"(" scale="1 2 3" margin="0.02"/>)";
+  {  // Scale set
+    std::string str = R"(<tesseract:signed_distance_field filename=")" + sdf_url + R"(" scale="1 2 3"/>)";
     tesseract::geometry::SignedDistanceField::Ptr geom;
     EXPECT_TRUE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
         geom,
@@ -43,7 +42,6 @@ TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
     EXPECT_NEAR(geom->getScale()[0], 1, 1e-5);
     EXPECT_NEAR(geom->getScale()[1], 2, 1e-5);
     EXPECT_NEAR(geom->getScale()[2], 3, 1e-5);
-    EXPECT_NEAR(geom->getMargin(), 0.02, 1e-5);
   }
 
   {  // Failure: missing filename
@@ -90,28 +88,6 @@ TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
         resource_locator));
   }
 
-  {  // Failure: bad margin
-    std::string str = R"(<tesseract:signed_distance_field filename=")" + sdf_url + R"(" margin="abc"/>)";
-    tesseract::geometry::SignedDistanceField::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
-        geom,
-        &tesseract::urdf::parseSignedDistanceField,
-        str,
-        tesseract::urdf::SIGNED_DISTANCE_FIELD_ELEMENT_NAME.data(),
-        resource_locator));
-  }
-
-  {  // Failure: negative margin
-    std::string str = R"(<tesseract:signed_distance_field filename=")" + sdf_url + R"(" margin="-0.1"/>)";
-    tesseract::geometry::SignedDistanceField::Ptr geom;
-    EXPECT_FALSE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
-        geom,
-        &tesseract::urdf::parseSignedDistanceField,
-        str,
-        tesseract::urdf::SIGNED_DISTANCE_FIELD_ELEMENT_NAME.data(),
-        resource_locator));
-  }
-
   {  // Failure: resource does not exist
     std::string str =
         R"(<tesseract:signed_distance_field filename="package://tesseract/support/meshes/does_not_exist.sdf"/>)";
@@ -128,13 +104,13 @@ TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
 TEST(TesseractURDFUnit, write_signed_distance_field)  // NOLINT
 {
   const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
-  const auto make_field = [&sphere](const Eigen::Vector3d& scale, double margin) {
+  const auto make_field = [&sphere](const Eigen::Vector3d& scale) {
     return tesseract::geometry::createDiscreteSignedDistanceField(
-        sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(4, 4, 4), scale, margin);
+        sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(4, 4, 4), scale);
   };
 
-  {  // Default scale and margin
-    auto sdf = make_field(Eigen::Vector3d(1, 1, 1), 0.0);
+  {  // Default scale
+    auto sdf = make_field(Eigen::Vector3d(1, 1, 1));
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract::geometry::SignedDistanceField::Ptr>(sdf,
@@ -145,8 +121,8 @@ TEST(TesseractURDFUnit, write_signed_distance_field)  // NOLINT
     EXPECT_NE(text, "");
   }
 
-  {  // With scale and margin
-    auto sdf = make_field(Eigen::Vector3d(0.5, 0.5, 0.5), 0.02);
+  {  // With scale
+    auto sdf = make_field(Eigen::Vector3d(0.5, 0.5, 0.5));
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract::geometry::SignedDistanceField::Ptr>(sdf,
@@ -155,11 +131,10 @@ TEST(TesseractURDFUnit, write_signed_distance_field)  // NOLINT
                                                                        tesseract::common::getTempPath(),
                                                                        std::string("sdf1.sdf")));
     EXPECT_NE(text.find("scale=\"0.5 0.5 0.5\""), std::string::npos);
-    EXPECT_NE(text.find("margin=\"0.02\""), std::string::npos);
   }
 
   {  // Failure: unwritable path
-    auto sdf = make_field(Eigen::Vector3d(1, 1, 1), 0.0);
+    auto sdf = make_field(Eigen::Vector3d(1, 1, 1));
     std::string text;
     EXPECT_EQ(
         1,
