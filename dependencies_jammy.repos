@@ -7,10 +7,10 @@
     uri: https://github.com/tesseract-robotics/boost_plugin_loader.git
     version: 0.4.3
 - git:
-    local-name: tesseract_ext
-    uri: https://github.com/ros-industrial-consortium/tesseract_ext.git
-    version: master
-- git:
     local-name: opw_kinematics
     uri: https://github.com/Jmeyer1292/opw_kinematics.git
     version: 0.5.5
+- git:
+    local-name: cereal
+    uri: https://github.com/Levi-Armstrong/cereal.git
+    version: catkin
