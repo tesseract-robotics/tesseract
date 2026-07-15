@@ -1018,7 +1018,7 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
   }
 }
 
-TEST(TesseractCoreUnit, ContactResultMapCerealUsesMasterWireFormat)  // NOLINT
+TEST(TesseractCoreUnit, ContactResultMapCerealUsesStringKeyedWireFormat)  // NOLINT
 {
   // ContactResultMap persists as a string-keyed std::map under NVP "container". Serializing the
   // LinkIdPair key by its raw NameIdValue would leak hash digits onto the wire (not stable across
@@ -1049,7 +1049,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesMasterWireFormat)  // NOLINT
   EXPECT_EQ(archive_text.find("second_id"), std::string::npos)
       << "Old hash-based LinkIdPair format leaked into wire output: " << archive_text;
   EXPECT_EQ(archive_text.find("entries"), std::string::npos)
-      << "Pre-master vector-of-entries format leaked into wire output: " << archive_text;
+      << "Vector-of-entries format leaked into wire output: " << archive_text;
 
   ContactResultMap loaded;
   {
@@ -1065,7 +1065,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesMasterWireFormat)  // NOLINT
   EXPECT_DOUBLE_EQ(stored_results[0].distance, 0.05);
 }
 
-TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLINT
+TEST(TesseractCoreUnit, ContactResultMapCerealLoadsStringKeyedFormatLiteral)  // NOLINT
 {
   // Cross-archive load test: a hand-crafted JSON literal in the string-keyed ContactResultMap
   // format (NVP "container", string-pair keys, ContactResult value). This proves the wire format
@@ -1077,19 +1077,19 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLI
 
   // Names and distance deliberately differ from the structural test so a copy-paste
   // round-trip cannot mask a load regression.
-  const std::string master_format = R"JSON({
+  const std::string string_keyed_format = R"JSON({
     "contact_result_map": {
         "container": [
             {
                 "key": {
-                    "first": "master_link_x",
-                    "second": "master_link_y"
+                    "first": "literal_link_x",
+                    "second": "literal_link_y"
                 },
                 "value": [
                     {
                         "distance": 0.125,
                         "type_id": { "value0": 0, "value1": 0 },
-                        "link_names": { "value0": "master_link_x", "value1": "master_link_y" },
+                        "link_names": { "value0": "literal_link_x", "value1": "literal_link_y" },
                         "shape_id": { "value0": -1, "value1": -1 },
                         "subshape_id": { "value0": -1, "value1": -1 },
                         "nearest_points": {
@@ -1134,7 +1134,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLI
 
   ContactResultMap loaded;
   {
-    std::stringstream ss(master_format);
+    std::stringstream ss(string_keyed_format);
     cereal::JSONInputArchive ar(ss);
     ar(cereal::make_nvp("contact_result_map", loaded));
   }
@@ -1142,10 +1142,10 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsMasterFormatLiteral)  // NOLI
   ASSERT_EQ(loaded.size(), 1U);
   const auto& [stored_key, stored_results] = *loaded.getContainer().begin();
   // LinkIdPair key reconstructed from the string names in the JSON literal.
-  EXPECT_EQ(stored_key, LinkIdPair(LinkId("master_link_x"), LinkId("master_link_y")));
+  EXPECT_EQ(stored_key, LinkIdPair(LinkId("literal_link_x"), LinkId("literal_link_y")));
   ASSERT_EQ(stored_results.size(), 1U);
-  EXPECT_EQ(stored_results[0].link_ids[0].name(), "master_link_x");
-  EXPECT_EQ(stored_results[0].link_ids[1].name(), "master_link_y");
+  EXPECT_EQ(stored_results[0].link_ids[0].name(), "literal_link_x");
+  EXPECT_EQ(stored_results[0].link_ids[1].name(), "literal_link_y");
   EXPECT_DOUBLE_EQ(stored_results[0].distance, 0.125);
 }
 
