@@ -47,6 +47,11 @@ void DiscreteContactManager::setActiveCollisionObjects(const std::vector<tessera
   setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
 }
 
+void DiscreteContactManager::setActiveCollisionObjects(std::initializer_list<tesseract::common::LinkId> ids)
+{
+  setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
+}
+
 void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
   config.validate();

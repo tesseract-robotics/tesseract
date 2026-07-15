@@ -4,6 +4,8 @@
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/geometry/geometries.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
 namespace detail
@@ -122,12 +124,9 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<tesseract::common::LinkId> active_link_ids{ "sphere_link", "sphere1_link" };
-  checker.setActiveCollisionObjects(active_link_ids);
-  const auto& check_active_link_id_set = checker.getActiveCollisionObjectIds();
-  std::vector<tesseract::common::LinkId> check_active_link_ids(check_active_link_id_set.begin(),
-                                                               check_active_link_id_set.end());
-  EXPECT_TRUE(tesseract::common::isIdentical<tesseract::common::LinkId>(active_link_ids, check_active_link_ids, false));
+  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            (std::unordered_set<tesseract::common::LinkId>{ "sphere_link", "sphere1_link" }));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

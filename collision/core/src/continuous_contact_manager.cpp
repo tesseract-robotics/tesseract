@@ -60,6 +60,11 @@ void ContinuousContactManager::setActiveCollisionObjects(const std::vector<tesse
   setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
 }
 
+void ContinuousContactManager::setActiveCollisionObjects(std::initializer_list<tesseract::common::LinkId> ids)
+{
+  setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
+}
+
 void ContinuousContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
   config.validate();
