@@ -59,7 +59,7 @@ TEST(TesseractCommonUtilsUnit, GetAllowedCollisionsLinkIdOverload)  // NOLINT
 
   // Query for "a": expect {b, c}.
   {
-    std::vector<LinkId> query{ LinkId("a") };
+    std::vector<LinkId> query{ "a" };
     auto results = getAllowedCollisions(query, acm.getAllAllowedCollisions(), /*remove_duplicates=*/true);
     ASSERT_EQ(results.size(), 2U);
     std::set<std::string> result_names;
@@ -72,7 +72,7 @@ TEST(TesseractCommonUtilsUnit, GetAllowedCollisionsLinkIdOverload)  // NOLINT
   // For entry (a,b) with query {a,b}: first branch emits b (via a), second branch emits a (via b).
   // Both are unique, so both appear; but neither appears more than once.
   {
-    std::vector<LinkId> query{ LinkId("a"), LinkId("b") };
+    std::vector<LinkId> query{ "a", "b" };
     auto results = getAllowedCollisions(query, acm.getAllAllowedCollisions(), /*remove_duplicates=*/true);
     std::set<std::string> result_names;
     for (const auto& id : results)

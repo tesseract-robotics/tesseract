@@ -1029,7 +1029,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesStringKeyedWireFormat)  // NOL
 
   ContactResultMap original;
   ContactResult result;
-  result.link_ids = { LinkId("link_a"), LinkId("link_b") };
+  result.link_ids = { "link_a", "link_b" };
   result.distance = 0.05;
   LinkIdPair key(result.link_ids[0], result.link_ids[1]);
   original.addContactResult(key, result);
@@ -1142,7 +1142,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsStringKeyedFormatLiteral)  //
   ASSERT_EQ(loaded.size(), 1U);
   const auto& [stored_key, stored_results] = *loaded.getContainer().begin();
   // LinkIdPair key reconstructed from the string names in the JSON literal.
-  EXPECT_EQ(stored_key, LinkIdPair(LinkId("literal_link_x"), LinkId("literal_link_y")));
+  EXPECT_EQ(stored_key, LinkIdPair("literal_link_x", "literal_link_y"));
   ASSERT_EQ(stored_results.size(), 1U);
   EXPECT_EQ(stored_results[0].link_ids[0].name(), "literal_link_x");
   EXPECT_EQ(stored_results[0].link_ids[1].name(), "literal_link_y");
@@ -1160,7 +1160,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealSaveRejectsInvalidLinkIds)  // NOL
   ContactResultMap result_map;
   // Use addContactResult with a default ContactResult — link_ids are INVALID_LINK_ID, so
   // names are empty.
-  result_map.addContactResult({ LinkId("real_a"), LinkId("real_b") }, ContactResult{});
+  result_map.addContactResult({ "real_a", "real_b" }, ContactResult{});
 
   std::stringstream ss;
   cereal::JSONOutputArchive ar(ss);

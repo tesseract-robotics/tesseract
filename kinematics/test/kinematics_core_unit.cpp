@@ -31,7 +31,7 @@ public:
   FakeInvKin(std::vector<tesseract::common::JointId> joint_ids,
              tesseract::common::LinkId working_frame,
              std::vector<tesseract::common::LinkId> tip_links,
-             tesseract::common::LinkId base_link = tesseract::common::LinkId("base_link"))
+             tesseract::common::LinkId base_link = "base_link")
     : joint_ids_(std::move(joint_ids))
     , working_frame_(std::move(working_frame))
     , base_link_(std::move(base_link))
@@ -374,7 +374,7 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
-  const LinkId tool0 = LinkId("tool0");
+  const LinkId tool0 = "tool0";
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
@@ -655,8 +655,8 @@ TEST(TesseractKinematicsUnit, JointGroupByJointIdAccessorsUnit)  // NOLINT
   // isActiveLinkId (false-case) for static links and a non-existent link.
   for (const auto& lid : static_link_ids)
     EXPECT_FALSE(jg.isActiveLinkId(lid));
-  EXPECT_FALSE(jg.isActiveLinkId(LinkId("nonexistent_link")));
-  EXPECT_FALSE(jg.hasLinkId(LinkId("nonexistent_link")));
+  EXPECT_FALSE(jg.isActiveLinkId("nonexistent_link"));
+  EXPECT_FALSE(jg.hasLinkId("nonexistent_link"));
 
   // calcFwdKin — both overloads.
   Eigen::VectorXd q = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(joint_ids.size()));
@@ -807,9 +807,8 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
 
   const LinkId base_link_id("base_link");
   const LinkId tip_link_id("tool0");
-  const std::vector<JointId> joint_ids{ JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
-                                        JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
-                                        JointId("joint_a7") };
+  const std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                        "joint_a5", "joint_a6", "joint_a7" };
 
   // Wrong-size joint_ids: the fake reports 7 joints but the KinematicGroup is built with 3.
   {
@@ -822,7 +821,7 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
   // Matching size but different ids: exercises the "joint_ids does not match" throw.
   {
     std::vector<JointId> mismatched = joint_ids;
-    mismatched.back() = JointId("bogus_joint");
+    mismatched.back() = "bogus_joint";
     auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
     EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", mismatched, std::move(inv), *scene_graph, scene_state),
                  std::runtime_error);
@@ -838,14 +837,14 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
 
   // Unknown working frame: exercises the working-frame link-transform lookup throw.
   {
-    auto inv = std::make_unique<FakeInvKin>(joint_ids, LinkId("not_a_link"), std::vector<LinkId>{ tip_link_id });
+    auto inv = std::make_unique<FakeInvKin>(joint_ids, "not_a_link", std::vector<LinkId>{ tip_link_id });
     EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", joint_ids, std::move(inv), *scene_graph, scene_state),
                  std::runtime_error);
   }
 
   // Unknown tip link: exercises the tip-link link-transform lookup throw.
   {
-    auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ LinkId("not_a_tip") });
+    auto inv = std::make_unique<FakeInvKin>(joint_ids, base_link_id, std::vector<LinkId>{ "not_a_tip" });
     EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", joint_ids, std::move(inv), *scene_graph, scene_state),
                  std::runtime_error);
   }
@@ -862,9 +861,8 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentUnit)  // NOLINT
   tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
   const auto scene_state = ss.getState();
 
-  const std::vector<JointId> joint_ids{ JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
-                                        JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
-                                        JointId("joint_a7") };
+  const std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                        "joint_a5", "joint_a6", "joint_a7" };
 
   tesseract::kinematics::JointGroup jg_a("manipulator_a", joint_ids, *scene_graph, scene_state);
 
@@ -912,13 +910,12 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorMismatchedIdsUnit)  // NO
 
   const LinkId base_link_id("base_link");
   const LinkId tip_link_id("tool0");
-  const std::vector<JointId> real_ids{ JointId("joint_a1"), JointId("joint_a2"), JointId("joint_a3"),
-                                       JointId("joint_a4"), JointId("joint_a5"), JointId("joint_a6"),
-                                       JointId("joint_a7") };
+  const std::vector<JointId> real_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                       "joint_a5", "joint_a6", "joint_a7" };
 
   // FakeInvKin reports a vector of the same count but containing a bogus id.
   std::vector<JointId> fake_inv_ids = real_ids;
-  fake_inv_ids.back() = JointId("not_a_real_joint");
+  fake_inv_ids.back() = "not_a_real_joint";
   auto inv = std::make_unique<FakeInvKin>(fake_inv_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
 
   EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", real_ids, std::move(inv), *scene_graph, scene_state),
