@@ -1394,7 +1394,7 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnit)  // NOLINT
   // Explicit subset: exclude joint_3 so its parent link_3 (added via joint_2) hits the
   // "downstream fixed segment" branch in kdl_sub_tree_builder.
   // Using a literal subset avoids depending on std::unordered_map iteration order.
-  const std::vector<JointId> subset{ JointId("joint_1"), JointId("joint_2"), JointId("joint_4") };
+  const std::vector<JointId> subset{ "joint_1", "joint_2", "joint_4" };
 
   // Populate joint_values for all active joints; the sub-tree builder looks up values
   // for every non-fixed joint it traverses, not just the subset.
@@ -1443,7 +1443,7 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
     KDLTreeData mutated = b;
     Eigen::Isometry3d shifted = Eigen::Isometry3d::Identity();
     shifted.translation().x() = 10.0;
-    mutated.floating_joint_values[JointId("phantom_floating")] = shifted;
+    mutated.floating_joint_values["phantom_floating"] = shifted;
     EXPECT_FALSE(a == mutated);
     EXPECT_TRUE(a != mutated);
   }
@@ -1453,10 +1453,10 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
   {
     KDLTreeData left = b;
     KDLTreeData right = b;
-    left.floating_joint_values[JointId("phantom_floating")] = Eigen::Isometry3d::Identity();
+    left.floating_joint_values["phantom_floating"] = Eigen::Isometry3d::Identity();
     Eigen::Isometry3d shifted = Eigen::Isometry3d::Identity();
     shifted.translation().y() = 5.0;
-    right.floating_joint_values[JointId("phantom_floating")] = shifted;
+    right.floating_joint_values["phantom_floating"] = shifted;
     EXPECT_FALSE(left == right);
     EXPECT_TRUE(left != right);
   }
@@ -1467,8 +1467,8 @@ TEST(TesseractSceneGraphUnit, KDLTreeDataEqualityUnit)  // NOLINT
     KDLTreeData right = b;
     Eigen::Isometry3d same = Eigen::Isometry3d::Identity();
     same.translation().z() = 2.0;
-    left.floating_joint_values[JointId("phantom_floating")] = same;
-    right.floating_joint_values[JointId("phantom_floating")] = same;
+    left.floating_joint_values["phantom_floating"] = same;
+    right.floating_joint_values["phantom_floating"] = same;
     EXPECT_TRUE(left == right);
   }
 }
@@ -1485,7 +1485,7 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
 
   std::vector<Joint::ConstPtr> active_joints = g.getActiveJoints();
 
-  const std::vector<JointId> subset{ JointId("joint_1"), JointId("joint_2"), JointId("joint_4") };
+  const std::vector<JointId> subset{ "joint_1", "joint_2", "joint_4" };
 
   std::unordered_map<JointId, double> joint_values;
   for (const auto& j : active_joints)
@@ -1495,13 +1495,13 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointUnit)  // NOLINT
   Eigen::Isometry3d fj_tf = Eigen::Isometry3d::Identity();
   fj_tf.translation().x() = 0.75;
   fj_tf.translation().y() = -0.25;
-  floating[JointId("joint_3")] = fj_tf;
+  floating["joint_3"] = fj_tf;
 
   // Regression: this call must not throw std::out_of_range when floating values are supplied.
   KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
 
-  ASSERT_EQ(data.floating_joint_values.count(JointId("joint_3")), 1U);
-  EXPECT_TRUE(data.floating_joint_values[JointId("joint_3")].isApprox(fj_tf));
+  ASSERT_EQ(data.floating_joint_values.count("joint_3"), 1U);
+  EXPECT_TRUE(data.floating_joint_values["joint_3"].isApprox(fj_tf));
   EXPECT_FALSE(data.link_ids.empty());
   EXPECT_EQ(data.tree.getNrOfJoints(), subset.size());
 }
@@ -1541,13 +1541,13 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeFloatingJointDfsUnit)  // NOLINT
   tesseract::common::JointIdTransformMap floating;
   Eigen::Isometry3d fj_tf = Eigen::Isometry3d::Identity();
   fj_tf.translation().x() = 0.5;
-  floating[JointId("j_float")] = fj_tf;
+  floating["j_float"] = fj_tf;
 
   KDLTreeData data = parseSceneGraph(g, subset, joint_values, floating);
 
   EXPECT_EQ(data.base_link_id, "base_link");
-  ASSERT_EQ(data.floating_joint_values.count(JointId("j_float")), 1U);
-  EXPECT_TRUE(data.floating_joint_values[JointId("j_float")].isApprox(fj_tf));
+  ASSERT_EQ(data.floating_joint_values.count("j_float"), 1U);
+  EXPECT_TRUE(data.floating_joint_values["j_float"].isApprox(fj_tf));
 }
 
 TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingJointValueThrows)  // NOLINT

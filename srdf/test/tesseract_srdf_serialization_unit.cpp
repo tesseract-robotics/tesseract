@@ -169,12 +169,12 @@ TEST(TesseractSRDFSerializeUnit, SRDFModelJsonRoundTripPerField)  // NOLINT
   // Populate collision_margin_data and calibration_info — the SRDF fixture leaves both empty,
   // so give every member a non-default value to exercise per-field round-tripping.
   srdf->collision_margin_data = std::make_shared<tesseract::common::CollisionMarginData>(0.05);
-  srdf->collision_margin_data->setCollisionMargin(LinkId("link_1"), LinkId("link_2"), 0.01);
-  srdf->collision_margin_data->setCollisionMargin(LinkId("link_3"), LinkId("link_4"), 0.02);
+  srdf->collision_margin_data->setCollisionMargin("link_1", "link_2", 0.01);
+  srdf->collision_margin_data->setCollisionMargin("link_3", "link_4", 0.02);
 
   Eigen::Isometry3d cal_tf = Eigen::Isometry3d::Identity();
   cal_tf.translation() = Eigen::Vector3d(0.1, 0.2, 0.3);
-  srdf->calibration_info.joints[JointId("joint_a2")] = cal_tf;
+  srdf->calibration_info.joints["joint_a2"] = cal_tf;
 
   std::stringstream ss;
   {

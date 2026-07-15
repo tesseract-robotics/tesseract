@@ -192,7 +192,7 @@ TEST(TesseractStateSolverUnit, OFKTApplyFloatingValuesUnknownIdThrows)  // NOLIN
   OFKTStateSolver solver(*scene_graph);
 
   JointIdTransformMap bad;
-  bad[JointId("does_not_exist_floating")] = Eigen::Isometry3d::Identity();
+  bad["does_not_exist_floating"] = Eigen::Isometry3d::Identity();
 
   // The setState(JointIdTransformMap) overload is the simplest user-facing entrypoint into the
   // floating-joint overlay path. It must throw std::runtime_error (not std::out_of_range).
@@ -350,7 +350,7 @@ TEST(TesseractStateSolverUnit, OFKTIsActiveLinkIdMatchesActiveSetUnit)  // NOLIN
   }
 
   // Probe an id that does not exist in the scene — must return false, not throw.
-  EXPECT_FALSE(solver.isActiveLinkId(LinkId("does_not_exist_in_this_scene")));
+  EXPECT_FALSE(solver.isActiveLinkId("does_not_exist_in_this_scene"));
 
   // The scene has at least one active link (the test fixture is a real robot), and the
   // base link must be reported as not active (its only ancestor chain is the root).

@@ -836,9 +836,9 @@ TEST(TesseractSRDFUnit, SaveLoadRoundTripPreservesMultiplePairMargins)  // NOLIN
   SRDFModel srdf_save;
   srdf_save.name = "test_robot";
   srdf_save.collision_margin_data = std::make_shared<CollisionMarginData>(0.05);
-  srdf_save.collision_margin_data->setCollisionMargin(LinkId("link_a"), LinkId("link_b"), 0.01);
-  srdf_save.collision_margin_data->setCollisionMargin(LinkId("link_b"), LinkId("link_c"), 0.02);
-  srdf_save.collision_margin_data->setCollisionMargin(LinkId("link_c"), LinkId("link_d"), 0.03);
+  srdf_save.collision_margin_data->setCollisionMargin("link_a", "link_b", 0.01);
+  srdf_save.collision_margin_data->setCollisionMargin("link_b", "link_c", 0.02);
+  srdf_save.collision_margin_data->setCollisionMargin("link_c", "link_d", 0.03);
 
   ASSERT_EQ(srdf_save.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 3U);
 
@@ -2548,12 +2548,12 @@ TEST(TesseractSRDFUnit, IsRegisteredLinkJointUnit)  // NOLINT
   j.type = JointType::FIXED;
   g.addJoint(j);
 
-  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("base_link")));
-  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("link_1")));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("missing_link")));
+  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "base_link"));
+  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "link_1"));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, "missing_link"));
 
-  EXPECT_TRUE(tesseract::srdf::isRegisteredJoint(g, tesseract::common::JointId("joint_1")));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, tesseract::common::JointId("missing_joint")));
+  EXPECT_TRUE(tesseract::srdf::isRegisteredJoint(g, "joint_1"));
+  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, "missing_joint"));
 
   // A link name is not a registered joint and vice-versa (tagged-type separation).
   EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, tesseract::common::JointId("base_link")));

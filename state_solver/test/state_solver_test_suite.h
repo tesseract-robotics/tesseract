@@ -412,7 +412,7 @@ inline void runJacobianTest()
 
   SceneState::JointValues jv_map;
   for (Eigen::Index i = 0; i < jvals.rows(); ++i)
-    jv_map[JointId("joint_a" + std::to_string(i + 1))] = jvals(i);
+    jv_map["joint_a" + std::to_string(i + 1)] = jvals(i);
 
   ///////////////////////////
   // Test Jacobian

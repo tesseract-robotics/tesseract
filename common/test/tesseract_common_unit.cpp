@@ -5025,13 +5025,13 @@ TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
   EXPECT_TRUE(acm.isCollisionAllowed({ "link_b", "link_a" }));  // order invariant
 
   // Tier 1 (LinkId) — same result via integer lookup
-  const LinkId id_a = LinkId("link_a");
-  const LinkId id_b = LinkId("link_b");
+  const LinkId id_a = "link_a";
+  const LinkId id_b = "link_b";
   EXPECT_TRUE(acm.isCollisionAllowed({ id_a, id_b }));
   EXPECT_TRUE(acm.isCollisionAllowed({ id_b, id_a }));
 
   // Non-existent pair
-  const LinkId id_c = LinkId("link_c");
+  const LinkId id_c = "link_c";
   EXPECT_FALSE(acm.isCollisionAllowed({ id_a, id_c }));
   EXPECT_FALSE(acm.isCollisionAllowed({ "link_a", "link_c" }));
 
@@ -5059,9 +5059,9 @@ TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
   EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_z"), 0.05, 1e-12);  // default
 
   // Tier 1 (LinkId)
-  const LinkId id_x = LinkId("link_x");
-  const LinkId id_y = LinkId("link_y");
-  const LinkId id_z = LinkId("link_z");
+  const LinkId id_x = "link_x";
+  const LinkId id_y = "link_y";
+  const LinkId id_z = "link_z";
   EXPECT_NEAR(margin_data.getCollisionMargin(id_x, id_y), 0.1, 1e-12);
   EXPECT_NEAR(margin_data.getCollisionMargin(id_y, id_x), 0.1, 1e-12);
   EXPECT_NEAR(margin_data.getCollisionMargin(id_x, id_z), 0.05, 1e-12);
@@ -5086,7 +5086,7 @@ TEST(TesseractCommonUnit, JointStateByJointIdConstructorUnit)  // NOLINT
   using tesseract::common::JointId;
   using tesseract::common::JointState;
 
-  std::vector<JointId> ids{ JointId("joint_a"), JointId("joint_b"), JointId("joint_c") };
+  std::vector<JointId> ids{ "joint_a", "joint_b", "joint_c" };
   Eigen::VectorXd pos(3);
   pos << 0.1, -0.2, 0.3;
 
