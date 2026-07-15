@@ -199,13 +199,6 @@ public:
    */
   std::shared_ptr<const tesseract::scene_graph::SceneGraph> getSceneGraph() const;
 
-  /**
-   * @brief Get a groups joint names
-   * @param group_name The group name
-   * @return A vector of joint names
-   */
-  std::vector<std::string> getGroupJointNames(const std::string& group_name) const;
-
   /** @brief Get a groups joint IDs */
   std::vector<tesseract::common::JointId> getGroupJointIds(const std::string& group_name) const;
 
@@ -310,19 +303,6 @@ public:
    */
   const std::string& getName() const;
 
-  /**
-   * @brief Set the current state of the environment
-   *
-   * After updating the current state these function must call currentStateChanged() which
-   * will update the contact managers transforms
-   *
-   */
-  void setState(const std::unordered_map<std::string, double>& joints,
-                const tesseract::common::JointIdTransformMap& floating_joints = {});
-  void setState(const std::vector<std::string>& joint_names,
-                const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                const tesseract::common::JointIdTransformMap& floating_joints = {});
-
   /** @brief Set state using JointId-keyed map (avoids string-to-ID conversion) */
   void setState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joints = {});
@@ -337,20 +317,6 @@ public:
    * @param floating_joint_values The floating joint values to set
    */
   void setState(const tesseract::common::JointIdTransformMap& floating_joints);
-
-  /**
-   * @brief Get the state of the environment for a given set or subset of joint values.
-   *
-   * This does not change the internal state of the environment.
-   *
-   * @param joints A map of joint names to joint values to change.
-   * @return A the state of the environment
-   */
-  tesseract::scene_graph::SceneState getState(const std::unordered_map<std::string, double>& joints,
-                                              const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
-  tesseract::scene_graph::SceneState getState(const std::vector<std::string>& joint_names,
-                                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                              const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
 
   /** @brief Get state using JointId-keyed map (avoids string-to-ID conversion) */
   tesseract::scene_graph::SceneState getState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
@@ -379,23 +345,6 @@ public:
    * This does not change the internal state of the solver.
    *
    * @param link_transforms The link_transforms to populate with data.
-   * @param joint_names The joints to change.
-   * @param joint_values The joint values
-   * @param floating_joints The floating joint origin transform
-   */
-  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
-                         const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                         const tesseract::common::JointIdTransformMap& floating_joints) const;
-
-  /**
-   * @brief Get the link transforms of the scene for a given set or subset of joint values.
-   *
-   * This is provided to optimize motion planning where link_transforms are poplated multiple time
-   *
-   * This does not change the internal state of the solver.
-   *
-   * @param link_transforms The link_transforms to populate with data.
    * @param joint_ids The joints to change.
    * @param joint_values The joint values
    * @param floating_joints The floating joint origin transform
@@ -413,22 +362,7 @@ public:
    * This does not change the internal state of the solver.
    *
    * @param link_transforms The link_transforms to populate with data.
-   * @param joint_names The joints to change.
-   * @param joint_values The joint values
-   */
-  void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
-                         const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
-
-  /**
-   * @brief Get the link transforms of the scene for a given set or subset of joint values.
-   *
-   * This is provided to optimize motion planning where link_transforms are poplated multiple time
-   *
-   * This does not change the internal state of the solver.
-   *
-   * @param link_transforms The link_transforms to populate with data.
-   * @param joint_names The joints to change.
+   * @param joint_ids The joints to change.
    * @param joint_values The joint values
    */
   void getLinkTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
@@ -480,20 +414,8 @@ public:
    */
   std::shared_ptr<const tesseract::common::AllowedCollisionMatrix> getAllowedCollisionMatrix() const;
 
-  /**
-   * @brief Get a vector of joint names in the environment
-   * @return A vector of joint names
-   */
-  std::vector<std::string> getJointNames() const;
-
   /** @brief Get a vector of joint IDs in the environment */
   std::vector<tesseract::common::JointId> getJointIds() const;
-
-  /**
-   * @brief Get a vector of active joint names in the environment
-   * @return A vector of active joint names
-   */
-  std::vector<std::string> getActiveJointNames() const;
 
   /** @brief Get a vector of active joint IDs in the environment */
   std::vector<tesseract::common::JointId> getActiveJointIds() const;
@@ -501,20 +423,11 @@ public:
   /**
    * @brief Get the current state of the environment
    *
-   * Order should be the same as getActiveJointNames()
+   * Order should be the same as getActiveJointIds()
    *
    * @return A vector of joint values
    */
   Eigen::VectorXd getCurrentJointValues() const;
-
-  /**
-   * @brief Get the current joint values for a vector of joints by name
-   *
-   * Order should be the same as the input vector
-   *
-   * @return A vector of joint values
-   */
-  Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get the current joint values for a vector of joints by id
@@ -532,13 +445,6 @@ public:
   tesseract::common::JointIdTransformMap getCurrentFloatingJointValues() const;
 
   /**
-   * @brief Get the current floating joint values by name
-   * @return The joint origin transform for the floating joint
-   */
-  tesseract::common::JointIdTransformMap
-  getCurrentFloatingJointValues(const std::vector<std::string>& joint_names) const;
-
-  /**
    * @brief Get the current floating joint values by id
    * @return The joint origin transform for the floating joint
    */
@@ -551,26 +457,8 @@ public:
    */
   tesseract::common::LinkId getRootLinkId() const;
 
-  /**
-   * @brief Get the root link name
-   * @return Name of the root link
-   */
-  std::string getRootLinkName() const;
-
-  /**
-   * @brief Get a vector of link names in the environment
-   * @return A vector of link names
-   */
-  std::vector<std::string> getLinkNames() const;
-
   /** @brief Get a vector of link IDs in the environment */
   std::vector<tesseract::common::LinkId> getLinkIds() const;
-
-  /**
-   * @brief Get a vector of active link names in the environment
-   * @return A vector of active link names
-   */
-  std::vector<std::string> getActiveLinkNames() const;
 
   /** @brief Get a vector of active link IDs in the environment */
   std::vector<tesseract::common::LinkId> getActiveLinkIds() const;
@@ -584,30 +472,10 @@ public:
   getActiveLinkIds(const std::vector<tesseract::common::JointId>& joint_ids) const;
 
   /**
-   * @brief Get a vector of active link names affected by the provided joints in the environment
-   * @param joint_names A list of joint names
-   * @return A vector of active link names
-   */
-  std::vector<std::string> getActiveLinkNames(const std::vector<std::string>& joint_names) const;
-
-  /**
-   * @brief Get a vector of static link names in the environment
-   * @return A vector of static link names
-   */
-  std::vector<std::string> getStaticLinkNames() const;
-
-  /**
    * @brief Get a vector of static link ids in the environment
    * @return A vector of static link ids
    */
   std::vector<tesseract::common::LinkId> getStaticLinkIds() const;
-
-  /**
-   * @brief Get a vector of static link names not affected by the provided joints in the environment
-   * @param joint_names A list of joint names
-   * @return A vector of static link names
-   */
-  std::vector<std::string> getStaticLinkNames(const std::vector<std::string>& joint_names) const;
 
   /**
    * @brief Get a vector of static link ids not affected by the provided joints in the environment
@@ -620,7 +488,7 @@ public:
   /**
    * @brief Get all of the links transforms
    *
-   * Order should be the same as getLinkNames()
+   * Order should be the same as getLinkIds()
    *
    * @return Get a vector of transforms for all links in the environment.
    */
