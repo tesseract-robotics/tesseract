@@ -15,9 +15,9 @@ restructure (include paths, targets, `find_package`) is covered separately in `M
 - **String literals still compile at most call sites.** The id constructors are implicit for
   downstream code, so `env->getLink("base_link")` and `map.find("tool0")` build unchanged. Note
   the performance caveat under Migration idioms below.
-- **`Environment` keeps its string conveniences**: `setState`/`getState` accept
-  `std::vector<std::string>` and `std::unordered_map<std::string, double>`, group APIs stay
-  keyed by group-name strings, and most name getters remain alongside the id getters.
+- **Group APIs stay keyed by group-name strings.** `Environment::getJointGroup`,
+  `getKinematicGroup`, and `getGroupNames` still take and return group-name strings — a group
+  name is a user-facing label, not a link or joint identity.
 
 ## The governing rule
 
@@ -50,6 +50,13 @@ silent behavior change, because `std::vector<std::string>` does not implicitly c
   `joint_transforms` and `floating_joints` (`JointIdTransformMap`).
 - **`StateSolver` has no string API left.** `setState`, `getState`, `getJacobian`, and every
   getter take and return ids (`getJointIds`, `getLinkIds`, `getBaseLinkId`, …).
+- **`Environment` has no string identity API left.** `setState`/`getState` take
+  `std::vector<JointId>` / `SceneState::JointValues`; the identity getters return ids
+  (`getJointIds`, `getActiveJointIds`, `getLinkIds`, `getActiveLinkIds`, `getStaticLinkIds`,
+  `getRootLinkId`, `getGroupJointIds`, `getCurrentJointValues(vector<JointId>)`,
+  `getLinkTransforms(vector<LinkId>)`). The string-spelled twins are gone; a `sensor_msgs::JointState`
+  or other string source converts once at the caller's boundary with `toIds` / `toNames`.
+  Group-name APIs are unaffected.
 - **`Joint` link references are ids**: `child_link_name` / `parent_link_name` →
   `child_link_id` / `parent_link_id` (`LinkId`); `JointMimic::joint_name` → `joint_id`
   (`JointId`). Cereal keys are unchanged, so old archives load.
