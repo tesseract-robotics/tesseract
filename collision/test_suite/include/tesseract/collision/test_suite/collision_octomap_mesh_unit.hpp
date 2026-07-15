@@ -15,6 +15,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/ply_io.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
 namespace detail
@@ -81,12 +83,9 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<tesseract::common::LinkId> active_link_ids{ "octomap_link", "plane_link" };
-  checker.setActiveCollisionObjects(active_link_ids);
-  const auto& check_active_link_id_set = checker.getActiveCollisionObjectIds();
-  std::vector<tesseract::common::LinkId> check_active_link_ids(check_active_link_id_set.begin(),
-                                                               check_active_link_id_set.end());
-  EXPECT_TRUE(tesseract::common::isIdentical<tesseract::common::LinkId>(active_link_ids, check_active_link_ids, false));
+  checker.setActiveCollisionObjects({ "octomap_link", "plane_link" });
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            (std::unordered_set<tesseract::common::LinkId>{ "octomap_link", "plane_link" }));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

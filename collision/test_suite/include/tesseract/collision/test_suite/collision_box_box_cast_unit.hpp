@@ -129,7 +129,7 @@ inline void runTest(ContinuousContactManager& checker)
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  checker.setActiveCollisionObjects(std::vector<tesseract::common::LinkId>{ "moving_box_link", "static_box_link" });
+  checker.setActiveCollisionObjects({ "moving_box_link", "static_box_link" });
 
   std::vector<tesseract::common::LinkId> active_links{ "moving_box_link" };
   checker.setActiveCollisionObjects(active_links);

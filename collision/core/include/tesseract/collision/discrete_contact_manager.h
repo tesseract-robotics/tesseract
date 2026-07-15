@@ -177,6 +177,9 @@ public:
   /** @brief Set which collision objects can move by vector (delegates to set overload) */
   virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids);
 
+  /** @brief Set which collision objects can move by initializer list (delegates to set overload) */
+  virtual void setActiveCollisionObjects(std::initializer_list<tesseract::common::LinkId> ids);
+
   /**
    * @brief Get which collision objects can move
    * @return A set of active collision object LinkIds

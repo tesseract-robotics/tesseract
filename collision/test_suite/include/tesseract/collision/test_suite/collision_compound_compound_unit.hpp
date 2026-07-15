@@ -79,10 +79,9 @@ inline void runTestCompound(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<tesseract::common::LinkId> active_links{ "octomap1_link", "octomap2_link" };
-  checker.setActiveCollisionObjects(active_links);
+  checker.setActiveCollisionObjects({ "octomap1_link", "octomap2_link" });
   EXPECT_EQ(checker.getActiveCollisionObjectIds(),
-            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
+            (std::unordered_set<tesseract::common::LinkId>{ "octomap1_link", "octomap2_link" }));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -114,10 +113,8 @@ inline void runTestCompound(ContinuousContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<tesseract::common::LinkId> active_links{ "octomap1_link" };
-  checker.setActiveCollisionObjects(active_links);
-  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
-            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
+  checker.setActiveCollisionObjects({ "octomap1_link" });
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(), (std::unordered_set<tesseract::common::LinkId>{ "octomap1_link" }));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
