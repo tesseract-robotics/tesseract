@@ -14,6 +14,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/ply_io.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
 namespace detail
@@ -137,10 +139,10 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "box_link", "second_box_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "box_link", "second_box_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjectNames();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -197,7 +199,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     result_vector.clear();
 
     // Use different method for setting transforms
-    std::vector<std::string> names = { "box_link" };
+    std::vector<tesseract::common::LinkId> names = { "box_link" };
     tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);
@@ -220,7 +222,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     result_vector.clear();
 
     // Use different method for setting transforms
-    std::vector<std::string> names = { "box_link" };
+    std::vector<tesseract::common::LinkId> names = { "box_link" };
     tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
     checker.setCollisionObjectsTransform(names, transforms);
     checker.contactTest(result, test_type);

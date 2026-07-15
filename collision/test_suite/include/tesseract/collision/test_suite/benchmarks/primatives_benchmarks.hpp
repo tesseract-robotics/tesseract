@@ -44,10 +44,10 @@ struct DiscreteBenchmarkInfo
 /** @brief Benchmark that checks the clone method in discrete contact managers*/
 static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, std::size_t num_obj)  // NOLINT
 {
-  std::vector<std::string> active_obj(num_obj);
+  std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    std::string name = "geom_" + std::to_string(ind);
+    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
     active_obj.push_back(name);
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
@@ -67,7 +67,7 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   info.contact_manager_->addCollisionObject(std::string("geom1"), 0, info.geom1_, info.obj1_poses);
   info.contact_manager_->addCollisionObject(std::string("geom2"), 0, info.geom2_, info.obj2_poses);
 
-  info.contact_manager_->setActiveCollisionObjects(std::vector<std::string>{ "geom1", "geom2" });
+  info.contact_manager_->setActiveCollisionObjects(std::vector<tesseract::common::LinkId>{ "geom1", "geom2" });
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
   ContactResultMap result;
@@ -96,10 +96,10 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state,
                                                       std::size_t num_obj)
 {
   // Setting up collision objects
-  std::vector<std::string> active_obj(num_obj);
+  std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    std::string name = "geom_" + std::to_string(ind);
+    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
     active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
@@ -123,17 +123,17 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
                                                       std::size_t num_obj)
 {
   // Setting up collision objects
-  std::vector<std::string> active_obj(num_obj);
+  std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    std::string name = "geom_" + std::to_string(ind);
+    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
     active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
   info.contact_manager_->setActiveCollisionObjects(active_obj);
   info.contact_manager_->setCollisionMarginData(CollisionMarginData(0.5));
 
-  std::vector<std::string> selected_links(1);
+  std::vector<tesseract::common::LinkId> selected_links(1);
   for (auto _ : state)  // NOLINT
   {
     // Including this seems necessary to insure that a distribution of links is used rather than always searching for
@@ -151,10 +151,10 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
                                                    std::size_t num_obj)
 {
   // Setting up collision objects
-  std::vector<std::string> active_obj(num_obj);
+  std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    std::string name = "geom_" + std::to_string(ind);
+    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
     active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }

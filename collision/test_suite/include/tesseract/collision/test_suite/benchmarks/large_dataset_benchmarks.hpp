@@ -62,7 +62,7 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 
   double delta = 0.55;
 
-  std::vector<std::string> link_names;
+  std::vector<tesseract::common::LinkId> link_names;
   tesseract::common::LinkIdTransformMap location;
   for (int x = 0; x < edge_size; ++x)
   {
@@ -153,7 +153,7 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   // Add Grid of spheres
   double delta = 0.55;
 
-  std::vector<std::string> link_names;
+  std::vector<tesseract::common::LinkId> link_names;
   //  tesseract::common::LinkIdTransformMap location;
   CollisionShapesConst obj3_shapes;
   tesseract::common::VectorIsometry3d obj3_poses;
