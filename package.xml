@@ -41,6 +41,12 @@
   <depend>liboctomap-dev</depend>
   <build_depend>libcereal-dev</build_depend>
   <build_export_depend>libcereal-dev</build_export_depend>
+
+  <!-- Add dependency on Cereal package for Ubuntu Jammy since the system package is broken. 
+  TODO: remove these keys once support for Jammy is dropped. -->
+  <build_depend>cereal</build_depend>
+  <build_export_depend>cereal</build_export_depend>
+
   <build_depend>assimp-dev</build_depend>
   <build_export_depend>assimp-dev</build_export_depend>
   <exec_depend>assimp</exec_depend>

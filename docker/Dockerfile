@@ -40,7 +40,7 @@ RUN --mount=type=tmpfs,target=${WORKSPACE_DIR} --mount=type=bind,target=${WORKSP
        rosdep install --from-paths ${WORKSPACE_DIR}/src --skip-keys libcereal-dev -iry; \
      else \
        vcs import src < src/tesseract/dependencies.repos --shallow; \
-       rosdep install --from-paths ${WORKSPACE_DIR}/src -iry; \
+       rosdep install --from-paths ${WORKSPACE_DIR}/src --skip-keys cereal -iry; \
      fi \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && cp -r ${WORKSPACE_DIR}/install ${INSTALL_DIR}
