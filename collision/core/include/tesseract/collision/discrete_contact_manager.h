@@ -153,10 +153,6 @@ public:
    */
   virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms) = 0;
 
-  /** @brief Set a series of collision object's transforms by name (delegates to LinkId overload) */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const tesseract::common::VectorIsometry3d& poses);
-
   /**
    * @brief Set a series of collision object's transforms
    * @param ids The LinkIds of the objects
@@ -181,20 +177,11 @@ public:
   /** @brief Set which collision objects can move by vector (delegates to set overload) */
   virtual void setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids);
 
-  /** @brief Set which collision objects can move by name (delegates to LinkId overload) */
-  virtual void setActiveCollisionObjects(const std::vector<std::string>& names);
-
   /**
    * @brief Get which collision objects can move
    * @return A set of active collision object LinkIds
    */
   virtual const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjectIds() const = 0;
-
-  /**
-   * @brief Get which collision objects can move as names
-   * @return A list of collision object names (derived from getActiveCollisionObjectIds)
-   */
-  virtual std::vector<std::string> getActiveCollisionObjectNames() const;
 
   /**
    * @brief Set the contact distance threshold

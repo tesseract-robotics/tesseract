@@ -67,11 +67,10 @@ public:
   BulletCastSimpleManager(BulletCastSimpleManager&&) = delete;
   BulletCastSimpleManager& operator=(BulletCastSimpleManager&&) = delete;
 
-  // Bring base class string overloads into scope (prevents name hiding by ID overloads)
+  // Bring base class overloads into scope (prevents name hiding by the derived overrides)
   using ContinuousContactManager::addCollisionObject;
   using ContinuousContactManager::disableCollisionObject;
   using ContinuousContactManager::enableCollisionObject;
-  using ContinuousContactManager::getActiveCollisionObjectNames;
   using ContinuousContactManager::getCollisionObjectGeometries;
   using ContinuousContactManager::getCollisionObjectGeometriesTransforms;
   using ContinuousContactManager::hasCollisionObject;
