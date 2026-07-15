@@ -48,7 +48,7 @@ static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, std::s
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
     const tesseract::common::LinkId name("geom_" + std::to_string(ind));
-    active_obj.push_back(name);
+    active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
   info.contact_manager_->setActiveCollisionObjects(active_obj);
