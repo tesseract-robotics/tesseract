@@ -19,7 +19,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [jammy, noble]
+        include:
+          - distro: jammy
+            vcs_file: dependencies_jammy.repos
+            rosdep_skip_keys: libcereal-dev
+          - distro: noble
+            vcs_file: dependencies.repos
+            rosdep_skip_keys: cereal
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -37,7 +43,8 @@ jobs:
         uses: tesseract-robotics/colcon-action@v14
         with:
           ccache-enabled: false
-          vcs-file: dependencies.repos
+          vcs-file: ${{ matrix.vcs_file }}
+          rosdep-install-args: -iry --skip-keys ${{ matrix.rosdep_skip_keys }}
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
           target-args: --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_PACKAGE=ON
