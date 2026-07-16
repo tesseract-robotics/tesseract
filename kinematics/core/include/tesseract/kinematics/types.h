@@ -26,6 +26,7 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <optional>
 #include <vector>
 #include <Eigen/Core>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -69,6 +70,15 @@ const static URParameters UR5eParameters(0.1625, -0.425, -0.3922, 0.1333, 0.0997
 
 /** @brief The UR3e kinematic parameters */
 const static URParameters UR3eParameters(0.15185, -0.24355, -0.2132, 0.13105, 0.08535, 0.0921);
+
+/** @brief Positioner joint sample resolution configuration used by REP and ROP kinematics. */
+struct PositionerSampleResolution
+{
+  std::string name;          /**< Joint name */
+  double value{ 0 };         /**< Sample resolution */
+  std::optional<double> min; /**< Optional minimum (defaults to joint lower limit) */
+  std::optional<double> max; /**< Optional maximum (defaults to joint upper limit) */
+};
 
 }  // namespace tesseract::kinematics
 #endif  // TESSERACT_KINEMATICS_TYPES_H

@@ -37,52 +37,104 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/continuous_contact_manager.h>
 
+#include <tesseract/common/schema_registration.h>
+#include <tesseract/common/property_tree.h>
+
+namespace YAML
+{
+template <>
+struct convert<tesseract::collision::TesseractCollisionConfigurationInfo>
+{
+  static bool decode(const Node& node, tesseract::collision::TesseractCollisionConfigurationInfo& rhs)
+  {
+    if (node.IsNull())
+    {
+      rhs = tesseract::collision::TesseractCollisionConfigurationInfo();
+      return true;
+    }
+
+    bool share_pool_allocators{ false };
+    if (YAML::Node n = node["share_pool_allocators"])
+      share_pool_allocators = n.as<bool>();
+
+    rhs = tesseract::collision::TesseractCollisionConfigurationInfo(false, share_pool_allocators);
+
+    if (YAML::Node n = node["max_persistent_manifold_pool_size"])
+      rhs.m_defaultMaxPersistentManifoldPoolSize = n.as<int>();
+
+    if (YAML::Node n = node["max_collision_algorithm_pool_size"])
+      rhs.m_defaultMaxCollisionAlgorithmPoolSize = n.as<int>();
+
+    if (YAML::Node n = node["max_custom_collision_algorithm_element_size"])
+      rhs.m_customCollisionAlgorithmMaxElementSize = n.as<int>();
+
+    if (YAML::Node n = node["use_epa_penetration_algorithm"])
+      rhs.m_useEpaPenetrationAlgorithm = static_cast<int>(n.as<bool>());
+
+    rhs.createPoolAllocators();
+    return true;
+  }
+
+  static tesseract::common::PropertyTree schema()
+  {
+    // clang-format off
+    return tesseract::common::PropertyTreeBuilder()
+        .attribute(tesseract::common::property_attribute::TYPE, tesseract::common::property_type::CONTAINER)
+        .boolean("share_pool_allocators").done()
+        .integer("max_persistent_manifold_pool_size").minimum(0).maximum(4096).done()
+        .integer("max_collision_algorithm_pool_size").minimum(0).maximum(4096).done()
+        .integer("max_custom_collision_algorithm_element_size").minimum(0).maximum(4096).done()
+        .boolean("use_epa_penetration_algorithm").done()
+        .build();
+    // clang-format on
+  }
+};
+}  // namespace YAML
+
 namespace tesseract::collision
 {
-
-TesseractCollisionConfigurationInfo getConfigInfo(const YAML::Node& config)
+tesseract::common::PropertyTree BulletDiscreteBVHManagerFactory::schema() const
 {
-  if (config.IsNull())
-    return {};
+  return YAML::convert<TesseractCollisionConfigurationInfo>::schema();
+}
 
-  bool share_pool_allocators{ false };
-  if (YAML::Node n = config["share_pool_allocators"])
-    share_pool_allocators = n.as<bool>();
+tesseract::common::PropertyTree BulletDiscreteSimpleManagerFactory::schema() const
+{
+  return YAML::convert<TesseractCollisionConfigurationInfo>::schema();
+}
 
-  TesseractCollisionConfigurationInfo config_info(false, share_pool_allocators);
+tesseract::common::PropertyTree BulletCastBVHManagerFactory::schema() const
+{
+  return YAML::convert<TesseractCollisionConfigurationInfo>::schema();
+}
 
-  if (YAML::Node n = config["max_persistent_manifold_pool_size"])
-    config_info.m_defaultMaxPersistentManifoldPoolSize = n.as<int>();
-
-  if (YAML::Node n = config["max_collision_algorithm_pool_size"])
-    config_info.m_defaultMaxCollisionAlgorithmPoolSize = n.as<int>();
-
-  config_info.createPoolAllocators();
-  return config_info;
+tesseract::common::PropertyTree BulletCastSimpleManagerFactory::schema() const
+{
+  return YAML::convert<TesseractCollisionConfigurationInfo>::schema();
 }
 
 std::unique_ptr<tesseract::collision::DiscreteContactManager>
 BulletDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& config) const
 {
-  return std::make_unique<BulletDiscreteBVHManager>(name, getConfigInfo(config));
+  return std::make_unique<BulletDiscreteBVHManager>(name, config.as<TesseractCollisionConfigurationInfo>());
 }
 
 std::unique_ptr<DiscreteContactManager> BulletDiscreteSimpleManagerFactory::create(const std::string& name,
                                                                                    const YAML::Node& config) const
 {
-  return std::make_unique<BulletDiscreteSimpleManager>(name, getConfigInfo(config));
+  return std::make_unique<BulletDiscreteSimpleManager>(name, config.as<TesseractCollisionConfigurationInfo>());
 }
 
 std::unique_ptr<ContinuousContactManager> BulletCastBVHManagerFactory::create(const std::string& name,
                                                                               const YAML::Node& config) const
 {
-  return std::make_unique<BulletCastBVHManager>(name, getConfigInfo(config));
+  return std::make_unique<BulletCastBVHManager>(name, config.as<TesseractCollisionConfigurationInfo>());
 }
 
 std::unique_ptr<ContinuousContactManager> BulletCastSimpleManagerFactory::create(const std::string& name,
                                                                                  const YAML::Node& config) const
 {
-  return std::make_unique<BulletCastSimpleManager>(name, getConfigInfo(config));
+  return std::make_unique<BulletCastSimpleManager>(name, config.as<TesseractCollisionConfigurationInfo>());
 }
 
 PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
@@ -100,3 +152,21 @@ TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract::collision::BulletCastBVHManag
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract::collision::BulletCastSimpleManagerFactory,
                                         BulletCastSimpleManagerFactory);
+
+TESSERACT_SCHEMA_REGISTER(BulletDiscreteBVHManagerFactory,
+                          YAML::convert<tesseract::collision::TesseractCollisionConfigurationInfo>::schema);
+TESSERACT_SCHEMA_REGISTER(BulletDiscreteSimpleManagerFactory,
+                          YAML::convert<tesseract::collision::TesseractCollisionConfigurationInfo>::schema);
+TESSERACT_SCHEMA_REGISTER(BulletCastBVHManagerFactory,
+                          YAML::convert<tesseract::collision::TesseractCollisionConfigurationInfo>::schema);
+TESSERACT_SCHEMA_REGISTER(BulletCastSimpleManagerFactory,
+                          YAML::convert<tesseract::collision::TesseractCollisionConfigurationInfo>::schema);
+
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::collision::DiscreteContactManagerFactory,
+                                       BulletDiscreteBVHManagerFactory);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::collision::DiscreteContactManagerFactory,
+                                       BulletDiscreteSimpleManagerFactory);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::collision::ContinuousContactManagerFactory,
+                                       BulletCastBVHManagerFactory);
+TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(tesseract::collision::ContinuousContactManagerFactory,
+                                       BulletCastSimpleManagerFactory);

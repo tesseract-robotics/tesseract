@@ -69,9 +69,13 @@ public:
    */
   virtual std::unique_ptr<DiscreteContactManager> create(const std::string& name, const YAML::Node& config) const = 0;
 
+  /** @brief Return the PropertyTree schema describing the config this factory accepts */
+  virtual tesseract::common::PropertyTree schema() const;
+
 protected:
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
+  friend class ContactManagersPluginFactory;
 };
 
 /** @brief Define a continuous contact manager plugin which the factory can create an instance */
@@ -91,9 +95,13 @@ public:
   virtual std::unique_ptr<ContinuousContactManager> create(const std::string& solver_name,
                                                            const YAML::Node& config) const = 0;
 
+  /** @brief Return the PropertyTree schema describing the config this factory accepts */
+  virtual tesseract::common::PropertyTree schema() const;
+
 protected:
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
+  friend class ContactManagersPluginFactory;
 };
 
 class ContactManagersPluginFactory

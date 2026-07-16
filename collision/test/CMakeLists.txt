@@ -70,3 +70,6 @@ add_gtest(collision_config_unit contact_managers_config_unit.cpp)
 
 add_gtest(collision_factory_static_unit contact_managers_factory_static_unit.cpp)
 target_link_libraries(collision_factory_static_unit PRIVATE tesseract::collision_bullet_factories)
+
+add_gtest(collision_schema_unit contact_managers_schema_unit.cpp)
+target_link_libraries(collision_schema_unit PRIVATE tesseract::collision_bullet_factories collision_fcl_factories)
