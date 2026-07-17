@@ -153,6 +153,58 @@ void runSDFPositiveDistanceTest(DiscreteContactManager& checker)
   result.flattenMoveResults(result_vector);
   EXPECT_TRUE(result_vector.empty());
 }
+
+void runSDFPairTest(DiscreteContactManager& checker)
+{
+  CollisionShapesConst sdf0_shapes{ makeSphereSDF() };
+  CollisionShapesConst sdf1_shapes{ makeSphereSDF() };
+  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf0_link", 0, sdf0_shapes, poses, true);
+  checker.addCollisionObject("sdf1_link", 0, sdf1_shapes, poses, true);
+  checker.setActiveCollisionObjects({ "sdf0_link", "sdf1_link" });
+
+  tesseract::common::TransformMap location;
+  location["sdf0_link"] = Eigen::Isometry3d::Identity();
+  location["sdf1_link"] = Eigen::Translation3d(0.8, 0.0, 0.0) * Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
+
+  ContactResultMap result;
+  ContactResultVector result_vector;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  const ContactResult& penetrating_contact = result_vector.front();
+  const double expected_normal_x = (penetrating_contact.link_names[0] == "sdf0_link") ? 1.0 : -1.0;
+  EXPECT_NEAR(penetrating_contact.distance, -0.2, 0.02);
+  EXPECT_NEAR(penetrating_contact.normal.norm(), 1.0, 1e-3);
+  EXPECT_NEAR(penetrating_contact.normal.x(), expected_normal_x, 0.05);
+  const double penetrating_projected_distance =
+      (penetrating_contact.nearest_points[1] - penetrating_contact.nearest_points[0]).dot(penetrating_contact.normal);
+  EXPECT_NEAR(penetrating_projected_distance, penetrating_contact.distance, 1e-3);
+
+  checker.setCollisionMarginPair("sdf0_link", "sdf1_link", 0.05);
+  location["sdf1_link"] = Eigen::Translation3d(1.03, 0.0, 0.0) * Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  ASSERT_FALSE(result_vector.empty());
+  const ContactResult& separated_contact = result_vector.front();
+  EXPECT_NEAR(separated_contact.distance, 0.03, 0.02);
+  const double separated_projected_distance =
+      (separated_contact.nearest_points[1] - separated_contact.nearest_points[0]).dot(separated_contact.normal);
+  EXPECT_NEAR(separated_projected_distance, separated_contact.distance, 1e-3);
+
+  location["sdf1_link"] = Eigen::Translation3d(1.06, 0.0, 0.0) * Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  EXPECT_TRUE(result_vector.empty());
+}
 }  // namespace
 
 TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimple)  // NOLINT
@@ -194,44 +246,19 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHPositiveDistance) 
 TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHSDFPair)  // NOLINT
 {
   FCLDiscreteBVHManager checker;
-  CollisionShapesConst sdf0_shapes{ makeSphereSDF() };
-  CollisionShapesConst sdf1_shapes{ makeSphereSDF() };
-  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
-  checker.addCollisionObject("sdf0_link", 0, sdf0_shapes, poses, true);
-  checker.addCollisionObject("sdf1_link", 0, sdf1_shapes, poses, true);
-  checker.setActiveCollisionObjects({ "sdf0_link", "sdf1_link" });
+  runSDFPairTest(checker);
+}
 
-  tesseract::common::TransformMap location;
-  location["sdf0_link"] = Eigen::Isometry3d::Identity();
-  location["sdf1_link"] = Eigen::Translation3d(0.8, 0.0, 0.0) * Eigen::Isometry3d::Identity();
-  checker.setCollisionObjectsTransform(location);
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleSDFPair)  // NOLINT
+{
+  BulletDiscreteSimpleManager checker;
+  runSDFPairTest(checker);
+}
 
-  ContactResultMap result;
-  ContactResultVector result_vector;
-  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  result.flattenMoveResults(result_vector);
-
-  ASSERT_FALSE(result_vector.empty());
-  EXPECT_NEAR(result_vector.front().distance, -0.2, 0.02);
-  EXPECT_NEAR(result_vector.front().normal.norm(), 1.0, 1e-3);
-
-  checker.setCollisionMarginPair("sdf0_link", "sdf1_link", 0.05);
-  location["sdf1_link"] = Eigen::Translation3d(1.03, 0.0, 0.0) * Eigen::Isometry3d::Identity();
-  checker.setCollisionObjectsTransform(location);
-  result.clear();
-  result_vector.clear();
-  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  result.flattenMoveResults(result_vector);
-  ASSERT_FALSE(result_vector.empty());
-  EXPECT_NEAR(result_vector.front().distance, 0.03, 0.02);
-
-  location["sdf1_link"] = Eigen::Translation3d(1.06, 0.0, 0.0) * Eigen::Isometry3d::Identity();
-  checker.setCollisionObjectsTransform(location);
-  result.clear();
-  result_vector.clear();
-  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
-  result.flattenMoveResults(result_vector);
-  EXPECT_TRUE(result_vector.empty());
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHSDFPair)  // NOLINT
+{
+  BulletDiscreteBVHManager checker;
+  runSDFPairTest(checker);
 }
 
 TEST(TesseractCollisionSignedDistanceFieldUnit, FCLRejectsUnsupportedSDFPair)  // NOLINT
