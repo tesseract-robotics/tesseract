@@ -1,6 +1,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <limits>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -664,6 +665,10 @@ TEST(TesseractGeometryUnit, SignedDistanceField)  // NOLINT
   EXPECT_ANY_THROW(T(Eigen::AlignedBox3d(Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 1)),  // NOLINT degenerate
                      dims,
                      distances));
+  EXPECT_ANY_THROW(T(domain, dims, distances, Eigen::Vector3d(0, 1, 1)));   // NOLINT zero scale
+  EXPECT_ANY_THROW(T(domain, dims, distances, Eigen::Vector3d(-1, 1, 1)));  // NOLINT negative scale
+  EXPECT_ANY_THROW(
+      T(domain, dims, distances, Eigen::Vector3d(std::numeric_limits<double>::quiet_NaN(), 1, 1)));  // NOLINT
 
   auto geom_clone = geom->clone();
   EXPECT_EQ(std::static_pointer_cast<T>(geom_clone)->getDistances(), distances);

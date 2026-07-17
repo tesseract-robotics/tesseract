@@ -89,8 +89,14 @@ void SignedDistanceField::validateDomainAndDimensions() const
   if (dimensions_.x() < 2 || dimensions_.y() < 2 || dimensions_.z() < 2)
     throw std::runtime_error("SignedDistanceField: dimensions must be >= 2 on every axis");
 
+  if (!domain_.min().allFinite() || !domain_.max().allFinite())
+    throw std::runtime_error("SignedDistanceField: domain bounds must be finite");
+
   if ((domain_.max().array() <= domain_.min().array()).any())
     throw std::runtime_error("SignedDistanceField: domain max must exceed domain min on every axis");
+
+  if (!scale_.allFinite() || (scale_.array() <= 0.0).any())
+    throw std::runtime_error("SignedDistanceField: scale must be finite and positive on every axis");
 }
 
 void SignedDistanceField::validate() const

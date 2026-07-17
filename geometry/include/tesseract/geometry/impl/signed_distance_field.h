@@ -71,8 +71,8 @@ using BatchedSignedDistanceFunction = std::function<std::vector<double>(const st
  *
  * @note Distinct from the Gazebo "SDF" Simulation Description Format.
  *
- * @note Currently only the Bullet discrete collision backend consumes this geometry. It is concave,
- * so it is not supported by the continuous/cast managers or the FCL backend.
+ * @note The Bullet and FCL discrete collision backends consume this geometry through the shared
+ * implicit collision solver. It is concave, so it is not supported by continuous/cast managers.
  */
 class SignedDistanceField : public Geometry
 {
@@ -87,7 +87,8 @@ public:
    * @param distances The sampled signed distances, row-major: index = i + nx*(j + ny*k), with
    * size == dimensions.prod(). Sample (i,j,k) sits at domain.min() + (i,j,k)/(dimensions-1) *
    * (domain.max() - domain.min())
-   * @param scale Local scaling applied to the field
+   *
+   * @param scale Finite, strictly positive local scaling applied to the field
    */
   SignedDistanceField(const Eigen::AlignedBox3d& domain,
                       const Eigen::Vector3i& dimensions,
@@ -108,7 +109,8 @@ public:
    * @param domain The axis-aligned domain (local frame) to sample over when discretizing
    * @param dimensions The number of samples along each axis to discretize (>= 2 on every axis)
    * @param sampler The batched signed distance function (negative inside) in the field's local frame
-   * @param scale Local scaling applied to the field
+   *
+   * @param scale Finite, strictly positive local scaling applied to the field
    */
   SignedDistanceField(const Eigen::AlignedBox3d& domain,
                       const Eigen::Vector3i& dimensions,

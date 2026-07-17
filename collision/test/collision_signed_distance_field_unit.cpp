@@ -21,6 +21,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cmath>
 #include <cstdint>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -29,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/bullet/bullet_collision_shape_cache.h>
+#include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/collision/common.h>
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/geometry/impl/signed_distance_field_utils.h>
@@ -177,6 +179,91 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHPositiveDistanc
   runSDFPositiveDistanceTest(checker);
 }
 
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVH)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  runSDFTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHPositiveDistance)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  runSDFPositiveDistanceTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHSDFPair)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  CollisionShapesConst sdf0_shapes{ makeSphereSDF() };
+  CollisionShapesConst sdf1_shapes{ makeSphereSDF() };
+  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf0_link", 0, sdf0_shapes, poses, true);
+  checker.addCollisionObject("sdf1_link", 0, sdf1_shapes, poses, true);
+  checker.setActiveCollisionObjects({ "sdf0_link", "sdf1_link" });
+
+  tesseract::common::TransformMap location;
+  location["sdf0_link"] = Eigen::Isometry3d::Identity();
+  location["sdf1_link"] = Eigen::Translation3d(0.8, 0.0, 0.0) * Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
+
+  ContactResultMap result;
+  ContactResultVector result_vector;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_NEAR(result_vector.front().distance, -0.2, 0.02);
+  EXPECT_NEAR(result_vector.front().normal.norm(), 1.0, 1e-3);
+
+  checker.setCollisionMarginPair("sdf0_link", "sdf1_link", 0.05);
+  location["sdf1_link"] = Eigen::Translation3d(1.03, 0.0, 0.0) * Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_NEAR(result_vector.front().distance, 0.03, 0.02);
+
+  location["sdf1_link"] = Eigen::Translation3d(1.06, 0.0, 0.0) * Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  EXPECT_TRUE(result_vector.empty());
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLRejectsUnsupportedSDFPair)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  CollisionShapesConst sdf_shapes{ makeSphereSDF() };
+  CollisionShapesConst plane_shapes{ std::make_shared<tesseract::geometry::Plane>(0.0, 0.0, 1.0, 0.0) };
+  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf_link", 0, sdf_shapes, poses, true);
+  checker.addCollisionObject("plane_link", 0, plane_shapes, poses, true);
+  checker.setActiveCollisionObjects({ "sdf_link", "plane_link" });
+
+  tesseract::common::TransformMap location;
+  location["sdf_link"] = Eigen::Isometry3d::Identity();
+  location["plane_link"] = Eigen::Isometry3d::Identity();
+  checker.setCollisionObjectsTransform(location);
+
+  ContactResultMap result;
+  EXPECT_THROW(checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST)), std::runtime_error);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLRejectsNonuniformSDFScale)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d::Constant(-1.0), Eigen::Vector3d::Constant(1.0));
+  auto sdf = std::make_shared<tesseract::geometry::SignedDistanceField>(
+      domain, Eigen::Vector3i(2, 2, 2), std::vector<double>(8, 0.0), Eigen::Vector3d(1.0, 2.0, 1.0));
+  CollisionShapesConst sdf_shapes{ sdf };
+  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  EXPECT_THROW(checker.addCollisionObject("sdf_link", 0, sdf_shapes, poses, true), std::invalid_argument);
+}
+
 void addCapsuleObjects(DiscreteContactManager& checker)
 {
   CollisionShapesConst sdf_shapes{ makeSphereSDF() };
@@ -247,13 +334,12 @@ void runSDFCapsuleTest(DiscreteContactManager& checker)
 
 void runSDFBoxTest(DiscreteContactManager& checker)
 {
-  // Polyhedral probes are the third distinct query branch (vertex list, no radius offset): the
-  // field is sampled at the box's 8 corners and the reported distance is the field value there.
+  // Exercise the generic implicit solver's polyhedral primitive adapter.
   CollisionShapesConst sdf_shapes{ makeSphereSDF() };
   tesseract::common::VectorIsometry3d sdf_poses{ Eigen::Isometry3d::Identity() };
   checker.addCollisionObject("sdf_link", 0, sdf_shapes, sdf_poses, true);
 
-  // Probe box with side 0.2 (half extents 0.1); BULLET_MARGIN is zero so the corners are exact.
+  // Probe box with side 0.2 (half extents 0.1).
   CollisionShapesConst box_shapes{ std::make_shared<tesseract::geometry::Box>(0.2, 0.2, 0.2) };
   tesseract::common::VectorIsometry3d box_poses{ Eigen::Isometry3d::Identity() };
   checker.addCollisionObject("box_link", 0, box_shapes, box_poses, true);
@@ -261,8 +347,8 @@ void runSDFBoxTest(DiscreteContactManager& checker)
   checker.setActiveCollisionObjects({ "sdf_link", "box_link" });
   checker.setDefaultCollisionMargin(0.0);
 
-  // Penetration: box center at x = 0.5 puts the four inner corners at (0.4, +/-0.1, +/-0.1),
-  // ||corner|| = sqrt(0.18) ~= 0.4243, so SDF(corner) ~= 0.4243 - 0.5 = -0.0757.
+  // Penetration: the box's inner face is at x = 0.4 and the sphere surface is at x = 0.5,
+  // giving a surface-to-surface penetration depth of 0.1.
   tesseract::common::TransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d box_tf = Eigen::Isometry3d::Identity();
@@ -277,17 +363,15 @@ void runSDFBoxTest(DiscreteContactManager& checker)
 
   ASSERT_FALSE(result_vector.empty());
   EXPECT_LT(result_vector[0].distance, 0.0);
-  EXPECT_NEAR(result_vector[0].distance, -0.0757, 0.02);
+  EXPECT_NEAR(result_vector[0].distance, -0.1, 0.02);
 
-  // The normal is the field gradient at the reported corner: radial, ~(0.943, +/-0.236, +/-0.236)
-  // at the penetration pose. The corner picked among the four symmetric ones is arbitrary, so only
-  // the x-component and unit length are asserted.
+  // The nearest surfaces are the sphere and box faces along the x-axis.
   const Eigen::Vector3d& normal = result_vector[0].normal;
   EXPECT_NEAR(normal.norm(), 1.0, 1e-3);
-  EXPECT_NEAR(std::abs(normal.x()), 0.943, 0.05);
+  EXPECT_NEAR(std::abs(normal.x()), 1.0, 0.02);
 
-  // Positive-distance contact inside the margin band: box center at x = 0.62 puts the inner
-  // corners at (0.52, +/-0.1, +/-0.1), ||corner|| ~= 0.5389 -> separation ~= +0.0389 < 0.05.
+  // Positive-distance contact inside the margin band: box center at x = 0.62 puts its inner face
+  // at x = 0.52, giving 0.02 separation from the sphere.
   checker.setDefaultCollisionMargin(0.05);
   box_tf.translation().x() = 0.62;
   checker.setCollisionObjectsTransform("box_link", box_tf);
@@ -299,10 +383,9 @@ void runSDFBoxTest(DiscreteContactManager& checker)
 
   ASSERT_FALSE(result_vector.empty());
   EXPECT_GT(result_vector[0].distance, 0.0);
-  EXPECT_NEAR(result_vector[0].distance, 0.0389, 0.02);
+  EXPECT_NEAR(result_vector[0].distance, 0.02, 0.02);
 
-  // Separation outside the margin band: box center at x = 0.7 -> nearest corner separation
-  // ~= sqrt(0.38) - 0.5 = +0.1164 > 0.05 -> no contact.
+  // Separation outside the margin band: box center at x = 0.7 gives 0.1 face separation.
   box_tf.translation().x() = 0.7;
   checker.setCollisionObjectsTransform("box_link", box_tf);
 
@@ -325,6 +408,12 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHCapsule)  // NO
   runSDFCapsuleTest(checker);
 }
 
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHCapsule)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  runSDFCapsuleTest(checker);
+}
+
 TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleBox)  // NOLINT
 {
   BulletDiscreteSimpleManager checker;
@@ -334,6 +423,12 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleBox)  // NOL
 TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHBox)  // NOLINT
 {
   BulletDiscreteBVHManager checker;
+  runSDFBoxTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHBox)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
   runSDFBoxTest(checker);
 }
 
@@ -408,6 +503,12 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHCylinder)  // N
   runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cylinder>(0.1, 0.2), "cylinder_link");
 }
 
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHCylinder)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cylinder>(0.1, 0.2), "cylinder_link");
+}
+
 TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleCone)  // NOLINT
 {
   BulletDiscreteSimpleManager checker;
@@ -417,6 +518,12 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleCone)  // NO
 TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHCone)  // NOLINT
 {
   BulletDiscreteBVHManager checker;
+  runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cone>(0.1, 0.2), "cone_link");
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHCone)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
   runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cone>(0.1, 0.2), "cone_link");
 }
 

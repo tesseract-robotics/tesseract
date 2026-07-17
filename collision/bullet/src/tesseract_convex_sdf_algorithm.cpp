@@ -21,6 +21,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <BulletCollision/CollisionDispatch/btCollisionObjectWrapper.h>
 #include <BulletCollision/CollisionDispatch/btManifoldResult.h>
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
 #include <BulletCollision/CollisionShapes/btCapsuleShape.h>
 #include <BulletCollision/CollisionShapes/btConeShape.h>
 #include <BulletCollision/CollisionShapes/btConvexShape.h>
@@ -29,162 +30,93 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionShapes/btSdfCollisionShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <console_bridge/console.h>
-#include <cmath>
-#include <functional>
-#include <utility>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/bullet/tesseract_convex_sdf_algorithm.h>
+#include <tesseract/collision/implicit_sdf_collision_solver.h>
+#include <tesseract/geometry/impl/box.h>
+#include <tesseract/geometry/impl/capsule.h>
+#include <tesseract/geometry/impl/cone.h>
+#include <tesseract/geometry/impl/cylinder.h>
+#include <tesseract/geometry/impl/sphere.h>
+
+#include <limits>
 
 namespace tesseract::collision::bullet_internal
 {
 namespace
 {
-constexpr int MIN_ANGULAR_INTERVALS = 8;
-constexpr int MAX_ANGULAR_INTERVALS = 64;
-constexpr int MAX_LINEAR_INTERVALS = 64;
-constexpr btScalar SURFACE_INTERVALS_PER_MIN_DIMENSION = btScalar(8.);
-
-/** @brief A rectangular parameterization of one exact primitive surface patch. */
-struct ConvexSurfacePatch
+ImplicitSDFShape makeBulletConvexShape(const btConvexShape& shape, const btTransform& world_transform)
 {
-  std::function<btVector3(btScalar, btScalar)> evaluate;
-  btScalar u_length;
-  btScalar v_length;
-  bool u_is_periodic;
-};
-
-int getIntervalCount(btScalar length, btScalar target_spacing, int minimum, int maximum)
-{
-  if (length <= SIMD_EPSILON || target_spacing <= SIMD_EPSILON)
-    return minimum;
-
-  return btMax(minimum, btMin(static_cast<int>(std::ceil(length / target_spacing)), maximum));
-}
-
-void appendUniquePoint(btAlignedObjectArray<btVector3>& points, const btVector3& point)
-{
-  constexpr auto duplicate_tolerance_squared = btScalar(1e-12);
-  for (int i = 0; i < points.size(); ++i)
+  const Eigen::Isometry3d pose = convertBtToEigen(world_transform);
+  switch (shape.getShapeType())
   {
-    if (points[i].distance2(point) <= duplicate_tolerance_squared)
-      return;
-  }
-  points.push_back(point);
-}
-
-/**
- * @brief Sample a primitive surface patch with density selected from its physical dimensions.
- *
- * The parameterization keeps generated points on the exact primitive surface. Interval counts
- * adapt independently to each patch dimension and are bounded to keep narrowphase cost finite.
- */
-void sampleSurfacePatch(const ConvexSurfacePatch& patch,
-                        btScalar target_spacing,
-                        btAlignedObjectArray<btVector3>& points)
-{
-  const int u_intervals = getIntervalCount(
-      patch.u_length, target_spacing, patch.u_is_periodic ? MIN_ANGULAR_INTERVALS : 1, MAX_ANGULAR_INTERVALS);
-  const int v_intervals = getIntervalCount(patch.v_length, target_spacing, 1, MAX_LINEAR_INTERVALS);
-  const int u_samples = patch.u_is_periodic ? u_intervals : u_intervals + 1;
-
-  for (int v = 0; v <= v_intervals; ++v)
-  {
-    const btScalar v_parameter = btScalar(v) / btScalar(v_intervals);
-    for (int u = 0; u < u_samples; ++u)
+    case BOX_SHAPE_PROXYTYPE:
     {
-      const btScalar u_parameter = btScalar(u) / btScalar(u_intervals);
-      appendUniquePoint(points, patch.evaluate(u_parameter, v_parameter));
+      const btVector3 half_extents = static_cast<const btBoxShape&>(shape).getHalfExtentsWithoutMargin();
+      const tesseract::geometry::Box box(2.0 * static_cast<double>(half_extents.x()),
+                                         2.0 * static_cast<double>(half_extents.y()),
+                                         2.0 * static_cast<double>(half_extents.z()));
+      return makeImplicitSDFShape(box, pose);
     }
-  }
-}
-
-std::pair<int, int> getRadialAxes(int up_axis)
-{
-  switch (up_axis)
-  {
-    case 0:
-      return { 1, 2 };
-    case 1:
-      return { 0, 2 };
+    case SPHERE_SHAPE_PROXYTYPE:
+    {
+      const tesseract::geometry::Sphere sphere(
+          static_cast<double>(static_cast<const btSphereShape&>(shape).getRadius()));
+      return makeImplicitSDFShape(sphere, pose);
+    }
+    case CAPSULE_SHAPE_PROXYTYPE:
+    {
+      const auto& capsule_shape = static_cast<const btCapsuleShape&>(shape);
+      const tesseract::geometry::Capsule capsule(static_cast<double>(capsule_shape.getRadius()),
+                                                 2.0 * static_cast<double>(capsule_shape.getHalfHeight()));
+      return makeImplicitSDFShape(capsule, pose);
+    }
+    case CYLINDER_SHAPE_PROXYTYPE:
+    {
+      const auto& cylinder_shape = static_cast<const btCylinderShape&>(shape);
+      const tesseract::geometry::Cylinder cylinder(
+          static_cast<double>(cylinder_shape.getRadius()),
+          2.0 * static_cast<double>(cylinder_shape.getHalfExtentsWithoutMargin()[cylinder_shape.getUpAxis()]));
+      return makeImplicitSDFShape(cylinder, pose);
+    }
+    case CONE_SHAPE_PROXYTYPE:
+    {
+      const auto& cone_shape = static_cast<const btConeShape&>(shape);
+      const tesseract::geometry::Cone cone(static_cast<double>(cone_shape.getRadius()),
+                                           static_cast<double>(cone_shape.getHeight()));
+      return makeImplicitSDFShape(cone, pose);
+    }
     default:
-      return { 0, 1 };
+      return {};
   }
 }
 
-void appendCylinderSurfaceSamples(const btCylinderShape& cylinder, btAlignedObjectArray<btVector3>& points)
+ImplicitSDFShape makeBulletSDFShape(btSdfCollisionShape& shape, const btTransform& world_transform)
 {
-  const int up_axis = cylinder.getUpAxis();
-  const auto radial_axes = getRadialAxes(up_axis);
-  const int radial_axis_1 = radial_axes.first;
-  const int radial_axis_2 = radial_axes.second;
-  const btScalar radius = cylinder.getRadius();
-  const btScalar half_height = cylinder.getHalfExtentsWithoutMargin()[up_axis];
-  const btScalar target_spacing = btMin(radius, btScalar(2.) * half_height) / SURFACE_INTERVALS_PER_MIN_DIMENSION;
-
-  const auto make_point = [=](btScalar radial_distance, btScalar angle, btScalar height) {
-    btVector3 point(0, 0, 0);
-    point[radial_axis_1] = radial_distance * btCos(angle);
-    point[radial_axis_2] = radial_distance * btSin(angle);
-    point[up_axis] = height;
-    return point;
+  const btTransform inverse_transform = world_transform.inverse();
+  ImplicitSDFShape result;
+  result.distance = [&shape, inverse_transform](const Eigen::Vector3d& point) {
+    btScalar distance{ 0 };
+    btVector3 normal;
+    if (!shape.queryPoint(inverse_transform * convertEigenToBt(point), distance, normal))
+      return std::numeric_limits<double>::infinity();
+    return static_cast<double>(distance);
   };
-
-  sampleSurfacePatch({ [=](btScalar u, btScalar v) {
-                        return make_point(radius, SIMD_2_PI * u, -half_height + (btScalar(2.) * half_height * v));
-                      },
-                       SIMD_2_PI * radius,
-                       btScalar(2.) * half_height,
-                       true },
-                     target_spacing,
-                     points);
-
-  for (const btScalar height : { -half_height, half_height })
-  {
-    sampleSurfacePatch({ [=](btScalar u, btScalar v) { return make_point(radius * v, SIMD_2_PI * u, height); },
-                         SIMD_2_PI * radius,
-                         radius,
-                         true },
-                       target_spacing,
-                       points);
-  }
-}
-
-void appendConeSurfaceSamples(const btConeShape& cone, btAlignedObjectArray<btVector3>& points)
-{
-  const int up_axis = cone.getConeUpIndex();
-  const auto radial_axes = getRadialAxes(up_axis);
-  const int radial_axis_1 = radial_axes.first;
-  const int radial_axis_2 = radial_axes.second;
-  const btScalar radius = cone.getRadius();
-  const btScalar height = cone.getHeight();
-  const btScalar half_height = height / btScalar(2.);
-  const btScalar slant_height = btSqrt((radius * radius) + (height * height));
-  const btScalar target_spacing = btMin(radius, height) / SURFACE_INTERVALS_PER_MIN_DIMENSION;
-
-  const auto make_point = [=](btScalar radial_distance, btScalar angle, btScalar axial_position) {
-    btVector3 point(0, 0, 0);
-    point[radial_axis_1] = radial_distance * btCos(angle);
-    point[radial_axis_2] = radial_distance * btSin(angle);
-    point[up_axis] = axial_position;
-    return point;
+  result.gradient = [&shape, inverse_transform, world_transform](const Eigen::Vector3d& point) -> Eigen::Vector3d {
+    btScalar distance{ 0 };
+    btVector3 normal;
+    if (!shape.queryPoint(inverse_transform * convertEigenToBt(point), distance, normal))
+      return Eigen::Vector3d::Zero();
+    normal = world_transform.getBasis() * normal;
+    return convertBtToEigen(normal);
   };
-
-  sampleSurfacePatch({ [=](btScalar u, btScalar v) {
-                        return make_point(radius * (btScalar(1.) - v), SIMD_2_PI * u, -half_height + (height * v));
-                      },
-                       SIMD_2_PI * radius,
-                       slant_height,
-                       true },
-                     target_spacing,
-                     points);
-
-  sampleSurfacePatch({ [=](btScalar u, btScalar v) { return make_point(radius * v, SIMD_2_PI * u, -half_height); },
-                       SIMD_2_PI * radius,
-                       radius,
-                       true },
-                     target_spacing,
-                     points);
+  btVector3 aabb_min;
+  btVector3 aabb_max;
+  shape.getAabb(world_transform, aabb_min, aabb_max);
+  result.aabb = Eigen::AlignedBox3d(convertBtToEigen(aabb_min), convertBtToEigen(aabb_max));
+  return result;
 }
 }  // namespace
 
@@ -219,13 +151,37 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
   // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
   const auto* convex = static_cast<const btConvexShape*>(convexBodyWrap->getCollisionShape());
 
-  // This mirrors the SDF special case in btConvexConcaveCollisionAlgorithm::processCollision: the
-  // field is sampled at the convex shape's vertices (or a sphere's center). The difference is that
-  // the acceptance band below is widened by m_closestPointDistanceThreshold so separated contacts
-  // within the pair's contact distance are reported.
-  btAlignedObjectArray<btVector3> query_vertices;
-  btScalar query_offset = 0;
+  const ImplicitSDFShape implicit_convex = makeBulletConvexShape(*convex, convexBodyWrap->getWorldTransform());
+  if (implicit_convex.isValid())
+  {
+    const ImplicitSDFShape implicit_sdf = makeBulletSDFShape(*sdf_shape, sdfBodyWrap->getWorldTransform());
+    ImplicitSDFCollisionConfig config;
+    config.contact_margin = static_cast<double>(resultOut->m_closestPointDistanceThreshold);
+    const std::vector<ImplicitSDFContact> contacts = collideImplicitSDF(implicit_convex, implicit_sdf, config);
 
+    if (m_manifoldPtr == nullptr)
+    {
+      m_manifoldPtr =
+          m_dispatcher->getNewManifold(convexBodyWrap->getCollisionObject(), sdfBodyWrap->getCollisionObject());
+      m_ownManifold = true;
+    }
+    resultOut->setPersistentManifold(m_manifoldPtr);
+
+    for (const auto& contact : contacts)
+    {
+      // Bullet expects the normal on body B (the SDF) directed toward body A, whereas the shared
+      // solver returns the normal from shape 0 (the convex) toward shape 1 (the SDF).
+      resultOut->addContactPoint(convertEigenToBt(Eigen::Vector3d(-contact.normal)),
+                                 convertEigenToBt(contact.nearest_points[1]),
+                                 static_cast<btScalar>(contact.distance));
+    }
+    resultOut->refreshContactPoints();
+    return;
+  }
+
+  // Preserve stock Bullet's vertex-query behavior for arbitrary polyhedra that do not yet have a
+  // backend-neutral signed-distance adapter.
+  btAlignedObjectArray<btVector3> query_vertices;
   if (convex->isPolyhedral())
   {
     const auto* poly = static_cast<const btPolyhedralConvexShape*>(convex);
@@ -236,52 +192,14 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
       query_vertices.push_back(vtx);
     }
   }
-  else if (convex->getShapeType() == SPHERE_SHAPE_PROXYTYPE)
-  {
-    query_vertices.push_back(btVector3(0, 0, 0));
-    const auto* sphere = static_cast<const btSphereShape*>(convex);
-    query_offset = sphere->getRadius();
-  }
-  else if (convex->getShapeType() == CAPSULE_SHAPE_PROXYTYPE)
-  {
-    // A capsule is its axis segment swept by a sphere, so querying the field along the segment
-    // with a radius offset is exact at each sample (same as the sphere case). The endpoints cover
-    // the caps exactly; interior samples spaced at most one radius apart bound the error along the
-    // barrel by the field's curvature between samples.
-    const auto* capsule = static_cast<const btCapsuleShape*>(convex);
-    const btScalar radius = capsule->getRadius();
-    const btScalar half_height = capsule->getHalfHeight();
-    query_offset = radius;
-
-    auto num_intervals = static_cast<int>(std::ceil((btScalar(2.) * half_height) / radius));
-    num_intervals = btMax(1, btMin(num_intervals, 64));
-    for (int i = 0; i <= num_intervals; i++)
-    {
-      btVector3 vtx(0, 0, 0);
-      vtx[capsule->getUpAxis()] = -half_height + (btScalar(2.) * half_height) * (btScalar(i) / btScalar(num_intervals));
-      query_vertices.push_back(vtx);
-    }
-  }
-  else if (convex->getShapeType() == CYLINDER_SHAPE_PROXYTYPE)
-  {
-    appendCylinderSurfaceSamples(*static_cast<const btCylinderShape*>(convex), query_vertices);
-  }
-  else if (convex->getShapeType() == CONE_SHAPE_PROXYTYPE)
-  {
-    appendConeSurfaceSamples(*static_cast<const btConeShape*>(convex), query_vertices);
-  }
 
   if (query_vertices.size() == 0)
   {
-    // Same limitation as stock Bullet: only shapes that expose query points or have an explicit
-    // surface sampler can be tested against an SDF. Fail loudly instead, once per pair (this
-    // method runs every contact test).
     if (!m_warned_unsupported)
     {
       CONSOLE_BRIDGE_logWarn("Convex shape type '%s' cannot be collision checked against a signed distance field; "
-                             "only spheres, capsules, cylinders, cones and polyhedral shapes are supported. No "
-                             "contacts will be reported for this pair. Consider approximating this shape with a "
-                             "capsule or a convex hull instead.",
+                             "only boxes, spheres, capsules, cylinders, cones and polyhedral shapes are supported. "
+                             "No contacts will be reported for this pair.",
                              convex->getName());
       m_warned_unsupported = true;
     }
@@ -296,7 +214,7 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
   }
   resultOut->setPersistentManifold(m_manifoldPtr);
 
-  const btScalar max_dist = query_offset + resultOut->m_closestPointDistanceThreshold + SIMD_EPSILON;
+  const btScalar max_dist = resultOut->m_closestPointDistanceThreshold + SIMD_EPSILON;
 
   for (int v = 0; v < query_vertices.size(); v++)
   {
@@ -313,11 +231,6 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
         normal_local.safeNormalize();
         btVector3 normal = sdfBodyWrap->getWorldTransform().getBasis() * normal_local;
 
-        if (query_offset > 0)
-        {
-          dist -= query_offset;
-          vtx_world_space -= query_offset * normal;
-        }
         resultOut->addContactPoint(normal, vtx_world_space - normal * dist, dist);
       }
     }
