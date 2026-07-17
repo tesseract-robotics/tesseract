@@ -22,18 +22,172 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btCollisionObjectWrapper.h>
 #include <BulletCollision/CollisionDispatch/btManifoldResult.h>
 #include <BulletCollision/CollisionShapes/btCapsuleShape.h>
+#include <BulletCollision/CollisionShapes/btConeShape.h>
 #include <BulletCollision/CollisionShapes/btConvexShape.h>
+#include <BulletCollision/CollisionShapes/btCylinderShape.h>
 #include <BulletCollision/CollisionShapes/btPolyhedralConvexShape.h>
 #include <BulletCollision/CollisionShapes/btSdfCollisionShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <console_bridge/console.h>
 #include <cmath>
+#include <functional>
+#include <utility>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/bullet/tesseract_convex_sdf_algorithm.h>
 
 namespace tesseract::collision::bullet_internal
 {
+namespace
+{
+constexpr int MIN_ANGULAR_INTERVALS = 8;
+constexpr int MAX_ANGULAR_INTERVALS = 64;
+constexpr int MAX_LINEAR_INTERVALS = 64;
+constexpr btScalar SURFACE_INTERVALS_PER_MIN_DIMENSION = btScalar(8.);
+
+/** @brief A rectangular parameterization of one exact primitive surface patch. */
+struct ConvexSurfacePatch
+{
+  std::function<btVector3(btScalar, btScalar)> evaluate;
+  btScalar u_length;
+  btScalar v_length;
+  bool u_is_periodic;
+};
+
+int getIntervalCount(btScalar length, btScalar target_spacing, int minimum, int maximum)
+{
+  if (length <= SIMD_EPSILON || target_spacing <= SIMD_EPSILON)
+    return minimum;
+
+  return btMax(minimum, btMin(static_cast<int>(std::ceil(length / target_spacing)), maximum));
+}
+
+void appendUniquePoint(btAlignedObjectArray<btVector3>& points, const btVector3& point)
+{
+  constexpr auto duplicate_tolerance_squared = btScalar(1e-12);
+  for (int i = 0; i < points.size(); ++i)
+  {
+    if (points[i].distance2(point) <= duplicate_tolerance_squared)
+      return;
+  }
+  points.push_back(point);
+}
+
+/**
+ * @brief Sample a primitive surface patch with density selected from its physical dimensions.
+ *
+ * The parameterization keeps generated points on the exact primitive surface. Interval counts
+ * adapt independently to each patch dimension and are bounded to keep narrowphase cost finite.
+ */
+void sampleSurfacePatch(const ConvexSurfacePatch& patch,
+                        btScalar target_spacing,
+                        btAlignedObjectArray<btVector3>& points)
+{
+  const int u_intervals = getIntervalCount(
+      patch.u_length, target_spacing, patch.u_is_periodic ? MIN_ANGULAR_INTERVALS : 1, MAX_ANGULAR_INTERVALS);
+  const int v_intervals = getIntervalCount(patch.v_length, target_spacing, 1, MAX_LINEAR_INTERVALS);
+  const int u_samples = patch.u_is_periodic ? u_intervals : u_intervals + 1;
+
+  for (int v = 0; v <= v_intervals; ++v)
+  {
+    const btScalar v_parameter = btScalar(v) / btScalar(v_intervals);
+    for (int u = 0; u < u_samples; ++u)
+    {
+      const btScalar u_parameter = btScalar(u) / btScalar(u_intervals);
+      appendUniquePoint(points, patch.evaluate(u_parameter, v_parameter));
+    }
+  }
+}
+
+std::pair<int, int> getRadialAxes(int up_axis)
+{
+  switch (up_axis)
+  {
+    case 0:
+      return { 1, 2 };
+    case 1:
+      return { 0, 2 };
+    default:
+      return { 0, 1 };
+  }
+}
+
+void appendCylinderSurfaceSamples(const btCylinderShape& cylinder, btAlignedObjectArray<btVector3>& points)
+{
+  const int up_axis = cylinder.getUpAxis();
+  const auto radial_axes = getRadialAxes(up_axis);
+  const int radial_axis_1 = radial_axes.first;
+  const int radial_axis_2 = radial_axes.second;
+  const btScalar radius = cylinder.getRadius();
+  const btScalar half_height = cylinder.getHalfExtentsWithoutMargin()[up_axis];
+  const btScalar target_spacing = btMin(radius, btScalar(2.) * half_height) / SURFACE_INTERVALS_PER_MIN_DIMENSION;
+
+  const auto make_point = [=](btScalar radial_distance, btScalar angle, btScalar height) {
+    btVector3 point(0, 0, 0);
+    point[radial_axis_1] = radial_distance * btCos(angle);
+    point[radial_axis_2] = radial_distance * btSin(angle);
+    point[up_axis] = height;
+    return point;
+  };
+
+  sampleSurfacePatch({ [=](btScalar u, btScalar v) {
+                        return make_point(radius, SIMD_2_PI * u, -half_height + (btScalar(2.) * half_height * v));
+                      },
+                       SIMD_2_PI * radius,
+                       btScalar(2.) * half_height,
+                       true },
+                     target_spacing,
+                     points);
+
+  for (const btScalar height : { -half_height, half_height })
+  {
+    sampleSurfacePatch({ [=](btScalar u, btScalar v) { return make_point(radius * v, SIMD_2_PI * u, height); },
+                         SIMD_2_PI * radius,
+                         radius,
+                         true },
+                       target_spacing,
+                       points);
+  }
+}
+
+void appendConeSurfaceSamples(const btConeShape& cone, btAlignedObjectArray<btVector3>& points)
+{
+  const int up_axis = cone.getConeUpIndex();
+  const auto radial_axes = getRadialAxes(up_axis);
+  const int radial_axis_1 = radial_axes.first;
+  const int radial_axis_2 = radial_axes.second;
+  const btScalar radius = cone.getRadius();
+  const btScalar height = cone.getHeight();
+  const btScalar half_height = height / btScalar(2.);
+  const btScalar slant_height = btSqrt((radius * radius) + (height * height));
+  const btScalar target_spacing = btMin(radius, height) / SURFACE_INTERVALS_PER_MIN_DIMENSION;
+
+  const auto make_point = [=](btScalar radial_distance, btScalar angle, btScalar axial_position) {
+    btVector3 point(0, 0, 0);
+    point[radial_axis_1] = radial_distance * btCos(angle);
+    point[radial_axis_2] = radial_distance * btSin(angle);
+    point[up_axis] = axial_position;
+    return point;
+  };
+
+  sampleSurfacePatch({ [=](btScalar u, btScalar v) {
+                        return make_point(radius * (btScalar(1.) - v), SIMD_2_PI * u, -half_height + (height * v));
+                      },
+                       SIMD_2_PI * radius,
+                       slant_height,
+                       true },
+                     target_spacing,
+                     points);
+
+  sampleSurfacePatch({ [=](btScalar u, btScalar v) { return make_point(radius * v, SIMD_2_PI * u, -half_height); },
+                       SIMD_2_PI * radius,
+                       radius,
+                       true },
+                     target_spacing,
+                     points);
+}
+}  // namespace
+
 TesseractConvexSdfAlgorithm::TesseractConvexSdfAlgorithm(btPersistentManifold* mf,
                                                          const btCollisionAlgorithmConstructionInfo& ci,
                                                          const btCollisionObjectWrapper* /*body0Wrap*/,
@@ -108,18 +262,26 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
       query_vertices.push_back(vtx);
     }
   }
+  else if (convex->getShapeType() == CYLINDER_SHAPE_PROXYTYPE)
+  {
+    appendCylinderSurfaceSamples(*static_cast<const btCylinderShape*>(convex), query_vertices);
+  }
+  else if (convex->getShapeType() == CONE_SHAPE_PROXYTYPE)
+  {
+    appendConeSurfaceSamples(*static_cast<const btConeShape*>(convex), query_vertices);
+  }
 
   if (query_vertices.size() == 0)
   {
-    // Same limitation as stock Bullet: only shapes that expose query points can be tested against
-    // an SDF, so cylinders and cones silently miss every contact. Fail loudly instead, once per
-    // pair (this method runs every contact test).
+    // Same limitation as stock Bullet: only shapes that expose query points or have an explicit
+    // surface sampler can be tested against an SDF. Fail loudly instead, once per pair (this
+    // method runs every contact test).
     if (!m_warned_unsupported)
     {
       CONSOLE_BRIDGE_logWarn("Convex shape type '%s' cannot be collision checked against a signed distance field; "
-                             "only spheres, capsules and polyhedral shapes are supported. No contacts will be "
-                             "reported for this pair. Consider approximating this shape with a capsule or a convex "
-                             "hull instead.",
+                             "only spheres, capsules, cylinders, cones and polyhedral shapes are supported. No "
+                             "contacts will be reported for this pair. Consider approximating this shape with a "
+                             "capsule or a convex hull instead.",
                              convex->getName());
       m_warned_unsupported = true;
     }

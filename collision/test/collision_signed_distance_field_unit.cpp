@@ -337,38 +337,87 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHBox)  // NOLINT
   runSDFBoxTest(checker);
 }
 
-TEST(TesseractCollisionSignedDistanceFieldUnit, NonPolyhedralProbeUnsupported)  // NOLINT
+void runSDFCurvedPrimitiveTest(DiscreteContactManager& checker,
+                               const CollisionShapeConstPtr& primitive,
+                               const std::string& primitive_link)
 {
-  // Bullet's SDF narrowphase samples the field at the convex shape's query points, which only
-  // exist for spheres, capsules and polyhedral shapes. Other non-polyhedral probes
-  // (cylinder/cone) produce no contacts even when overlapping; a warning is logged once per
-  // pair. This locks in that documented limitation so a behavior change is caught.
-  BulletDiscreteSimpleManager checker;
-
   CollisionShapesConst sdf_shapes{ makeSphereSDF() };
   tesseract::common::VectorIsometry3d sdf_poses{ Eigen::Isometry3d::Identity() };
   checker.addCollisionObject("sdf_link", 0, sdf_shapes, sdf_poses, true);
 
-  CollisionShapesConst cylinder_shapes{ std::make_shared<tesseract::geometry::Cylinder>(0.1, 0.2) };
-  tesseract::common::VectorIsometry3d cylinder_poses{ Eigen::Isometry3d::Identity() };
-  checker.addCollisionObject("cylinder_link", 0, cylinder_shapes, cylinder_poses, true);
+  CollisionShapesConst primitive_shapes{ primitive };
+  tesseract::common::VectorIsometry3d primitive_poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject(primitive_link, 0, primitive_shapes, primitive_poses, true);
 
-  checker.setActiveCollisionObjects({ "sdf_link", "cylinder_link" });
+  checker.setActiveCollisionObjects({ "sdf_link", primitive_link });
   checker.setDefaultCollisionMargin(0.0);
 
-  // Cylinder center inside the SDF surface -- a supported probe would report penetration here.
+  // Place the primitive across the SDF surface. Sampling the exact barrel/side and cap patches
+  // must produce at least one penetrating contact.
   tesseract::common::TransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
-  Eigen::Isometry3d cylinder_tf = Eigen::Isometry3d::Identity();
-  cylinder_tf.translation().x() = 0.45;
-  location["cylinder_link"] = cylinder_tf;
+  Eigen::Isometry3d primitive_tf = Eigen::Isometry3d::Identity();
+  primitive_tf.translation().x() = 0.45;
+  location[primitive_link] = primitive_tf;
   checker.setCollisionObjectsTransform(location);
 
   ContactResultMap result;
   ContactResultVector result_vector;
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_LT(result_vector[0].distance, 0.0);
+  EXPECT_NEAR(result_vector[0].normal.norm(), 1.0, 1e-3);
+
+  // At this pose both primitives are separated from the sphere but remain inside a 5 cm pair
+  // margin. This verifies that sampled primitive contacts preserve Tesseract's margin contract.
+  checker.setDefaultCollisionMargin(0.05);
+  primitive_tf.translation().x() = 0.63;
+  checker.setCollisionObjectsTransform(primitive_link, primitive_tf);
+
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_GT(result_vector[0].distance, 0.0);
+  EXPECT_LE(result_vector[0].distance, 0.05);
+
+  // Move beyond the primitive extent and pair margin.
+  primitive_tf.translation().x() = 0.8;
+  checker.setCollisionObjectsTransform(primitive_link, primitive_tf);
+
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
   EXPECT_TRUE(result_vector.empty());
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleCylinder)  // NOLINT
+{
+  BulletDiscreteSimpleManager checker;
+  runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cylinder>(0.1, 0.2), "cylinder_link");
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHCylinder)  // NOLINT
+{
+  BulletDiscreteBVHManager checker;
+  runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cylinder>(0.1, 0.2), "cylinder_link");
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteSimpleCone)  // NOLINT
+{
+  BulletDiscreteSimpleManager checker;
+  runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cone>(0.1, 0.2), "cone_link");
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHCone)  // NOLINT
+{
+  BulletDiscreteBVHManager checker;
+  runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cone>(0.1, 0.2), "cone_link");
 }
 
 TEST(TesseractCollisionSignedDistanceFieldUnit, CastManagerRejects)  // NOLINT

@@ -40,7 +40,8 @@ namespace tesseract::collision::bullet_internal
  * (TrajOpt collision costs, contact-check gates) require those contacts, so this algorithm
  * replicates Bullet's SDF vertex query but widens the acceptance band by the pair's contact
  * distance threshold. It also adds capsule support (absent in stock Bullet) by sampling the
- * field along the capsule's axis segment with a radius offset.
+ * field along the capsule's axis segment with a radius offset, and cylinder/cone support through
+ * dimension-adaptive sampling of exact parametric surface patches.
  */
 class TesseractConvexSdfAlgorithm : public btActivatingCollisionAlgorithm
 {
