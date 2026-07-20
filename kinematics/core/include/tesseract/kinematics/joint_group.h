@@ -81,7 +81,9 @@ public:
 
   /**
    * @brief Calculates tool pose of robot chain
-   * @details Throws an exception on failures (including uninitialized)
+   * @details Throws an exception on failures (including uninitialized). Overwrites the transform of every
+   * link in the group but does not clear @p transforms first; keys from another group persist. Reusing a
+   * scratch map without clearing is safe iff every key later read is a link of this group.
    * @param transforms The map to populate with transforms
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    */
