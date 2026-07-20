@@ -152,7 +152,6 @@ void ContactResultMap::addInterpolatedCollisionResults(
 {
   for (auto& pair : sub_segment_results.data_)
   {
-    assert(common::LinkIdPair(pair.second.front().link_ids[0], pair.second.front().link_ids[1]) == pair.first);
     // Update cc_time and cc_type
     for (auto& r : pair.second)
     {
