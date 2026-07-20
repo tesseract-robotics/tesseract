@@ -287,12 +287,13 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::comm
 void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
                                                            const tesseract::common::LinkIdTransformMap& pose2)
 {
-  for (const auto& id : getCollisionObjects())
+  assert(pose1.size() == pose2.size());
+  for (const auto& [id, tf1] : pose1)
   {
-    auto it1 = pose1.find(id);
     auto it2 = pose2.find(id);
-    if (it1 != pose1.end() && it2 != pose2.end())
-      setCollisionObjectsTransform(id, it1->second, it2->second);
+    assert(it2 != pose2.end());
+    if (it2 != pose2.end())
+      setCollisionObjectsTransform(id, tf1, it2->second);  // inner call no-ops for a non-object id
   }
 }
 
