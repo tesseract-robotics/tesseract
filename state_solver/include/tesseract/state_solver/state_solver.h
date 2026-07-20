@@ -117,6 +117,10 @@ public:
    *
    * This does not change the internal state of the solver.
    *
+   * This overwrites the transform of every link in the solver's tree but does not clear @p link_transforms
+   * first; keys from a different tree persist. Reusing a scratch map without clearing is safe iff every key
+   * later read is a link of this solver.
+   *
    * @param link_transforms The link_transforms to populate with data.
    * @param joint_ids A list of joint IDs to change.
    * @param joint_values The joint values
@@ -129,6 +133,11 @@ public:
 
   /**
    * @brief Get link transforms without applying floating joint values
+   *
+   * This overwrites the transform of every link in the solver's tree but does not clear @p link_transforms
+   * first; keys from a different tree persist. Reusing a scratch map without clearing is safe iff every key
+   * later read is a link of this solver.
+   *
    * @param link_transforms The link_transforms to populate with data.
    * @param joint_ids A list of joint IDs to change.
    * @param joint_values The joint values
