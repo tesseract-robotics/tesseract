@@ -186,6 +186,8 @@ public:
    * @brief Set a series of cast(moving) collision object's transforms
    * @param pose1 A start transform map <LinkId, pose>
    * @param pose2 An end transform map <LinkId, pose>
+   * @note pose1 and pose2 must cover the same objects — a swept hull needs both endpoints; backends assert
+   *       this in debug builds. Objects absent from both maps are left unmoved (a legitimate partial update).
    */
   virtual void setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& pose1,
                                             const tesseract::common::LinkIdTransformMap& pose2) = 0;
