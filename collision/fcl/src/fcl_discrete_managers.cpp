@@ -38,6 +38,8 @@
  */
 
 #include <cassert>
+#include <stdexcept>
+#include <string>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
@@ -182,7 +184,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
   if (it != link2cow_.end())
   {
     const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
-    // Note: If the transform has not changed do not updated to prevent unnecessary re-balancing of the BVH tree
+    // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
     if (!cur_tf.translation().isApprox(pose.translation(), 1e-8) || !cur_tf.rotation().isApprox(pose.rotation(), 1e-8))
     {
       it->second->setCollisionObjectsTransform(pose);
@@ -215,7 +217,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
     if (it != link2cow_.end())
     {
       const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
-      // Note: If the transform has not changed do not updated to prevent unnecessary re-balancing of the BVH tree
+      // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
       if (!cur_tf.translation().isApprox(tf.translation(), 1e-8) || !cur_tf.rotation().isApprox(tf.rotation(), 1e-8))
       {
         it->second->setCollisionObjectsTransform(tf);
@@ -230,6 +232,43 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
         }
       }
     }
+  }
+
+  // This is because FCL supports batch update which only re-balances the tree once
+  if (!static_update_.empty())
+    static_manager_->update(static_update_);
+
+  if (!dynamic_update_.empty())
+    dynamic_manager_->update(dynamic_update_);
+}
+
+void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                                         const tesseract::common::VectorIsometry3d& poses)
+{
+  if (ids.size() != poses.size())
+    throw std::runtime_error("FCLDiscreteBVHManager, setCollisionObjectsTransform received " +
+                             std::to_string(ids.size()) + " ids but " + std::to_string(poses.size()) + " poses!");
+
+  static_update_.clear();
+  dynamic_update_.clear();
+  for (std::size_t i = 0; i < ids.size(); ++i)
+  {
+    auto it = link2cow_.find(ids[i]);
+    if (it == link2cow_.end())
+      continue;
+
+    const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
+    // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
+    if (cur_tf.translation().isApprox(poses[i].translation(), 1e-8) &&
+        cur_tf.rotation().isApprox(poses[i].rotation(), 1e-8))
+      continue;
+
+    it->second->setCollisionObjectsTransform(poses[i]);
+    std::vector<CollisionObjectRawPtr>& co = it->second->getCollisionObjectsRaw();
+    if (it->second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+      static_update_.insert(static_update_.end(), co.begin(), co.end());
+    else
+      dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
   }
 
   // This is because FCL supports batch update which only re-balances the tree once
