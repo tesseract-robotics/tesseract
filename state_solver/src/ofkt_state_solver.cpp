@@ -375,7 +375,8 @@ void OFKTStateSolver::getLinkTransforms(tesseract::common::LinkIdTransformMap& l
   tesseract::common::JointIdTransformMap floating_joints{ current_state_.floating_joints };
   overlayFloatingJointsOrThrow(floating_joints, floating_joint_values, "OFKTStateSolver::getLinkTransforms");
 
-  link_transforms = current_state_.link_transforms;
+  for (const auto& [k, v] : current_state_.link_transforms)
+    link_transforms.insert_or_assign(k, v);
   update(link_transforms, joints, floating_joints, root_.get(), parent_frame, false);
 }
 
@@ -391,7 +392,8 @@ void OFKTStateSolver::getLinkTransforms(tesseract::common::LinkIdTransformMap& l
   for (std::size_t i = 0; i < joint_ids.size(); ++i)
     joints[joint_ids[i]] = joint_values[static_cast<long>(i)];
 
-  link_transforms = current_state_.link_transforms;
+  for (const auto& [k, v] : current_state_.link_transforms)
+    link_transforms.insert_or_assign(k, v);
   update(link_transforms, joints, current_state_.floating_joints, root_.get(), parent_frame, false);
 }
 
