@@ -54,6 +54,12 @@ void load(Archive& ar, SceneState& obj)
   using tesseract::common::JointId;
   using tesseract::common::LinkId;
 
+  // load overwrites the target; clear so stale keys from a reused object do not survive.
+  obj.joints.clear();
+  obj.floating_joints.clear();
+  obj.link_transforms.clear();
+  obj.joint_transforms.clear();
+
   std::unordered_map<std::string, double> joints_str;
   ar(cereal::make_nvp("joints", joints_str));
   for (const auto& [key, val] : joints_str)
