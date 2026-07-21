@@ -24,6 +24,8 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <sstream>
+#include <cereal/archives/json.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/geometries.h>
@@ -244,6 +246,56 @@ TEST(TesseractSceneGraphSerializationUnit, SceneStateWithFloatingJoints)  // NOL
   tf.translate(Eigen::Vector3d(0.5, -0.25, 1.0));
   object->floating_joints["floating_1"] = tf;
   tesseract::common::testSerialization<SceneState>(*object, "SceneState");
+}
+
+TEST(TesseractSceneGraphSerializationUnit, SceneStateCerealWireIsNameSorted)  // NOLINT
+{
+  // The SceneState save emits its id-keyed maps in name-sorted order so the archive is deterministic
+  // regardless of hash/bucket layout. Keys are inserted out of alphabetical order; the wire must
+  // still list them sorted. Covers both the plain std::map path (joints) and the Eigen-aligned map
+  // path (link_transforms). Load is key-driven and does not depend on this order.
+  SceneState object;
+  object.joints["j_charlie"] = 1.0;
+  object.joints["j_alpha"] = 2.0;
+  object.joints["j_delta"] = 3.0;
+  object.joints["j_bravo"] = 4.0;
+
+  Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
+  object.link_transforms["lt_yankee"] = tf;
+  object.link_transforms["lt_xray"] = tf;
+  object.link_transforms["lt_zulu"] = tf;
+  object.link_transforms["lt_whiskey"] = tf;
+
+  std::stringstream ss;
+  {
+    cereal::JSONOutputArchive ar(ss);
+    ar(cereal::make_nvp("scene_state", object));
+  }
+  const std::string wire = ss.str();
+
+  const auto ja = wire.find("j_alpha");
+  const auto jb = wire.find("j_bravo");
+  const auto jc = wire.find("j_charlie");
+  const auto jd = wire.find("j_delta");
+  ASSERT_NE(ja, std::string::npos) << wire;
+  ASSERT_NE(jb, std::string::npos) << wire;
+  ASSERT_NE(jc, std::string::npos) << wire;
+  ASSERT_NE(jd, std::string::npos) << wire;
+  EXPECT_LT(ja, jb) << "joints wire order must be sorted by name: " << wire;
+  EXPECT_LT(jb, jc) << "joints wire order must be sorted by name: " << wire;
+  EXPECT_LT(jc, jd) << "joints wire order must be sorted by name: " << wire;
+
+  const auto lw = wire.find("lt_whiskey");
+  const auto lx = wire.find("lt_xray");
+  const auto ly = wire.find("lt_yankee");
+  const auto lz = wire.find("lt_zulu");
+  ASSERT_NE(lw, std::string::npos) << wire;
+  ASSERT_NE(lx, std::string::npos) << wire;
+  ASSERT_NE(ly, std::string::npos) << wire;
+  ASSERT_NE(lz, std::string::npos) << wire;
+  EXPECT_LT(lw, lx) << "link_transforms wire order must be sorted by name: " << wire;
+  EXPECT_LT(lx, ly) << "link_transforms wire order must be sorted by name: " << wire;
+  EXPECT_LT(ly, lz) << "link_transforms wire order must be sorted by name: " << wire;
 }
 
 int main(int argc, char** argv)
