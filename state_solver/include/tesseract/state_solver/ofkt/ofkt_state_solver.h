@@ -205,6 +205,14 @@ private:
                               const tesseract::common::JointIdTransformMap& floating_joint_values) const;
 
   /**
+   * @brief Unlocked implementation of the positional getState overloads. Caller must hold at least a
+   * shared lock. Writes joint_values into a copy of current_state_ at the parallel joint_ids.
+   */
+  SceneState getStateUnlocked(const std::vector<tesseract::common::JointId>& joint_ids,
+                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const tesseract::common::JointIdTransformMap& floating_joint_values) const;
+
+  /**
    * @brief Apply floating joint transforms to current_state_ and propagate transforms from the root.
    * Caller must hold a unique lock.
    */
