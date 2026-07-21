@@ -9,7 +9,7 @@
 #include <cereal/cereal.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
-#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/map.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/utility.hpp>
 #include <cereal/types/polymorphic.hpp>
@@ -25,20 +25,22 @@ namespace tesseract::scene_graph
 template <class Archive>
 void save(Archive& ar, const SceneState& obj)
 {
-  // Save as string-keyed maps for backwards compatibility
-  std::unordered_map<std::string, double> joints_str;
+  // Save as string-keyed maps for backwards compatibility. Ordered (std::map) so the archive lists
+  // elements in a deterministic name-sorted order rather than unspecified hash order; the load path
+  // is key-driven and does not depend on element order.
+  std::map<std::string, double> joints_str;
   for (const auto& [id, val] : obj.joints)
     joints_str[id.name()] = val;
 
-  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> floating_joints_str;
+  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> floating_joints_str;
   for (const auto& [id, tf] : obj.floating_joints)
     floating_joints_str[id.name()] = tf;
 
-  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> link_transforms_str;
+  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> link_transforms_str;
   for (const auto& [id, tf] : obj.link_transforms)
     link_transforms_str[id.name()] = tf;
 
-  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
+  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
   for (const auto& [id, tf] : obj.joint_transforms)
     joint_transforms_str[id.name()] = tf;
 
@@ -60,22 +62,22 @@ void load(Archive& ar, SceneState& obj)
   obj.link_transforms.clear();
   obj.joint_transforms.clear();
 
-  std::unordered_map<std::string, double> joints_str;
+  std::map<std::string, double> joints_str;
   ar(cereal::make_nvp("joints", joints_str));
   for (const auto& [key, val] : joints_str)
     obj.joints[JointId(key)] = val;
 
-  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> floating_joints_str;
+  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> floating_joints_str;
   ar(cereal::make_nvp("floating_joints", floating_joints_str));
   for (const auto& [key, tf] : floating_joints_str)
     obj.floating_joints[JointId(key)] = tf;
 
-  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> link_transforms_str;
+  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> link_transforms_str;
   ar(cereal::make_nvp("link_transforms", link_transforms_str));
   for (const auto& [key, tf] : link_transforms_str)
     obj.link_transforms[LinkId(key)] = tf;
 
-  tesseract::common::AlignedUnorderedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
+  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
   ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
   for (const auto& [key, tf] : joint_transforms_str)
     obj.joint_transforms[JointId(key)] = tf;
