@@ -53,7 +53,7 @@ getLinksInFixedJointKinematicTree(const tesseract::common::LinkId& input_link,
                                   const tesseract::scene_graph::SceneGraph& scene_graph)
 {
   // Create a set to contain the links of the fixed-joint kinematic tree
-  std::set<tesseract::common::LinkId> fixed_joint_tree_links;
+  std::unordered_set<tesseract::common::LinkId> fixed_joint_tree_links;
 
   // Create a list of links to traverse, populated initially with only the link in question
   std::vector<tesseract::common::LinkId> links = { input_link };

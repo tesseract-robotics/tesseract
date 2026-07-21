@@ -484,7 +484,7 @@ protected:
 
   KDLTreeData& data_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
   bool started_{ false };
-  std::map<LinkId, KDL::Frame> segment_transforms_;
+  std::unordered_map<LinkId, KDL::Frame> segment_transforms_;
   std::vector<LinkId> link_ids_;
 
   const std::vector<JointId>& joint_ids_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
