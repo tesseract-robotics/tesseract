@@ -5213,8 +5213,10 @@ TEST(CollisionMarginPairDataUnit, CollidingPairsCoexist)  // NOLINT
   margins.setCollisionMargin(b, x, 0.02);  // previously threw
   ASSERT_TRUE(margins.getCollisionMargin(a, x).has_value());
   ASSERT_TRUE(margins.getCollisionMargin(b, x).has_value());
+  // NOLINTBEGIN(bugprone-unchecked-optional-access)
   EXPECT_DOUBLE_EQ(*margins.getCollisionMargin(a, x), 0.01);
   EXPECT_DOUBLE_EQ(*margins.getCollisionMargin(b, x), 0.02);
+  // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
 TEST(CollisionMarginPairDataUnit, ObjectMaxMarginIsNameExact)  // NOLINT
@@ -5228,9 +5230,11 @@ TEST(CollisionMarginPairDataUnit, ObjectMaxMarginIsNameExact)  // NOLINT
   margins.setCollisionMargin(b, x, 0.01);
   ASSERT_TRUE(margins.getMaxCollisionMargin(a).has_value());
   ASSERT_TRUE(margins.getMaxCollisionMargin(b).has_value());
+  // NOLINTBEGIN(bugprone-unchecked-optional-access)
   EXPECT_DOUBLE_EQ(*margins.getMaxCollisionMargin(a), 0.05);
   EXPECT_DOUBLE_EQ(*margins.getMaxCollisionMargin(b), 0.01);  // pre-fix: merged to 0.05
   EXPECT_DOUBLE_EQ(*margins.getMaxCollisionMargin(x), 0.05);  // x participates in both pairs
+  // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
 int main(int argc, char** argv)

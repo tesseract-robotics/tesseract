@@ -32,11 +32,11 @@ struct NameIdTestAccess
 {
   /** @brief Construct an id with an explicit value/name combination, e.g. a manufactured hash collision. */
   template <typename IdT>
-  [[nodiscard]] static IdT create(NameIdValue value, std::string name)
+  [[nodiscard]] static IdT create(NameIdValue value, const std::string& name)
   {
     IdT id;
     id.value_ = value;
-    id.name_ = std::move(name);
+    id.name_ = name;
     return id;
   }
 };
