@@ -52,7 +52,7 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
       throw std::runtime_error("REPInvKinFactory, missing 'manipulator_reach' entry!");
 
     // Get positioner sample resolution
-    std::map<common::JointId, std::array<double, 3>> sample_res_map;
+    std::unordered_map<common::JointId, std::array<double, 3>> sample_res_map;
     if (YAML::Node sample_res_node = config["positioner_sample_resolution"])
     {
       for (auto it = sample_res_node.begin(); it != sample_res_node.end(); ++it)

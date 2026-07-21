@@ -933,7 +933,7 @@ std::vector<LinkId> SceneGraph::getJointChildrenIds(const JointId& id) const
 
 std::vector<LinkId> SceneGraph::getJointChildrenIds(const std::vector<JointId>& ids) const
 {
-  std::set<LinkId> link_ids;
+  std::unordered_set<LinkId> link_ids;
   for (const auto& id : ids)
   {
     std::vector<LinkId> joint_children = getJointChildrenIds(id);
