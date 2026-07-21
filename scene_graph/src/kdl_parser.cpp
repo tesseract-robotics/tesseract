@@ -455,10 +455,11 @@ protected:
   {
     auto it = joint_values_.find(parent_joint->getId());
     if (it == joint_values_.end())
-      throw std::runtime_error(
-          "kdl_sub_tree_builder: joint_values is missing a value for non-fixed, non-floating joint '" +
-          parent_joint->getName() +
-          "'. Caller must supply values for every joint reachable from the root, not only those in joint_ids_.");
+      throw std::runtime_error("kdl_sub_tree_builder: joint_values is missing a value for non-fixed, non-floating "
+                               "joint '" +
+                               parent_joint->getName() +
+                               "'. Caller must supply values for every joint reachable from the root, not only those "
+                               "in joint_ids_.");
     return it->second;
   }
 

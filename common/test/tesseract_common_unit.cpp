@@ -3163,8 +3163,11 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
   ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
   const auto& [stored_key, stored_entry] = *acm.getAllAllowedCollisions().begin();
   EXPECT_EQ(stored_key, key);
-  EXPECT_EQ(stored_key.first().name(), "link_a");
-  EXPECT_EQ(stored_key.second().name(), "link_b");
+  // The canonical slot is decided by hash value, which differs across std::hash<std::string>
+  // implementations; assert both names survived storage without assuming which slot each lands in.
+  const std::string f = stored_key.first().name();
+  const std::string s = stored_key.second().name();
+  EXPECT_TRUE((f == "link_a" && s == "link_b") || (f == "link_b" && s == "link_a")) << "first=" << f << " second=" << s;
   EXPECT_EQ(stored_entry.reason, "test_reason");
 
   // Equivalence with the two-LinkId form: an ACM populated via either path should match.

@@ -64,7 +64,7 @@ template <class Archive>
 void serialize(Archive& ar, AddTrajectoryLinkCommand& obj)
 {
   ar(cereal::base_class<Command>(&obj));
-  ar(cereal::make_nvp("link_name", obj.link_id_));  // name key; field is an id
+  ar(cereal::make_nvp("link_name", obj.link_id_));                // name key; field is an id
   ar(cereal::make_nvp("parent_link_name", obj.parent_link_id_));  // name key; field is an id
   ar(cereal::make_nvp("trajectory", obj.trajectory_));
   ar(cereal::make_nvp("replace_allowed", obj.replace_allowed_));
