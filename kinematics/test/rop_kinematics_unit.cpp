@@ -227,21 +227,11 @@ TEST(TesseractKinematicsUnit, ROPInvKinCopyAssignmentPreservesSolverNameUnit)  /
   Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(1, 1, 0.1);
 
   const std::string custom_name = "custom_rop_solver";
-  ROPInvKin source(*scene_graph,
-                   scene_state,
-                   opw_kin->clone(),
-                   2.5,
-                   positioner_kin->clone(),
-                   positioner_resolution,
-                   custom_name);
+  ROPInvKin source(
+      *scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution, custom_name);
   EXPECT_EQ(source.getSolverName(), custom_name);
 
-  ROPInvKin dest(*scene_graph,
-                 scene_state,
-                 opw_kin->clone(),
-                 2.5,
-                 positioner_kin->clone(),
-                 positioner_resolution);
+  ROPInvKin dest(*scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution);
   EXPECT_EQ(dest.getSolverName(), DEFAULT_ROP_INV_KIN_SOLVER_NAME);
 
   dest = source;  // operator= path

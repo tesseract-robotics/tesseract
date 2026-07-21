@@ -483,8 +483,11 @@ TEST(OrderedIdPairHybrid, KeyCarriesNames)  // NOLINT
   const tesseract::common::LinkId d("link_d");
   const tesseract::common::LinkIdPair p(c, d);
   EXPECT_TRUE(p == tesseract::common::LinkIdPair(d, c));
-  EXPECT_EQ(p.first().name(), "link_c");
-  EXPECT_EQ(p.second().name(), "link_d");
+  // The canonical slot is decided by hash value, which differs across std::hash<std::string>
+  // implementations; assert both names are carried without assuming which slot each lands in.
+  const std::string f = p.first().name();
+  const std::string s = p.second().name();
+  EXPECT_TRUE((f == "link_c" && s == "link_d") || (f == "link_d" && s == "link_c")) << "first=" << f << " second=" << s;
 }
 
 int main(int argc, char** argv)
