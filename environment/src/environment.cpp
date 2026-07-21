@@ -551,7 +551,7 @@ Environment::Implementation::getCurrentJointValues(const std::vector<tesseract::
 
 tesseract::common::JointIdTransformMap Environment::Implementation::getCurrentFloatingJointValues() const
 {
-  return current_state.getFloatingJointValues(state_solver->getFloatingJointIds());
+  return current_state.floating_joints;
 }
 
 tesseract::common::JointIdTransformMap Environment::Implementation::getCurrentFloatingJointValues(
