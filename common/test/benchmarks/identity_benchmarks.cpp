@@ -40,7 +40,7 @@ static void BM_PairConstruction(benchmark::State& state)
 {
   const auto ids = makeLinkIds(64);
   std::size_t i = 0;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     LinkIdPair pair(ids[i & 63U], ids[(i + 7) & 63U]);
     benchmark::DoNotOptimize(pair);
@@ -55,7 +55,7 @@ static void BM_PairAssign(benchmark::State& state)
   const auto ids = makeLinkIds(64);
   LinkIdPair pair;
   std::size_t i = 0;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     pair.assign(ids[i & 63U], ids[(i + 7) & 63U]);
     benchmark::DoNotOptimize(pair);
@@ -74,7 +74,7 @@ static void BM_AcmIsAllowed_PreconstructedPair_Hit(benchmark::State& state)
     for (std::size_t b = a + 1; b < ids.size(); ++b)
       keys.emplace_back(ids[a], ids[b]);
   std::size_t i = 0;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(acm.isCollisionAllowed(keys[i % keys.size()]));
     ++i;
@@ -93,7 +93,7 @@ static void BM_AcmIsAllowed_PreconstructedPair_Miss(benchmark::State& state)
   for (std::size_t a = 0; a < outsiders.size(); ++a)
     miss_keys.emplace_back(LinkId("unrelated_object_" + std::to_string(a)), ids[a]);
   std::size_t i = 0;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(acm.isCollisionAllowed(miss_keys[i % miss_keys.size()]));
     ++i;
@@ -107,7 +107,7 @@ static void BM_AcmIsAllowed_TwoIds_Hit(benchmark::State& state)
   const auto ids = makeLinkIds(64);
   const auto acm = makeAcm(ids);
   std::size_t i = 0;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(acm.isCollisionAllowed({ ids[i & 63U], ids[(i + 7) & 63U] }));
     ++i;
@@ -124,7 +124,7 @@ static void BM_MarginLookup_TwoIds(benchmark::State& state)
     for (std::size_t b = a + 1; b < ids.size(); ++b)
       margins.setCollisionMargin(ids[a], ids[b], 0.01);
   std::size_t i = 0;
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     benchmark::DoNotOptimize(margins.getCollisionMargin(ids[i & 63U], ids[(i + 7) & 63U]));
     ++i;
@@ -136,7 +136,7 @@ BENCHMARK(BM_MarginLookup_TwoIds);
 static void BM_PairMapPopulate(benchmark::State& state)
 {
   const auto ids = makeLinkIds(64);
-  for (auto _ : state)
+  for (auto _ : state)  // NOLINT
   {
     std::unordered_map<LinkIdPair, int> map;
     map.reserve(64);

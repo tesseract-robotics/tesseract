@@ -61,7 +61,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
         obj3_shapes.push_back(CollisionShapePtr(sphere->clone()));
         obj3_poses.push_back(sphere_pose);
 
-        link_names.push_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
+        link_names.emplace_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
 
         location[link_names.back()] = sphere_pose;
         location[link_names.back()].translation() = Eigen::Vector3d(
