@@ -1,8 +1,15 @@
 #ifndef TESSERACT_COLLISION_COLLISION_BOX_BOX_CAST_UNIT_H
 #define TESSERACT_COLLISION_COLLISION_BOX_BOX_CAST_UNIT_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/geometry/geometries.h>
+
+#include <unordered_set>
 
 namespace tesseract::collision::test_suite
 {
@@ -124,10 +131,10 @@ inline void runTest(ContinuousContactManager& checker)
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "moving_box_link", "static_box_link" });
 
-  std::vector<std::string> active_links{ "moving_box_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "moving_box_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -135,9 +142,9 @@ inline void runTest(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  std::vector<std::string> names = { "static_box_link" };
+  std::vector<tesseract::common::LinkId> link_ids = { "static_box_link" };
   tesseract::common::VectorIsometry3d transforms = { Eigen::Isometry3d::Identity() };
-  checker.setCollisionObjectsTransform(names, transforms);
+  checker.setCollisionObjectsTransform(link_ids, transforms);
 
   tesseract::common::VectorIsometry3d start_poses, end_poses;
   Eigen::Isometry3d start_pos, end_pos;
@@ -149,7 +156,8 @@ inline void runTest(ContinuousContactManager& checker)
   end_pos.translation()(1) = 3.8;
   start_poses.push_back(start_pos);
   end_poses.push_back(end_pos);
-  checker.setCollisionObjectsTransform({ "moving_box_link" }, start_poses, end_poses);
+  checker.setCollisionObjectsTransform(
+      std::vector<tesseract::common::LinkId>{ "moving_box_link" }, start_poses, end_poses);
 
   std::vector<ContactTestType> test_types = { ContactTestType::ALL, ContactTestType::CLOSEST, ContactTestType::FIRST };
 

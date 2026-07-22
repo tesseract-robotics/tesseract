@@ -62,8 +62,8 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
 
   double delta = 0.55;
 
-  std::vector<std::string> link_names;
-  tesseract::common::TransformMap location;
+  std::vector<tesseract::common::LinkId> link_ids;
+  tesseract::common::LinkIdTransformMap location;
   for (int x = 0; x < edge_size; ++x)
   {
     for (int y = 0; y < edge_size; ++y)
@@ -78,18 +78,18 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
         obj3_shapes.push_back(CollisionShapePtr(sphere->clone()));
         obj3_poses.push_back(sphere_pose);
 
-        link_names.push_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
+        link_ids.emplace_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
 
-        location[link_names.back()] = sphere_pose;
-        location[link_names.back()].translation() = Eigen::Vector3d(
+        location[link_ids.back()] = sphere_pose;
+        location[link_ids.back()].translation() = Eigen::Vector3d(
             static_cast<double>(x) * delta, static_cast<double>(y) * delta, static_cast<double>(z) * delta);
-        checker->addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses);
+        checker->addCollisionObject(link_ids.back(), 0, obj3_shapes, obj3_poses);
       }
     }
   }
 
   // Check if they are in collision
-  checker->setActiveCollisionObjects(link_names);
+  checker->setActiveCollisionObjects(link_ids);
   checker->setCollisionMarginData(CollisionMarginData(0.1));
   checker->setCollisionObjectsTransform(location);
 
@@ -153,8 +153,8 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   // Add Grid of spheres
   double delta = 0.55;
 
-  std::vector<std::string> link_names;
-  //  tesseract::common::TransformMap location;
+  std::vector<tesseract::common::LinkId> link_ids;
+  //  tesseract::common::LinkIdTransformMap location;
   CollisionShapesConst obj3_shapes;
   tesseract::common::VectorIsometry3d obj3_poses;
   for (int x = 0; x < edge_size; ++x)
@@ -173,8 +173,8 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
       }
     }
   }
-  link_names.emplace_back("grid_link");
-  checker->addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses);
+  link_ids.emplace_back("grid_link");
+  checker->addCollisionObject(link_ids.back(), 0, obj3_shapes, obj3_poses);
 
   // Add Single Sphere Link
   Eigen::Isometry3d sphere_pose;
@@ -186,11 +186,11 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   tesseract::common::VectorIsometry3d single_poses;
   single_shapes.push_back(CollisionShapePtr(sphere->clone()));
   single_poses.push_back(sphere_pose);
-  link_names.emplace_back("single_link");
-  checker->addCollisionObject(link_names.back(), 0, single_shapes, single_poses);
+  link_ids.emplace_back("single_link");
+  checker->addCollisionObject(link_ids.back(), 0, single_shapes, single_poses);
 
   // Check if they are in collision
-  checker->setActiveCollisionObjects(link_names);
+  checker->setActiveCollisionObjects(link_ids);
   checker->setCollisionMarginData(CollisionMarginData(0.1));
   //  checker->setCollisionObjectsTransform(location);
 

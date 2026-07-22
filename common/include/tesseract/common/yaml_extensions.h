@@ -709,24 +709,24 @@ struct convert<tesseract::common::TaskComposerPluginInfo>
 };
 
 template <>
-struct convert<tesseract::common::TransformMap>
+struct convert<tesseract::common::JointIdTransformMap>
 {
-  static Node encode(const tesseract::common::TransformMap& rhs)
+  static Node encode(const tesseract::common::JointIdTransformMap& rhs)
   {
     Node node;
     for (const auto& pair : rhs)
-      node[pair.first] = pair.second;
+      node[pair.first.name()] = pair.second;
 
     return node;
   }
 
-  static bool decode(const Node& node, tesseract::common::TransformMap& rhs)
+  static bool decode(const Node& node, tesseract::common::JointIdTransformMap& rhs)
   {
     if (!node.IsMap())
       return false;
 
     for (const auto& pair : node)
-      rhs[pair.first.as<std::string>()] = pair.second.as<Eigen::Isometry3d>();
+      rhs[tesseract::common::JointId(pair.first.as<std::string>())] = pair.second.as<Eigen::Isometry3d>();
 
     return true;
   }
@@ -749,7 +749,7 @@ struct convert<tesseract::common::CalibrationInfo>
   {
     const YAML::Node& joints_node = node["joints"];
 
-    rhs.joints = joints_node.as<tesseract::common::TransformMap>();
+    rhs.joints = joints_node.as<tesseract::common::JointIdTransformMap>();
 
     return true;
   }
@@ -844,16 +844,16 @@ struct convert<tesseract::common::PairsCollisionMarginData>
   static Node encode(const tesseract::common::PairsCollisionMarginData& rhs)
   {
     Node node(NodeType::Map);
-    for (const auto& pair : rhs)
+    for (const auto& [key, entry] : rhs)
     {
       Node key_node(NodeType::Sequence);
-      key_node.push_back(pair.first.first);
-      key_node.push_back(pair.first.second);
+      key_node.push_back(key.first().name());
+      key_node.push_back(key.second().name());
 
       // tell yaml-cpp “emit this sequence in [a, b] inline style”
       key_node.SetStyle(YAML::EmitterStyle::Flow);
 
-      node[key_node] = pair.second;
+      node[key_node] = entry.margin;
     }
 
     return node;
@@ -870,12 +870,20 @@ struct convert<tesseract::common::PairsCollisionMarginData>
       if (!key_node.IsSequence() || key_node.size() != 2)
         return false;
 
-      std::pair<std::string, std::string> key;
-      key.first = key_node[0].as<std::string>();
-      key.second = key_node[1].as<std::string>();
+      auto name1 = key_node[0].as<std::string>();
+      auto name2 = key_node[1].as<std::string>();
+      auto margin = it->second.as<double>();
 
-      auto v = it->second.as<double>();
-      rhs.emplace(std::move(key), v);
+      auto id1 = tesseract::common::LinkId(name1);
+      auto id2 = tesseract::common::LinkId(name2);
+      auto pair_key = tesseract::common::LinkIdPair(id1, id2);
+      // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
+      // always a genuine re-add of the same named pair — just refresh the payload.
+      auto [existing, inserted] = rhs.try_emplace(pair_key);
+      if (inserted)
+        existing->second = tesseract::common::PairMarginEntry{ margin };
+      else
+        existing->second.margin = margin;
     }
     return true;
   }
@@ -910,16 +918,16 @@ struct convert<tesseract::common::AllowedCollisionEntries>
   static Node encode(const tesseract::common::AllowedCollisionEntries& rhs)
   {
     Node node(NodeType::Map);
-    for (const auto& pair : rhs)
+    for (const auto& [key, entry] : rhs)
     {
       Node key_node(NodeType::Sequence);
-      key_node.push_back(pair.first.first);
-      key_node.push_back(pair.first.second);
+      key_node.push_back(key.first().name());
+      key_node.push_back(key.second().name());
 
       // tell yaml-cpp “emit this sequence in [a, b] inline style”
       key_node.SetStyle(YAML::EmitterStyle::Flow);
 
-      node[key_node] = pair.second;
+      node[key_node] = entry.reason;
     }
 
     return node;
@@ -936,12 +944,20 @@ struct convert<tesseract::common::AllowedCollisionEntries>
       if (!key_node.IsSequence() || key_node.size() != 2)
         return false;
 
-      std::pair<std::string, std::string> key;
-      key.first = key_node[0].as<std::string>();
-      key.second = key_node[1].as<std::string>();
+      auto name1 = key_node[0].as<std::string>();
+      auto name2 = key_node[1].as<std::string>();
+      auto reason = it->second.as<std::string>();
 
-      auto v = it->second.as<std::string>();
-      rhs.emplace(std::move(key), v);
+      auto id1 = tesseract::common::LinkId(name1);
+      auto id2 = tesseract::common::LinkId(name2);
+      auto pair_key = tesseract::common::LinkIdPair(id1, id2);
+      // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
+      // always a genuine re-add of the same named pair — just refresh the payload.
+      auto [existing, inserted] = rhs.try_emplace(pair_key);
+      if (inserted)
+        existing->second = tesseract::common::ACMEntry{ std::move(reason) };
+      else
+        existing->second.reason = std::move(reason);
     }
     return true;
   }

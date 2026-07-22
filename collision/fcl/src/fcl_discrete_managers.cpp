@@ -38,6 +38,8 @@
  */
 
 #include <cassert>
+#include <stdexcept>
+#include <string>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
@@ -61,8 +63,8 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
 {
   auto manager = std::make_unique<FCLDiscreteBVHManager>();
 
-  for (const auto& cow : link2cow_)
-    manager->addCollisionObject(cow.second->clone());
+  for (const auto& id : collision_objects_)
+    manager->addCollisionObject(link2cow_.at(id)->clone());
 
   manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(collision_margin_data_);
@@ -71,16 +73,16 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
   return manager;
 }
 
-bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
+bool FCLDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkId& id,
                                                const int& mask_id,
                                                const CollisionShapesConst& shapes,
                                                const tesseract::common::VectorIsometry3d& shape_poses,
                                                bool enabled)
 {
-  if (link2cow_.find(name) != link2cow_.end())
-    removeCollisionObject(name);
+  if (link2cow_.find(id) != link2cow_.end())
+    removeCollisionObject(id);
 
-  COW::Ptr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createFCLCollisionObject(id, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);
@@ -90,27 +92,28 @@ bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
   return false;
 }
 
-const CollisionShapesConst& FCLDiscreteBVHManager::getCollisionObjectGeometries(const std::string& name) const
+const CollisionShapesConst&
+FCLDiscreteBVHManager::getCollisionObjectGeometries(const tesseract::common::LinkId& id) const
 {
-  auto cow = link2cow_.find(name);
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
 }
 
 const tesseract::common::VectorIsometry3d&
-FCLDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
+FCLDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const tesseract::common::LinkId& id) const
 {
-  auto cow = link2cow_.find(name);
+  auto cow = link2cow_.find(id);
   return (cow != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
-bool FCLDiscreteBVHManager::hasCollisionObject(const std::string& name) const
+bool FCLDiscreteBVHManager::hasCollisionObject(const tesseract::common::LinkId& id) const
 {
-  return (link2cow_.find(name) != link2cow_.end());
+  return (link2cow_.find(id) != link2cow_.end());
 }
 
-bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
+bool FCLDiscreteBVHManager::removeCollisionObject(const tesseract::common::LinkId& id)
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     std::vector<CollisionObjectPtr>& objects = it->second->getCollisionObjects();
@@ -135,16 +138,17 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
         dynamic_manager_->unregisterObject(co.get());
     }
 
-    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
-    link2cow_.erase(name);
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
+    link2cow_.erase(it);
+    active_.erase(id);
     return true;
   }
   return false;
 }
 
-bool FCLDiscreteBVHManager::enableCollisionObject(const std::string& name)
+bool FCLDiscreteBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
@@ -153,9 +157,9 @@ bool FCLDiscreteBVHManager::enableCollisionObject(const std::string& name)
   return false;
 }
 
-bool FCLDiscreteBVHManager::disableCollisionObject(const std::string& name)
+bool FCLDiscreteBVHManager::disableCollisionObject(const tesseract::common::LinkId& id)
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
@@ -164,22 +168,23 @@ bool FCLDiscreteBVHManager::disableCollisionObject(const std::string& name)
   return false;
 }
 
-bool FCLDiscreteBVHManager::isCollisionObjectEnabled(const std::string& name) const
+bool FCLDiscreteBVHManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
     return it->second->m_enabled;
 
   return false;
 }
 
-void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
+void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
+                                                         const Eigen::Isometry3d& pose)
 {
-  auto it = link2cow_.find(name);
+  auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
     const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
-    // Note: If the transform has not changed do not updated to prevent unnecessary re-balancing of the BVH tree
+    // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
     if (!cur_tf.translation().isApprox(pose.translation(), 1e-8) || !cur_tf.rotation().isApprox(pose.rotation(), 1e-8))
     {
       it->second->setCollisionObjectsTransform(pose);
@@ -197,34 +202,73 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name
   }
 }
 
-void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+Eigen::Isometry3d FCLDiscreteBVHManager::getCollisionObjectsTransform(const tesseract::common::LinkId& id) const
+{
+  return link2cow_.at(id)->getCollisionObjectsTransform();
+}
+
+void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
+{
+  static_update_.clear();
+  dynamic_update_.clear();
+  for (const auto& [id, tf] : transforms)
+  {
+    auto it = link2cow_.find(id);
+    if (it != link2cow_.end())
+    {
+      const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
+      // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
+      if (!cur_tf.translation().isApprox(tf.translation(), 1e-8) || !cur_tf.rotation().isApprox(tf.rotation(), 1e-8))
+      {
+        it->second->setCollisionObjectsTransform(tf);
+        std::vector<CollisionObjectRawPtr>& co = it->second->getCollisionObjectsRaw();
+        if (it->second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+        {
+          static_update_.insert(static_update_.end(), co.begin(), co.end());
+        }
+        else
+        {
+          dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
+        }
+      }
+    }
+  }
+
+  // This is because FCL supports batch update which only re-balances the tree once
+  if (!static_update_.empty())
+    static_manager_->update(static_update_);
+
+  if (!dynamic_update_.empty())
+    dynamic_manager_->update(dynamic_update_);
+}
+
+void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
                                                          const tesseract::common::VectorIsometry3d& poses)
 {
-  assert(names.size() == poses.size());
+  if (ids.size() != poses.size())
+    throw std::runtime_error("FCLDiscreteBVHManager, setCollisionObjectsTransform received " +
+                             std::to_string(ids.size()) + " ids but " + std::to_string(poses.size()) + " poses!");
+
   static_update_.clear();
   dynamic_update_.clear();
-  for (auto i = 0U; i < names.size(); ++i)
+  for (std::size_t i = 0; i < ids.size(); ++i)
   {
-    auto it = link2cow_.find(names[i]);
-    if (it != link2cow_.end())
-    {
-      const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
-      // Note: If the transform has not changed do not updated to prevent unnecessary re-balancing of the BVH tree
-      if (!cur_tf.translation().isApprox(poses[i].translation(), 1e-8) ||
-          !cur_tf.rotation().isApprox(poses[i].rotation(), 1e-8))
-      {
-        it->second->setCollisionObjectsTransform(poses[i]);
-        std::vector<CollisionObjectRawPtr>& co = it->second->getCollisionObjectsRaw();
-        if (it->second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
-        {
-          static_update_.insert(static_update_.end(), co.begin(), co.end());
-        }
-        else
-        {
-          dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
-        }
-      }
-    }
+    auto it = link2cow_.find(ids[i]);
+    if (it == link2cow_.end())
+      continue;
+
+    const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
+    // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
+    if (cur_tf.translation().isApprox(poses[i].translation(), 1e-8) &&
+        cur_tf.rotation().isApprox(poses[i].rotation(), 1e-8))
+      continue;
+
+    it->second->setCollisionObjectsTransform(poses[i]);
+    std::vector<CollisionObjectRawPtr>& co = it->second->getCollisionObjectsRaw();
+    if (it->second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+      static_update_.insert(static_update_.end(), co.begin(), co.end());
+    else
+      dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
   }
 
   // This is because FCL supports batch update which only re-balances the tree once
@@ -235,47 +279,14 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::
     dynamic_manager_->update(dynamic_update_);
 }
 
-void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::TransformMap& transforms)
+const std::vector<tesseract::common::LinkId>& FCLDiscreteBVHManager::getCollisionObjects() const
 {
-  static_update_.clear();
-  dynamic_update_.clear();
-  for (const auto& transform : transforms)
-  {
-    auto it = link2cow_.find(transform.first);
-    if (it != link2cow_.end())
-    {
-      const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
-      // Note: If the transform has not changed do not updated to prevent unnecessary re-balancing of the BVH tree
-      if (!cur_tf.translation().isApprox(transform.second.translation(), 1e-8) ||
-          !cur_tf.rotation().isApprox(transform.second.rotation(), 1e-8))
-      {
-        it->second->setCollisionObjectsTransform(transform.second);
-        std::vector<CollisionObjectRawPtr>& co = it->second->getCollisionObjectsRaw();
-        if (it->second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
-        {
-          static_update_.insert(static_update_.end(), co.begin(), co.end());
-        }
-        else
-        {
-          dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
-        }
-      }
-    }
-  }
-
-  // This is because FCL supports batch update which only re-balances the tree once
-  if (!static_update_.empty())
-    static_manager_->update(static_update_);
-
-  if (!dynamic_update_.empty())
-    dynamic_manager_->update(dynamic_update_);
+  return collision_objects_;
 }
 
-const std::vector<std::string>& FCLDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
-
-void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
+void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::unordered_set<tesseract::common::LinkId>& ids)
 {
-  active_ = names;
+  active_ = ids;
 
   for (auto& co : link2cow_)
     updateCollisionObjectFilters(active_, co.second, static_manager_, dynamic_manager_);
@@ -285,7 +296,10 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
   static_manager_->update();
 }
 
-const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
+const std::unordered_set<tesseract::common::LinkId>& FCLDiscreteBVHManager::getActiveCollisionObjectIds() const
+{
+  return active_;
+}
 
 void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
@@ -308,11 +322,11 @@ void FCLDiscreteBVHManager::setDefaultCollisionMargin(double default_collision_m
   onCollisionMarginDataChanged();
 }
 
-void FCLDiscreteBVHManager::setCollisionMarginPair(const std::string& name1,
-                                                   const std::string& name2,
+void FCLDiscreteBVHManager::setCollisionMarginPair(const tesseract::common::LinkId& id1,
+                                                   const tesseract::common::LinkId& id2,
                                                    double collision_margin)
 {
-  collision_margin_data_.setCollisionMargin(name1, name2, collision_margin);
+  collision_margin_data_.setCollisionMargin(id1, id2, collision_margin);
   onCollisionMarginDataChanged();
 }
 
@@ -364,8 +378,8 @@ void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   fcl_co_count_ += cnt;
   static_update_.reserve(fcl_co_count_);
   dynamic_update_.reserve(fcl_co_count_);
-  link2cow_[cow->getName()] = cow;
-  collision_objects_.push_back(cow->getName());
+  link2cow_[cow->getLinkId()] = cow;
+  collision_objects_.push_back(cow->getLinkId());
 
   std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
   if (cow->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
@@ -396,7 +410,7 @@ void FCLDiscreteBVHManager::onCollisionMarginDataChanged()
 
   for (auto& cow : link2cow_)
   {
-    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin(cow.second->getName()));
+    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin(cow.second->getLinkId()));
     std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
     if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
     {

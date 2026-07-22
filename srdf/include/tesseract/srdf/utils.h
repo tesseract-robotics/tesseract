@@ -24,7 +24,7 @@
 #ifndef TESSERACT_SRDF_UTILS_H
 #define TESSERACT_SRDF_UTILS_H
 
-#include <functional>
+#include <string>
 
 #include <tesseract/common/types.h>
 #include <tesseract/common/allowed_collision_matrix.h>
@@ -42,20 +42,30 @@ class SRDFModel;
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model);
 
 /**
- * @brief Used to sort a pair of strings alphabetically - first by the pair.first and then by pair.second
- * @param pair1 First pair of strings
- * @param pair2 Second pair of strings
- * @return True if pair1 should go before pair2 (is closer to A)
+ * @brief One allowed-collision entry with names resolved from the pair key and alphabetically
+ *        ordered — see @ref getAlphabeticalACMEntries.
  */
-bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkNamesPair> pair1,
-                                   std::reference_wrapper<const tesseract::common::LinkNamesPair> pair2);
+struct AlphabeticalACMEntry
+{
+  std::string name1;
+  std::string name2;
+  std::string reason;
+};
 
 /**
- * @brief Returns an alphabetically sorted vector of ACM keys (the link pairs)
+ * @brief Returns a deterministically alphabetically sorted vector of ACM entries.
+ *
+ * An AllowedCollisionMatrix's pair keys are canonically ordered by LinkId hash value, not
+ * alphabetically — and std::hash<std::string> is not portable across standard library
+ * implementations, so that order is unstable for cross-library output. This function resolves
+ * each entry's names from its pair key, normalizes them so `name1 <= name2` alphabetically, then
+ * sorts the entries by (name1, name2), producing output suitable for deterministic serialization.
+ *
  * @param allowed_collision_entries Entries to be sorted
- * @return An alphabetically sorted vector of ACM keys (the link pairs)
+ * @return An alphabetically sorted vector of entries (by name1, then name2), with each entry's
+ *         names themselves in alphabetical order.
  */
-std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>>
-getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
+std::vector<AlphabeticalACMEntry>
+getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
 }  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_UTILS_H

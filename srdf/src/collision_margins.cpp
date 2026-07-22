@@ -29,7 +29,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/link.h>
 #include <tesseract/srdf/collision_margins.h>
+#include <tesseract/srdf/utils.h>
 #include <tesseract/common/types.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/collision_margin_data.h>
@@ -64,16 +66,18 @@ tesseract::common::CollisionMarginData::Ptr parseCollisionMargins(const tesserac
 
     status = tesseract::common::QueryStringAttributeRequired(xml_pair_element, "link2", link2_name);
     if (status != tinyxml2::XML_SUCCESS)
-      std::throw_with_nested(std::runtime_error("CollisionMargins: Missing or failed to parse 'link2' attribute."));
+      std::throw_with_nested(std::runtime_error("parseCollisionMargins: Missing or failed to parse 'link2' "
+                                                "attribute."));
 
-    if (!scene_graph.getLink(link1_name))
+    if (!scene_graph.getLink(common::LinkId(link1_name)))
     {
       CONSOLE_BRIDGE_logWarn("parseCollisionMargins: Link '%s' is not known to URDF.", link1_name.c_str());
+      continue;
     }
-
-    if (!scene_graph.getLink(link2_name))
+    if (!scene_graph.getLink(common::LinkId(link2_name)))
     {
       CONSOLE_BRIDGE_logWarn("parseCollisionMargins: Link '%s' is not known to URDF.", link2_name.c_str());
+      continue;
     }
 
     status = tesseract::common::QueryDoubleAttributeRequired(xml_pair_element, "margin", link_pair_margin);
@@ -81,7 +85,7 @@ tesseract::common::CollisionMarginData::Ptr parseCollisionMargins(const tesserac
       std::throw_with_nested(std::runtime_error("parseCollisionMargins: failed to parse link pair 'margin' "
                                                 "attribute."));
 
-    margin_data->setCollisionMargin(link1_name, link2_name, link_pair_margin);
+    margin_data->setCollisionMargin(common::LinkId(link1_name), common::LinkId(link2_name), link_pair_margin);
   }
 
   return margin_data;

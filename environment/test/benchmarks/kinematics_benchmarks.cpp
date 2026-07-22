@@ -2,6 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract/common/types.h>
 #include <tesseract/urdf/urdf_parser.h>
 #include <tesseract/srdf/srdf_model.h>
 #include <tesseract/common/resource_locator.h>
@@ -33,13 +34,16 @@ SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph, const tesseract::comm
   return srdf;
 }
 
-using CalcStateFn = std::function<tesseract::common::TransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
+using CalcStateFn =
+    std::function<tesseract::common::LinkIdTransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
+using CalcFwdKinFn =
+    std::function<tesseract::common::LinkIdTransformMap(const Eigen::Ref<const Eigen::VectorXd>& state)>;
 
 static void BM_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
                                                      const CalcStateFn& fn,
                                                      const tesseract::common::TrajArray& traj)
 {
-  tesseract::common::TransformMap transform_map;
+  tesseract::common::LinkIdTransformMap transform_map;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -53,7 +57,7 @@ static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& s
                                                              const CalcStateFn& fn,
                                                              const tesseract::common::TrajArray& traj)
 {
-  tesseract::common::TransformMap transform_map;
+  tesseract::common::LinkIdTransformMap transform_map;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -65,25 +69,25 @@ static void BM_SET_AND_GET_STATE_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& s
 
 static void BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS(benchmark::State& state,
                                                         const StateSolver::Ptr& state_solver,
-                                                        const std::vector<std::string>& joint_names,
+                                                        const std::vector<tesseract::common::JointId>& joint_ids,
                                                         const tesseract::common::TrajArray& traj,
-                                                        const std::string& link_name)
+                                                        const tesseract::common::LinkId& link_id)
 {
   Eigen::MatrixXd jacobian;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
-      benchmark::DoNotOptimize(jacobian = state_solver->getJacobian(joint_names, traj.row(i), link_name));
+      benchmark::DoNotOptimize(jacobian = state_solver->getJacobian(joint_ids, traj.row(i), link_id));
     }
   }
 }
 
 static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state,
-                                  const CalcStateFn& fn,
+                                  const CalcFwdKinFn& fn,
                                   const tesseract::common::TrajArray& traj)
 {
-  tesseract::common::TransformMap transforms;
+  tesseract::common::LinkIdTransformMap transforms;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
@@ -96,14 +100,14 @@ static void BM_CALC_FWD_KIN_MANIP(benchmark::State& state,
 static void BM_GET_JACOBIAN_MANIP(benchmark::State& state,
                                   const tesseract::kinematics::JointGroup::ConstPtr& manip,
                                   const tesseract::common::TrajArray& traj,
-                                  const std::string& link_name)
+                                  const tesseract::common::LinkId& link_id)
 {
   Eigen::MatrixXd jacobian;
   for (auto _ : state)  // NOLINT
   {
     for (Eigen::Index i = 0; i < traj.rows(); i++)
     {
-      benchmark::DoNotOptimize(jacobian = manip->calcJacobian(traj.row(i), link_name));
+      benchmark::DoNotOptimize(jacobian = manip->calcJacobian(traj.row(i), link_id));
     }
   }
 }
@@ -118,14 +122,14 @@ int main(int argc, char** argv)
   env->setResourceLocator(std::make_shared<tesseract::common::GeneralResourceLocator>());
 
   // Set the robot initial state
-  std::vector<std::string> joint_names;
-  joint_names.emplace_back("joint_a1");
-  joint_names.emplace_back("joint_a2");
-  joint_names.emplace_back("joint_a3");
-  joint_names.emplace_back("joint_a4");
-  joint_names.emplace_back("joint_a5");
-  joint_names.emplace_back("joint_a6");
-  joint_names.emplace_back("joint_a7");
+  std::vector<tesseract::common::JointId> joint_ids;
+  joint_ids.emplace_back("joint_a1");
+  joint_ids.emplace_back("joint_a2");
+  joint_ids.emplace_back("joint_a3");
+  joint_ids.emplace_back("joint_a4");
+  joint_ids.emplace_back("joint_a5");
+  joint_ids.emplace_back("joint_a6");
+  joint_ids.emplace_back("joint_a7");
 
   Eigen::VectorXd joint_start_pos(7);
   joint_start_pos(0) = -0.4;
@@ -168,9 +172,9 @@ int main(int argc, char** argv)
 
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn = [local_ss,
-                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
-      return local_ss->getState(joint_names, state).link_transforms;
+    CalcStateFn fn =
+        [local_ss, joint_ids](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
+      return local_ss->getState(joint_ids, state).link_transforms;
     };
 
     std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_GET_STATE_JN_JV_SS =
@@ -183,9 +187,9 @@ int main(int argc, char** argv)
   }
   {
     StateSolver::Ptr local_ss = state_solver->clone();
-    CalcStateFn fn = [local_ss,
-                      joint_names](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
-      local_ss->setState(joint_names, state);
+    CalcStateFn fn =
+        [local_ss, joint_ids](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
+      local_ss->setState(joint_ids, state);
       return local_ss->getState().link_transforms;
     };
 
@@ -200,22 +204,23 @@ int main(int argc, char** argv)
   {
     std::function<void(benchmark::State&,
                        StateSolver::Ptr,
-                       std::vector<std::string>,
+                       std::vector<tesseract::common::JointId>,
                        const tesseract::common::TrajArray&,
-                       std::string)>
+                       tesseract::common::LinkId)>
         BM_GET_JACOBIAN_JN_JV_SS = BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS;
     std::string name = "BM_GET_JACOBIAN_JOINT_NAMES_JOINT_VALUES_SS";
     // NOLINTNEXTLINE
-    benchmark::RegisterBenchmark(name.c_str(), BM_GET_JACOBIAN_JN_JV_SS, state_solver, joint_names, traj, tip_link)
+    benchmark::RegisterBenchmark(name.c_str(), BM_GET_JACOBIAN_JN_JV_SS, state_solver, joint_ids, traj, tip_link)
         ->UseRealTime()
         ->Unit(benchmark::TimeUnit::kMicrosecond);
   }
   {
-    CalcStateFn fn = [joint_group](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::TransformMap {
+    CalcFwdKinFn fn =
+        [joint_group](const Eigen::Ref<const Eigen::VectorXd>& state) -> tesseract::common::LinkIdTransformMap {
       return joint_group->calcFwdKin(state);
     };
 
-    std::function<void(benchmark::State&, CalcStateFn, const tesseract::common::TrajArray&)> BM_CFK_MANIP =
+    std::function<void(benchmark::State&, CalcFwdKinFn, const tesseract::common::TrajArray&)> BM_CFK_MANIP =
         BM_CALC_FWD_KIN_MANIP;
     std::string name = "BM_CALC_FWD_KIN_MANIP";
     // NOLINTNEXTLINE
@@ -227,7 +232,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&,
                        tesseract::kinematics::JointGroup::ConstPtr,
                        const tesseract::common::TrajArray&,
-                       std::string)>
+                       tesseract::common::LinkId)>
         BM_CJ_MANIP = BM_GET_JACOBIAN_MANIP;
     std::string name = "BM_GET_JACOBIAN_MANIP";
     // NOLINTNEXTLINE

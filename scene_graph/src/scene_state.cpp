@@ -31,21 +31,23 @@
 
 namespace tesseract::scene_graph
 {
-Eigen::VectorXd SceneState::getJointValues(const std::vector<std::string>& joint_names) const
+
+Eigen::VectorXd SceneState::getJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const
 {
   Eigen::VectorXd jv;
-  jv.resize(static_cast<long int>(joint_names.size()));
-  for (auto j = 0U; j < joint_names.size(); ++j)
-    jv(j) = joints.at(joint_names[j]);
+  jv.resize(static_cast<long int>(joint_ids.size()));
+  for (auto j = 0U; j < joint_ids.size(); ++j)
+    jv(j) = joints.at(joint_ids[j]);
 
   return jv;
 }
 
-tesseract::common::TransformMap SceneState::getFloatingJointValues(const std::vector<std::string>& joint_names) const
+tesseract::common::JointIdTransformMap
+SceneState::getFloatingJointValues(const std::vector<tesseract::common::JointId>& joint_ids) const
 {
-  tesseract::common::TransformMap fjv;
-  for (const auto& joint_name : joint_names)
-    fjv[joint_name] = floating_joints.at(joint_name);
+  tesseract::common::JointIdTransformMap fjv;
+  for (const auto& joint_id : joint_ids)
+    fjv[joint_id] = floating_joints.at(joint_id);
 
   return fjv;
 }
@@ -58,10 +60,11 @@ bool SceneState::operator==(const SceneState& rhs) const
 
   using namespace tesseract::common;
   bool equal = true;
-  equal &= isIdenticalMap<std::unordered_map<std::string, double>, double>(joints, rhs.joints);
-  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(floating_joints, rhs.floating_joints, isometry_equal);
-  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
-  equal &= isIdenticalMap<TransformMap, Eigen::Isometry3d>(joint_transforms, rhs.joint_transforms, isometry_equal);
+  equal &= isIdenticalMap<JointValues, double>(joints, rhs.joints);
+  equal &= isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(floating_joints, rhs.floating_joints, isometry_equal);
+  equal &= isIdenticalMap<LinkIdTransformMap, Eigen::Isometry3d>(link_transforms, rhs.link_transforms, isometry_equal);
+  equal &=
+      isIdenticalMap<JointIdTransformMap, Eigen::Isometry3d>(joint_transforms, rhs.joint_transforms, isometry_equal);
 
   return equal;
 }

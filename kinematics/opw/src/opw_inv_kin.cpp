@@ -24,6 +24,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
+#include <utility>
 #include <console_bridge/console.h>
 #include <opw_kinematics/opw_kinematics.h>
 #include <opw_kinematics/opw_utilities.h>
@@ -36,17 +37,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract::kinematics
 {
 OPWInvKin::OPWInvKin(opw_kinematics::Parameters<double> params,
-                     std::string base_link_name,
-                     std::string tip_link_name,
-                     std::vector<std::string> joint_names,
+                     tesseract::common::LinkId base_link_id,
+                     tesseract::common::LinkId tip_link_id,
+                     const std::vector<common::JointId>& joint_ids,
                      std::string solver_name)
   : params_(params)
-  , base_link_name_(std::move(base_link_name))
-  , tip_link_name_(std::move(tip_link_name))
-  , joint_names_(std::move(joint_names))
+  , base_link_id_(std::move(base_link_id))
+  , tip_link_id_(std::move(tip_link_id))
+  , joint_ids_(joint_ids)
   , solver_name_(std::move(solver_name))
 {
-  if (joint_names_.size() != 6)
+  if (joint_ids_.size() != 6)
     throw std::runtime_error("OPWInvKin, only support six joints!");
 }
 
@@ -59,24 +60,24 @@ OPWInvKin& OPWInvKin::operator=(const OPWInvKin& other)
   if (this == &other)
     return *this;
 
-  base_link_name_ = other.base_link_name_;
-  tip_link_name_ = other.tip_link_name_;
-  joint_names_ = other.joint_names_;
+  base_link_id_ = other.base_link_id_;
+  tip_link_id_ = other.tip_link_id_;
+  joint_ids_ = other.joint_ids_;
   params_ = other.params_;
   solver_name_ = other.solver_name_;
   return *this;
 }
 
 void OPWInvKin::calcInvKin(IKSolutions& solutions,
-                           const tesseract::common::TransformMap& tip_link_poses,
+                           const tesseract::common::LinkIdTransformMap& tip_link_poses,
                            const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
-  assert(tip_link_poses.size() == 1);                                                       // NOLINT
-  assert(tip_link_poses.find(tip_link_name_) != tip_link_poses.end());                      // NOLINT
-  assert(std::abs(1.0 - tip_link_poses.at(tip_link_name_).matrix().determinant()) < 1e-6);  // NOLINT
+  assert(tip_link_poses.size() == 1);                                                     // NOLINT
+  assert(tip_link_poses.find(tip_link_id_) != tip_link_poses.end());                      // NOLINT
+  assert(std::abs(1.0 - tip_link_poses.at(tip_link_id_).matrix().determinant()) < 1e-6);  // NOLINT
 
   // NOLINTNEXTLINE
-  opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_name_));
+  opw_kinematics::Solutions<double> sols = opw_kinematics::inverse(params_, tip_link_poses.at(tip_link_id_));
 
   // Check the output
   if (solutions.capacity() < (solutions.size() + sols.size()))
@@ -91,10 +92,10 @@ void OPWInvKin::calcInvKin(IKSolutions& solutions,
 
 Eigen::Index OPWInvKin::numJoints() const { return 6; }
 
-std::vector<std::string> OPWInvKin::getJointNames() const { return joint_names_; }
-std::string OPWInvKin::getBaseLinkName() const { return base_link_name_; }
-std::string OPWInvKin::getWorkingFrame() const { return base_link_name_; }
-std::vector<std::string> OPWInvKin::getTipLinkNames() const { return { tip_link_name_ }; }
+std::vector<tesseract::common::JointId> OPWInvKin::getJointIds() const { return joint_ids_; }
+tesseract::common::LinkId OPWInvKin::getBaseLinkId() const { return base_link_id_; }
+tesseract::common::LinkId OPWInvKin::getWorkingFrame() const { return base_link_id_; }
+std::vector<tesseract::common::LinkId> OPWInvKin::getTipLinkIds() const { return { tip_link_id_ }; }
 std::string OPWInvKin::getSolverName() const { return solver_name_; }
 
 }  // namespace tesseract::kinematics

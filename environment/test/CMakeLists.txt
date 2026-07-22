@@ -22,7 +22,7 @@ target_link_libraries(
           tesseract::scene_graph)
 target_compile_options(tesseract_environment_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                           ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_environment_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_environment_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_environment_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_environment_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -38,7 +38,7 @@ add_executable(tesseract_environment_collision tesseract_environment_collision.c
 target_link_libraries(tesseract_environment_collision PRIVATE GTest::GTest GTest::Main tesseract::environment)
 target_compile_options(tesseract_environment_collision PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_environment_collision PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_environment_collision PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_environment_collision ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_environment_collision PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -54,7 +54,7 @@ add_executable(tesseract_environment_utils tesseract_environment_utils.cpp)
 target_link_libraries(tesseract_environment_utils PRIVATE GTest::GTest GTest::Main tesseract::environment)
 target_compile_options(tesseract_environment_utils PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                            ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_environment_utils PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_environment_utils PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_environment_utils ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_environment_utils PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -92,7 +92,7 @@ add_executable(tesseract_environment_cache_unit tesseract_environment_cache_unit
 target_link_libraries(tesseract_environment_cache_unit PRIVATE GTest::GTest GTest::Main tesseract::environment)
 target_compile_options(tesseract_environment_cache_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                 ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_environment_cache_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_environment_cache_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_environment_cache_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_environment_cache_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

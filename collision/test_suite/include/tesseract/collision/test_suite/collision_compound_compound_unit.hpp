@@ -11,6 +11,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/common/resource_locator.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
 namespace detail
@@ -77,10 +79,9 @@ inline void runTestCompound(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "octomap1_link", "octomap2_link" };
-  checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  checker.setActiveCollisionObjects({ "octomap1_link", "octomap2_link" });
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            (std::unordered_set<tesseract::common::LinkId>{ "octomap1_link", "octomap2_link" }));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -88,7 +89,7 @@ inline void runTestCompound(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["octomap1_link"] = Eigen::Isometry3d::Identity();
   location["octomap2_link"] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
@@ -112,10 +113,8 @@ inline void runTestCompound(ContinuousContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "octomap1_link" };
-  checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  checker.setActiveCollisionObjects({ "octomap1_link" });
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(), (std::unordered_set<tesseract::common::LinkId>{ "octomap1_link" }));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -126,7 +125,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   checker.setCollisionMarginPair("octomap1_link", "octomap2_link", 0.25);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["octomap2_link"] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
 

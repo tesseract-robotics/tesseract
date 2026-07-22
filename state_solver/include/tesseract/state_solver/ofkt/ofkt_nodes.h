@@ -43,12 +43,12 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  OFKTBaseNode(JointType type, OFKTNode* parent, std::string link_name);
+  OFKTBaseNode(JointType type, OFKTNode* parent, tesseract::common::LinkId link_id);
 
   OFKTBaseNode(JointType type,
                OFKTNode* parent,
-               std::string link_name,
-               std::string joint_name,
+               tesseract::common::LinkId link_id,
+               tesseract::common::JointId joint_id,
                const Eigen::Isometry3d& static_tf);
 
   JointType getType() const override;
@@ -57,8 +57,8 @@ public:
   OFKTNode* getParent() override;
   const OFKTNode* getParent() const override;
 
-  const std::string& getLinkName() const override;
-  const std::string& getJointName() const override;
+  tesseract::common::LinkId getLinkId() const override;
+  tesseract::common::JointId getJointId() const override;
 
   void storeJointValue(double joint_value) override;
 
@@ -86,8 +86,8 @@ public:
 protected:
   tesseract::scene_graph::JointType type_;
   OFKTNode* parent_{ nullptr };
-  std::string link_name_;
-  std::string joint_name_;
+  tesseract::common::LinkId link_id_;
+  tesseract::common::JointId joint_id_;
   Eigen::Isometry3d static_tf_{ Eigen::Isometry3d::Identity() };
   Eigen::Isometry3d joint_tf_{ Eigen::Isometry3d::Identity() };
   Eigen::Isometry3d local_tf_{ Eigen::Isometry3d::Identity() };
@@ -117,9 +117,9 @@ public:
 
   /**
    * @brief This should only be used for the root node of the tree
-   * @param link_name The link name associated with the node
+   * @param link_id The link ID associated with the node
    */
-  OFKTRootNode(std::string link_name);
+  OFKTRootNode(tesseract::common::LinkId link_id);
 
   void setParent(OFKTNode* parent) override;
   void storeJointValue(double joint_value) override;
@@ -144,7 +144,10 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  OFKTFixedNode(OFKTNode* parent, std::string link_name, std::string joint_name, const Eigen::Isometry3d& static_tf);
+  OFKTFixedNode(OFKTNode* parent,
+                tesseract::common::LinkId link_id,
+                tesseract::common::JointId joint_id,
+                const Eigen::Isometry3d& static_tf);
 
   void storeJointValue(double joint_value) override;
   double getJointValue() const override;
@@ -166,7 +169,10 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  OFKTFloatingNode(OFKTNode* parent, std::string link_name, std::string joint_name, const Eigen::Isometry3d& static_tf);
+  OFKTFloatingNode(OFKTNode* parent,
+                   tesseract::common::LinkId link_id,
+                   tesseract::common::JointId joint_id,
+                   const Eigen::Isometry3d& static_tf);
 
   void storeJointValue(double joint_value) override;
   double getJointValue() const override;
@@ -189,8 +195,8 @@ public:
   // LCOV_EXCL_STOP
 
   OFKTRevoluteNode(OFKTNode* parent,
-                   std::string link_name,
-                   std::string joint_name,
+                   tesseract::common::LinkId link_id,
+                   tesseract::common::JointId joint_id,
                    const Eigen::Isometry3d& static_tf,
                    const Eigen::Vector3d& axis);
 
@@ -218,8 +224,8 @@ public:
   // LCOV_EXCL_STOP
 
   OFKTContinuousNode(OFKTNode* parent,
-                     std::string link_name,
-                     std::string joint_name,
+                     tesseract::common::LinkId link_id,
+                     tesseract::common::JointId joint_id,
                      const Eigen::Isometry3d& static_tf,
                      const Eigen::Vector3d& axis);
 
@@ -246,8 +252,8 @@ public:
   // LCOV_EXCL_STOP
 
   OFKTPrismaticNode(OFKTNode* parent,
-                    std::string link_name,
-                    std::string joint_name,
+                    tesseract::common::LinkId link_id,
+                    tesseract::common::JointId joint_id,
                     const Eigen::Isometry3d& static_tf,
                     const Eigen::Vector3d& axis);
 

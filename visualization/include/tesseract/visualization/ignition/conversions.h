@@ -40,7 +40,7 @@ bool isMeshWithColor(const std::string& file_path);
 bool toMsg(gz::msgs::Scene& scene_msg,
            EntityManager& entity_manager,
            const tesseract_scene_graph::SceneGraph& scene_graph,
-           const tesseract_common::TransformMap& link_transforms);
+           const tesseract_common::LinkIdTransformMap& link_transforms);
 }  // namespace tesseract::visualization
 
 #endif  // TESSERACT_VISUALIZATION_IGNITION_CONVERSIONS_H

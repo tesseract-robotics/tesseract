@@ -8,6 +8,8 @@
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/ply_io.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
 namespace detail
@@ -131,10 +133,10 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "box_link", "sphere_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "box_link", "sphere_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -142,7 +144,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;
@@ -159,7 +161,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.55, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0] != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -213,7 +215,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.25, 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0] != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -244,10 +246,10 @@ inline void runTestConvex(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "box_link", "sphere_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "box_link", "sphere_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -255,7 +257,7 @@ inline void runTestConvex(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;
@@ -274,7 +276,7 @@ inline void runTestConvex(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0] != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -322,7 +324,7 @@ inline void runTestConvex(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
+  if (result_vector[0].link_ids[0] != "box_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)

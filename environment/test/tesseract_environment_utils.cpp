@@ -49,7 +49,7 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.acm_override_type = ACMOverrideType::ASSIGN;
     manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
-    EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
+    EXPECT_TRUE((*fn)({ "allowed_link_1a", "allowed_link_2a" }));
   }
 
   // NONE
@@ -67,8 +67,8 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.acm_override_type = ACMOverrideType::OR;
     manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
-    EXPECT_TRUE((*fn)("allowed_link_1a", "allowed_link_2a"));
-    EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
+    EXPECT_TRUE((*fn)({ "allowed_link_1a", "allowed_link_2a" }));
+    EXPECT_TRUE((*fn)({ "allowed_link_1c", "allowed_link_2c" }));
   }
 
   // AND
@@ -78,8 +78,8 @@ void checkIsAllowedFnOverride(std::unique_ptr<ManagerType> manager)
     config.acm_override_type = ACMOverrideType::AND;
     manager->applyContactManagerConfig(config);
     auto fn = manager->getContactAllowedValidator();
-    EXPECT_FALSE((*fn)("allowed_link_1a", "allowed_link_2a"));
-    EXPECT_TRUE((*fn)("allowed_link_1c", "allowed_link_2c"));
+    EXPECT_FALSE((*fn)({ "allowed_link_1a", "allowed_link_2a" }));
+    EXPECT_TRUE((*fn)({ "allowed_link_1c", "allowed_link_2c" }));
   }
 }
 
@@ -128,11 +128,11 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
   {
     auto contact_manager_config = default_contact_manager_config;
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.1m in collision
-    tesseract::common::TransformMap tmap;
+    tesseract::common::LinkIdTransformMap tmap;
     tmap["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"].translate(Eigen::Vector3d(0.9, 0, 0));
@@ -177,16 +177,16 @@ TEST(TesseractEnvironmentUtils, applyContactManagerConfigObjectEnable)  // NOLIN
   {
     auto contact_manager_config = default_contact_manager_config;
     ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.1m in collision
-    tesseract::common::TransformMap tmap1;
+    tesseract::common::LinkIdTransformMap tmap1;
     tmap1["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"].translate(Eigen::Vector3d(0.9, 2, 0));
 
-    tesseract::common::TransformMap tmap2;
+    tesseract::common::LinkIdTransformMap tmap2;
     tmap2["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"].translate(Eigen::Vector3d(0.9, -2, 0));
@@ -255,11 +255,11 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
   {
     auto contact_manager_config = default_contact_manager_config;
     DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the boxes 0.05m away from each other
-    tesseract::common::TransformMap tmap;
+    tesseract::common::LinkIdTransformMap tmap;
     tmap["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap["test_box_link"].translate(Eigen::Vector3d(1.05, 0, 0));
@@ -301,16 +301,16 @@ TEST(TesseractEnvironmentUtils, checkTrajectoryState)  // NOLINT
   {
     auto contact_manager_config = default_contact_manager_config;
     ContinuousContactManager::Ptr manager = env->getContinuousContactManager();
-    std::vector<std::string> active_links = { "boxbot_link", "test_box_link" };
+    std::vector<tesseract::common::LinkId> active_links = { "boxbot_link", "test_box_link" };
     manager->setActiveCollisionObjects(active_links);
 
     // Put the swept volume of the boxes 0.05m away from each other
-    tesseract::common::TransformMap tmap1;
+    tesseract::common::LinkIdTransformMap tmap1;
     tmap1["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap1["test_box_link"].translate(Eigen::Vector3d(1.05, 2, 0));
 
-    tesseract::common::TransformMap tmap2;
+    tesseract::common::LinkIdTransformMap tmap2;
     tmap2["boxbot_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"] = Eigen::Isometry3d::Identity();
     tmap2["test_box_link"].translate(Eigen::Vector3d(1.05, -2, 0));

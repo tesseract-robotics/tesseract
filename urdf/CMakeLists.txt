@@ -3,21 +3,17 @@ find_package(PCL REQUIRED COMPONENTS io)
 
 # Some PCL packages export host-specific ISA flags (for example, -march=native and -mavx2). Those flags can change
 # Eigen's alignment ABI, giving shared Tesseract types different layouts across libraries. PCL is used only by the URDF
-# point-cloud parser, so do not allow its compile options to affect this component on GNU/Clang x86 builds. MSVC PCL
-# exports alignment requirements that must remain enabled for PCL headers.
-if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$" AND CMAKE_SYSTEM_PROCESSOR MATCHES
-                                                                "^(x86_64|AMD64|i[3-6]86)$")
-  foreach(
-    PCL_TARGET
-    pcl_common
-    pcl_io
-    pcl_io_ply
-    pcl_octree)
-    if(TARGET ${PCL_TARGET})
-      set_property(TARGET ${PCL_TARGET} PROPERTY INTERFACE_COMPILE_OPTIONS "")
-    endif()
-  endforeach()
-endif()
+# point-cloud parser, so do not allow its compile options to affect this component.
+foreach(
+  PCL_TARGET
+  pcl_common
+  pcl_io
+  pcl_io_ply
+  pcl_octree)
+  if(TARGET ${PCL_TARGET})
+    set_property(TARGET ${PCL_TARGET} PROPERTY INTERFACE_COMPILE_OPTIONS "")
+  endif()
+endforeach()
 
 set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "urdf" PARENT_SCOPE)
 
@@ -59,10 +55,10 @@ target_link_libraries(
          tesseract::scene_graph
          tesseract::collision_bullet
          console_bridge::console_bridge)
-target_link_libraries(urdf PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(urdf PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(urdf PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(urdf PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(urdf PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(urdf PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 
 target_link_libraries(urdf PRIVATE ${PCL_IO_LIBRARIES})
 target_include_directories(urdf PRIVATE ${PCL_INCLUDE_DIRS})

@@ -1,8 +1,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <iostream>
-#include <fstream>
 #include <yaml-cpp/yaml.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -66,24 +64,24 @@ tesseract::scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBC
 
     Joint joint_a("joint_axis_1");
     joint_a.axis = Eigen::Vector3d(0, 1, 0);
-    joint_a.parent_link_name = "world";
-    joint_a.child_link_name = "axis_1";
+    joint_a.parent_link_id = "world";
+    joint_a.child_link_id = "axis_1";
     joint_a.type = JointType::PRISMATIC;
     joint_a.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10, 20);
     EXPECT_TRUE(g->addJoint(joint_a));
 
     Joint joint_b("joint_axis_2");
     joint_b.axis = Eigen::Vector3d(1, 0, 0);
-    joint_b.parent_link_name = "axis_1";
-    joint_b.child_link_name = "axis_2";
+    joint_b.parent_link_id = "axis_1";
+    joint_b.child_link_id = "axis_2";
     joint_b.type = JointType::PRISMATIC;
     joint_b.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10, 20);
     EXPECT_TRUE(g->addJoint(joint_b));
 
     Joint joint_c("joint_base_link");
     joint_c.axis = Eigen::Vector3d(0, 1, 0);
-    joint_c.parent_link_name = "axis_1";
-    joint_c.child_link_name = "base_link";
+    joint_c.parent_link_id = "axis_1";
+    joint_c.child_link_id = "base_link";
     joint_c.type = JointType::FIXED;
     EXPECT_TRUE(g->addJoint(joint_c));
   }
@@ -96,8 +94,8 @@ tesseract::scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBC
     Joint joint_a("joint_axis_1");
     joint_a.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 0, 0);
     joint_a.axis = Eigen::Vector3d(0, 1, 0);
-    joint_a.parent_link_name = "world";
-    joint_a.child_link_name = "axis_1";
+    joint_a.parent_link_id = "world";
+    joint_a.child_link_id = "axis_1";
     joint_a.type = JointType::PRISMATIC;
     joint_a.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10, 20);
     EXPECT_TRUE(g->addJoint(joint_a));
@@ -105,67 +103,67 @@ tesseract::scene_graph::SceneGraph::Ptr getABBSceneGraph(ABBConfig config = ABBC
     Joint joint_b("joint_axis_2");
     joint_b.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 0, 0);
     joint_b.axis = Eigen::Vector3d(1, 0, 0);
-    joint_b.parent_link_name = "axis_1";
-    joint_b.child_link_name = "axis_2";
+    joint_b.parent_link_id = "axis_1";
+    joint_b.child_link_id = "axis_2";
     joint_b.type = JointType::PRISMATIC;
     joint_b.limits = std::make_shared<JointLimits>(-10, 10, 0, 5, 10, 20);
     EXPECT_TRUE(g->addJoint(joint_b));
 
     Joint joint_c("joint_base_link");
-    joint_c.parent_link_name = "world";
-    joint_c.child_link_name = "base_link";
+    joint_c.parent_link_id = "world";
+    joint_c.child_link_id = "base_link";
     joint_c.type = JointType::FIXED;
     EXPECT_TRUE(g->addJoint(joint_c));
   }
 
   Joint joint_1("joint_1");
-  joint_1.parent_link_name = "base_link";
-  joint_1.child_link_name = "link_1";
+  joint_1.parent_link_id = "base_link";
+  joint_1.child_link_id = "link_1";
   joint_1.type = JointType::FIXED;
   EXPECT_TRUE(g->addJoint(joint_1));
 
   Joint joint_2("joint_2");
-  joint_2.parent_link_name = "link_1";
-  joint_2.child_link_name = "link_2";
+  joint_2.parent_link_id = "link_1";
+  joint_2.child_link_id = "link_2";
   joint_2.type = JointType::REVOLUTE;
   joint_2.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g->addJoint(joint_2));
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_name = "link_2";
-  joint_3.child_link_name = "link_3";
+  joint_3.parent_link_id = "link_2";
+  joint_3.child_link_id = "link_3";
   joint_3.type = JointType::REVOLUTE;
   joint_3.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g->addJoint(joint_3));
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_4.parent_link_name = "link_3";
-  joint_4.child_link_name = "link_4";
+  joint_4.parent_link_id = "link_3";
+  joint_4.child_link_id = "link_4";
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g->addJoint(joint_4));
 
   Joint joint_5("joint_5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5.parent_link_name = "link_4";
-  joint_5.child_link_name = "link_5";
+  joint_5.parent_link_id = "link_4";
+  joint_5.child_link_id = "link_5";
   joint_5.type = JointType::REVOLUTE;
   joint_5.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g->addJoint(joint_5));
 
   Joint joint_6("joint_6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_6.parent_link_name = "link_5";
-  joint_6.child_link_name = "link_6";
+  joint_6.parent_link_id = "link_5";
+  joint_6.child_link_id = "link_6";
   joint_6.type = JointType::REVOLUTE;
   joint_6.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g->addJoint(joint_6));
 
   Joint joint_tool0("joint_tool0");
-  joint_tool0.parent_link_name = "link_6";
-  joint_tool0.child_link_name = "tool0";
+  joint_tool0.parent_link_id = "link_6";
+  joint_tool0.child_link_id = "tool0";
   joint_tool0.type = JointType::FIXED;
   EXPECT_TRUE(g->addJoint(joint_tool0));
 
@@ -192,38 +190,38 @@ tesseract::scene_graph::SceneGraph buildTestSceneGraph()
   EXPECT_TRUE(g.addLink(link_5));
 
   Joint base_joint("base_joint");
-  base_joint.parent_link_name = "base_link";
-  base_joint.child_link_name = "link_1";
+  base_joint.parent_link_id = "base_link";
+  base_joint.child_link_id = "link_1";
   base_joint.type = JointType::FIXED;
   EXPECT_TRUE(g.addJoint(base_joint));
 
   Joint joint_1("joint_1");
-  joint_1.parent_link_name = "link_1";
-  joint_1.child_link_name = "link_2";
+  joint_1.parent_link_id = "link_1";
+  joint_1.child_link_id = "link_2";
   joint_1.type = JointType::REVOLUTE;
   joint_1.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_1));
 
   Joint joint_2("joint_2");
   joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2.parent_link_name = "link_2";
-  joint_2.child_link_name = "link_3";
+  joint_2.parent_link_id = "link_2";
+  joint_2.child_link_id = "link_3";
   joint_2.type = JointType::REVOLUTE;
   joint_2.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_name = "link_3";
-  joint_3.child_link_name = "link_4";
+  joint_3.parent_link_id = "link_3";
+  joint_3.child_link_id = "link_4";
   joint_3.type = JointType::REVOLUTE;
   joint_3.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_3));
 
   Joint joint_4("joint_4");
   joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_4.parent_link_name = "link_2";
-  joint_4.child_link_name = "link_5";
+  joint_4.parent_link_id = "link_2";
+  joint_4.child_link_id = "link_5";
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_4));
@@ -266,61 +264,61 @@ TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
   EXPECT_TRUE(g.addLink(tool0));
 
   Joint joint_1("joint_a1");
-  joint_1.parent_link_name = "base_link";
-  joint_1.child_link_name = "link_1";
+  joint_1.parent_link_id = "base_link";
+  joint_1.child_link_id = "link_1";
   joint_1.type = JointType::FIXED;
   EXPECT_TRUE(g.addJoint(joint_1));
 
   Joint joint_2("joint_a2");
-  joint_2.parent_link_name = "link_1";
-  joint_2.child_link_name = "link_2";
+  joint_2.parent_link_id = "link_1";
+  joint_2.child_link_id = "link_2";
   joint_2.type = JointType::REVOLUTE;
   joint_2.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_a3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_name = "link_2";
-  joint_3.child_link_name = "link_3";
+  joint_3.parent_link_id = "link_2";
+  joint_3.child_link_id = "link_3";
   joint_3.type = JointType::REVOLUTE;
   joint_3.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_3));
 
   Joint joint_4("joint_a4");
   joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_4.parent_link_name = "link_3";
-  joint_4.child_link_name = "link_4";
+  joint_4.parent_link_id = "link_3";
+  joint_4.child_link_id = "link_4";
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_4));
 
   Joint joint_5("joint_a5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5.parent_link_name = "link_4";
-  joint_5.child_link_name = "link_5";
+  joint_5.parent_link_id = "link_4";
+  joint_5.child_link_id = "link_5";
   joint_5.type = JointType::REVOLUTE;
   joint_5.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_5));
 
   Joint joint_6("joint_a6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_6.parent_link_name = "link_5";
-  joint_6.child_link_name = "link_6";
+  joint_6.parent_link_id = "link_5";
+  joint_6.child_link_id = "link_6";
   joint_6.type = JointType::REVOLUTE;
   joint_6.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_6));
 
   Joint joint_7("joint_a7");
   joint_7.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_7.parent_link_name = "link_6";
-  joint_7.child_link_name = "link_7";
+  joint_7.parent_link_id = "link_6";
+  joint_7.child_link_id = "link_7";
   joint_7.type = JointType::REVOLUTE;
   joint_7.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_7));
 
   Joint joint_tool0("joint_tool0");
-  joint_tool0.parent_link_name = "link_7";
-  joint_tool0.child_link_name = "tool0";
+  joint_tool0.parent_link_id = "link_7";
+  joint_tool0.child_link_id = "tool0";
   joint_tool0.type = JointType::FIXED;
   EXPECT_TRUE(g.addJoint(joint_tool0));
 
@@ -336,14 +334,14 @@ TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
   tesseract::common::AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
 
   // collision between link1 and link2 should be allowed
-  EXPECT_TRUE(acm->isCollisionAllowed("link_1", "link_2"));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "link_1", "link_2" }));
 
   // collision between link1 and link2 should be allowed
-  EXPECT_FALSE(acm->isCollisionAllowed("base_link", "link_5"));
+  EXPECT_FALSE(acm->isCollisionAllowed({ "base_link", "link_5" }));
 
   g.removeAllowedCollision("link_1", "link_2");
   // now collision link1 and link2 is not allowed anymore
-  EXPECT_FALSE(acm->isCollisionAllowed("link_1", "link_2"));
+  EXPECT_FALSE(acm->isCollisionAllowed({ "link_1", "link_2" }));
 
   g.clearAllowedCollisions();
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), 0);
@@ -755,9 +753,9 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_TRUE(group_state_it->second.find("all-zeros") != group_state_it->second.end());
 
   tesseract::common::AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
-  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_1"));
-  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_2"));
-  EXPECT_TRUE(acm->isCollisionAllowed("base_link", "link_3"));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "base_link", "link_1" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "base_link", "link_2" }));
+  EXPECT_TRUE(acm->isCollisionAllowed({ "base_link", "link_3" }));
 
   EXPECT_TRUE(srdf.collision_margin_data != nullptr);
   EXPECT_NEAR(srdf.collision_margin_data->getDefaultCollisionMargin(), 0.025, 1e-6);
@@ -800,6 +798,102 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   EXPECT_ANY_THROW(bad_srdf.initFile(*g, save_path, locator));  // NOLINT
 }
 
+TEST(TesseractSRDFUnit, SaveLoadRoundTripPreservesMultiplePairMargins)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  using namespace tesseract::srdf;
+  using namespace tesseract::common;
+
+  // Build a minimal scene graph with enough links to form 3 distinct pairs.
+  auto g = std::make_shared<SceneGraph>();
+  g->setName("test_robot");
+  g->addLink(Link("link_a"));
+  g->addLink(Link("link_b"));
+  g->addLink(Link("link_c"));
+  g->addLink(Link("link_d"));
+
+  Joint j1("joint_ab");
+  j1.parent_link_id = "link_a";
+  j1.child_link_id = "link_b";
+  j1.type = JointType::FIXED;
+  g->addJoint(j1);
+
+  Joint j2("joint_bc");
+  j2.parent_link_id = "link_b";
+  j2.child_link_id = "link_c";
+  j2.type = JointType::FIXED;
+  g->addJoint(j2);
+
+  Joint j3("joint_cd");
+  j3.parent_link_id = "link_c";
+  j3.child_link_id = "link_d";
+  j3.type = JointType::FIXED;
+  g->addJoint(j3);
+
+  TempResourceLocator locator;
+
+  // Build an SRDFModel with 3 distinct collision margin pairs.
+  SRDFModel srdf_save;
+  srdf_save.name = "test_robot";
+  srdf_save.collision_margin_data = std::make_shared<CollisionMarginData>(0.05);
+  srdf_save.collision_margin_data->setCollisionMargin("link_a", "link_b", 0.01);
+  srdf_save.collision_margin_data->setCollisionMargin("link_b", "link_c", 0.02);
+  srdf_save.collision_margin_data->setCollisionMargin("link_c", "link_d", 0.03);
+
+  ASSERT_EQ(srdf_save.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 3U);
+
+  std::string save_path = tesseract::common::getTempPath() + "unit_test_multi_pair_margins.srdf";
+  ASSERT_TRUE(srdf_save.saveToFile(save_path));
+
+  SRDFModel srdf_loaded;
+  srdf_loaded.initFile(*g, save_path, locator);
+
+  ASSERT_TRUE(srdf_loaded.collision_margin_data != nullptr);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getDefaultCollisionMargin(), 0.05, 1e-6);
+  // All 3 pairs must survive the round-trip (a bug formerly kept only 1).
+  EXPECT_EQ(srdf_loaded.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 3U);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_a", "link_b"), 0.01, 1e-6);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_b", "link_c"), 0.02, 1e-6);
+  EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_c", "link_d"), 0.03, 1e-6);
+}
+
+TEST(TesseractSRDFUnit, ParseCollisionMarginsSkipsUnknownLinkAfterWarn)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+  using namespace tesseract::srdf;
+
+  // Build graph with only links 'a' and 'b'.
+  SceneGraph g;
+  g.addLink(Link("a"));
+  g.addLink(Link("b"));
+  Joint j("joint_ab");
+  j.parent_link_id = "a";
+  j.child_link_id = "b";
+  j.type = JointType::FIXED;
+  g.addJoint(j);
+
+  // XML with 2 entries: one valid pair (a,b), one referencing unknown link 'ghost'.
+  std::string str = R"(<robot name="test">
+                         <collision_margins default_margin="0.01">
+                           <pair_margin link1="a" link2="b" margin="0.005"/>
+                           <pair_margin link1="ghost" link2="b" margin="0.003"/>
+                         </collision_margins>
+                       </robot>)";
+
+  tinyxml2::XMLDocument xml_doc;
+  EXPECT_TRUE(xml_doc.Parse(str.c_str()) == tinyxml2::XML_SUCCESS);
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+  EXPECT_TRUE(element != nullptr);
+
+  tesseract::common::CollisionMarginData::Ptr margin_data;
+  EXPECT_NO_THROW(margin_data = parseCollisionMargins(g, element, std::array<int, 3>({ 1, 0, 0 })));  // NOLINT
+  ASSERT_TRUE(margin_data != nullptr);
+
+  // Only the valid (a,b) pair is kept; the ghost entry is skipped.
+  // A bug formerly kept 2 pairs (the ghost entry was inserted despite the warn).
+  EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 1U);
+}
+
 TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
@@ -821,9 +915,9 @@ TEST(TesseractSRDFUnit, LoadSRDFAllowedCollisionMatrixUnit)  // NOLINT
   EXPECT_TRUE(element != nullptr);
 
   tesseract::common::AllowedCollisionMatrix acm = parseDisabledCollisions(*g, element, std::array<int, 3>({ 1, 0, 0 }));
-  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_1"));
-  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_2"));
-  EXPECT_TRUE(acm.isCollisionAllowed("base_link", "link_3"));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "base_link", "link_1" }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "base_link", "link_2" }));
+  EXPECT_TRUE(acm.isCollisionAllowed({ "base_link", "link_3" }));
 
   // Now test failures
   auto is_failure = [g](const std::string& xml_string) {
@@ -1279,12 +1373,12 @@ TEST(TesseractSRDFUnit, LoadSRDFGroupStatesUnit)  // NOLINT
   auto it2 = it->second.find("all-zeros");
   EXPECT_TRUE(it2 != it->second.end());
   EXPECT_EQ(it2->second.size(), 6);
-  EXPECT_DOUBLE_EQ(it2->second["joint_1"], 0);
-  EXPECT_DOUBLE_EQ(it2->second["joint_2"], 0);
-  EXPECT_DOUBLE_EQ(it2->second["joint_3"], 0);
-  EXPECT_DOUBLE_EQ(it2->second["joint_4"], 0);
-  EXPECT_DOUBLE_EQ(it2->second["joint_5"], 0);
-  EXPECT_DOUBLE_EQ(it2->second["joint_6"], 0);
+  EXPECT_DOUBLE_EQ(it2->second.at("joint_1"), 0);
+  EXPECT_DOUBLE_EQ(it2->second.at("joint_2"), 0);
+  EXPECT_DOUBLE_EQ(it2->second.at("joint_3"), 0);
+  EXPECT_DOUBLE_EQ(it2->second.at("joint_4"), 0);
+  EXPECT_DOUBLE_EQ(it2->second.at("joint_5"), 0);
+  EXPECT_DOUBLE_EQ(it2->second.at("joint_6"), 0);
 
   // Now test failures
   auto is_failure = [g, &group_names](const std::string& xml_string) {
@@ -2409,6 +2503,35 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
     tesseract::common::CalibrationInfo info2 = tesseract::srdf::parseCalibrationConfig(*g, locator, yaml_str);
     EXPECT_FALSE(info2.empty());
   }
+}
+
+TEST(TesseractSRDFUnit, GetAlphabeticalACMEntriesUnit)  // NOLINT
+{
+  // AllowedCollisionMatrix's pair keys are canonically ordered by LinkId hash value, which is
+  // *not* alphabetical. getAlphabeticalACMEntries must resolve each entry's names from its pair
+  // key, normalize so name1<=name2 alphabetically, then sort entries by (name1, name2).
+  tesseract::common::AllowedCollisionEntries entries;
+  entries[{ "gamma", "beta" }] = tesseract::common::ACMEntry{ "r_bg" };
+  entries[{ "delta", "alpha" }] = tesseract::common::ACMEntry{ "r_ad" };
+  entries[{ "beta", "alpha" }] = tesseract::common::ACMEntry{ "r_ba" };
+
+  auto sorted = tesseract::srdf::getAlphabeticalACMEntries(entries);
+
+  ASSERT_EQ(sorted.size(), 3U);
+  // Each entry's names must be alphabetical; entries sorted by (name1, then name2) ascending.
+  EXPECT_EQ(sorted[0].name1, "alpha");
+  EXPECT_EQ(sorted[0].name2, "beta");
+  EXPECT_EQ(sorted[0].reason, "r_ba");
+
+  EXPECT_EQ(sorted[1].name1, "alpha");
+  EXPECT_EQ(sorted[1].name2, "delta");
+  EXPECT_EQ(sorted[1].reason, "r_ad");
+
+  EXPECT_EQ(sorted[2].name1, "beta");
+  EXPECT_EQ(sorted[2].name2, "gamma");
+  EXPECT_EQ(sorted[2].reason, "r_bg");
+
+  EXPECT_TRUE(tesseract::srdf::getAlphabeticalACMEntries({}).empty());
 }
 
 int main(int argc, char** argv)

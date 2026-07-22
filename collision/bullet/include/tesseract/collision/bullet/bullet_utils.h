@@ -95,7 +95,7 @@ public:
   using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
 
   CollisionObjectWrapper() = default;
-  CollisionObjectWrapper(std::string name,
+  CollisionObjectWrapper(tesseract::common::LinkId id,
                          const int& type_id,
                          CollisionShapesConst shapes,
                          tesseract::common::VectorIsometry3d shape_poses);
@@ -104,8 +104,8 @@ public:
   short int m_collisionFilterMask{ btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter };
   bool m_enabled{ true };
 
-  /** @brief Get the collision object name */
-  const std::string& getName() const;
+  /** @brief Get the collision object id */
+  const tesseract::common::LinkId& getLinkId() const;
   /** @brief Get a user defined type */
   const int& getTypeID() const;
   /** \brief Check if two CollisionObjectWrapper objects point to the same source object */
@@ -135,8 +135,8 @@ public:
   void manageReserve(std::size_t s);
 
 protected:
-  /** @brief The name of the collision object */
-  std::string m_name;
+  /** @brief The id of the collision object */
+  tesseract::common::LinkId m_link_id;
   /** @brief A user defined type id */
   int m_type_id{ -1 };
   /* @brief The shapes that define the collision object */
@@ -148,8 +148,8 @@ protected:
 };
 
 using COW = CollisionObjectWrapper;
-using Link2Cow = std::map<std::string, COW::Ptr>;
-using Link2ConstCow = std::map<std::string, COW::ConstPtr>;
+using Link2Cow = std::unordered_map<tesseract::common::LinkId, COW::Ptr>;
+using Link2ConstCow = std::unordered_map<tesseract::common::LinkId, COW::ConstPtr>;
 
 /** @brief This is a casted collision shape used for checking if an object is collision free between two transforms */
 struct CastHullShape : public btConvexShape
@@ -208,6 +208,22 @@ btTransform getLinkTransformFromCOW(const btCollisionObjectWrapper* cow);
 
 /**
  * @brief This is used to check if a collision check is required between the provided two collision objects
+ * @param cow1 The first collision object
+ * @param cow2 The second collision object
+ * @param pair The link id pair of the two collision objects
+ * @param validator  The contact allowed validator
+ * @param verbose Indicate if verbose information should be printed to the terminal
+ * @return True if the two collision objects should be checked for collision, otherwise false
+ */
+bool needsCollisionCheck(const COW& cow1,
+                         const COW& cow2,
+                         const tesseract::common::LinkIdPair& pair,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                         bool verbose = false);
+
+/**
+ * @brief This is used to check if a collision check is required between the provided two collision objects
+ * (convenience overload; resolves the link id pair only when a validator decision requires it).
  * @param cow1 The first collision object
  * @param cow2 The second collision object
  * @param validator  The contact allowed validator
@@ -357,12 +373,12 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
 
 /**
  * @brief Update a collision objects filters
- * @param active A list of active collision objects
+ * @param active Set of active collision object ids
  * @param cow The collision object to update.
  */
-void updateCollisionObjectFilters(const std::vector<std::string>& active, const COW::Ptr& cow);
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active, const COW::Ptr& cow);
 
-COW::Ptr createCollisionObject(const std::string& name,
+COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
                                const int& type_id,
                                const CollisionShapesConst& shapes,
                                const tesseract::common::VectorIsometry3d& shape_poses,
@@ -440,12 +456,12 @@ void addCollisionObjectToBroadphase(const COW::Ptr& cow,
 
 /**
  * @brief Update a collision objects filters for broadphase
- * @param active A list of active collision objects
+ * @param active Set of active collision object LinkIds
  * @param cow The collision object to update.
- * @param broadphase The collision object to update.
- * @param dispatcher The collision object to update.
+ * @param broadphase The broadphase to update.
+ * @param dispatcher The dispatcher.
  */
-void updateCollisionObjectFilters(const std::vector<std::string>& active,
+void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::LinkId>& active,
                                   const COW::Ptr& cow,
                                   const std::unique_ptr<btBroadphaseInterface>& broadphase,
                                   const std::unique_ptr<btCollisionDispatcher>& dispatcher);

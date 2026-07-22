@@ -26,10 +26,13 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <stdexcept>
 #include <cereal/cereal.hpp>
 #include <cereal/types/atomic.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/unordered_map.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/utility.hpp>
 #include <cereal/types/optional.hpp>
 #include <cereal/types/common.hpp>
 #include <cereal/types/polymorphic.hpp>
@@ -38,6 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
 #include <tesseract/collision/contact_result_validator.h>
+#include <tesseract/common/eigen_types.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
@@ -50,7 +55,8 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
-  ar(cereal::make_nvp("link_names", g.link_names));
+  // Keep the "link_names" archive key though the field is link_ids (the ids serialize as their names).
+  ar(cereal::make_nvp("link_names", g.link_ids));
   ar(cereal::make_nvp("shape_id", g.shape_id));
   ar(cereal::make_nvp("subshape_id", g.subshape_id));
   ar(cereal::make_nvp("nearest_points", g.nearest_points));
@@ -69,17 +75,47 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 template <class Archive>
 void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
 {
-  ar(cereal::make_nvp("container", g.getContainer()));
+  // String-keyed wire format: a sorted std::map under NVP "container", keyed by the (a,b) link-name
+  // pair. The LinkIdPair key is rebuilt on load from each ContactResult's link_ids[0/1] names
+  // (LinkId::save_minimal persists the name). OrderedIdPair has no cereal specialization of its own
+  // because its NameIdValue ids are hashes, not stable across builds, so the names are serialized
+  // instead. The pair is sorted only for deterministic output; the load path does not depend on order.
+  using KeyT = std::pair<std::string, std::string>;
+  using MappedT = tesseract::collision::ContactResultVector;
+  tesseract::common::AlignedMap<KeyT, MappedT> container;
+  for (const auto& [key, results] : g.getContainer())
+  {
+    if (results.empty())
+      continue;  // Empty buckets are not persisted.
+    const auto& names = results.front().link_ids;
+    // Defensive guard against silent archive corruption: the wire key is derived from the stored
+    // ContactResult's link_ids names. A default-constructed ContactResult (link_ids of
+    // INVALID_LINK_ID) would silently emit ("","") as the key, dropping the original LinkIdPair
+    // identity, so callers must populate link_ids before insertion.
+    if (names[0].name().empty() || names[1].name().empty())
+      throw std::runtime_error("ContactResultMap cereal save: stored ContactResult has empty/invalid "
+                               "link_ids; cannot persist key — caller must populate link_ids before "
+                               "insertion.");
+    auto string_key = (names[0].name() <= names[1].name()) ? KeyT{ names[0].name(), names[1].name() } :
+                                                             KeyT{ names[1].name(), names[0].name() };
+    container.emplace(std::move(string_key), results);
+  }
+  ar(cereal::make_nvp("container", container));
 }
 
 template <class Archive>
 void load(Archive& ar, tesseract::collision::ContactResultMap& g)
 {
-  tesseract::collision::ContactResultMap::ContainerType container;
+  using KeyT = std::pair<std::string, std::string>;
+  using MappedT = tesseract::collision::ContactResultVector;
+  tesseract::common::AlignedMap<KeyT, MappedT> container;
   ar(cereal::make_nvp("container", container));
-
-  for (const auto& c : container)
-    g.addContactResult(c.first, c.second);
+  for (const auto& [string_key, results] : container)
+  {
+    tesseract::common::LinkIdPair pair_key(tesseract::common::LinkId(string_key.first),
+                                           tesseract::common::LinkId(string_key.second));
+    g.addContactResult(pair_key, results);
+  }
 }
 
 template <class Archive>
@@ -93,14 +129,33 @@ void serialize(Archive& ar, tesseract::collision::ContactRequest& g)
 }
 
 template <class Archive>
-void serialize(Archive& ar, tesseract::collision::ContactManagerConfig& g)
+void save(Archive& ar, const tesseract::collision::ContactManagerConfig& g)
 {
   ar(cereal::make_nvp("default_margin", g.default_margin));
   ar(cereal::make_nvp("pair_margin_override_type", g.pair_margin_override_type));
   ar(cereal::make_nvp("pair_margin_data", g.pair_margin_data));
   ar(cereal::make_nvp("acm", g.acm));
   ar(cereal::make_nvp("acm_override_type", g.acm_override_type));
-  ar(cereal::make_nvp("modify_object_enabled", g.modify_object_enabled));
+  std::unordered_map<std::string, bool> moe;
+  moe.reserve(g.modify_object_enabled.size());
+  for (const auto& [id, val] : g.modify_object_enabled)
+    moe[id.name()] = val;
+  ar(cereal::make_nvp("modify_object_enabled", moe));
+}
+
+template <class Archive>
+void load(Archive& ar, tesseract::collision::ContactManagerConfig& g)
+{
+  ar(cereal::make_nvp("default_margin", g.default_margin));
+  ar(cereal::make_nvp("pair_margin_override_type", g.pair_margin_override_type));
+  ar(cereal::make_nvp("pair_margin_data", g.pair_margin_data));
+  ar(cereal::make_nvp("acm", g.acm));
+  ar(cereal::make_nvp("acm_override_type", g.acm_override_type));
+  std::unordered_map<std::string, bool> moe;
+  ar(cereal::make_nvp("modify_object_enabled", moe));
+  g.modify_object_enabled.clear();
+  for (const auto& [name, val] : moe)
+    g.modify_object_enabled[tesseract::common::LinkId(name)] = val;
 }
 
 template <class Archive>
@@ -136,7 +191,8 @@ template <class Archive>
 void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 {
   ar(cereal::make_nvp("steps", g.steps));
-  ar(cereal::make_nvp("joint_names", g.joint_names));
+  // Keep the "joint_names" archive key though the field is joint_ids (the ids serialize as their names).
+  ar(cereal::make_nvp("joint_names", g.joint_ids));
   ar(cereal::make_nvp("total_steps", g.total_steps));
 }
 }  // namespace tesseract::collision

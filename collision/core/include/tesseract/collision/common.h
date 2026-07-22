@@ -26,17 +26,17 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <unordered_set>
 #include <vector>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
 #include <tesseract/common/contact_allowed_validator.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
-using ObjectPairKey = std::pair<std::string, std::string>;
-
 /**
  * @brief Get a vector of possible collision object pairs
  * @todo Should this also filter out links without geometry?
@@ -45,28 +45,40 @@ using ObjectPairKey = std::pair<std::string, std::string>;
  * @param validator The is contact allowed validator
  * @return A vector of collision object pairs
  */
-std::vector<ObjectPairKey>
-getCollisionObjectPairs(const std::vector<std::string>& active_links,
-                        const std::vector<std::string>& static_links,
+std::vector<tesseract::common::LinkIdPair>
+getCollisionObjectPairs(const std::vector<tesseract::common::LinkId>& active_links,
+                        const std::vector<tesseract::common::LinkId>& static_links,
                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator = nullptr);
 
 /**
- * @brief This will check if a link is active provided a list. If the list is empty the link is considered active.
- * @param active List of active link names
- * @param name The name of link to check if it is active.
+ * @brief This will check if a link is active provided a set. If the set is empty the link is considered active.
+ * @param active Set of active LinkIds
+ * @param id The LinkId to check if it is active.
  */
-bool isLinkActive(const std::vector<std::string>& active, const std::string& name);
+bool isLinkActive(const std::unordered_set<tesseract::common::LinkId>& active, const tesseract::common::LinkId& id);
 
 /**
  * @brief Determine if contact is allowed between two objects.
- * @param name1 The name of the first object
- * @param name2 The name of the second object
+ * @param pair The LinkId pair
  * @param validator The contact allowed validator
  * @param verbose If true print debug information
  * @return True if contact is allowed between the two object, otherwise false.
  */
-bool isContactAllowed(const std::string& name1,
-                      const std::string& name2,
+bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
+                      const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
+                      bool verbose = false);
+
+/**
+ * @brief Determine if contact is allowed between two objects (two-id overload; resolves the pair only when a
+ * validator decision requires it, and logs in caller argument order).
+ * @param id1 The id of the first object
+ * @param id2 The id of the second object
+ * @param validator The contact allowed validator
+ * @param verbose If true print debug information
+ * @return True if contact is allowed between the two object, otherwise false.
+ */
+bool isContactAllowed(const tesseract::common::LinkId& id1,
+                      const tesseract::common::LinkId& id2,
                       const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
                       bool verbose = false);
 
@@ -80,7 +92,8 @@ bool isContactAllowed(const std::string& name1,
  */
 ContactResult* processResult(ContactTestData& cdata,
                              ContactResult& contact,
-                             const std::pair<std::string, std::string>& key,
+                             const tesseract::common::LinkIdPair& key,
+                             double margin,
                              bool found);
 
 /**

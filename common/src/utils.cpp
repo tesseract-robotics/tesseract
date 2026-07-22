@@ -539,27 +539,38 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
   return (diff_abs <= (mrd * a1.abs().max(a2.abs()))).all();
 }
 
-std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
-                                              const AllowedCollisionEntries& acm_entries,
-                                              bool remove_duplicates)
+std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
+                                         const AllowedCollisionEntries& acm_entries,
+                                         bool remove_duplicates)
 {
-  std::vector<std::string> results;
+  // Full LinkId (value + name), not just the raw NameIdValue: two different link names sharing a
+  // hash value must not be treated as the same query link (see removeAllowedCollision(LinkId) for
+  // the same class of bug).
+  std::unordered_set<LinkId> query_ids;
+  query_ids.reserve(link_ids.size());
+  for (const auto& q : link_ids)
+    query_ids.insert(q);
+
+  std::vector<LinkId> results;
+  std::unordered_set<LinkId> seen;
   results.reserve(acm_entries.size());
 
-  for (const auto& entry : acm_entries)
+  for (const auto& [pair_key, entry] : acm_entries)
   {
-    const std::string link_1 = entry.first.first;
-    const std::string link_2 = entry.first.second;
-
-    // If the first entry is one of the links we were looking for
-    if (std::find(link_names.begin(), link_names.end(), link_1) != link_names.end())
-      // If it hasn't already been added or remove_duplicates is disabled
-      if (!remove_duplicates || (std::find(results.begin(), results.end(), link_2) == results.end()))
-        results.push_back(link_2);
-
-    if (std::find(link_names.begin(), link_names.end(), link_2) != link_names.end())
-      if (!remove_duplicates || (std::find(results.begin(), results.end(), link_1) == results.end()))
-        results.push_back(link_1);
+    // The pair key carries the names directly now, so the "other" link for a query hit is
+    // simply the other half of pair_key — no entry field needed here.
+    if (query_ids.count(pair_key.first()) > 0)
+    {
+      LinkId other = pair_key.second();
+      if (!remove_duplicates || seen.insert(other).second)
+        results.push_back(other);
+    }
+    if (query_ids.count(pair_key.second()) > 0)
+    {
+      LinkId other = pair_key.first();
+      if (!remove_duplicates || seen.insert(other).second)
+        results.push_back(other);
+    }
   }
   return results;
 }

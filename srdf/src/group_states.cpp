@@ -28,8 +28,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
 #include <tesseract/common/utils.h>
+#include <tesseract/common/types.h>
 #include <tesseract/srdf/group_states.h>
+#include <tesseract/srdf/utils.h>
 
 namespace tesseract::srdf
 {
@@ -53,7 +56,7 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
       std::throw_with_nested(
           std::runtime_error("GroupStates: Failed to parse attribute 'name' for group '" + group_name + "'!"));
 
-    bool found = std::find(group_names.begin(), group_names.end(), group_name) != group_names.end();
+    bool found = group_names.find(group_name) != group_names.end();
     if (!found)
       std::throw_with_nested(std::runtime_error(tesseract::common::strFormat(
           "GroupStates: State '%s' group '%s' does not exist!", state_name.c_str(), group_name.c_str())));
@@ -75,14 +78,15 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                "state '%s' in group '%s'!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str())));
+      auto joint_id = tesseract::common::JointId(joint_name);
 
-      if (!scene_graph.getJoint(joint_name))
+      if (!scene_graph.getJoint(joint_id))
         std::throw_with_nested(std::runtime_error(tesseract::common::strFormat("GroupStates: State '%s' for group '%s' "
                                                                                "joint name '%s' is not know to the "
                                                                                "URDF!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str(),
-                                                                               joint_name.c_str())));
+                                                                               joint_id.name().c_str())));
 
       status = tesseract::common::QueryDoubleAttributeRequired(joint_xml, "value", joint_value);
       if (status != tinyxml2::XML_SUCCESS)
@@ -92,9 +96,9 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                "'value'!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str(),
-                                                                               joint_name.c_str())));
+                                                                               joint_id.name().c_str())));
 
-      joint_state[joint_name] = joint_value;
+      joint_state[joint_id] = joint_value;
     }
 
     if (joint_state.empty())

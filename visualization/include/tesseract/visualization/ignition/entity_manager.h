@@ -30,11 +30,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
+
 namespace tesseract::visualization
 {
 static const int NULL_ENTITY_ID = -1;
 using EntityID = int;
 using EntityMap = std::unordered_map<std::string, EntityID>;
+using EntityLinkMap = std::unordered_map<tesseract::common::LinkId, EntityID>;
 
 class EntityManager
 {
@@ -60,24 +63,24 @@ public:
   const EntityMap& getModels() const;
 
   /**
-   * @brief Add link name to manager and return id for link
-   * @param name Name given to the link
+   * @brief Add link id to manager and return id for link
+   * @param id Link identity
    * @return The Entity ID
    */
-  EntityID addLink(const std::string& name);
+  EntityID addLink(const tesseract::common::LinkId& id);
 
   /**
-   * @brief Given the link name return the ID
-   * @param name Name of the link
-   * @return The ID of the link (if < 1000 it was not found)
+   * @brief Given the link id return the Entity ID
+   * @param id Link identity
+   * @return The Entity ID of the link, or NULL_ENTITY_ID if not found
    */
-  EntityID getLink(const std::string& name) const;
+  EntityID getLink(const tesseract::common::LinkId& id) const;
 
   /**
    * @brief Get all links being managed
-   * @return A map of names to entity id's
+   * @return A map of LinkId to entity id's
    */
-  const EntityMap& getLinks() const;
+  const EntityLinkMap& getLinks() const;
 
   /**
    * @brief Add visual name to manager and return id for visual
@@ -126,7 +129,7 @@ public:
   void clear();
 
 private:
-  EntityMap link_id_map_;           /**< Stores entity id for each link */
+  EntityLinkMap link_id_map_;       /**< Stores entity id for each link */
   EntityMap model_id_map_;          /**< Stores entity id for each model */
   EntityMap visual_id_map_;         /**< Stores entity id for each visual */
   EntityMap sensor_id_map_;         /**< Stores entity id for each sensor */

@@ -24,6 +24,8 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/common/allowed_collision_matrix.h>
 
+#include <utility>
+
 namespace tesseract::common
 {
 bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2)
@@ -46,59 +48,66 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
 
 AllowedCollisionMatrix::AllowedCollisionMatrix(const AllowedCollisionEntries& entries)
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  for (const auto& entry : entries)
-  {
-    tesseract::common::makeOrderedLinkPair(link_pair, entry.first.first, entry.first.second);
-    lookup_table_[link_pair] = entry.second;
-  }
+  lookup_table_.reserve(entries.size());
+  for (const auto& [key, entry] : entries)
+    insertEntry(key, entry);
 }
 
-void AllowedCollisionMatrix::addAllowedCollision(const std::string& link_name1,
-                                                 const std::string& link_name2,
+void AllowedCollisionMatrix::insertEntry(const LinkIdPair& key, ACMEntry entry)
+{
+  // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
+  // always a genuine re-add of the same named pair — just refresh the payload.
+  auto [it, inserted] = lookup_table_.try_emplace(key);
+  if (inserted)
+    it->second = std::move(entry);
+  else
+    it->second.reason = std::move(entry.reason);
+}
+
+void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
+                                                 const LinkId& link_id2,
                                                  const std::string& reason)
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
-  lookup_table_[link_pair] = reason;
+  const LinkIdPair key(link_id1, link_id2);
+  insertEntry(key, ACMEntry{ reason });
+}
+
+void AllowedCollisionMatrix::addAllowedCollision(const LinkIdPair& pair, const ACMEntry& entry)
+{
+  insertEntry(pair, entry);
 }
 
 const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions() const { return lookup_table_; }
 
-void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
+void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2)
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
-  lookup_table_.erase(link_pair);
+  lookup_table_.erase(LinkIdPair(link_id1, link_id2));
 }
 
-void AllowedCollisionMatrix::removeAllowedCollision(const std::string& link_name)
+void AllowedCollisionMatrix::removeAllowedCollision(const LinkIdPair& pair) { lookup_table_.erase(pair); }
+
+void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id)
 {
-  for (auto it = lookup_table_.begin(); it != lookup_table_.end() /* not hoisted */; /* no increment */)
+  for (auto it = lookup_table_.begin(); it != lookup_table_.end();)
   {
-    if (it->first.first == link_name || it->first.second == link_name)
-    {
+    if (it->first.first() == link_id || it->first.second() == link_id)
       it = lookup_table_.erase(it);
-    }
     else
-    {
       ++it;
-    }
   }
 }
 
-bool AllowedCollisionMatrix::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
+bool AllowedCollisionMatrix::isCollisionAllowed(const LinkIdPair& pair) const
 {
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, link_name1, link_name2);
-  return (lookup_table_.find(link_pair) != lookup_table_.end());
+  return lookup_table_.find(pair) != lookup_table_.end();
 }
 
 void AllowedCollisionMatrix::clearAllowedCollisions() { lookup_table_.clear(); }
 
 void AllowedCollisionMatrix::insertAllowedCollisionMatrix(const AllowedCollisionMatrix& acm)
 {
-  lookup_table_.insert(acm.getAllAllowedCollisions().begin(), acm.getAllAllowedCollisions().end());
+  for (const auto& [key, entry] : acm.getAllAllowedCollisions())
+    insertEntry(key, entry);
 }
 
 void AllowedCollisionMatrix::reserveAllowedCollisionMatrix(std::size_t size) { lookup_table_.reserve(size); }
@@ -114,8 +123,8 @@ bool AllowedCollisionMatrix::operator!=(const AllowedCollisionMatrix& rhs) const
 
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
 {
-  for (const auto& pair : acm.getAllAllowedCollisions())
-    os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << "\n";
+  for (const auto& [key, entry] : acm.getAllAllowedCollisions())
+    os << "link=" << key.first() << " link=" << key.second() << " reason=" << entry.reason << "\n";
   return os;
 }
 }  // namespace tesseract::common

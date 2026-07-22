@@ -594,15 +594,16 @@ void removeDuplicates(std::vector<T>& v)
 }
 
 /**
- * @brief Gets allowed collisions for a set of link names.
- * @param link_names Vector of link names for which we want the allowed collisions
+ * @brief Gets allowed collisions for a set of link ids.
+ * @details Uses unordered_set lookups for both query membership and dedup (O(1) per check).
+ * @param link_ids Vector of LinkIds for which we want the allowed collisions
  * @param acm_entries Entries in the ACM. Get this with AllowedCollisionMatrix::getAllAllowedCollisions()
  * @param remove_duplicates If true, duplicates will be removed. Default: true
- * @return vector of links that are allowed to collide with links given
+ * @return vector of LinkIds that are allowed to collide with the links given
  */
-std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
-                                              const AllowedCollisionEntries& acm_entries,
-                                              bool remove_duplicates = true);
+std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
+                                         const AllowedCollisionEntries& acm_entries,
+                                         bool remove_duplicates = true);
 
 /**
  * @brief Safely cast a number from one type to another, checking for overflow and underflow.
