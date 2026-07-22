@@ -175,9 +175,9 @@ inline void runTest(DiscreteContactManager& checker)
   result_vector.clear();
 
   // Use different method for setting transforms
-  std::vector<tesseract::common::LinkId> names = { "cylinder_link" };
+  std::vector<tesseract::common::LinkId> link_ids = { "cylinder_link" };
   tesseract::common::VectorIsometry3d transforms = { location["cylinder_link"] };
-  checker.setCollisionObjectsTransform(names, transforms);
+  checker.setCollisionObjectsTransform(link_ids, transforms);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenCopyResults(result_vector);
 

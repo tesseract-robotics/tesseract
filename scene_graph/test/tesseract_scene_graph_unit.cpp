@@ -571,12 +571,13 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphIdCollectionMethodsUnit)  // NO
 
   // --- getJointChildrenIds (multi) ---
   {
-    std::vector<LinkId> children = g.getJointChildrenIds("joint_4");
-    EXPECT_EQ(children.size(), 1);
-    EXPECT_EQ(children[0], "link_5");
+    std::vector<LinkId> children = g.getJointChildrenIds(std::vector<JointId>{ "joint_3", "joint_4" });
+    EXPECT_EQ(children.size(), 2);
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_4"), children.end());
+    EXPECT_NE(std::find(children.begin(), children.end(), "link_5"), children.end());
   }
   {
-    std::vector<LinkId> children = g.getJointChildrenIds("joint_1");
+    std::vector<LinkId> children = g.getJointChildrenIds(std::vector<JointId>{ "joint_1" });
     EXPECT_EQ(children.size(), 4);
     EXPECT_NE(std::find(children.begin(), children.end(), "link_2"), children.end());
     EXPECT_NE(std::find(children.begin(), children.end(), "link_3"), children.end());

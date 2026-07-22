@@ -34,12 +34,6 @@ namespace tesseract::srdf
 {
 class SRDFModel;
 
-/** @brief Returns true iff a link with exactly this name is registered in the scene graph. */
-bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::LinkId& id);
-
-/** @brief Returns true iff a joint with exactly this name is registered in the scene graph. */
-bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::JointId& id);
-
 /**
  * @brief Add allowed collisions to the scene graph
  * @param scene_graph The scene graph to add allowed collisions data

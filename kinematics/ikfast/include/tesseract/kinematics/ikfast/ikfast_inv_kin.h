@@ -109,10 +109,10 @@ public:
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
   Eigen::Index numJoints() const override;
-  std::vector<tesseract::common::JointId> getJointIds() const override final;
-  tesseract::common::LinkId getBaseLinkId() const override final;
-  tesseract::common::LinkId getWorkingFrame() const override final;
-  std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override;
+  tesseract::common::LinkId getBaseLinkId() const override;
+  tesseract::common::LinkId getWorkingFrame() const override;
+  std::vector<tesseract::common::LinkId> getTipLinkIds() const override;
   std::string getSolverName() const override;
   InverseKinematics::UPtr clone() const override;
 

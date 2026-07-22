@@ -101,7 +101,11 @@ public:
    */
   virtual SceneState getState(const tesseract::common::JointIdTransformMap& floating_joint_values) const = 0;
 
-  /** @brief Get the state using a JointId-keyed map */
+  /**
+   * @brief Get the state using a JointId-keyed map
+   *
+   * This does not change the internal state of the solver.
+   */
   virtual SceneState getState(const SceneState::JointValues& joint_values,
                               const tesseract::common::JointIdTransformMap& floating_joint_values = {}) const = 0;
 
@@ -133,6 +137,10 @@ public:
 
   /**
    * @brief Get link transforms without applying floating joint values
+   *
+   * This is provided to optimize motion planning where link_transforms are poplated multiple time
+   *
+   * This does not change the internal state of the solver.
    *
    * This overwrites the transform of every link in the solver's tree but does not clear @p link_transforms
    * first; keys from a different tree persist. Reusing a scratch map without clearing is safe iff every key
@@ -166,6 +174,9 @@ public:
 
   /**
    * @brief Get the jacobian for a given set or subset of joint IDs.
+   *
+   * This does not change the internal state of the solver.
+   *
    * @param joint_ids A list of joint IDs to change.
    * @param joint_values The joint values
    * @param link_id The link ID to calculate the jacobian for

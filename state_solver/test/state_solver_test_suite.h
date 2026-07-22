@@ -118,11 +118,9 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
     if (i < 3)
     {
       base_random_state = comp_solver.getRandomState();
-      std::vector<JointId> active_jn = comp_solver.getActiveJointIds();
-      Eigen::VectorXd active_jv = base_random_state.getJointValues(active_jn);
-      comp_state_const = comp_solver.getState(active_jn, active_jv);
+      comp_state_const = comp_solver.getState(base_random_state.joints);
 
-      comp_solver.setState(active_jn, active_jv);
+      comp_solver.setState(base_random_state.joints);
     }
     else if (i < 6)
     {
@@ -133,6 +131,7 @@ inline void runCompareStateSolver(const StateSolver& base_solver, StateSolver& c
 
       base_solver.getLinkTransforms(base_link_transforms, joint_ids, joint_values);
       comp_solver.getLinkTransforms(comp_link_transforms, joint_ids, joint_values);
+      comp_solver.getLinkTransforms(comp_link_transforms1, joint_ids, joint_values, base_random_state.floating_joints);
       comp_solver.setState(joint_ids, joint_values);
     }
     else if (i < 10)

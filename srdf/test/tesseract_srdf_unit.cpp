@@ -2534,32 +2534,6 @@ TEST(TesseractSRDFUnit, GetAlphabeticalACMEntriesUnit)  // NOLINT
   EXPECT_TRUE(tesseract::srdf::getAlphabeticalACMEntries({}).empty());
 }
 
-TEST(TesseractSRDFUnit, IsRegisteredLinkJointUnit)  // NOLINT
-{
-  using namespace tesseract::scene_graph;
-
-  SceneGraph g;
-  g.addLink(Link("base_link"));
-  g.addLink(Link("link_1"));
-
-  Joint j("joint_1");
-  j.parent_link_id = "base_link";
-  j.child_link_id = "link_1";
-  j.type = JointType::FIXED;
-  g.addJoint(j);
-
-  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "base_link"));
-  EXPECT_TRUE(tesseract::srdf::isRegisteredLink(g, "link_1"));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, "missing_link"));
-
-  EXPECT_TRUE(tesseract::srdf::isRegisteredJoint(g, "joint_1"));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, "missing_joint"));
-
-  // A link name is not a registered joint and vice-versa (tagged-type separation).
-  EXPECT_FALSE(tesseract::srdf::isRegisteredJoint(g, tesseract::common::JointId("base_link")));
-  EXPECT_FALSE(tesseract::srdf::isRegisteredLink(g, tesseract::common::LinkId("joint_1")));
-}
-
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

@@ -46,7 +46,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   double delta = 0.55;
 
   std::size_t t = 5;  // Because of unit test runtime this was reduced from 10 to 5.
-  std::vector<tesseract::common::LinkId> link_names;
+  std::vector<tesseract::common::LinkId> link_ids;
   tesseract::common::LinkIdTransformMap location;
   for (std::size_t x = 0; x < t; ++x)
   {
@@ -62,20 +62,20 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
         obj3_shapes.push_back(CollisionShapePtr(sphere->clone()));
         obj3_poses.push_back(sphere_pose);
 
-        link_names.emplace_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
+        link_ids.emplace_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
 
-        location[link_names.back()] = sphere_pose;
-        location[link_names.back()].translation() = Eigen::Vector3d(
+        location[link_ids.back()] = sphere_pose;
+        location[link_ids.back()].translation() = Eigen::Vector3d(
             static_cast<double>(x) * delta, static_cast<double>(y) * delta, static_cast<double>(z) * delta);
-        checker.addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses);
+        checker.addCollisionObject(link_ids.back(), 0, obj3_shapes, obj3_poses);
       }
     }
   }
 
   // Check if they are in collision
-  checker.setActiveCollisionObjects(link_names);
+  checker.setActiveCollisionObjects(link_ids);
   EXPECT_EQ(checker.getActiveCollisionObjectIds(),
-            std::unordered_set<tesseract::common::LinkId>(link_names.begin(), link_names.end()));
+            std::unordered_set<tesseract::common::LinkId>(link_ids.begin(), link_ids.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

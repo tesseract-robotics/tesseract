@@ -199,9 +199,9 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     result_vector.clear();
 
     // Use different method for setting transforms
-    std::vector<tesseract::common::LinkId> names = { "box_link" };
+    std::vector<tesseract::common::LinkId> link_ids = { "box_link" };
     tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
-    checker.setCollisionObjectsTransform(names, transforms);
+    checker.setCollisionObjectsTransform(link_ids, transforms);
     checker.contactTest(result, test_type);
     result.flattenCopyResults(result_vector);
 
@@ -222,9 +222,9 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
     result_vector.clear();
 
     // Use different method for setting transforms
-    std::vector<tesseract::common::LinkId> names = { "box_link" };
+    std::vector<tesseract::common::LinkId> link_ids = { "box_link" };
     tesseract::common::VectorIsometry3d transforms = { location["box_link"] };
-    checker.setCollisionObjectsTransform(names, transforms);
+    checker.setCollisionObjectsTransform(link_ids, transforms);
     checker.contactTest(result, test_type);
     result.flattenMoveResults(result_vector);
 
