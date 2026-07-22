@@ -1,0 +1,8 @@
+# conda-win builds orocos-kdl from source: the conda-forge Windows package is a static library
+# compiled without AVX, so its inlined Eigen allocation convention (16-byte, plain malloc/free) is
+# incompatible with the AVX workspace build (32-byte, offset-prefixed) and corrupts the heap whenever
+# a KDL-owned Eigen buffer is allocated on one side and freed on the other (see conda/recipe/build.bat).
+- git:
+    local-name: orocos_kinematics_dynamics
+    uri: https://github.com/orocos/orocos_kinematics_dynamics.git
+    version: 1.5.3

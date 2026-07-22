@@ -44,6 +44,9 @@ jobs:
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
+    - name: vcs import kdl source
+      run: >
+        vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/conda/windows_kdl.repos" workspace/src/
     - uses: conda-incubator/setup-miniconda@v4
       with:
         channel-priority: strict
