@@ -251,8 +251,8 @@ struct Environment::Implementation
    * @details This will cleared when environment changes
    * @note This is intentionally not serialized it will auto updated
    */
-  mutable std::unordered_map<std::string, std::vector<tesseract::common::JointId>> group_joint_names_cache;
-  mutable std::shared_mutex group_joint_names_cache_mutex;
+  mutable std::unordered_map<std::string, std::vector<tesseract::common::JointId>> group_joint_ids_cache;
+  mutable std::shared_mutex group_joint_ids_cache_mutex;
 
   /**
    * @brief A cache of joint groups to provide faster access
@@ -430,7 +430,7 @@ std::unique_ptr<Environment::Implementation> Environment::Implementation::clone(
 
   std::shared_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex);
   std::shared_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex);
-  std::shared_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex);
+  std::shared_lock<std::shared_mutex> jn_lock(group_joint_ids_cache_mutex);
   std::shared_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
   std::shared_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
 
@@ -462,7 +462,7 @@ std::unique_ptr<Environment::Implementation> Environment::Implementation::clone(
   // Copy cache
   cloned_env->joint_group_cache = joint_group_cache;
   cloned_env->kinematic_group_cache = kinematic_group_cache;
-  cloned_env->group_joint_names_cache = group_joint_names_cache;
+  cloned_env->group_joint_ids_cache = group_joint_ids_cache;
 
   // NOLINTNEXTLINE
   cloned_env->contact_allowed_validator = std::make_shared<EnvironmentContactAllowedValidator>(cloned_env->scene_graph);
@@ -604,8 +604,8 @@ void Environment::Implementation::clear()
   }
 
   {
-    std::unique_lock<std::shared_mutex> lock(group_joint_names_cache_mutex);
-    group_joint_names_cache.clear();
+    std::unique_lock<std::shared_mutex> lock(group_joint_ids_cache_mutex);
+    group_joint_ids_cache.clear();
   }
 
   {
@@ -684,9 +684,9 @@ void Environment::Implementation::environmentChanged()
       continuous_manager->setActiveCollisionObjects(active_link_ids);
   }
 
-  {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
-    std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex);
-    group_joint_names_cache.clear();
+  {  // Clear JointGroup, KinematicGroup and GroupJointIds cache
+    std::unique_lock<std::shared_mutex> jn_lock(group_joint_ids_cache_mutex);
+    group_joint_ids_cache.clear();
   }
 
   currentStateChanged();
@@ -724,9 +724,9 @@ Environment::Implementation::getGroupJointIds(const std::string& group_name) con
   if (kinematics_information.group_names.find(group_name) == kinematics_information.group_names.end())
     throw std::runtime_error("Environment, Joint group '" + group_name + "' does not exist!");
 
-  std::unique_lock<std::shared_mutex> cache_lock(group_joint_names_cache_mutex);
-  auto cache_it = group_joint_names_cache.find(group_name);
-  if (cache_it != group_joint_names_cache.end())
+  std::unique_lock<std::shared_mutex> cache_lock(group_joint_ids_cache_mutex);
+  auto cache_it = group_joint_ids_cache.find(group_name);
+  if (cache_it != group_joint_ids_cache.end())
     return cache_it->second;
 
   auto chain_it = kinematics_information.chain_groups.find(group_name);
@@ -738,14 +738,14 @@ Environment::Implementation::getGroupJointIds(const std::string& group_name) con
     tesseract::scene_graph::ShortestPath path =
         scene_graph->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
-    group_joint_names_cache[group_name] = std::move(path.active_joints);
-    return group_joint_names_cache[group_name];
+    group_joint_ids_cache[group_name] = std::move(path.active_joints);
+    return group_joint_ids_cache[group_name];
   }
 
   auto joint_it = kinematics_information.joint_groups.find(group_name);
   if (joint_it != kinematics_information.joint_groups.end())
   {
-    group_joint_names_cache[group_name] = joint_it->second;
+    group_joint_ids_cache[group_name] = joint_it->second;
     return joint_it->second;
   }
 

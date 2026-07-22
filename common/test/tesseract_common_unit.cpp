@@ -5014,20 +5014,20 @@ TEST(TesseractCommonUnit, PlyIO_LoadNonexistentFile)  // NOLINT
   EXPECT_EQ(faces.size(), 0);
 }
 
-// ======================== Three-tier overload tests ========================
+// ==================== String- and LinkId-argument lookups ====================
 
-TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
+TEST(TesseractCommonUnit, ACMStringAndLinkIdLookups)  // NOLINT
 {
   using namespace tesseract::common;
 
   AllowedCollisionMatrix acm;
   acm.addAllowedCollision("link_a", "link_b", "test_reason");
 
-  // Tier 3 (string) — already tested above, verify again
+  // String arguments
   EXPECT_TRUE(acm.isCollisionAllowed({ "link_a", "link_b" }));
   EXPECT_TRUE(acm.isCollisionAllowed({ "link_b", "link_a" }));  // order invariant
 
-  // Tier 1 (LinkId) — same result via integer lookup
+  // LinkId arguments — same result
   const LinkId id_a = "link_a";
   const LinkId id_b = "link_b";
   EXPECT_TRUE(acm.isCollisionAllowed({ id_a, id_b }));
@@ -5049,19 +5049,19 @@ TEST(TesseractCommonUnit, ACMThreeTierOverloads)  // NOLINT
   EXPECT_EQ(it->second.reason, "test_reason");
 }
 
-TEST(TesseractCommonUnit, CollisionMarginDataThreeTierOverloads)  // NOLINT
+TEST(TesseractCommonUnit, CollisionMarginDataStringAndLinkIdLookups)  // NOLINT
 {
   using namespace tesseract::common;
 
   CollisionMarginData margin_data(0.05);
   margin_data.setCollisionMargin("link_x", "link_y", 0.1);
 
-  // Tier 3 (string)
+  // String arguments
   EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_y"), 0.1, 1e-12);
   EXPECT_NEAR(margin_data.getCollisionMargin("link_y", "link_x"), 0.1, 1e-12);   // order invariant
   EXPECT_NEAR(margin_data.getCollisionMargin("link_x", "link_z"), 0.05, 1e-12);  // default
 
-  // Tier 1 (LinkId)
+  // LinkId arguments
   const LinkId id_x = "link_x";
   const LinkId id_y = "link_y";
   const LinkId id_z = "link_z";

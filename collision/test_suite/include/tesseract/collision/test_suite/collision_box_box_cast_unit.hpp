@@ -142,9 +142,9 @@ inline void runTest(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  std::vector<tesseract::common::LinkId> names = { "static_box_link" };
+  std::vector<tesseract::common::LinkId> link_ids = { "static_box_link" };
   tesseract::common::VectorIsometry3d transforms = { Eigen::Isometry3d::Identity() };
-  checker.setCollisionObjectsTransform(names, transforms);
+  checker.setCollisionObjectsTransform(link_ids, transforms);
 
   tesseract::common::VectorIsometry3d start_poses, end_poses;
   Eigen::Isometry3d start_pos, end_pos;

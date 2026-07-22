@@ -30,16 +30,6 @@
 
 namespace tesseract::srdf
 {
-bool isRegisteredLink(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::LinkId& id)
-{
-  return scene_graph.getLink(id) != nullptr;
-}
-
-bool isRegisteredJoint(const tesseract::scene_graph::SceneGraph& scene_graph, const tesseract::common::JointId& id)
-{
-  return scene_graph.getJoint(id) != nullptr;
-}
-
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
   for (const auto& [key, entry] : srdf_model.acm.getAllAllowedCollisions())

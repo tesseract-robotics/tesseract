@@ -303,7 +303,12 @@ public:
    */
   const std::string& getName() const;
 
-  /** @brief Set state using JointId-keyed map (avoids string-to-ID conversion) */
+  /**
+   * @brief Set the current state of the environment
+   *
+   * After updating the current state these function must call currentStateChanged() which
+   * will update the contact managers transforms
+   */
   void setState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joints = {});
 
@@ -318,7 +323,11 @@ public:
    */
   void setState(const tesseract::common::JointIdTransformMap& floating_joints);
 
-  /** @brief Get state using JointId-keyed map (avoids string-to-ID conversion) */
+  /**
+   * @brief Get the state of the environment for a given set or subset of joint values.
+   *
+   * This does not change the internal state of the environment.
+   */
   tesseract::scene_graph::SceneState getState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                                               const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
 
