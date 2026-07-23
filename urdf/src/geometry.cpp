@@ -291,7 +291,7 @@ tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract::geome
           writeSignedDistanceField(std::static_pointer_cast<const tesseract::geometry::SignedDistanceField>(geometry),
                                    doc,
                                    package_path,
-                                   filename + ".sdf");
+                                   filename + ".vdb");
       xml_element->InsertEndChild(xml_sdf);
     }
     catch (...)

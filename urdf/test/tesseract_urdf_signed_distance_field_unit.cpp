@@ -11,10 +11,39 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
+namespace
+{
+std::vector<std::uint8_t> makeTestSignedDistanceFieldVDB()
+{
+  const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& point) {
+    return point.norm() - 0.5;
+  };
+  const auto sdf = tesseract::geometry::createDiscreteSignedDistanceField(
+      sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(4, 4, 4));
+  return tesseract::geometry::writeSignedDistanceFieldVDB(*sdf);
+}
+
+class VDBResourceLocator final : public tesseract::common::ResourceLocator
+{
+public:
+  explicit VDBResourceLocator(std::vector<std::uint8_t> data) : data_(std::move(data)) {}
+
+  tesseract::common::Resource::Ptr locateResource(const std::string& url) const override
+  {
+    if (url != "memory://sphere.vdb")
+      return nullptr;
+    return std::make_shared<tesseract::common::BytesResource>(url, data_);
+  }
+
+private:
+  std::vector<std::uint8_t> data_;
+};
+}  // namespace
+
 TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
 {
-  tesseract::common::GeneralResourceLocator resource_locator;
-  const std::string sdf_url = "package://tesseract/support/meshes/sphere.sdf";
+  const VDBResourceLocator resource_locator(makeTestSignedDistanceFieldVDB());
+  const std::string sdf_url = "memory://sphere.vdb";
 
   {  // Filename only -> default scale
     std::string str = R"(<tesseract:signed_distance_field filename=")" + sdf_url + R"(" extra="0 0 0"/>)";
@@ -89,8 +118,7 @@ TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
   }
 
   {  // Failure: resource does not exist
-    std::string str =
-        R"(<tesseract:signed_distance_field filename="package://tesseract/support/meshes/does_not_exist.sdf"/>)";
+    std::string str = R"(<tesseract:signed_distance_field filename="memory://does_not_exist.vdb"/>)";
     tesseract::geometry::SignedDistanceField::Ptr geom;
     EXPECT_FALSE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
         geom,
@@ -117,7 +145,7 @@ TEST(TesseractURDFUnit, write_signed_distance_field)  // NOLINT
                                                                        &tesseract::urdf::writeSignedDistanceField,
                                                                        text,
                                                                        tesseract::common::getTempPath(),
-                                                                       std::string("sdf0.sdf")));
+                                                                       std::string("sdf0.vdb")));
     EXPECT_NE(text, "");
   }
 
@@ -129,7 +157,7 @@ TEST(TesseractURDFUnit, write_signed_distance_field)  // NOLINT
                                                                        &tesseract::urdf::writeSignedDistanceField,
                                                                        text,
                                                                        tesseract::common::getTempPath(),
-                                                                       std::string("sdf1.sdf")));
+                                                                       std::string("sdf1.vdb")));
     EXPECT_NE(text.find("scale=\"0.5 0.5 0.5\""), std::string::npos);
   }
 
@@ -151,7 +179,7 @@ TEST(TesseractURDFUnit, write_signed_distance_field)  // NOLINT
                                                                        &tesseract::urdf::writeSignedDistanceField,
                                                                        text,
                                                                        tesseract::common::getTempPath(),
-                                                                       std::string("sdf2.sdf")));
+                                                                       std::string("sdf2.vdb")));
     EXPECT_EQ(text, "");
   }
 }

@@ -693,18 +693,32 @@ TEST(TesseractGeometryUnit, SignedDistanceField)  // NOLINT
   EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, other, scale)));
   EXPECT_FALSE(tesseract::geometry::isIdentical(*geom, T(domain, dims, distances, Eigen::Vector3d(1, 1, 1))));
 
-  // The grid round-trips through the backend-neutral binary serialization.
-  const std::vector<std::uint8_t> blob = tesseract::geometry::writeSignedDistanceFieldData(*geom);
-  auto geom_rt = tesseract::geometry::readSignedDistanceFieldData(blob, scale);
-  EXPECT_EQ(geom_rt->getDistances(), distances);
+  // The grid round-trips through standard OpenVDB serialization.
+  const std::vector<std::uint8_t> vdb = tesseract::geometry::writeSignedDistanceFieldVDB(*geom);
+  auto geom_rt = tesseract::geometry::readSignedDistanceFieldVDB(vdb.data(), vdb.size(), scale);
+  ASSERT_EQ(geom_rt->getDistances().size(), distances.size());
+  for (std::size_t index = 0; index < distances.size(); ++index)
+    EXPECT_NEAR(geom_rt->getDistances()[index], distances[index], 1e-6);
   EXPECT_EQ(geom_rt->getDimensions(), dims);
   EXPECT_TRUE(geom_rt->getDomain().min().isApprox(domain.min(), 1e-9));
   EXPECT_TRUE(geom_rt->getDomain().max().isApprox(domain.max(), 1e-9));
   EXPECT_TRUE(geom_rt->getScale().isApprox(scale, 1e-5));
 
-  // A malformed blob is rejected.
+  // The grid also round-trips through standard NanoVDB serialization.
+  const std::vector<std::uint8_t> nvdb = tesseract::geometry::writeSignedDistanceFieldNVDB(*geom);
+  auto geom_nvdb_rt = tesseract::geometry::readSignedDistanceFieldNVDB(nvdb.data(), nvdb.size(), scale);
+  ASSERT_EQ(geom_nvdb_rt->getDistances().size(), distances.size());
+  for (std::size_t index = 0; index < distances.size(); ++index)
+    EXPECT_NEAR(geom_nvdb_rt->getDistances()[index], distances[index], 1e-6);
+  EXPECT_EQ(geom_nvdb_rt->getDimensions(), dims);
+  EXPECT_TRUE(geom_nvdb_rt->getDomain().min().isApprox(domain.min(), 1e-9));
+  EXPECT_TRUE(geom_nvdb_rt->getDomain().max().isApprox(domain.max(), 1e-9));
+  EXPECT_TRUE(geom_nvdb_rt->getScale().isApprox(scale, 1e-5));
+
+  // A malformed VDB is rejected.
+  EXPECT_ANY_THROW(tesseract::geometry::readSignedDistanceFieldVDB(std::vector<std::uint8_t>{ 0, 1, 2, 3 }));  // NOLINT
   EXPECT_ANY_THROW(
-      tesseract::geometry::readSignedDistanceFieldData(std::vector<std::uint8_t>{ 0, 1, 2, 3 }));  // NOLINT
+      tesseract::geometry::readSignedDistanceFieldNVDB(std::vector<std::uint8_t>{ 0, 1, 2, 3 }));  // NOLINT
 }
 
 TEST(TesseractGeometryUnit, SignedDistanceFieldSampler)  // NOLINT
@@ -792,15 +806,17 @@ TEST(TesseractGeometryUnit, SignedDistanceFieldLazy)  // NOLINT
   auto eager = tesseract::geometry::createDiscreteSignedDistanceField(sphere, dmin, dmax, dims);
   EXPECT_TRUE(eager->isDiscretized());
 
-  // Serializing a lazy field discretizes it, and the round-trip yields a grid-backed (discretized) field.
+  // Serializing a lazy field to VDB discretizes it, and the round-trip yields a grid-backed field.
   auto lazy2 = tesseract::geometry::createSignedDistanceField(sphere, dmin, dmax, dims);
   EXPECT_FALSE(lazy2->isDiscretized());
-  const std::vector<std::uint8_t> blob = tesseract::geometry::writeSignedDistanceFieldData(*lazy2);
+  const std::vector<std::uint8_t> vdb = tesseract::geometry::writeSignedDistanceFieldVDB(*lazy2);
   EXPECT_TRUE(lazy2->isDiscretized());
-  auto rt = tesseract::geometry::readSignedDistanceFieldData(blob);
+  auto rt = tesseract::geometry::readSignedDistanceFieldVDB(vdb);
   EXPECT_TRUE(rt->isDiscretized());
   EXPECT_EQ(rt->getDimensions(), dims);
-  EXPECT_EQ(rt->getDistances(), lazy2->getDistances());
+  ASSERT_EQ(rt->getDistances().size(), lazy2->getDistances().size());
+  for (std::size_t index = 0; index < rt->getDistances().size(); ++index)
+    EXPECT_NEAR(rt->getDistances()[index], lazy2->getDistances()[index], 1e-6);
 
   // Cloning a lazy field preserves the sampler (clone queries exactly, still not yet discretized).
   auto clone = std::static_pointer_cast<tesseract::geometry::SignedDistanceField>(lazy2->clone());

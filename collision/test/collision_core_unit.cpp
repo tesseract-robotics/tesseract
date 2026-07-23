@@ -386,7 +386,7 @@ TEST(TesseractCoreUnit, ImplicitSDFCollisionNonConvexMultiStart)  // NOLINT
   const Eigen::Vector3d center0(-0.55, 0, 0);
   const Eigen::Vector3d center1(0.55, 0, 0);
   tesseract::collision::ImplicitSDFShape two_spheres;
-  two_spheres.distance = [center0, center1, radius](const Eigen::Vector3d& point) {
+  two_spheres.distance = [center0, center1](const Eigen::Vector3d& point) {
     return std::min((point - center0).norm(), (point - center1).norm()) - radius;
   };
   two_spheres.gradient = [center0, center1](const Eigen::Vector3d& point) {

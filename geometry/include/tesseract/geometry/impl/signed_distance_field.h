@@ -64,7 +64,7 @@ using BatchedSignedDistanceFunction = std::function<std::vector<double>(const st
  * @c btSdfCollisionShape::initializeSDF; a VDB / GPU backend would build its own). Hold a distance
  * function with @ref createSignedDistanceField (discretized on demand), sample it onto a grid up
  * front with @ref createDiscreteSignedDistanceField, construct it directly from sampled data, or load
- * a serialized field with @ref readSignedDistanceFieldData.
+ * a standard OpenVDB field with @ref readSignedDistanceFieldVDB.
  *
  * @note This is the signed-distance-field geometry; use it when the field is your native
  * representation (sensor-fused / analytic) or you need volumetric discrete collision.

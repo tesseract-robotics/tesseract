@@ -56,7 +56,8 @@ target_link_libraries(
          octomap
          octomath
          cereal::cereal
-         assimp::assimp)
+         assimp::assimp
+  PRIVATE tesseract::tinyvdb)
 target_compile_options(geometry PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(geometry PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_options(geometry PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
