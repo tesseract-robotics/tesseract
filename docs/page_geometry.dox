@@ -41,7 +41,7 @@ backend builds a btMiniSDF blob for `btSdfCollisionShape`. It enables true conca
 and signed-distance/gradient queries, and is the canonical way to use a distance field. Create one
 in-process from any distance function (analytic, sensor-fused, or a sampler wrapping another library
 such as OpenVDB) — discretized lazily on demand, or up front with the discrete factory — or load a
-serialized field.
+serialized VDB FloatGrid. VDB import currently accepts one FloatGrid with an axis-aligned, uniform transform.
 
 > <b>Note:</b> Only the Bullet discrete collision backend consumes a Signed Distance Field — it is
 > concave, so it is not supported by FCL or the continuous/cast managers. This is distinct from the

@@ -25,6 +25,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -90,20 +91,61 @@ SignedDistanceField::Ptr createSignedDistanceField(const BatchedSignedDistanceFu
                                                    const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
 /**
- * @brief Serialize a field's grid (domain, dimensions, distances) to a backend-neutral byte blob.
- * @details The local @c scale is not stored; it is carried alongside the field (e.g. as a URDF
- * attribute) and supplied on load. This is the format written/read for @c .sdf files.
+ * @brief Serialize a field as a standard OpenVDB FloatGrid.
+ * @details The grid transform maps lattice index (0, 0, 0) to the field domain minimum and uses
+ * the field sample spacing as its uniform voxel size. The local @c scale is not stored; it is
+ * carried alongside the field (e.g. as a URDF attribute) and supplied on load.
+ * @throws std::runtime_error if the field has non-uniform voxel spacing or cannot be encoded.
  */
-std::vector<std::uint8_t> writeSignedDistanceFieldData(const SignedDistanceField& sdf);
+std::vector<std::uint8_t> writeSignedDistanceFieldVDB(const SignedDistanceField& sdf);
 
 /**
- * @brief Reconstruct a @ref SignedDistanceField from a byte blob produced by
- * @ref writeSignedDistanceFieldData.
- * @param data The serialized grid blob
+ * @brief Reconstruct a @ref SignedDistanceField from a standard OpenVDB FloatGrid byte buffer.
+ * @details Exactly one FloatGrid with an axis-aligned, uniformly scaled transform is supported.
+ * Its active voxel bounding box defines the finite Tesseract field domain; inactive voxels within
+ * that domain use the grid background value.
+ * @param data Pointer to the serialized grid blob
+ * @param size Number of bytes in @p data
  * @param scale Local scaling applied to the field
- * @throw std::runtime_error if the blob is malformed
+ * @throw std::runtime_error if the VDB is malformed or uses an unsupported grid or transform
  */
-SignedDistanceField::Ptr readSignedDistanceFieldData(const std::vector<std::uint8_t>& data,
+SignedDistanceField::Ptr readSignedDistanceFieldVDB(const std::uint8_t* data,
+                                                    std::size_t size,
+                                                    const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
+
+/**
+ * @brief Reconstruct a @ref SignedDistanceField from a standard OpenVDB FloatGrid byte vector.
+ * @details Convenience overload for an owning byte vector. Use the pointer-and-size overload to
+ * read from other contiguous storage without a copy.
+ */
+SignedDistanceField::Ptr readSignedDistanceFieldVDB(const std::vector<std::uint8_t>& data,
+                                                    const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
+
+/**
+ * @brief Serialize a field as a standard NanoVDB FloatGrid file.
+ * @details The field's local @c scale is not stored and must be supplied separately when loading.
+ * @throws std::runtime_error if the field cannot be represented as a uniform FloatGrid.
+ */
+std::vector<std::uint8_t> writeSignedDistanceFieldNVDB(const SignedDistanceField& sdf);
+
+/**
+ * @brief Reconstruct a @ref SignedDistanceField from a NanoVDB FloatGrid byte buffer.
+ * @details Exactly one FloatGrid with an axis-aligned, uniformly scaled transform is supported.
+ * @param data Pointer to the serialized NanoVDB file
+ * @param size Number of bytes in @p data
+ * @param scale Local scaling applied to the field
+ * @throw std::runtime_error if the NanoVDB file is malformed or uses an unsupported grid or transform
+ */
+SignedDistanceField::Ptr readSignedDistanceFieldNVDB(const std::uint8_t* data,
+                                                     std::size_t size,
+                                                     const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
+
+/**
+ * @brief Reconstruct a @ref SignedDistanceField from a NanoVDB FloatGrid byte vector.
+ * @details Convenience overload for an owning byte vector. Use the pointer-and-size overload to
+ * read from other contiguous storage without a copy.
+ */
+SignedDistanceField::Ptr readSignedDistanceFieldNVDB(const std::vector<std::uint8_t>& data,
                                                      const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 }  // namespace tesseract::geometry
 #endif  // TESSERACT_GEOMETRY_SIGNED_DISTANCE_FIELD_UTILS_H

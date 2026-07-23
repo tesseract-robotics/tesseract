@@ -46,9 +46,8 @@ static constexpr std::string_view SIGNED_DISTANCE_FIELD_ELEMENT_NAME = "tesserac
 /**
  * @brief Parse xml element signed_distance_field
  *
- * Loads a baked, serialized signed-distance-field blob (Discregrid / btMiniSDF binary format)
- * from the resource referenced by the @c filename attribute. This is the binary distance-field
- * format, not Gazebo's "SDF" Simulation Description Format.
+ * Loads a serialized OpenVDB FloatGrid from the resource referenced by the @c filename attribute.
+ * This is the VDB binary distance-field format, not Gazebo's "SDF" Simulation Description Format.
  *
  * @param xml_element The xml element
  * @param locator The Tesseract resource locator
@@ -60,11 +59,11 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
 /**
  * @brief writeSignedDistanceField Write a signed distance field out to file, and generate appropriate xml.  This is
  * non-standard URDF / tesseract-exclusive
- * @param sdf The geometry element containing the signed distance field blob
+ * @param sdf The geometry element containing the signed distance field
  * @param doc The XML document to which to add the xml data
  * @param package_path /<path>/<to>/<your-package>.  If set, geometry will be saved relative to the package.  If not
  * set, geometry will be saved with absolute paths.
- * @param filename Desired filename relative to the working directory ("sdf.sdf" or "collision/sdf.sdf")
+ * @param filename Desired filename relative to the working directory ("sdf.vdb" or "collision/sdf.vdb")
  * @return An XML element containing information on the saved file.
  */
 tinyxml2::XMLElement*

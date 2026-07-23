@@ -24,7 +24,10 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <algorithm>
+#include <cctype>
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -45,6 +48,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::urdf
 {
+namespace
+{
+bool hasExtension(const std::string& filename, const std::string& extension)
+{
+  std::string actual = std::filesystem::path(filename).extension().string();
+  std::transform(actual.begin(), actual.end(), actual.begin(), [](unsigned char value) {
+    return static_cast<char>(std::tolower(value));
+  });
+  return actual == extension;
+}
+}  // namespace
+
 tesseract::geometry::SignedDistanceField::Ptr
 parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesseract::common::ResourceLocator& locator)
 {
@@ -90,7 +105,12 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
   tesseract::geometry::SignedDistanceField::Ptr geom;
   try
   {
-    geom = tesseract::geometry::readSignedDistanceFieldData(data, scale);
+    if (hasExtension(filename, ".vdb"))
+      geom = tesseract::geometry::readSignedDistanceFieldVDB(data, scale);
+    else if (hasExtension(filename, ".nvdb"))
+      geom = tesseract::geometry::readSignedDistanceFieldNVDB(data, scale);
+    else
+      throw std::runtime_error("unsupported file extension");
   }
   catch (...)
   {
@@ -112,7 +132,13 @@ tinyxml2::XMLElement* writeSignedDistanceField(const tesseract::geometry::Signed
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   std::string filepath = trailingSlash(package_path) + noLeadingSlash(filename);
-  const std::vector<std::uint8_t> data = tesseract::geometry::writeSignedDistanceFieldData(*sdf);
+  std::vector<std::uint8_t> data;
+  if (hasExtension(filename, ".vdb"))
+    data = tesseract::geometry::writeSignedDistanceFieldVDB(*sdf);
+  else if (hasExtension(filename, ".nvdb"))
+    data = tesseract::geometry::writeSignedDistanceFieldNVDB(*sdf);
+  else
+    throw std::runtime_error("SignedDistanceField: unsupported file extension for '" + filename + "'");
   std::ofstream out(filepath, std::ios::out | std::ios::binary | std::ios::trunc);
   if (!out.is_open())
     std::throw_with_nested(std::runtime_error("Could not open signed distance field file `" + filepath + "`!"));
