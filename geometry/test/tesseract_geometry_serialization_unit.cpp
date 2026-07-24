@@ -23,7 +23,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <sstream>
 #include <octomap/octomap.h>
+#include <cereal/archives/xml.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/unit_test_utils.h>
@@ -205,15 +207,54 @@ TEST(TesseractGeometrySerializeUnit, PolygonMesh)  // NOLINT
   tesseract::common::testSerializationDerivedClass<Geometry, PolygonMesh>(object.front(), "PolygonMesh");
 }
 
-TEST(TesseractGeometrySerializeUnit, SDFMesh)  // NOLINT
+TEST(TesseractGeometrySerializeUnit, SignedDistanceField)  // NOLINT
 {
-  tesseract::common::GeneralResourceLocator locator;
-  std::string path = "package://tesseract/support/meshes/sphere_p25m.stl";
-  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
-      locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
-  tesseract::common::testSerialization<SDFMesh>(*object.front(), "SDFMesh");
-  tesseract::common::testSerializationDerivedClass<Geometry, SDFMesh>(object.front(), "SDFMesh");
-  tesseract::common::testSerializationDerivedClass<PolygonMesh, SDFMesh>(object.front(), "SDFMesh");
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));
+  const Eigen::Vector3i dims(2, 2, 2);
+  const std::vector<double> distances{ -0.5, -0.4, -0.3, -0.2, 0.1, 0.2, 0.3, 0.4 };
+  auto object = std::make_shared<SignedDistanceField>(domain, dims, distances, Eigen::Vector3d(1.0, 2.0, 3.0));
+  tesseract::common::testSerialization<SignedDistanceField>(*object, "SignedDistanceField");
+  tesseract::common::testSerializationDerivedClass<Geometry, SignedDistanceField>(object, "SignedDistanceField");
+}
+
+TEST(TesseractGeometrySerializeUnit, SignedDistanceFieldRejectsMalformedArchive)  // NOLINT
+{
+  // The load path writes directly into the members (bypassing the validating constructor), then
+  // re-runs the grid invariant. A malformed archive whose distances no longer match its dimensions
+  // must be rejected rather than producing a field that later out-of-bounds in getDistance().
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));
+  const Eigen::Vector3i dims(2, 2, 2);
+  const std::vector<double> distances{ -0.5, -0.4, -0.3, -0.2, 0.1, 0.2, 0.3, 0.4 };
+  SignedDistanceField object(domain, dims, distances);
+
+  std::stringstream ss;
+  {
+    cereal::XMLOutputArchive ar(ss);
+    ar(object);
+  }
+  const std::string xml = ss.str();
+
+  // Sanity: the unmodified archive loads fine.
+  {
+    std::stringstream valid(xml);
+    cereal::XMLInputArchive ar(valid);
+    SignedDistanceField loaded;
+    EXPECT_NO_THROW(ar(loaded));  // NOLINT
+  }
+
+  // Corrupt the grid so distances.size() (8) no longer matches dimensions.prod():
+  // bump dim_x from 2 to 3 -> expected 3 * 2 * 2 = 12.
+  std::string corrupted_xml = xml;
+  const std::string from = "<dim_x>2</dim_x>";
+  const std::string to = "<dim_x>3</dim_x>";
+  const auto pos = corrupted_xml.find(from);
+  ASSERT_NE(pos, std::string::npos);
+  corrupted_xml.replace(pos, from.size(), to);
+
+  std::stringstream corrupted(corrupted_xml);
+  cereal::XMLInputArchive ar(corrupted);
+  SignedDistanceField loaded;
+  EXPECT_ANY_THROW(ar(loaded));  // NOLINT
 }
 
 TEST(TesseractGeometrySerializeUnit, Sphere)  // NOLINT

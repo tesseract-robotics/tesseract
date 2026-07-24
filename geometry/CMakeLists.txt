@@ -39,7 +39,8 @@ add_library(
   src/geometries/octree.cpp
   src/geometries/plane.cpp
   src/geometries/polygon_mesh.cpp
-  src/geometries/sdf_mesh.cpp
+  src/geometries/signed_distance_field.cpp
+  src/geometries/signed_distance_field_utils.cpp
   src/geometries/sphere.cpp)
 add_library(tesseract::geometry ALIAS geometry)
 if(NOT WIN32)
@@ -55,7 +56,8 @@ target_link_libraries(
          octomap
          octomath
          cereal::cereal
-         assimp::assimp)
+         assimp::assimp
+  PRIVATE tesseract::tinyvdb)
 target_compile_options(geometry PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(geometry PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_options(geometry PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})

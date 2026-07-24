@@ -1,6 +1,10 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <array>
+#include <cmath>
+#include <limits>
+#include <stdexcept>
 #include <vector>
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -15,6 +19,53 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/types.h>
 #include <tesseract/collision/yaml_extensions.h>
 #include <tesseract/collision/cereal_serialization.h>
+#include <tesseract/collision/implicit_sdf_collision_solver.h>
+#include <tesseract/geometry/impl/box.h>
+#include <tesseract/geometry/impl/capsule.h>
+#include <tesseract/geometry/impl/cone.h>
+#include <tesseract/geometry/impl/cylinder.h>
+#include <tesseract/geometry/impl/signed_distance_field.h>
+#include <tesseract/geometry/impl/sphere.h>
+
+namespace
+{
+struct PrimitiveSDFSample
+{
+  Eigen::Vector3d point;
+  double distance;
+  Eigen::Vector3d gradient;
+  bool check_gradient{ true };
+};
+
+void expectPrimitiveSDFSamples(const tesseract::geometry::Geometry& geometry,
+                               const std::vector<PrimitiveSDFSample>& samples)
+{
+  const auto shape = tesseract::collision::makeImplicitSDFShape(geometry, Eigen::Isometry3d::Identity());
+  ASSERT_TRUE(shape.isValid());
+  for (const auto& sample : samples)
+  {
+    SCOPED_TRACE(sample.point.transpose());
+    EXPECT_NEAR(shape.distance(sample.point), sample.distance, 1e-6);
+    if (!sample.check_gradient)
+      continue;
+    const Eigen::Vector3d gradient = shape.gradient(sample.point);
+    ASSERT_TRUE(gradient.allFinite());
+    EXPECT_NEAR(gradient.norm(), 1.0, 1e-5);
+    EXPECT_TRUE(gradient.isApprox(sample.gradient, 1e-5));
+  }
+}
+
+void expectContactInvariant(const tesseract::collision::ImplicitSDFContact& contact)
+{
+  ASSERT_TRUE(std::isfinite(contact.distance));
+  ASSERT_TRUE(contact.normal.allFinite());
+  ASSERT_TRUE(contact.nearest_points[0].allFinite());
+  ASSERT_TRUE(contact.nearest_points[1].allFinite());
+  EXPECT_NEAR(contact.normal.norm(), 1.0, 1e-6);
+  EXPECT_NEAR((contact.nearest_points[1] - contact.nearest_points[0]).dot(contact.normal), contact.distance, 1e-6);
+  EXPECT_TRUE(contact.point.isApprox((contact.nearest_points[0] + contact.nearest_points[1]) / 2.0, 1e-9));
+}
+}  // namespace
 
 class TestContactAllowedValidator : public tesseract::common::ContactAllowedValidator
 {
@@ -25,6 +76,346 @@ public:
             tesseract::common::makeOrderedLinkPair(s1, s2));
   }
 };
+
+TEST(TesseractCoreUnit, ImplicitSDFPrimitiveDistanceAndGradient)  // NOLINT
+{
+  const double inverse_sqrt_2 = 1.0 / std::sqrt(2.0);
+  const double inverse_sqrt_5 = 1.0 / std::sqrt(5.0);
+
+  expectPrimitiveSDFSamples(
+      tesseract::geometry::Sphere(1.0),
+      { { Eigen::Vector3d(1, 0, 0), 0.0, Eigen::Vector3d::UnitX() },
+        { Eigen::Vector3d(2, 0, 0), 1.0, Eigen::Vector3d::UnitX() },
+        { Eigen::Vector3d(1, 1, 0), std::sqrt(2.0) - 1.0, Eigen::Vector3d(inverse_sqrt_2, inverse_sqrt_2, 0) } });
+
+  expectPrimitiveSDFSamples(
+      tesseract::geometry::Box(2.0, 2.0, 2.0),
+      { { Eigen::Vector3d(0.5, 0, 0), -0.5, Eigen::Vector3d::UnitX() },
+        { Eigen::Vector3d(2, 0, 0), 1.0, Eigen::Vector3d::UnitX() },
+        { Eigen::Vector3d(2, 2, 0), std::sqrt(2.0), Eigen::Vector3d(inverse_sqrt_2, inverse_sqrt_2, 0) } });
+
+  expectPrimitiveSDFSamples(tesseract::geometry::Capsule(0.5, 2.0),
+                            { { Eigen::Vector3d(0.5, 0, 0), 0.0, Eigen::Vector3d::UnitX() },
+                              { Eigen::Vector3d(1, 0, 0), 0.5, Eigen::Vector3d::UnitX() },
+                              { Eigen::Vector3d(0, 0, 2), 0.5, Eigen::Vector3d::UnitZ() } });
+
+  expectPrimitiveSDFSamples(
+      tesseract::geometry::Cylinder(1.0, 2.0),
+      { { Eigen::Vector3d(0.5, 0, 0), -0.5, Eigen::Vector3d::UnitX() },
+        { Eigen::Vector3d(2, 0, 0), 1.0, Eigen::Vector3d::UnitX() },
+        { Eigen::Vector3d(0, 0, 2), 1.0, Eigen::Vector3d::UnitZ() },
+        { Eigen::Vector3d(2, 0, 2), std::sqrt(2.0), Eigen::Vector3d(inverse_sqrt_2, 0, inverse_sqrt_2) } });
+
+  expectPrimitiveSDFSamples(
+      tesseract::geometry::Cone(1.0, 2.0),
+      { { Eigen::Vector3d(0, 0, 2), 1.0, Eigen::Vector3d::UnitZ() },
+        { Eigen::Vector3d(2, 0, -1), 1.0, Eigen::Vector3d::UnitX() },
+        { Eigen::Vector3d(1, 0, 0), inverse_sqrt_5, Eigen::Vector3d(2 * inverse_sqrt_5, 0, inverse_sqrt_5) },
+        { Eigen::Vector3d(0, 0, 0), -inverse_sqrt_5, Eigen::Vector3d::Zero(), false } });
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFPrimitiveTransforms)  // NOLINT
+{
+  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+  pose.linear() = Eigen::AngleAxisd(0.7, Eigen::Vector3d(1, 2, 3).normalized()).toRotationMatrix();
+  pose.translation() = Eigen::Vector3d(0.4, -0.8, 1.2);
+
+  const std::array<std::shared_ptr<const tesseract::geometry::Geometry>, 5> geometries{
+    std::make_shared<const tesseract::geometry::Sphere>(1.0),
+    std::make_shared<const tesseract::geometry::Box>(2.0, 2.0, 2.0),
+    std::make_shared<const tesseract::geometry::Capsule>(0.5, 2.0),
+    std::make_shared<const tesseract::geometry::Cylinder>(1.0, 2.0),
+    std::make_shared<const tesseract::geometry::Cone>(1.0, 2.0)
+  };
+  const std::array<Eigen::Vector3d, 5> local_points{ Eigen::Vector3d(2, 0, 0),
+                                                     Eigen::Vector3d(2, 0, 0),
+                                                     Eigen::Vector3d(1, 0, 0),
+                                                     Eigen::Vector3d(2, 0, 0),
+                                                     Eigen::Vector3d(1, 0, 0) };
+
+  for (std::size_t index = 0; index < geometries.size(); ++index)
+  {
+    const auto local_shape =
+        tesseract::collision::makeImplicitSDFShape(*geometries[index], Eigen::Isometry3d::Identity());
+    const auto world_shape = tesseract::collision::makeImplicitSDFShape(*geometries[index], pose);
+    const Eigen::Vector3d world_point = pose * local_points[index];
+    EXPECT_NEAR(world_shape.distance(world_point), local_shape.distance(local_points[index]), 1e-9);
+    EXPECT_TRUE(
+        world_shape.gradient(world_point).isApprox(pose.linear() * local_shape.gradient(local_points[index]), 1e-6));
+  }
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionSolver)  // NOLINT
+{
+  const tesseract::geometry::Sphere sphere0(0.5);
+  const tesseract::geometry::Sphere sphere1(0.1);
+  const auto shape0 = tesseract::collision::makeImplicitSDFShape(sphere0, Eigen::Isometry3d::Identity());
+  Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+  pose1.translation().x() = 0.45;
+  const auto shape1 = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+  ASSERT_TRUE(shape0.isValid());
+  ASSERT_TRUE(shape1.isValid());
+  EXPECT_NEAR(shape0.distance(Eigen::Vector3d(0.425, 0, 0)), -0.075, 1e-6);
+  EXPECT_NEAR(shape1.distance(Eigen::Vector3d(0.425, 0, 0)), -0.075, 1e-6);
+
+  const auto contacts = tesseract::collision::collideImplicitSDF(shape0, shape1);
+  ASSERT_FALSE(contacts.empty());
+  EXPECT_NEAR(contacts.front().distance, -0.15, 1e-3);
+  EXPECT_NEAR(contacts.front().normal.norm(), 1.0, 1e-6);
+
+  pose1.translation().x() = 0.63;
+  const auto separated_shape = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+  tesseract::collision::ImplicitSDFCollisionConfig margin_config;
+  margin_config.contact_margin = 0.05;
+  const auto margin_contacts = tesseract::collision::collideImplicitSDF(shape0, separated_shape, margin_config);
+  ASSERT_FALSE(margin_contacts.empty());
+  EXPECT_NEAR(margin_contacts.front().distance, 0.03, 1e-3);
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionSolverRotatedPrimitives)  // NOLINT
+{
+  const tesseract::geometry::Sphere sphere(0.5);
+  const auto sphere_shape = tesseract::collision::makeImplicitSDFShape(sphere, Eigen::Isometry3d::Identity());
+
+  Eigen::Isometry3d primitive_pose = Eigen::Isometry3d::Identity();
+  primitive_pose.linear() =
+      Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitZ(), Eigen::Vector3d::UnitX()).toRotationMatrix();
+  primitive_pose.translation().x() = 0.55;
+
+  const tesseract::geometry::Cylinder cylinder(0.1, 0.4);
+  const tesseract::geometry::Cone cone(0.1, 0.4);
+  const std::array<tesseract::collision::ImplicitSDFShape, 2> primitive_shapes{
+    tesseract::collision::makeImplicitSDFShape(cylinder, primitive_pose),
+    tesseract::collision::makeImplicitSDFShape(cone, primitive_pose)
+  };
+
+  for (const auto& primitive_shape : primitive_shapes)
+  {
+    const auto contacts = tesseract::collision::collideImplicitSDF(sphere_shape, primitive_shape);
+    ASSERT_FALSE(contacts.empty());
+    EXPECT_LT(contacts.front().distance, 0.0);
+    EXPECT_NEAR(contacts.front().normal.norm(), 1.0, 1e-6);
+  }
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionContactInvariantsAndSwapping)  // NOLINT
+{
+  const tesseract::geometry::Sphere sphere0(0.5);
+  const tesseract::geometry::Sphere sphere1(0.1);
+  const auto shape0 = tesseract::collision::makeImplicitSDFShape(sphere0, Eigen::Isometry3d::Identity());
+  Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+  pose1.translation().x() = 0.45;
+  const auto shape1 = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+
+  const auto contacts01 = tesseract::collision::collideImplicitSDF(shape0, shape1);
+  const auto contacts10 = tesseract::collision::collideImplicitSDF(shape1, shape0);
+  ASSERT_FALSE(contacts01.empty());
+  ASSERT_FALSE(contacts10.empty());
+  expectContactInvariant(contacts01.front());
+  expectContactInvariant(contacts10.front());
+  EXPECT_NEAR(contacts01.front().distance, contacts10.front().distance, 1e-6);
+  EXPECT_TRUE(contacts01.front().normal.isApprox(-contacts10.front().normal, 1e-6));
+  EXPECT_TRUE(contacts01.front().nearest_points[0].isApprox(contacts10.front().nearest_points[1], 1e-6));
+  EXPECT_TRUE(contacts01.front().nearest_points[1].isApprox(contacts10.front().nearest_points[0], 1e-6));
+
+  pose1.translation().x() = 0.6;
+  const auto touching_shape = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+  const auto touching_contacts = tesseract::collision::collideImplicitSDF(shape0, touching_shape);
+  ASSERT_FALSE(touching_contacts.empty());
+  expectContactInvariant(touching_contacts.front());
+  EXPECT_NEAR(touching_contacts.front().distance, 0.0, 1e-6);
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionMarginsAndConfiguration)  // NOLINT
+{
+  const tesseract::geometry::Sphere sphere0(0.5);
+  const tesseract::geometry::Sphere sphere1(0.1);
+  const auto shape0 = tesseract::collision::makeImplicitSDFShape(sphere0, Eigen::Isometry3d::Identity());
+  Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+
+  tesseract::collision::ImplicitSDFCollisionConfig config;
+  config.contact_margin = 0.05;
+  pose1.translation().x() = 0.649;
+  auto shape1 = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+  const auto inside_contacts = tesseract::collision::collideImplicitSDF(shape0, shape1, config);
+  ASSERT_FALSE(inside_contacts.empty());
+  EXPECT_NEAR(inside_contacts.front().distance, 0.049, 1e-5);
+
+  pose1.translation().x() = 0.651;
+  shape1 = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+  EXPECT_TRUE(tesseract::collision::collideImplicitSDF(shape0, shape1, config).empty());
+
+  pose1.translation().x() = 0.45;
+  shape1 = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+  for (int invalid_field = 0; invalid_field < 7; ++invalid_field)
+  {
+    auto invalid_config = config;
+    switch (invalid_field)
+    {
+      case 0:
+        invalid_config.initial_sample_count = 0;
+        break;
+      case 1:
+        invalid_config.max_iterations = 0;
+        break;
+      case 2:
+        invalid_config.max_contacts = 0;
+        break;
+      case 3:
+        invalid_config.minimum_step = 0.0;
+        break;
+      case 4:
+        invalid_config.contact_margin = std::numeric_limits<double>::quiet_NaN();
+        break;
+      case 5:
+        invalid_config.contact_margin = -1.0;
+        break;
+      default:
+        invalid_config.duplicate_tolerance = -1.0;
+        break;
+    }
+    EXPECT_THROW(tesseract::collision::collideImplicitSDF(shape0, shape1, invalid_config), std::invalid_argument);
+  }
+
+  const tesseract::collision::ImplicitSDFShape invalid_shape;
+  EXPECT_THROW(tesseract::collision::collideImplicitSDF(shape0, invalid_shape), std::invalid_argument);
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFFactoryValidation)  // NOLINT
+{
+  const tesseract::geometry::Sphere sphere(0.5);
+  Eigen::Isometry3d invalid_pose = Eigen::Isometry3d::Identity();
+  invalid_pose.translation().x() = std::numeric_limits<double>::quiet_NaN();
+  EXPECT_THROW(tesseract::collision::makeImplicitSDFShape(sphere, invalid_pose), std::invalid_argument);
+
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d::Constant(-1.0), Eigen::Vector3d::Constant(1.0));
+  const Eigen::Vector3i dimensions(2, 2, 2);
+  const std::vector<double> distances(8, 0.0);
+  const tesseract::geometry::SignedDistanceField nonuniform_sdf(
+      domain, dimensions, distances, Eigen::Vector3d(1, 2, 1));
+  EXPECT_THROW(tesseract::collision::makeImplicitSDFShape(nonuniform_sdf, Eigen::Isometry3d::Identity()),
+               std::invalid_argument);
+
+  const tesseract::geometry::SignedDistanceField sdf(domain, dimensions, distances, Eigen::Vector3d::Constant(2.0));
+  const auto shape = tesseract::collision::makeImplicitSDFShape(sdf, Eigen::Isometry3d::Identity());
+  ASSERT_TRUE(shape.isValid());
+  EXPECT_TRUE(std::isfinite(shape.distance(Eigen::Vector3d::Zero())));
+  EXPECT_FALSE(std::isfinite(shape.distance(Eigen::Vector3d(2.1, 0, 0))));
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionDeterminismAndContactLimit)  // NOLINT
+{
+  const tesseract::geometry::Box box0(1.0, 1.0, 1.0);
+  const tesseract::geometry::Box box1(1.0, 1.0, 1.0);
+  const auto shape0 = tesseract::collision::makeImplicitSDFShape(box0, Eigen::Isometry3d::Identity());
+  Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+  pose1.translation().x() = 0.8;
+  const auto shape1 = tesseract::collision::makeImplicitSDFShape(box1, pose1);
+
+  tesseract::collision::ImplicitSDFCollisionConfig config;
+  config.initial_sample_count = 64;
+  config.max_contacts = 2;
+  const auto contacts0 = tesseract::collision::collideImplicitSDF(shape0, shape1, config);
+  const auto contacts1 = tesseract::collision::collideImplicitSDF(shape0, shape1, config);
+  ASSERT_FALSE(contacts0.empty());
+  ASSERT_EQ(contacts0.size(), contacts1.size());
+  EXPECT_LE(contacts0.size(), 2);
+  for (std::size_t index = 0; index < contacts0.size(); ++index)
+  {
+    expectContactInvariant(contacts0[index]);
+    EXPECT_NEAR(contacts0[index].distance, contacts1[index].distance, 1e-12);
+    EXPECT_TRUE(contacts0[index].point.isApprox(contacts1[index].point, 1e-12));
+    EXPECT_TRUE(contacts0[index].normal.isApprox(contacts1[index].normal, 1e-12));
+  }
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionRecoversSingularGradients)  // NOLINT
+{
+  tesseract::collision::ImplicitSDFShape fallback_sphere;
+  fallback_sphere.distance = [](const Eigen::Vector3d& point) { return point.norm() - 0.5; };
+  fallback_sphere.gradient = [](const Eigen::Vector3d&) {
+    return Eigen::Vector3d::Constant(std::numeric_limits<double>::quiet_NaN());
+  };
+  fallback_sphere.aabb = Eigen::AlignedBox3d(Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5));
+
+  const tesseract::geometry::Sphere probe(0.1);
+  Eigen::Isometry3d probe_pose = Eigen::Isometry3d::Identity();
+  probe_pose.translation().x() = 0.45;
+  const auto probe_shape = tesseract::collision::makeImplicitSDFShape(probe, probe_pose);
+  const auto contacts = tesseract::collision::collideImplicitSDF(fallback_sphere, probe_shape);
+  ASSERT_FALSE(contacts.empty());
+  expectContactInvariant(contacts.front());
+  EXPECT_NEAR(contacts.front().distance, -0.15, 1e-3);
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionSphereOracle)  // NOLINT
+{
+  const tesseract::geometry::Sphere sphere0(0.5);
+  const tesseract::geometry::Sphere sphere1(0.2);
+  const auto shape0 = tesseract::collision::makeImplicitSDFShape(sphere0, Eigen::Isometry3d::Identity());
+  tesseract::collision::ImplicitSDFCollisionConfig config;
+  config.contact_margin = 0.1;
+
+  for (int sample = 0; sample < 24; ++sample)
+  {
+    const double azimuth = 0.37 * static_cast<double>(sample);
+    const double z = -0.9 + (1.8 * static_cast<double>(sample) / 23.0);
+    const double radial = std::sqrt(1.0 - (z * z));
+    const Eigen::Vector3d direction(radial * std::cos(azimuth), radial * std::sin(azimuth), z);
+    const double center_distance = 0.55 + (0.24 * static_cast<double>(sample) / 23.0);
+    Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+    pose1.translation() = center_distance * direction;
+    const auto shape1 = tesseract::collision::makeImplicitSDFShape(sphere1, pose1);
+
+    const auto contacts = tesseract::collision::collideImplicitSDF(shape0, shape1, config);
+    ASSERT_FALSE(contacts.empty()) << "sample " << sample;
+    expectContactInvariant(contacts.front());
+    EXPECT_NEAR(contacts.front().distance, center_distance - 0.7, config.minimum_step);
+    EXPECT_GT(contacts.front().normal.dot(direction), 1.0 - config.minimum_step);
+  }
+
+  Eigen::Isometry3d outside_pose = Eigen::Isometry3d::Identity();
+  outside_pose.translation().x() = 0.801;
+  const auto outside_shape = tesseract::collision::makeImplicitSDFShape(sphere1, outside_pose);
+  EXPECT_TRUE(tesseract::collision::collideImplicitSDF(shape0, outside_shape, config).empty());
+}
+
+TEST(TesseractCoreUnit, ImplicitSDFCollisionNonConvexMultiStart)  // NOLINT
+{
+  constexpr double radius = 0.35;
+  const Eigen::Vector3d center0(-0.55, 0, 0);
+  const Eigen::Vector3d center1(0.55, 0, 0);
+  tesseract::collision::ImplicitSDFShape two_spheres;
+  two_spheres.distance = [center0, center1](const Eigen::Vector3d& point) {
+    return std::min((point - center0).norm(), (point - center1).norm()) - radius;
+  };
+  two_spheres.gradient = [center0, center1](const Eigen::Vector3d& point) {
+    const Eigen::Vector3d offset0 = point - center0;
+    const Eigen::Vector3d offset1 = point - center1;
+    return (offset0.squaredNorm() < offset1.squaredNorm()) ? offset0.normalized() : offset1.normalized();
+  };
+  two_spheres.aabb = Eigen::AlignedBox3d(Eigen::Vector3d(-0.9, -radius, -radius), Eigen::Vector3d(0.9, radius, radius));
+
+  const tesseract::geometry::Box box(1.4, 0.3, 0.3);
+  const auto box_shape = tesseract::collision::makeImplicitSDFShape(box, Eigen::Isometry3d::Identity());
+  tesseract::collision::ImplicitSDFCollisionConfig config;
+  config.initial_sample_count = 128;
+  config.max_contacts = 8;
+  config.duplicate_tolerance = 1e-3;
+  const auto contacts = tesseract::collision::collideImplicitSDF(two_spheres, box_shape, config);
+
+  ASSERT_GE(contacts.size(), 2);
+  bool found_negative_lobe = false;
+  bool found_positive_lobe = false;
+  for (const auto& contact : contacts)
+  {
+    expectContactInvariant(contact);
+    found_negative_lobe = found_negative_lobe || contact.point.x() < -0.2;
+    found_positive_lobe = found_positive_lobe || contact.point.x() > 0.2;
+  }
+  EXPECT_TRUE(found_negative_lobe);
+  EXPECT_TRUE(found_positive_lobe);
+}
 
 TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
 {

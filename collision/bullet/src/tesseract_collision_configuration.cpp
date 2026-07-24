@@ -48,6 +48,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/bullet/tesseract_compound_collision_algorithm.h>
 #include <tesseract/collision/bullet/tesseract_compound_compound_collision_algorithm.h>
 #include <tesseract/collision/bullet/tesseract_convex_convex_algorithm.h>
+#include <tesseract/collision/bullet/tesseract_convex_sdf_algorithm.h>
+#include <tesseract/collision/bullet/tesseract_sdf_sdf_algorithm.h>
 
 using namespace tesseract::collision::bullet_internal;
 
@@ -90,11 +92,15 @@ void TesseractCollisionConfigurationInfo::createPoolAllocators()
   int maxSize2 = sizeof(btConvexConcaveCollisionAlgorithm);
   int maxSize3 = sizeof(TesseractCompoundCollisionAlgorithm);
   int maxSize4 = sizeof(TesseractCompoundCompoundCollisionAlgorithm);
+  int maxSize5 = sizeof(TesseractConvexSdfAlgorithm);
+  int maxSize6 = sizeof(TesseractSdfSdfAlgorithm);
 
   int collisionAlgorithmMaxElementSize = btMax(maxSize, m_customCollisionAlgorithmMaxElementSize);
   collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize2);
   collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
   collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
+  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize5);
+  collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize6);
 
   TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
   collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;  // NOLINT
@@ -149,6 +155,38 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(const Tesseract
 
   mem = btAlignedAlloc(sizeof(TesseractCompoundCollisionAlgorithm::SwappedCreateFunc), 16);
   m_swappedCompoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::SwappedCreateFunc;  // NOLINT
+}
+
+btCollisionAlgorithmCreateFunc* TesseractCollisionConfiguration::getCollisionAlgorithmCreateFunc(int proxyType0,
+                                                                                                 int proxyType1)
+{
+  if ((proxyType0 == SDF_SHAPE_PROXYTYPE) && (proxyType1 == SDF_SHAPE_PROXYTYPE))
+    return &sdf_sdf_create_func_;
+
+  // Stock Bullet routes convex-vs-SDF to btConvexConcaveCollisionAlgorithm, which ignores
+  // m_closestPointDistanceThreshold and therefore never reports positive-distance contacts.
+  if (btBroadphaseProxy::isConvex(proxyType0) && (proxyType1 == SDF_SHAPE_PROXYTYPE))
+    return &convex_sdf_create_func_;
+
+  if ((proxyType0 == SDF_SHAPE_PROXYTYPE) && btBroadphaseProxy::isConvex(proxyType1))
+    return &swapped_convex_sdf_create_func_;
+
+  return btDefaultCollisionConfiguration::getCollisionAlgorithmCreateFunc(proxyType0, proxyType1);
+}
+
+btCollisionAlgorithmCreateFunc* TesseractCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(int proxyType0,
+                                                                                                     int proxyType1)
+{
+  if ((proxyType0 == SDF_SHAPE_PROXYTYPE) && (proxyType1 == SDF_SHAPE_PROXYTYPE))
+    return &sdf_sdf_create_func_;
+
+  if (btBroadphaseProxy::isConvex(proxyType0) && (proxyType1 == SDF_SHAPE_PROXYTYPE))
+    return &convex_sdf_create_func_;
+
+  if ((proxyType0 == SDF_SHAPE_PROXYTYPE) && btBroadphaseProxy::isConvex(proxyType1))
+    return &swapped_convex_sdf_create_func_;
+
+  return btDefaultCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(proxyType0, proxyType1);
 }
 
 }  // namespace tesseract::collision
