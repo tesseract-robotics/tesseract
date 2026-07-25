@@ -48,15 +48,18 @@ enum class GeometryType : std::uint8_t
   PLANE,
   MESH,
   CONVEX_MESH,
-  SDF_MESH,
+  // Value 9 was formerly SDF_MESH (now removed). It is reused for SIGNED_DISTANCE_FIELD so the
+  // serialized numeric values of the types below (OCTREE = 10, POLYGON_MESH = 11,
+  // COMPOUND_MESH = 12) are preserved for archives written before SDF_MESH was removed.
+  SIGNED_DISTANCE_FIELD,
   OCTREE,
   POLYGON_MESH,
   COMPOUND_MESH
 };
-static const std::vector<std::string> GeometryTypeStrings = { "UNINITIALIZED", "SPHERE",   "CYLINDER", "CAPSULE",
-                                                              "CONE",          "BOX",      "PLANE",    "MESH",
-                                                              "CONVEX_MESH",   "SDF_MESH", "OCTREE",   "POLYGON_MESH",
-                                                              "COMPOUND_MESH" };
+static const std::vector<std::string> GeometryTypeStrings = {
+  "UNINITIALIZED",         "SPHERE", "CYLINDER",     "CAPSULE",      "CONE", "BOX", "PLANE", "MESH", "CONVEX_MESH",
+  "SIGNED_DISTANCE_FIELD", "OCTREE", "POLYGON_MESH", "COMPOUND_MESH"
+};
 class Geometry;
 template <class Archive>
 void serialize(Archive& ar, Geometry& obj);

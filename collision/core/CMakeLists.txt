@@ -5,6 +5,7 @@ add_library(
   src/contact_managers_plugin_factory.cpp
   src/continuous_contact_manager.cpp
   src/discrete_contact_manager.cpp
+  src/implicit_sdf_collision_solver.cpp
   src/types.cpp
   src/utils.cpp)
 add_library(tesseract::collision ALIAS collision)

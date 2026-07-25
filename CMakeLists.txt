@@ -54,6 +54,7 @@ endif()
 
 # Add subdirectories in dependency order.
 add_subdirectory(common)
+add_subdirectory(third_party)
 add_subdirectory(geometry)
 add_subdirectory(scene_graph)
 add_subdirectory(state_solver)

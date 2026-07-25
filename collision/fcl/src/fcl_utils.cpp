@@ -54,7 +54,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/fcl/fcl_utils.h>
 #include <tesseract/collision/fcl/fcl_collision_geometry_cache.h>
+#include <tesseract/collision/implicit_sdf_collision_solver.h>
 #include <tesseract/geometry/geometries.h>
+#include <tesseract/geometry/impl/signed_distance_field.h>
 
 namespace tesseract::collision::fcl_internal
 {
@@ -86,6 +88,19 @@ CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Cone::Const
 CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Capsule::ConstPtr& geom)
 {
   return std::make_shared<fcl::Capsuled>(geom->getRadius(), geom->getLength());
+}
+
+CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::SignedDistanceField::ConstPtr& geom)
+{
+  if (!makeImplicitSDFShape(*geom, Eigen::Isometry3d::Identity()).isValid())
+    throw std::invalid_argument("FCL signed distance field geometry is invalid");
+
+  // FCL has no native SDF geometry. Register a conservative box solely for broadphase dispatch;
+  // SDF pairs are intercepted below and evaluated by the backend-neutral implicit solver.
+  const Eigen::Vector3d scaled_min = geom->getDomain().min().cwiseProduct(geom->getScale());
+  const Eigen::Vector3d scaled_max = geom->getDomain().max().cwiseProduct(geom->getScale());
+  const Eigen::Vector3d half_extents = scaled_min.cwiseAbs().cwiseMax(scaled_max.cwiseAbs());
+  return std::make_shared<fcl::Boxd>(2.0 * half_extents.x(), 2.0 * half_extents.y(), 2.0 * half_extents.z());
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Mesh::ConstPtr& geom)
@@ -179,6 +194,10 @@ CollisionGeometryPtr createShapePrimitiveHelper(const CollisionShapeConstPtr& ge
     {
       return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Capsule>(geom));
     }
+    case tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::SignedDistanceField>(geom));
+    }
     case tesseract::geometry::GeometryType::MESH:
     {
       return createShapePrimitive(std::static_pointer_cast<const tesseract::geometry::Mesh>(geom));
@@ -225,6 +244,89 @@ bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
          !isContactAllowed(cd1->getName(), cd2->getName(), validator, verbose);
 }
 
+namespace
+{
+bool isImplicitSDFPair(const CollisionObjectWrapper& cow1,
+                       const fcl::CollisionObjectd* object1,
+                       const CollisionObjectWrapper& cow2,
+                       const fcl::CollisionObjectd* object2)
+{
+  const int shape_index1 = CollisionObjectWrapper::getShapeIndex(object1);
+  const int shape_index2 = CollisionObjectWrapper::getShapeIndex(object2);
+  const auto& geometry1 = cow1.getCollisionGeometries()[static_cast<std::size_t>(shape_index1)];
+  const auto& geometry2 = cow2.getCollisionGeometries()[static_cast<std::size_t>(shape_index2)];
+  return geometry1->getType() == tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD ||
+         geometry2->getType() == tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD;
+}
+
+bool processImplicitSDFPair(const CollisionObjectWrapper& cow1,
+                            const fcl::CollisionObjectd* object1,
+                            const CollisionObjectWrapper& cow2,
+                            const fcl::CollisionObjectd* object2,
+                            ContactTestData& cdata)
+{
+  const int shape_index1 = CollisionObjectWrapper::getShapeIndex(object1);
+  const int shape_index2 = CollisionObjectWrapper::getShapeIndex(object2);
+  const auto& geometry1 = cow1.getCollisionGeometries()[static_cast<std::size_t>(shape_index1)];
+  const auto& geometry2 = cow2.getCollisionGeometries()[static_cast<std::size_t>(shape_index2)];
+  const Eigen::Isometry3d geometry_pose1 =
+      cow1.getCollisionObjectsTransform() *
+      cow1.getCollisionGeometriesTransforms()[static_cast<std::size_t>(shape_index1)];
+  const Eigen::Isometry3d geometry_pose2 =
+      cow2.getCollisionObjectsTransform() *
+      cow2.getCollisionGeometriesTransforms()[static_cast<std::size_t>(shape_index2)];
+
+  const ImplicitSDFShape shape1 = makeImplicitSDFShape(*geometry1, geometry_pose1);
+  const ImplicitSDFShape shape2 = makeImplicitSDFShape(*geometry2, geometry_pose2);
+  if (!shape1.isValid() || !shape2.isValid())
+    throw std::runtime_error("FCL signed distance field collision does not support geometry pair types " +
+                             std::to_string(static_cast<int>(geometry1->getType())) + " and " +
+                             std::to_string(static_cast<int>(geometry2->getType())));
+
+  ImplicitSDFCollisionConfig config;
+  config.contact_margin = cdata.collision_margin_data.getCollisionMargin(cow1.getName(), cow2.getName());
+  config.max_contacts =
+      (cdata.req.contact_limit > 0) ?
+          static_cast<int>(std::min<std::int64_t>(cdata.req.contact_limit, std::numeric_limits<int>::max())) :
+          4;
+  if (cdata.req.type == ContactTestType::FIRST || cdata.req.type == ContactTestType::CLOSEST)
+    config.max_contacts = 1;
+
+  const std::vector<ImplicitSDFContact> implicit_contacts = collideImplicitSDF(shape1, shape2, config);
+  if (implicit_contacts.empty())
+    return false;
+
+  const Eigen::Isometry3d& link_pose1 = cow1.getCollisionObjectsTransform();
+  const Eigen::Isometry3d& link_pose2 = cow2.getCollisionObjectsTransform();
+  const Eigen::Isometry3d link_pose1_inv = link_pose1.inverse();
+  const Eigen::Isometry3d link_pose2_inv = link_pose2.inverse();
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
+  tesseract::common::makeOrderedLinkPair(link_pair, cow1.getName(), cow2.getName());
+
+  for (const auto& implicit_contact : implicit_contacts)
+  {
+    ContactResult contact;
+    contact.link_names = { cow1.getName(), cow2.getName() };
+    contact.shape_id = { shape_index1, shape_index2 };
+    contact.subshape_id = { -1, -1 };
+    contact.nearest_points = implicit_contact.nearest_points;
+    contact.nearest_points_local = { link_pose1_inv * contact.nearest_points[0],
+                                     link_pose2_inv * contact.nearest_points[1] };
+    contact.transform = { link_pose1, link_pose2 };
+    contact.type_id = { cow1.getTypeID(), cow2.getTypeID() };
+    contact.distance = implicit_contact.distance;
+    contact.normal = implicit_contact.normal;
+
+    const auto existing = cdata.res->find(link_pair);
+    const bool found = (existing != cdata.res->end() && !existing->second.empty());
+    processResult(cdata, contact, link_pair, found);
+    if (cdata.done)
+      break;
+  }
+  return cdata.done;
+}
+}  // namespace
+
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
   auto* cdata = reinterpret_cast<ContactTestData*>(data);  // NOLINT
@@ -237,6 +339,9 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
   if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
     return false;
+
+  if (isImplicitSDFPair(*cd1, o1, *cd2, o2))
+    return processImplicitSDFPair(*cd1, o1, *cd2, o2, *cdata);
 
   std::size_t num_contacts = (cdata->req.contact_limit > 0) ? static_cast<std::size_t>(cdata->req.contact_limit) :
                                                               std::numeric_limits<std::size_t>::max();
@@ -299,6 +404,9 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
   if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
     return false;
+
+  if (isImplicitSDFPair(*cd1, o1, *cd2, o2))
+    return processImplicitSDFPair(*cd1, o1, *cd2, o2, *cdata);
 
   fcl::DistanceResultd fcl_result;
   fcl::DistanceRequestd fcl_request(true, true);
