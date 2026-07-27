@@ -208,6 +208,38 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerInverseKinematicUnit)  
   runKinSetJointLimitsTest(kin_group2);
 }
 
+// Regression: REPInvKin::operator= dropped solver_name_, so every clone silently reverted to the
+// default name. The existing clone checks miss it because they build the solver with that default.
+TEST(TesseractKinematicsUnit, RobotWithExternalPositionerClonePreservesStateUnit)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBExternalPositioner(locator);
+
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto robot_fwd_kin = getRobotFwdKinematics(*scene_graph);
+  auto opw_kin = std::make_unique<OPWInvKin>(getOPWKinematicsParamABB(),
+                                             robot_fwd_kin->getBaseLinkName(),
+                                             robot_fwd_kin->getTipLinkNames()[0],
+                                             robot_fwd_kin->getJointNames());
+  auto positioner_kin = getPositionerFwdKinematics(*scene_graph);
+  Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(2, 1, 0.1);
+
+  const std::string custom_solver_name{ "CustomREPSolverName" };
+  REPInvKin original(*scene_graph,
+                     scene_state,
+                     opw_kin->clone(),
+                     2.5,
+                     positioner_kin->clone(),
+                     positioner_resolution,
+                     custom_solver_name);
+
+  auto cloned = original.clone();
+  ASSERT_TRUE(cloned != nullptr);
+  EXPECT_EQ(cloned->getSolverName(), custom_solver_name);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
