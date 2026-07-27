@@ -124,9 +124,9 @@ void REPInvKin::init(const tesseract::scene_graph::SceneGraph& scene_graph,
                                    scene_state.link_transforms.at(positioner->getBaseLinkName());
 
   solver_name_ = std::move(solver_name);
-  manip_inv_kin_ = manipulator->clone();
+  manip_inv_kin_ = std::move(manipulator);
   manip_reach_ = manipulator_reach;
-  positioner_fwd_kin_ = positioner->clone();
+  positioner_fwd_kin_ = std::move(positioner);
   working_frame_ = positioner_fwd_kin_->getTipLinkNames()[0];
   manip_tip_link_ = manip_inv_kin_->getTipLinkNames()[0];
   dof_ = positioner_fwd_kin_->numJoints() + manip_inv_kin_->numJoints();
