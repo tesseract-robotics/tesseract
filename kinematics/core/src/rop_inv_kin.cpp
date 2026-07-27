@@ -169,9 +169,11 @@ ROPInvKin& ROPInvKin::operator=(const ROPInvKin& other)
   manip_tip_link_ = other.manip_tip_link_;
   positioner_tip_link_ = other.positioner_tip_link_;
   manip_reach_ = other.manip_reach_;
+  positioner_to_robot_ = other.positioner_to_robot_;
   joint_names_ = other.joint_names_;
   dof_ = other.dof_;
   dof_range_ = other.dof_range_;
+  solver_name_ = other.solver_name_;
 
   return *this;
 }

@@ -212,6 +212,67 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerInverseKinematicUnit)  // NOLINT
   runKinSetJointLimitsTest(kin_group2);
 }
 
+// Regression: ROPInvKin::operator= dropped positioner_to_robot_ and solver_name_. Because the copy
+// ctor delegates to operator= and clone() copy-constructs, every clone silently reverted to an
+// identity positioner->robot transform and the default solver name. The stock rig hides this: its
+// positioner_robot_joint origin is identity, so the dropped transform is unobservable.
+TEST(TesseractKinematicsUnit, RobotOnPositionerClonePreservesStateUnit)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBOnPositioner(locator);
+
+  // Offset the robot base from the positioner tip so positioner_to_robot_ is non-identity.
+  Eigen::Isometry3d robot_offset{ Eigen::Isometry3d::Identity() };
+  robot_offset.translation() = Eigen::Vector3d(0.25, -0.15, 0.35);
+  ASSERT_TRUE(scene_graph->changeJointOrigin("positioner_robot_joint", robot_offset));
+
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto robot_fwd_kin = getRobotFwdKinematics(*scene_graph);
+  auto opw_kin = std::make_unique<OPWInvKin>(getOPWKinematicsParamABB(),
+                                             robot_fwd_kin->getBaseLinkName(),
+                                             robot_fwd_kin->getTipLinkNames()[0],
+                                             robot_fwd_kin->getJointNames());
+  auto positioner_kin = getPositionerFwdKinematics(*scene_graph);
+  Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(1, 1, 0.1);
+
+  const std::string custom_solver_name{ "CustomROPSolverName" };
+  ROPInvKin original(*scene_graph,
+                     scene_state,
+                     opw_kin->clone(),
+                     2.5,
+                     positioner_kin->clone(),
+                     positioner_resolution,
+                     custom_solver_name);
+
+  auto cloned = original.clone();
+  ASSERT_TRUE(cloned != nullptr);
+
+  // solver_name_ must survive the copy.
+  EXPECT_EQ(cloned->getSolverName(), custom_solver_name);
+
+  // positioner_to_robot_ must survive: build a target by forward kinematics so it is reachable,
+  // then require the clone to return exactly the solutions the original does.
+  auto full_fwd_kin = getFullFwdKinematics(*scene_graph);
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(full_fwd_kin->numJoints());
+  q(1) = 0.3;
+  q(2) = -0.4;
+  q(4) = 0.5;
+  tesseract::common::TransformMap tip_link_poses{ { "tool0", full_fwd_kin->calcFwdKin(q).at("tool0") } };
+  Eigen::VectorXd seed = Eigen::VectorXd::Zero(full_fwd_kin->numJoints());
+
+  IKSolutions original_solutions;
+  original.calcInvKin(original_solutions, tip_link_poses, seed);
+  IKSolutions cloned_solutions;
+  cloned->calcInvKin(cloned_solutions, tip_link_poses, seed);
+
+  ASSERT_FALSE(original_solutions.empty());
+  ASSERT_EQ(original_solutions.size(), cloned_solutions.size());
+  for (std::size_t i = 0; i < original_solutions.size(); ++i)
+    EXPECT_TRUE(original_solutions[i].isApprox(cloned_solutions[i], 1e-12));
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

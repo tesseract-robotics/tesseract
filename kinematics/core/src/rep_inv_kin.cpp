@@ -169,6 +169,7 @@ REPInvKin& REPInvKin::operator=(const REPInvKin& other)
   manip_tip_link_ = other.manip_tip_link_;
   dof_ = other.dof_;
   dof_range_ = other.dof_range_;
+  solver_name_ = other.solver_name_;
 
   return *this;
 }
