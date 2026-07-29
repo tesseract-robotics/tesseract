@@ -78,9 +78,13 @@ public:
                                                     const KinematicsPluginFactory& plugin_factory,
                                                     const YAML::Node& config) const = 0;
 
+  /** @brief Return the PropertyTree schema describing the config this factory accepts */
+  virtual tesseract::common::PropertyTree schema() const;
+
 protected:
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
+  friend class KinematicsPluginFactory;
 };
 
 /** @brief Define a forward kinematics plugin which the factory can create an instance */
@@ -106,9 +110,13 @@ public:
                                                     const KinematicsPluginFactory& plugin_factory,
                                                     const YAML::Node& config) const = 0;
 
+  /** @brief Return the PropertyTree schema describing the config this factory accepts */
+  virtual tesseract::common::PropertyTree schema() const;
+
 protected:
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
+  friend class KinematicsPluginFactory;
 };
 
 class KinematicsPluginFactory
