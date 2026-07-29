@@ -47,7 +47,7 @@ static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, std::s
   std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
+    std::string name = "geom_" + std::to_string(ind);
     active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
@@ -99,7 +99,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state,
   std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
+    std::string name = "geom_" + std::to_string(ind);
     active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
@@ -127,7 +127,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
   std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
+    std::string name = "geom_" + std::to_string(ind);
     active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
@@ -155,7 +155,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
   std::vector<tesseract::common::LinkId> active_obj(num_obj);
   for (std::size_t ind = 0; ind < num_obj; ind++)
   {
-    const tesseract::common::LinkId name("geom_" + std::to_string(ind));
+    std::string name = "geom_" + std::to_string(ind);
     active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }

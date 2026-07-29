@@ -56,9 +56,8 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract::scene_graph::Scene
 
   opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
 
-  const auto& joint_ids = robot_fwd_kin->getJointIds();
   auto opw_kin = std::make_unique<OPWInvKin>(
-      opw_params, robot_fwd_kin->getBaseLinkId().name(), robot_fwd_kin->getTipLinkIds()[0].name(), joint_ids);
+      opw_params, robot_fwd_kin->getBaseLinkId(), robot_fwd_kin->getTipLinkIds()[0], robot_fwd_kin->getJointIds());
 
   auto positioner_kin = getPositionerFwdKinematics(scene_graph);
   Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(1, 1, 0.1);

@@ -1993,9 +1993,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
     std::vector<tesseract::common::JointId> joint_ids{ "joint1", "joint2", "joint3" };
     tesseract::collision::ContactTrajectoryResults results(joint_ids);
 
-    EXPECT_EQ(results.joint_ids.size(), joint_ids.size());
-    for (std::size_t i = 0; i < joint_ids.size(); ++i)
-      EXPECT_EQ(results.joint_ids[i], joint_ids[i]);
+    EXPECT_EQ(results.joint_ids, joint_ids);
     EXPECT_EQ(results.total_steps, 0);
     EXPECT_EQ(results.steps.size(), 0);
     EXPECT_EQ(results.numSteps(), 0);
@@ -2009,9 +2007,7 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
     tesseract::collision::ContactTrajectoryResults results(joint_ids, num_steps);
 
-    EXPECT_EQ(results.joint_ids.size(), joint_ids.size());
-    for (std::size_t i = 0; i < joint_ids.size(); ++i)
-      EXPECT_EQ(results.joint_ids[i], joint_ids[i]);
+    EXPECT_EQ(results.joint_ids, joint_ids);
     EXPECT_EQ(results.total_steps, num_steps);
     EXPECT_EQ(results.steps.size(), num_steps);
     EXPECT_EQ(results.numSteps(), num_steps);
@@ -2776,16 +2772,12 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactResultLinkIdsUnit)  // NOLINT
 {
-  using tesseract::common::LinkId;
-
   // Default-constructed link_ids should be INVALID_LINK_ID
   tesseract::collision::ContactResult result;
   EXPECT_EQ(result.link_ids[0], tesseract::common::INVALID_LINK_ID);
   EXPECT_EQ(result.link_ids[1], tesseract::common::INVALID_LINK_ID);
 
   // Set link_ids and verify retrievable
-  result.link_ids[0] = "link_a";
-  result.link_ids[1] = "link_b";
   result.link_ids[0] = "link_a";
   result.link_ids[1] = "link_b";
   EXPECT_EQ(result.link_ids[0], "link_a");
@@ -2838,8 +2830,6 @@ TEST(TesseractCoreUnit, ContactResultMapLinkIdPairKeyUnit)  // NOLINT
   tesseract::collision::ContactResult cr;
   cr.link_ids[0] = "link_a";
   cr.link_ids[1] = "link_b";
-  cr.link_ids[0] = "link_a";
-  cr.link_ids[1] = "link_b";
   cr.distance = -0.5;
 
   result_map.addContactResult(key_ab, cr);
@@ -2854,8 +2844,6 @@ TEST(TesseractCoreUnit, ContactResultMapLinkIdPairKeyUnit)  // NOLINT
 
   // setContactResult replaces existing
   tesseract::collision::ContactResult cr2;
-  cr2.link_ids[0] = "link_a";
-  cr2.link_ids[1] = "link_b";
   cr2.link_ids[0] = "link_a";
   cr2.link_ids[1] = "link_b";
   cr2.distance = -1.0;

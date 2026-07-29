@@ -185,7 +185,6 @@
 
 using namespace tesseract::scene_graph;
 using namespace tesseract::srdf;
-using tesseract::common::LinkId;
 
 std::string toString(const ShortestPath& path)
 {

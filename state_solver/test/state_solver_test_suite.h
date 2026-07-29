@@ -260,9 +260,9 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
     double theta = r12.angle();
     theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
     if (theta < -M_PI)
-      theta = theta + (2. * M_PI);
+      theta = theta + 2. * M_PI;
     if (theta > M_PI)
-      theta = theta - (2. * M_PI);
+      theta = theta - 2. * M_PI;
     Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta) / delta;
     jacobian(3, i) = omega(0);
     jacobian(4, i) = omega(1);
@@ -1183,7 +1183,7 @@ void runAddSceneGraphTest()
   std::string prefix = "prefix_";
   Joint prefix_joint(prefix + subgraph_joint_name);
   prefix_joint.parent_link_id = scene_graph->getRoot();
-  prefix_joint.child_link_id = LinkId(prefix + subgraph->getRoot().name());
+  prefix_joint.child_link_id = prefix + subgraph->getRoot().name();
   prefix_joint.type = JointType::FLOATING;
 
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint, prefix));
@@ -1210,7 +1210,7 @@ void runAddSceneGraphTest()
   prefix = "prefix2_";
   Joint prefix_joint2(prefix + subgraph_joint_name);
   prefix_joint2.parent_link_id = scene_graph->getRoot();
-  prefix_joint2.child_link_id = LinkId(prefix + subgraph->getRoot().name());
+  prefix_joint2.child_link_id = prefix + subgraph->getRoot().name();
   prefix_joint2.type = JointType::FIXED;
 
   EXPECT_TRUE(scene_graph->insertSceneGraph(*subgraph, prefix_joint2, prefix));
@@ -1300,8 +1300,8 @@ void runChangeJointOriginTest()
   EXPECT_TRUE(state.joint_transforms.find(joint_name1) != state.joint_transforms.end());
   EXPECT_TRUE(state.joints.find(joint_name1) == state.joints.end());
   EXPECT_TRUE(state.joints.find(joint_name2) == state.joints.end());
-  EXPECT_TRUE(state.joint_transforms.at(JointId(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
-  EXPECT_TRUE(state.floating_joints.at(JointId(joint_name2)).isApprox(joint_2.parent_to_joint_origin_transform));
+  EXPECT_TRUE(state.joint_transforms.at(joint_name2).isApprox(joint_2.parent_to_joint_origin_transform));
+  EXPECT_TRUE(state.floating_joints.at(joint_name2).isApprox(joint_2.parent_to_joint_origin_transform));
   EXPECT_TRUE(state.floating_joints.find(joint_name2) != state.floating_joints.end());
   EXPECT_EQ(state.floating_joints.size(), 1);
 
@@ -1329,11 +1329,11 @@ void runChangeJointOriginTest()
 
   // Check that the origin got updated
   state = state_solver.getState();
-  EXPECT_TRUE(state.link_transforms.at(LinkId(link_name1)).isApprox(new_origin1));
-  EXPECT_TRUE(state.joint_transforms.at(JointId(joint_name1)).isApprox(new_origin1));
-  EXPECT_TRUE(state.link_transforms.at(LinkId(link_name2)).isApprox(new_origin2));
-  EXPECT_TRUE(state.joint_transforms.at(JointId(joint_name2)).isApprox(new_origin2));
-  EXPECT_TRUE(state.floating_joints.at(JointId(joint_name2)).isApprox(new_origin2));
+  EXPECT_TRUE(state.link_transforms.at(link_name1).isApprox(new_origin1));
+  EXPECT_TRUE(state.joint_transforms.at(joint_name1).isApprox(new_origin1));
+  EXPECT_TRUE(state.link_transforms.at(link_name2).isApprox(new_origin2));
+  EXPECT_TRUE(state.joint_transforms.at(joint_name2).isApprox(new_origin2));
+  EXPECT_TRUE(state.floating_joints.at(joint_name2).isApprox(new_origin2));
 
   scene_graph->saveDOT(tesseract::common::getTempPath() + "state_solver_after_change_joint_origin_unit.dot");
 

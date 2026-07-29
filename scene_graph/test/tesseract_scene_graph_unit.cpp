@@ -1555,7 +1555,6 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingJointValueThrows)  // N
 {
   // Regression test: discover_vertex must throw std::runtime_error (naming the offending joint) when
   // joint_values is missing an entry for a non-FIXED, non-FLOATING joint reachable from the root.
-  // Before the fix, .at() threw bare std::out_of_range without any joint name.
   using namespace tesseract::scene_graph;
 
   SceneGraph g = buildTestSceneGraph();
@@ -1587,11 +1586,9 @@ TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingJointValueThrows)  // N
 
 TEST(TesseractSceneGraphUnit, KDLParserSubTreeUnitMissingFloatingJointValueThrows)  // NOLINT
 {
-  // Regression test: the FLOATING-joint sibling of the joint_values bug.
+  // Regression test: the FLOATING-joint counterpart of KDLParserSubTreeUnitMissingJointValueThrows.
   // discover_vertex must throw std::runtime_error (naming the offending joint) when
   // floating_joint_values is missing an entry for a FLOATING joint reachable from the root.
-  // Before the fix, .at() on data_.floating_joint_values threw bare std::out_of_range without
-  // any joint name.
   using namespace tesseract::scene_graph;
 
   // Minimal graph: base_link (root) --fixed--> link_1 --floating--> link_2.
@@ -1695,8 +1692,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
-        { entry.first.first().name(), entry.first.second().name() }));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first));
   }
 
   // Save Graph
@@ -1706,8 +1702,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyWithPrefixUnit)  // NOLINT
 {
   // Regression test: insertSceneGraph into an empty graph WITH a prefix must store the prefixed root LinkId.
-  // Before the fix, setRoot(scene_graph.getRoot()) silently failed (link not in link_map_), leaving the root
-  // as whatever first link happened to be added — which is hash-order-dependent and wrong.
+  // The unprefixed root name is not in the destination's link map, so setting it must not be attempted.
   using namespace tesseract::scene_graph;
 
   tesseract::scene_graph::SceneGraph g = buildTestSceneGraph();
@@ -1762,8 +1757,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
-        { entry.first.first().name(), entry.first.second().name() }));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first));
   }
 }
 
@@ -1807,8 +1801,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
-        { entry.first.first().name(), entry.first.second().name() }));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first));
     EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
         { prefix + entry.first.first().name(), prefix + entry.first.second().name() }));
   }
@@ -1867,8 +1860,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
 
   for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
   {
-    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
-        { entry.first.first().name(), entry.first.second().name() }));
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first));
     EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(
         { prefix + entry.first.first().name(), prefix + entry.first.second().name() }));
   }

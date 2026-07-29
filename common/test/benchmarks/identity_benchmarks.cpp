@@ -87,10 +87,10 @@ static void BM_AcmIsAllowed_PreconstructedPair_Miss(benchmark::State& state)
 {
   const auto ids = makeLinkIds(64);
   const auto acm = makeAcm(ids);
-  const auto outsiders = makeLinkIds(8);  // same names? No — regenerate with a distinct prefix:
+  constexpr std::size_t miss_count = 8;
   std::vector<LinkIdPair> miss_keys;
-  miss_keys.reserve(outsiders.size());
-  for (std::size_t a = 0; a < outsiders.size(); ++a)
+  miss_keys.reserve(miss_count);
+  for (std::size_t a = 0; a < miss_count; ++a)
     miss_keys.emplace_back(LinkId("unrelated_object_" + std::to_string(a)), ids[a]);
   std::size_t i = 0;
   for (auto _ : state)  // NOLINT

@@ -1,6 +1,11 @@
 #ifndef TESSERACT_COLLISION_COLLISION_MESH_MESH_UNIT_HPP
 #define TESSERACT_COLLISION_COLLISION_MESH_MESH_UNIT_HPP
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/common.h>
 #include <tesseract/geometry/geometries.h>

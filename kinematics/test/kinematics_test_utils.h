@@ -88,7 +88,6 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
                                                                 double elbow_offset)
 {
   using namespace tesseract::scene_graph;
-  using tesseract::common::LinkId;
 
   auto sg = std::make_unique<SceneGraph>("universal_robot");
   sg->addLink(Link("base_link"));
@@ -582,6 +581,7 @@ inline void runFwdKinIIWATest(tesseract::kinematics::ForwardKinematics& kin)
 inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, bool is_kin_tree = false)
 {
   UNUSED(is_kin_tree);
+  std::string tip_link = "tool0";
 
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
@@ -601,7 +601,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
   // Test Jacobian
   ///////////////////////////
   Eigen::Vector3d link_point(0, 0, 0);
-  runJacobianTest(kin, jvals, "tool0", link_point, Eigen::Isometry3d::Identity());
+  runJacobianTest(kin, jvals, tip_link, link_point, Eigen::Isometry3d::Identity());
 
   EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
 
@@ -613,7 +613,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    runJacobianTest(kin, jvals, "tool0", link_point, Eigen::Isometry3d::Identity());
+    runJacobianTest(kin, jvals, tip_link, link_point, Eigen::Isometry3d::Identity());
 
     EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, Eigen::Isometry3d::Identity()));  // NOLINT
   }
@@ -633,7 +633,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     change_base.translation() = Eigen::Vector3d(0, 0, 0);
     change_base.translation()[k] = 1;
 
-    runJacobianTest(kin, jvals, "tool0", link_point, change_base);
+    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
 
     EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
   }
@@ -654,7 +654,7 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
     change_base(1, 1) = 0;
     change_base.translation() = link_point;
 
-    runJacobianTest(kin, jvals, "tool0", link_point, change_base);
+    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
 
     EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
   }

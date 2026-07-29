@@ -850,7 +850,7 @@ TEST(TesseractSRDFUnit, SaveLoadRoundTripPreservesMultiplePairMargins)  // NOLIN
 
   ASSERT_TRUE(srdf_loaded.collision_margin_data != nullptr);
   EXPECT_NEAR(srdf_loaded.collision_margin_data->getDefaultCollisionMargin(), 0.05, 1e-6);
-  // All 3 pairs must survive the round-trip (a bug formerly kept only 1).
+  // All 3 pairs must survive the round-trip.
   EXPECT_EQ(srdf_loaded.collision_margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 3U);
   EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_a", "link_b"), 0.01, 1e-6);
   EXPECT_NEAR(srdf_loaded.collision_margin_data->getCollisionMargin("link_b", "link_c"), 0.02, 1e-6);
@@ -889,8 +889,7 @@ TEST(TesseractSRDFUnit, ParseCollisionMarginsSkipsUnknownLinkAfterWarn)  // NOLI
   EXPECT_NO_THROW(margin_data = parseCollisionMargins(g, element, std::array<int, 3>({ 1, 0, 0 })));  // NOLINT
   ASSERT_TRUE(margin_data != nullptr);
 
-  // Only the valid (a,b) pair is kept; the ghost entry is skipped.
-  // A bug formerly kept 2 pairs (the ghost entry was inserted despite the warn).
+  // Only the valid (a,b) pair is kept; the ghost entry is warned about and skipped, not inserted.
   EXPECT_EQ(margin_data->getCollisionMarginPairData().getCollisionMargins().size(), 1U);
 }
 
@@ -2511,9 +2510,9 @@ TEST(TesseractSRDFUnit, GetAlphabeticalACMEntriesUnit)  // NOLINT
   // *not* alphabetical. getAlphabeticalACMEntries must resolve each entry's names from its pair
   // key, normalize so name1<=name2 alphabetically, then sort entries by (name1, name2).
   tesseract::common::AllowedCollisionEntries entries;
-  entries[{ "gamma", "beta" }] = tesseract::common::ACMEntry{ "r_bg" };
-  entries[{ "delta", "alpha" }] = tesseract::common::ACMEntry{ "r_ad" };
-  entries[{ "beta", "alpha" }] = tesseract::common::ACMEntry{ "r_ba" };
+  entries[{ "gamma", "beta" }] = "r_bg";
+  entries[{ "delta", "alpha" }] = "r_ad";
+  entries[{ "beta", "alpha" }] = "r_ba";
 
   auto sorted = tesseract::srdf::getAlphabeticalACMEntries(entries);
 

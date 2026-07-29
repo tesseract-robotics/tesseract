@@ -178,13 +178,11 @@ TEST(TesseractStateSolverUnit, OFKTSetFloatingJointStateUnit)  // NOLINT
   test_suite::runSetFloatingJointStateTest<OFKTStateSolver>();
 }
 
-// All OFKT entrypoints that overlay user-supplied floating-joint values formerly called bare
-// .at(), throwing std::out_of_range with no context. Verify they now throw a std::runtime_error
-// whose message names the offending joint id, so callers can identify the bad entry instead of
-// debugging a context-free out_of_range.
+// Every OFKT entrypoint that overlays user-supplied floating-joint values must reject an unknown
+// joint id with a std::runtime_error whose message names that id, so callers can identify the bad
+// entry from the exception alone.
 TEST(TesseractStateSolverUnit, OFKTApplyFloatingValuesUnknownIdThrows)  // NOLINT
 {
-  using tesseract::common::JointId;
   using tesseract::common::JointIdTransformMap;
 
   tesseract::common::GeneralResourceLocator locator;
@@ -228,9 +226,6 @@ TEST(TesseractStateSolverUnit, OFKTUnit)  // NOLINT
 
 TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
 {
-  using tesseract::common::JointId;
-  using tesseract::common::LinkId;
-
   tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
 
@@ -245,15 +240,13 @@ TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
   // All link names should map to a LinkId entry in link_transforms
   for (const auto& link_id : solver.getLinkIds())
   {
-    auto id = LinkId(link_id);
-    EXPECT_TRUE(state.link_transforms.count(id) > 0) << "Missing LinkId entry for link: " << link_id;
+    EXPECT_TRUE(state.link_transforms.count(link_id) > 0) << "Missing LinkId entry for link: " << link_id;
   }
 
   // joints is keyed by JointId
   for (const auto& joint_id : solver.getActiveJointIds())
   {
-    auto jid = JointId(joint_id);
-    EXPECT_TRUE(state.joints.count(jid) > 0) << "Missing JointId entry for joint: " << joint_id;
+    EXPECT_TRUE(state.joints.count(joint_id) > 0) << "Missing JointId entry for joint: " << joint_id;
   }
 
   // Verify getState(ids, values) also produces LinkIdTransformMap
@@ -274,7 +267,6 @@ TEST(TesseractStateSolverUnit, SceneStateLinkIdTransformMapUnit)  // NOLINT
 TEST(TesseractStateSolverUnit, KDLSegmentIdCacheCopyUnit)  // NOLINT
 {
   using tesseract::common::JointId;
-  using tesseract::common::LinkId;
 
   tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = tesseract::scene_graph::test_suite::getSceneGraph(locator);
@@ -326,8 +318,7 @@ TEST(TesseractStateSolverUnit, KDLSegmentIdCacheCopyUnit)  // NOLINT
 
 // Validates that OFKTStateSolver::isActiveLinkId (parent-chain walk) agrees with
 // getActiveLinkIds() (full downward traversal) for every link in the scene, and that
-// unknown ids return false. Locks down the equivalence after switching from a
-// rebuild-and-find implementation to the O(depth) walk-up.
+// unknown ids return false.
 TEST(TesseractStateSolverUnit, OFKTIsActiveLinkIdMatchesActiveSetUnit)  // NOLINT
 {
   using tesseract::common::LinkId;

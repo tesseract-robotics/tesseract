@@ -1,6 +1,11 @@
 #ifndef TESSERACT_COLLISION_CONTACT_MANAGER_CONFIG_UNIT_H
 #define TESSERACT_COLLISION_CONTACT_MANAGER_CONFIG_UNIT_H
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/collision/common.h>

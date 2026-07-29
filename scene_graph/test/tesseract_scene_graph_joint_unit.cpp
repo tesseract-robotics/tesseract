@@ -113,7 +113,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphJointMimicUnit)  // NOLINT
 
   j.offset = 1;
   j.multiplier = 2;
-  j.joint_id = "joint_0";
+  j.joint_id = "joint_name";
   j.clear();
 
   EXPECT_NEAR(j.offset, 0, 1e-6);

@@ -300,8 +300,6 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
 
   // Get active contact managers
   {
-    env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
-    env->setActiveContinuousContactManager("BulletCastBVHManager");
     tesseract::common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
     EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteBVHManager");
     EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastBVHManager");

@@ -344,22 +344,21 @@ TEST(TesseractKinematicsUnit, UtilsNearSingularityUnit)  // NOLINT
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
-  const LinkId tool0 = "tool0";
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
   Eigen::MatrixXd jacobian(6, fwd_kin.numJoints());
-  fwd_kin.calcJacobian(jacobian, jv, tool0);
+  fwd_kin.calcJacobian(jacobian, jv, "tool0");
   EXPECT_TRUE(tesseract::kinematics::isNearSingularity(jacobian, 0.001));
 
   // Set joint 5 angle to 1 deg and it with the default threshold it should still be in singularity
   jv[4] = 1 * M_PI / 180.0;
-  fwd_kin.calcJacobian(jacobian, jv, tool0);
+  fwd_kin.calcJacobian(jacobian, jv, "tool0");
   EXPECT_TRUE(tesseract::kinematics::isNearSingularity(jacobian));
 
   // Set joint 5 angle to 2 deg and it should no longer be in a singularity
   jv[4] = 2 * M_PI / 180.0;
-  fwd_kin.calcJacobian(jacobian, jv, tool0);
+  fwd_kin.calcJacobian(jacobian, jv, "tool0");
   EXPECT_FALSE(tesseract::kinematics::isNearSingularity(jacobian));
 
   // Increase threshold and now with joint 5 at 2 deg it will now be considered in a singularity
@@ -374,12 +373,11 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
   tesseract::scene_graph::SceneGraph::Ptr scene_graph = tesseract::kinematics::test_suite::getSceneGraphABB(locator);
 
   tesseract::kinematics::KDLFwdKinChain fwd_kin(*scene_graph, "base_link", "tool0");
-  const LinkId tool0 = "tool0";
 
   // First test joint 4, 5 and 6 at zero which should be in a singularity
   Eigen::VectorXd jv = Eigen::VectorXd::Zero(6);
   Eigen::MatrixXd jacobian(6, fwd_kin.numJoints());
-  fwd_kin.calcJacobian(jacobian, jv, tool0);
+  fwd_kin.calcJacobian(jacobian, jv, "tool0");
   tesseract::kinematics::Manipulability m = tesseract::kinematics::calcManipulability(jacobian);
   EXPECT_EQ(m.m.eigen_values.size(), 6);
   EXPECT_NEAR(m.m.volume, 0, 1e-6);
@@ -879,10 +877,14 @@ TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentUnit)  // NOLINT
   EXPECT_EQ(jg_b.getLinkIds().size(), jg_a.getLinkIds().size());
 
   // Self-assignment is a no-op.
+#if defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif
   jg_b = jg_b;  // NOLINT(clang-diagnostic-self-assign-overloaded)
+#if defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
   EXPECT_EQ(jg_b.getJointIds(), joint_ids);
 
   // JointGroup throws when a joint id is not in the scene graph.
