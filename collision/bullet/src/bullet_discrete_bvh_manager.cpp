@@ -152,7 +152,7 @@ bool BulletDiscreteBVHManager::hasCollisionObject(const tesseract::common::LinkI
 
 bool BulletDiscreteBVHManager::removeCollisionObject(const tesseract::common::LinkId& id)
 {
-  auto it = link2cow_.find(id);
+  auto it = link2cow_.find(id);  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), id));
@@ -167,7 +167,7 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const tesseract::common::Li
 
 bool BulletDiscreteBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)
 {
-  auto it = link2cow_.find(id);
+  auto it = link2cow_.find(id);  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
@@ -183,7 +183,7 @@ bool BulletDiscreteBVHManager::enableCollisionObject(const tesseract::common::Li
 
 bool BulletDiscreteBVHManager::disableCollisionObject(const tesseract::common::LinkId& id)
 {
-  auto it = link2cow_.find(id);
+  auto it = link2cow_.find(id);  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
@@ -209,6 +209,8 @@ bool BulletDiscreteBVHManager::isCollisionObjectEnabled(const tesseract::common:
 void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                                             const Eigen::Isometry3d& pose)
 {
+  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
+  // geometry
   auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
@@ -227,16 +229,8 @@ Eigen::Isometry3d BulletDiscreteBVHManager::getCollisionObjectsTransform(const t
 
 void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
-  for (const auto& [id, tf] : transforms)
-  {
-    auto it = link2cow_.find(id);
-    if (it != link2cow_.end())
-    {
-      COW::Ptr& cow = it->second;
-      cow->setWorldTransform(convertEigenToBt(tf));
-      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
-    }
-  }
+  for (const auto& transform : transforms)
+    setCollisionObjectsTransform(transform.first, transform.second);
 }
 
 const std::vector<tesseract::common::LinkId>& BulletDiscreteBVHManager::getCollisionObjects() const

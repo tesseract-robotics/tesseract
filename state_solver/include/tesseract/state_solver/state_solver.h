@@ -217,14 +217,14 @@ public:
 
   /**
    * @brief Check if link is an active link
-   * @param link_name The link id to check
+   * @param link_id The link id to check
    * @return True if active, otherwise false
    */
   virtual bool isActiveLinkId(const tesseract::common::LinkId& link_id) const = 0;
 
   /**
    * @brief Check if link id exists
-   * @param link_name The link id to check for
+   * @param link_id The link id to check for
    * @return True if it exists, otherwise false
    */
   virtual bool hasLinkId(const tesseract::common::LinkId& link_id) const = 0;
@@ -244,8 +244,8 @@ public:
 
   /**
    * @brief Get transform between two links using the current state
-   * @param from_link_name The link id the transform should be relative to
-   * @param to_link_name The link id to get transform
+   * @param from_link_id The link id the transform should be relative to
+   * @param to_link_id The link id to get transform
    * @return The relative transform = inv(Transform(from_link_id)) * Transform(to_link_id)
    */
   virtual Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,

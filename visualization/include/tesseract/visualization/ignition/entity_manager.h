@@ -52,7 +52,7 @@ public:
   /**
    * @brief Given the model name return the ID
    * @param name Name of the model
-   * @return The ID of the model (if < 1000 it was not found)
+   * @return The Entity ID of the model, or NULL_ENTITY_ID if not found
    */
   EntityID getModel(const std::string& name) const;
 
@@ -92,7 +92,7 @@ public:
   /**
    * @brief Given the visual name return the ID
    * @param name Name of the visual
-   * @return The ID of the visual (if < 1000 it was not found)
+   * @return The Entity ID of the visual, or NULL_ENTITY_ID if not found
    */
   EntityID getVisual(const std::string& name) const;
 
@@ -112,7 +112,7 @@ public:
   /**
    * @brief Given the sensor name return the ID
    * @param name Name of the sensor
-   * @return The ID of the visual (if < 1000 it was not found)
+   * @return The Entity ID of the sensor, or NULL_ENTITY_ID if not found
    */
   EntityID getSensor(const std::string& name) const;
 

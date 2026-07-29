@@ -555,10 +555,8 @@ std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
   std::unordered_set<LinkId> seen;
   results.reserve(acm_entries.size());
 
-  for (const auto& [pair_key, entry] : acm_entries)
+  for (const auto& [pair_key, reason] : acm_entries)
   {
-    // The pair key carries the names directly now, so the "other" link for a query hit is
-    // simply the other half of pair_key — no entry field needed here.
     if (query_ids.count(pair_key.first()) > 0)
     {
       LinkId other = pair_key.second();

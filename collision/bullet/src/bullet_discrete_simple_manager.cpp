@@ -185,6 +185,8 @@ bool BulletDiscreteSimpleManager::isCollisionObjectEnabled(const tesseract::comm
 void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                                                const Eigen::Isometry3d& pose)
 {
+  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
+  // geometry
   auto it = link2cow_.find(id);
   if (it != link2cow_.end())
     it->second->setWorldTransform(convertEigenToBt(pose));
@@ -197,12 +199,8 @@ Eigen::Isometry3d BulletDiscreteSimpleManager::getCollisionObjectsTransform(cons
 
 void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
-  for (const auto& [id, tf] : transforms)
-  {
-    auto it = link2cow_.find(id);
-    if (it != link2cow_.end())
-      it->second->setWorldTransform(convertEigenToBt(tf));
-  }
+  for (const auto& transform : transforms)
+    setCollisionObjectsTransform(transform.first, transform.second);
 }
 
 const std::vector<tesseract::common::LinkId>& BulletDiscreteSimpleManager::getCollisionObjects() const

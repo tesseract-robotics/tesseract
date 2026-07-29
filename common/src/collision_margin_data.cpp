@@ -30,9 +30,8 @@ namespace tesseract::common
 {
 CollisionMarginPairData::CollisionMarginPairData(const PairsCollisionMarginData& pair_margins)
 {
-  lookup_table_.reserve(pair_margins.size());
-  for (const auto& [key, entry] : pair_margins)
-    insertEntry(key, entry);
+  for (const auto& [key, margin] : pair_margins)
+    lookup_table_[key] = margin;
   updateMaxMargins();
 }
 
@@ -46,23 +45,14 @@ void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const 
 {
   TESSERACT_THREAD_LOCAL LinkIdPair key;
   key.assign(id1, id2);
-  insertEntry(key, PairMarginEntry{ margin });
-}
-
-void CollisionMarginPairData::insertEntry(const LinkIdPair& key, const PairMarginEntry& entry)
-{
-  // Hybrid pair equality makes hash-colliding pairs distinct keys, so a duplicate here is
-  // always a genuine re-add of the same named pair — just refresh the payload.
-  auto [it, inserted] = lookup_table_.try_emplace(key, entry);
-  if (!inserted)
-    it->second.margin = entry.margin;
+  lookup_table_[key] = margin;
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkIdPair& pair) const
 {
   const auto it = lookup_table_.find(pair);
   if (it != lookup_table_.end())
-    return it->second.margin;
+    return it->second;
   return {};
 }
 
@@ -93,8 +83,8 @@ void CollisionMarginPairData::incrementMargins(double increment)
 
   assert(max_collision_margin_.has_value());
   max_collision_margin_.value() += increment;  // NOLINT
-  for (auto& [key, entry] : lookup_table_)
-    entry.margin += increment;
+  for (auto& [key, margin] : lookup_table_)
+    margin += increment;
 
   // Increment all object max margins by the same amount
   for (auto& [id, max_margin] : object_max_margins_)
@@ -108,8 +98,8 @@ void CollisionMarginPairData::scaleMargins(double scale)
 
   assert(max_collision_margin_.has_value());
   max_collision_margin_.value() *= scale;  // NOLINT
-  for (auto& [key, entry] : lookup_table_)
-    entry.margin *= scale;
+  for (auto& [key, margin] : lookup_table_)
+    margin *= scale;
 
   // Scale all object max margins by the same factor
   for (auto& [id, max_margin] : object_max_margins_)
@@ -132,25 +122,25 @@ void CollisionMarginPairData::updateMaxMargins()
 
   max_collision_margin_ = std::numeric_limits<double>::lowest();
   object_max_margins_.clear();
-  for (const auto& [key, entry] : lookup_table_)
+  for (const auto& [key, margin] : lookup_table_)
   {
     // Update the overall max margin
     assert(max_collision_margin_.has_value());
-    max_collision_margin_ = std::max(max_collision_margin_.value(), entry.margin);  // NOLINT
+    max_collision_margin_ = std::max(max_collision_margin_.value(), margin);  // NOLINT
 
     // Update max margin for obj1
     auto it1 = object_max_margins_.find(key.first());
     if (it1 == object_max_margins_.end())
-      object_max_margins_[key.first()] = entry.margin;
+      object_max_margins_[key.first()] = margin;
     else
-      it1->second = std::max(it1->second, entry.margin);
+      it1->second = std::max(it1->second, margin);
 
     // Update max margin for obj2
     auto it2 = object_max_margins_.find(key.second());
     if (it2 == object_max_margins_.end())
-      object_max_margins_[key.second()] = entry.margin;
+      object_max_margins_[key.second()] = margin;
     else
-      it2->second = std::max(it2->second, entry.margin);
+      it2->second = std::max(it2->second, margin);
   }
 }
 
@@ -166,8 +156,8 @@ void CollisionMarginPairData::apply(const CollisionMarginPairData& pair_margin_d
     }
     case CollisionMarginPairOverrideType::MODIFY:
     {
-      for (const auto& [key, entry] : pair_margin_data.lookup_table_)
-        insertEntry(key, entry);
+      for (const auto& [key, margin] : pair_margin_data.lookup_table_)
+        lookup_table_[key] = margin;
 
       updateMaxMargins();
       break;
@@ -194,14 +184,14 @@ bool CollisionMarginPairData::operator==(const CollisionMarginPairData& rhs) con
 
   if (ret_val)
   {
-    for (const auto& [key, entry] : lookup_table_)
+    for (const auto& [key, margin] : lookup_table_)
     {
       auto cp = rhs.lookup_table_.find(key);
       ret_val = (cp != rhs.lookup_table_.end());
       if (!ret_val)
         break;
 
-      ret_val = tesseract::common::almostEqualRelativeAndAbs(entry.margin, cp->second.margin, 1e-5);
+      ret_val = tesseract::common::almostEqualRelativeAndAbs(margin, cp->second, 1e-5);
       if (!ret_val)
         break;
     }

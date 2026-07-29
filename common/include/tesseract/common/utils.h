@@ -628,7 +628,6 @@ void removeDuplicates(std::vector<T>& v)
 
 /**
  * @brief Gets allowed collisions for a set of link ids.
- * @details Uses unordered_set lookups for both query membership and dedup (O(1) per check).
  * @param link_ids Vector of LinkIds for which we want the allowed collisions
  * @param acm_entries Entries in the ACM. Get this with AllowedCollisionMatrix::getAllAllowedCollisions()
  * @param remove_duplicates If true, duplicates will be removed. Default: true

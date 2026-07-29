@@ -56,7 +56,7 @@ public:
 
   /**
    * @brief Changes the acceleration limits associated with a joint
-   * @param limits A map of joint names to new acceleration limits
+   * @param limits A map of joint ids to new acceleration limits
    */
   ChangeJointAccelerationLimitsCommand(std::unordered_map<common::JointId, double> limits);
 

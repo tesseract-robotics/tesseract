@@ -355,14 +355,14 @@ public:
 
   /**
    * @brief Disable collision between two collision objects
-   * @param link_name1 Collision object name
-   * @param link_name2 Collision object name
+   * @param link_id1 Collision object id
+   * @param link_id2 Collision object id
    * @param reason The reason for disabling collision
    */
   void addAllowedCollision(const common::LinkId& link_id1, const common::LinkId& link_id2, const std::string& reason);
 
-  /** @brief Add allowed collision; key already a LinkIdPair (avoids re-hashing names). */
-  void addAllowedCollision(const tesseract::common::LinkIdPair& pair, const tesseract::common::ACMEntry& entry);
+  /** @brief Add allowed collision for a canonically ordered link-id pair */
+  void addAllowedCollision(const tesseract::common::LinkIdPair& pair, const std::string& reason);
 
   /**
    * @brief Remove disabled collision pair from allowed collision matrix
@@ -390,7 +390,7 @@ public:
   void clearAllowedCollisions();
 
   /**
-   * @brief Check if a link pair is allowed to be in collision (hot-path primary).
+   * @brief Check if a link pair is allowed to be in collision
    * @param pair Canonically ordered link-id pair
    * @return True if the two links are allowed to be in collision, otherwise false
    */

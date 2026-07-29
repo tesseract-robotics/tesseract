@@ -38,12 +38,12 @@ namespace tesseract::kinematics
 {
 inline IKFastInvKin::IKFastInvKin(tesseract::common::LinkId base_link_id,
                                   tesseract::common::LinkId tip_link_id,
-                                  const std::vector<common::JointId>& joint_ids,
+                                  std::vector<common::JointId> joint_ids,
                                   std::string solver_name,
                                   std::vector<std::vector<double>> free_joint_states)
   : base_link_id_(std::move(base_link_id))
   , tip_link_id_(std::move(tip_link_id))
-  , joint_ids_(joint_ids)
+  , joint_ids_(std::move(joint_ids))
   , solver_name_(std::move(solver_name))
   , free_joint_states_(std::move(free_joint_states))
 {

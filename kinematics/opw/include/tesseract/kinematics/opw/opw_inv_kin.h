@@ -58,15 +58,15 @@ public:
   /**
    * @brief Construct OPW Inverse Kinematics
    * @param params OPW kinematics parameters
-   * @param base_link_name The name of the base link for the kinematic chain
-   * @param tip_link_name The name of the tip link for the kinematic chain
-   * @param joint_names The joint names for the kinematic chain
+   * @param base_link_id The id of the base link for the kinematic chain
+   * @param tip_link_id The id of the tip link for the kinematic chain
+   * @param joint_ids The joint ids for the kinematic chain
    * @param solver_name The solver name of the kinematic chain
    */
   OPWInvKin(opw_kinematics::Parameters<double> params,
             tesseract::common::LinkId base_link_id,
             tesseract::common::LinkId tip_link_id,
-            const std::vector<common::JointId>& joint_ids,
+            std::vector<common::JointId> joint_ids,
             std::string solver_name = OPW_INV_KIN_CHAIN_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
@@ -82,7 +82,7 @@ public:
   InverseKinematics::UPtr clone() const override final;
 
 protected:
-  opw_kinematics::Parameters<double> params_;                /**< @brief The OPW kinematics parameters */
+  opw_kinematics::Parameters<double> params_;                /**< @brief The opw kinematics parameters */
   tesseract::common::LinkId base_link_id_;                   /**< @brief First link in the kinematic object */
   tesseract::common::LinkId tip_link_id_;                    /**< @brief Last link in the kinematic object */
   std::vector<tesseract::common::JointId> joint_ids_;        /**< @brief Joints of the kinematic object */

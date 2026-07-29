@@ -538,9 +538,7 @@ bool OFKTStateSolver::isActiveLinkId(const tesseract::common::LinkId& link_id) c
     return false;
 
   // A link is active iff itself or some ancestor has a non-FIXED, non-FLOATING parent
-  // joint — equivalent to loadActiveLinkIdsRecursive's downward propagation but cheaper:
-  // O(depth) walk vs O(n) traversal + O(n) std::find on every call. Stateless, so no
-  // cache-invalidation surface to maintain on scene mutations.
+  // joint — equivalent to loadActiveLinkIdsRecursive's downward propagation.
   for (const OFKTNode* node = it->second; node != nullptr; node = node->getParent())
   {
     const auto t = node->getType();

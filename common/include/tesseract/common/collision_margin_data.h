@@ -66,19 +66,7 @@ enum class CollisionMarginPairOverrideType : std::uint8_t
   MODIFY
 };
 
-/** @brief Value stored in each pair-margin entry. The pair key carries the names. */
-struct PairMarginEntry
-{
-  double margin{ 0 };
-
-  bool operator==(const PairMarginEntry& other) const
-  {
-    return tesseract::common::almostEqualRelativeAndAbs(margin, other.margin, 1e-5);
-  }
-  bool operator!=(const PairMarginEntry& other) const { return !(*this == other); }
-};
-
-using PairsCollisionMarginData = std::unordered_map<LinkIdPair, PairMarginEntry>;
+using PairsCollisionMarginData = std::unordered_map<LinkIdPair, double>;
 
 class CollisionMarginPairData
 {
@@ -176,14 +164,6 @@ private:
   /** @brief Set the margin for a given contact pair without updating the max margins */
   void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);
 
-  /**
-   * @brief Insert an entry, or update the margin if the key already exists.
-   * @details Fat LinkIdPair keys carry names, so a duplicate key is always a genuine
-   *          re-add of the same named pair. Single write path used by every
-   *          bulk/merge/deserialization entry point.
-   */
-  void insertEntry(const LinkIdPair& key, const PairMarginEntry& entry);
-
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
 
@@ -224,8 +204,8 @@ public:
    * The order of the object names does not matter, that is handled internal to
    * the class.
    *
-   * @param obj1 The first object name. Order doesn't matter
-   * @param obj2 The Second object name. Order doesn't matter
+   * @param id1 The first object LinkId. Order doesn't matter
+   * @param id2 The second object LinkId. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
   void setCollisionMargin(const LinkId& id1, const LinkId& id2, double collision_margin);

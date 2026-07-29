@@ -79,7 +79,7 @@ public:
    *
    * Note: this will remove all inbound and outbound edges
    *
-   * @param name Name of the link to be removed
+   * @param link_id Id of the link to be removed
    * @return Return False if a link does not exists, otherwise true
    */
   virtual bool removeLink(const tesseract::common::LinkId& link_id) = 0;
@@ -93,15 +93,15 @@ public:
 
   /**
    * @brief Removes a joint from the graph
-   * @param name Name of the joint to be removed
+   * @param joint_id Id of the joint to be removed
    * @return Return False if a joint does not exists, otherwise true
    */
   virtual bool removeJoint(const tesseract::common::JointId& joint_id) = 0;
 
   /**
    * @brief Move joint to new parent link
-   * @param name Name of the joint to move
-   * @param parent_link Name of parent link to move to
+   * @param joint_id Id of the joint to move
+   * @param parent_link_id Id of parent link to move to
    * @return Returns true if successful, otherwise false.
    */
   virtual bool moveJoint(const tesseract::common::JointId& joint_id,
@@ -109,7 +109,7 @@ public:
 
   /**
    * @brief Changes the "origin" transform of the joint and recomputes the associated edge
-   * @param name Name of the joint to be changed
+   * @param joint_id Id of the joint to be changed
    * @param new_origin The new transform associated with the joint
    * @return True if successful.
    */
@@ -117,7 +117,7 @@ public:
 
   /**
    * @brief Changes the position limits associated with a joint
-   * @param joint_name Name of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @param limits New position limits to be set as the joint limits
    * @returnTrue if successful.
    */
@@ -125,7 +125,7 @@ public:
 
   /**
    * @brief Changes the velocity limits associated with a joint
-   * @param joint_name Name of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @param limits New velocity limits to be set as the joint limits
    * @return
    */
@@ -133,7 +133,7 @@ public:
 
   /**
    * @brief Changes the acceleration limits associated with a joint
-   * @param joint_name Name of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @param limits New acceleration limits to be set as the joint limits
    * @return
    */
@@ -141,7 +141,7 @@ public:
 
   /**
    * @brief Changes the jerk limits associated with a joint
-   * @param joint_name Name of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @param limits New jerk limits to be set as the joint limits
    * @return
    */

@@ -49,7 +49,7 @@ tesseract::common::CollisionMarginData::Ptr parseCollisionMargins(const tesserac
 
   int status = tesseract::common::QueryDoubleAttributeRequired(xml_element, "default_margin", default_margin);
   if (status != tinyxml2::XML_SUCCESS)
-    std::throw_with_nested(std::runtime_error("CollisionMargins: collision_margins missing attribute "
+    std::throw_with_nested(std::runtime_error("parseCollisionMargins: collision_margins missing attribute "
                                               "'default_margin'."));
 
   auto margin_data = std::make_shared<tesseract::common::CollisionMarginData>(default_margin);

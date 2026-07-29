@@ -87,6 +87,7 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
  * @param cdata Information used to process the results
  * @param contact Contacts from the collision checkers that will be processed
  * @param key Link pair used as a key to look up pair specific settings
+ * @param margin The collision margin already resolved for @p key
  * @param found Specifies whether or not a collision has already been found
  * @return Pointer to the ContactResult.
  */

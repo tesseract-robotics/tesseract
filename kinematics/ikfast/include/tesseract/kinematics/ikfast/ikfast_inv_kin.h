@@ -51,7 +51,7 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  * public:
  *   FanucP50iBInvKinematics(tesseract::common::LinkId base_link_id,
  *                           tesseract::common::LinkId tip_link_id,
- *                           const std::vector<tesseract::common::JointId>& joint_ids,
+ *                           std::vector<tesseract::common::JointId> joint_ids,
  *                           std::string solver_name);
  * };
  *
@@ -65,9 +65,12 @@ static const std::string IKFAST_INV_KIN_CHAIN_SOLVER_NAME = "IKFastInvKin";
  * {
  *   FanucP50iBInvKinematics::FanucP50iBInvKinematics(tesseract::common::LinkId base_link_id,
  *                                                    tesseract::common::LinkId tip_link_id,
- *                                                    const std::vector<tesseract::common::JointId>& joint_ids,
+ *                                                    std::vector<tesseract::common::JointId> joint_ids,
  *                                                    std::string solver_name)
- *   : IKFastInvKin(std::move(base_link_id), std::move(tip_link_id), joint_ids, std::move(solver_name))
+ *   : IKFastInvKin(std::move(base_link_id),
+ *                  std::move(tip_link_id),
+ *                  std::move(joint_ids),
+ *                  std::move(solver_name))
  *   {}
  * }
  *
@@ -100,7 +103,7 @@ public:
    */
   IKFastInvKin(tesseract::common::LinkId base_link_id,
                tesseract::common::LinkId tip_link_id,
-               const std::vector<common::JointId>& joint_ids,
+               std::vector<common::JointId> joint_ids,
                std::string solver_name = IKFAST_INV_KIN_CHAIN_SOLVER_NAME,
                std::vector<std::vector<double>> free_joint_states = {});
 
@@ -130,7 +133,7 @@ public:
 protected:
   tesseract::common::LinkId base_link_id_;                      /**< @brief First link in the kinematic object */
   tesseract::common::LinkId tip_link_id_;                       /**< @brief Last link in the kinematic object */
-  std::vector<tesseract::common::JointId> joint_ids_;           /**< @brief Joint names for the kinematic object */
+  std::vector<tesseract::common::JointId> joint_ids_;           /**< @brief Joints of the kinematic object */
   std::string solver_name_{ IKFAST_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
   /**< @brief combinations of free joints to sample when computing IK
    * Example: Given 3 free joints, a valid input would be [[0,0,0][0,0,1][-1,0,1][0,2,0]] */

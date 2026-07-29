@@ -32,8 +32,8 @@ namespace tesseract::srdf
 {
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
-  for (const auto& [key, entry] : srdf_model.acm.getAllAllowedCollisions())
-    scene_graph.addAllowedCollision(key, entry);
+  for (const auto& [key, reason] : srdf_model.acm.getAllAllowedCollisions())
+    scene_graph.addAllowedCollision(key, reason);
 }
 
 std::vector<AlphabeticalACMEntry>
@@ -41,13 +41,13 @@ getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allo
 {
   std::vector<AlphabeticalACMEntry> entries;
   entries.reserve(allowed_collision_entries.size());
-  for (const auto& [key, entry] : allowed_collision_entries)
+  for (const auto& [key, reason] : allowed_collision_entries)
   {
     std::string name1 = key.first().name();
     std::string name2 = key.second().name();
     if (name2 < name1)
       std::swap(name1, name2);
-    entries.push_back(AlphabeticalACMEntry{ std::move(name1), std::move(name2), entry.reason });
+    entries.push_back(AlphabeticalACMEntry{ std::move(name1), std::move(name2), reason });
   }
 
   std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {

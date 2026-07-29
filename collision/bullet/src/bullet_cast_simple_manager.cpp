@@ -188,6 +188,8 @@ bool BulletCastSimpleManager::isCollisionObjectEnabled(const tesseract::common::
 void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                                            const Eigen::Isometry3d& pose)
 {
+  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
+  // geometry
   auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
@@ -205,22 +207,16 @@ Eigen::Isometry3d BulletCastSimpleManager::getCollisionObjectsTransform(const te
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
-  for (const auto& [id, tf] : transforms)
-  {
-    auto it = link2cow_.find(id);
-    if (it != link2cow_.end())
-    {
-      btTransform bt_tf = convertEigenToBt(tf);
-      it->second->setWorldTransform(bt_tf);
-      link2castcow_[id]->setWorldTransform(bt_tf);
-    }
-  }
+  for (const auto& transform : transforms)
+    setCollisionObjectsTransform(transform.first, transform.second);
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                                            const Eigen::Isometry3d& pose1,
                                                            const Eigen::Isometry3d& pose2)
 {
+  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
+  // geometry
   auto it = link2castcow_.find(id);
   if (it != link2castcow_.end())
   {

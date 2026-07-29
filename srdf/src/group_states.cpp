@@ -86,7 +86,7 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                "URDF!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str(),
-                                                                               joint_id.name().c_str())));
+                                                                               joint_name.c_str())));
 
       status = tesseract::common::QueryDoubleAttributeRequired(joint_xml, "value", joint_value);
       if (status != tinyxml2::XML_SUCCESS)
@@ -96,7 +96,7 @@ GroupJointStates parseGroupStates(const tesseract::scene_graph::SceneGraph& scen
                                                                                "'value'!",
                                                                                state_name.c_str(),
                                                                                group_name.c_str(),
-                                                                               joint_id.name().c_str())));
+                                                                               joint_name.c_str())));
 
       joint_state[joint_id] = joint_value;
     }

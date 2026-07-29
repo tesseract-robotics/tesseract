@@ -228,12 +228,12 @@ int inverse(const Eigen::Isometry3d& T, const URParameters& params, double* q_so
 URInvKin::URInvKin(URParameters params,
                    tesseract::common::LinkId base_link_id,
                    tesseract::common::LinkId tip_link_id,
-                   const std::vector<common::JointId>& joint_ids,
+                   std::vector<common::JointId> joint_ids,
                    std::string solver_name)
   : params_(params)
   , base_link_id_(std::move(base_link_id))
   , tip_link_id_(std::move(tip_link_id))
-  , joint_ids_(joint_ids)
+  , joint_ids_(std::move(joint_ids))
   , solver_name_(std::move(solver_name))
 {
   if (joint_ids_.size() != 6)

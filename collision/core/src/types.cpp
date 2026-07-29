@@ -326,7 +326,6 @@ std::string ContactResultMap::getSummary() const
   std::stringstream ss;
   std::map<KeyType, std::size_t> collision_counts;
   std::map<KeyType, double> closest_distances;
-  std::map<KeyType, std::array<std::string, 2>> pair_names;
 
   // Initialize distances map with max values
   for (const auto& pair : data_)
@@ -335,7 +334,6 @@ std::string ContactResultMap::getSummary() const
     {
       collision_counts[pair.first] = pair.second.size();
       closest_distances[pair.first] = std::numeric_limits<double>::max();
-      pair_names[pair.first] = { pair.second.front().link_ids[0].name(), pair.second.front().link_ids[1].name() };
 
       // Find closest distance for this pair
       for (const auto& result : pair.second)
@@ -354,8 +352,7 @@ std::string ContactResultMap::getSummary() const
                                       collision_counts.end(),
                                       [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
 
-  const auto& names = pair_names[max_element->first];
-  ss << names[0] << " - " << names[1] << ": " << max_element->second
+  ss << max_element->first.first() << " - " << max_element->first.second() << ": " << max_element->second
      << " collisions, min dist: " << closest_distances[max_element->first];
 
   return ss.str();
@@ -934,8 +931,8 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const auto id0 = contact_pair.second.front().link_ids[0];
-        const auto id1 = contact_pair.second.front().link_ids[1];
+        const auto id0 = contact_pair.first.first();
+        const auto id1 = contact_pair.first.second();
         if (link_index_map.find(id0) == link_index_map.end())
         {
           link_index_map[id0] = index++;
@@ -961,8 +958,8 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const auto cid0 = contact_pair.second.front().link_ids[0];
-        const auto cid1 = contact_pair.second.front().link_ids[1];
+        const auto cid0 = contact_pair.first.first();
+        const auto cid1 = contact_pair.first.second();
         std::size_t row = link_index_map[cid0];
         std::size_t col = link_index_map[cid1];
         collision_matrix[row][col]++;

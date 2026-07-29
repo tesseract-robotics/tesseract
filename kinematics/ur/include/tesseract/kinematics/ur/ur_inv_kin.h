@@ -67,15 +67,15 @@ public:
   /**
    * @brief init Initialize UR Inverse Kinematics
    * @param params UR kinematics parameters
-   * @param base_link_name The name of the base link for the kinematic chain
-   * @param tip_link_name The name of the tip link for the kinematic chain
-   * @param joint_names The joint names for the kinematic chain
+   * @param base_link_id The id of the base link for the kinematic chain
+   * @param tip_link_id The id of the tip link for the kinematic chain
+   * @param joint_ids The joint ids for the kinematic chain
    * @param solver_name The solver name of the kinematic chain
    */
   URInvKin(URParameters params,
            tesseract::common::LinkId base_link_id,
            tesseract::common::LinkId tip_link_id,
-           const std::vector<common::JointId>& joint_ids,
+           std::vector<common::JointId> joint_ids,
            std::string solver_name = UR_INV_KIN_CHAIN_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,

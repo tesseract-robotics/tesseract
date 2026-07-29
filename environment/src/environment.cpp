@@ -275,14 +275,14 @@ struct Environment::Implementation
 
   bool initHelper(const std::vector<std::shared_ptr<const Command>>& commands);
 
-  void setState(const tesseract::common::JointIdTransformMap& floating_joints);
-
   void setState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joints = {});
 
   void setState(const std::vector<tesseract::common::JointId>& joint_ids,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joints = {});
+
+  void setState(const tesseract::common::JointIdTransformMap& floating_joints);
 
   Eigen::VectorXd getCurrentJointValues() const;
 
@@ -517,12 +517,6 @@ bool Environment::Implementation::initHelper(const std::vector<std::shared_ptr<c
   return initialized;
 }
 
-void Environment::Implementation::setState(const tesseract::common::JointIdTransformMap& floating_joints)
-{
-  state_solver->setState(floating_joints);
-  currentStateChanged();
-}
-
 void Environment::Implementation::setState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                                            const tesseract::common::JointIdTransformMap& floating_joints)
 {
@@ -535,6 +529,12 @@ void Environment::Implementation::setState(const std::vector<tesseract::common::
                                            const tesseract::common::JointIdTransformMap& floating_joints)
 {
   state_solver->setState(joint_ids, joint_values, floating_joints);
+  currentStateChanged();
+}
+
+void Environment::Implementation::setState(const tesseract::common::JointIdTransformMap& floating_joints)
+{
+  state_solver->setState(floating_joints);
   currentStateChanged();
 }
 
@@ -2489,17 +2489,6 @@ const std::string& Environment::getName() const
   return std::as_const<Implementation>(*impl_).scene_graph->getName();
 }
 
-void Environment::setState(const tesseract::common::JointIdTransformMap& floating_joints)
-{
-  {
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    impl_->setState(floating_joints);
-  }
-
-  std::shared_lock<std::shared_mutex> lock(mutex_);
-  impl_->triggerCurrentStateChangedCallbacks();
-}
-
 void Environment::setState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                            const tesseract::common::JointIdTransformMap& floating_joints)
 {
@@ -2525,11 +2514,15 @@ void Environment::setState(const std::vector<tesseract::common::JointId>& joint_
   impl_->triggerCurrentStateChangedCallbacks();
 }
 
-tesseract::scene_graph::SceneState
-Environment::getState(const tesseract::common::JointIdTransformMap& floating_joints) const
+void Environment::setState(const tesseract::common::JointIdTransformMap& floating_joints)
 {
+  {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    impl_->setState(floating_joints);
+  }
+
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return std::as_const<Implementation>(*impl_).state_solver->getState(floating_joints);
+  impl_->triggerCurrentStateChangedCallbacks();
 }
 
 tesseract::scene_graph::SceneState
@@ -2547,6 +2540,13 @@ Environment::getState(const std::vector<tesseract::common::JointId>& joint_ids,
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return std::as_const<Implementation>(*impl_).state_solver->getState(joint_ids, joint_values, floating_joints);
+}
+
+tesseract::scene_graph::SceneState
+Environment::getState(const tesseract::common::JointIdTransformMap& floating_joints) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return std::as_const<Implementation>(*impl_).state_solver->getState(floating_joints);
 }
 
 tesseract::scene_graph::SceneState Environment::getState() const

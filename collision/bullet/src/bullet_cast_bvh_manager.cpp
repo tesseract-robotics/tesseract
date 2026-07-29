@@ -246,6 +246,8 @@ bool BulletCastBVHManager::isCollisionObjectEnabled(const tesseract::common::Lin
 void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                                         const Eigen::Isometry3d& pose)
 {
+  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
+  // geometry
   auto it = link2cow_.find(id);
   if (it != link2cow_.end())
   {
@@ -268,27 +270,16 @@ Eigen::Isometry3d BulletCastBVHManager::getCollisionObjectsTransform(const tesse
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkIdTransformMap& transforms)
 {
-  for (const auto& [id, tf] : transforms)
-  {
-    auto it = link2cow_.find(id);
-    if (it != link2cow_.end())
-    {
-      COW::Ptr& cow = it->second;
-      btTransform bt_tf = convertEigenToBt(tf);
-      cow->setWorldTransform(bt_tf);
-      link2castcow_[id]->setWorldTransform(bt_tf);
-
-      // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
-      if (cow->getBroadphaseHandle() != nullptr)
-        updateBroadphaseAABB(cow, broadphase_, dispatcher_);
-    }
-  }
+  for (const auto& transform : transforms)
+    setCollisionObjectsTransform(transform.first, transform.second);
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common::LinkId& id,
                                                         const Eigen::Isometry3d& pose1,
                                                         const Eigen::Isometry3d& pose2)
 {
+  // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
+  // geometry
   auto it = link2castcow_.find(id);
   if (it != link2castcow_.end())
   {

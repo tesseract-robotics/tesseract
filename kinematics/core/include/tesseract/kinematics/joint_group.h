@@ -115,7 +115,7 @@ public:
    * @param joint_angles Input vector of joint angles
    * @param base_link_id The frame that the jacobian is calculated in
    * @param link_id The frame that the jacobian is calculated for
-   * @return The jacobian at the provided link_name relative to the provided base_link_name
+   * @return The jacobian at the provided link_id relative to the provided base_link_id
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const tesseract::common::LinkId& base_link_id,
@@ -127,7 +127,7 @@ public:
    * @param base_link_id The frame that the jacobian is calculated in
    * @param link_id The frame that the jacobian is calculated for
    * @param link_point A point on the link that the jacobian is calculated for
-   * @return The jacobian at the provided link_name relative to the provided base_link_name
+   * @return The jacobian at the provided link_id relative to the provided base_link_id
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const tesseract::common::LinkId& base_link_id,
@@ -164,14 +164,14 @@ public:
 
   /**
    * @brief Check if link is an active link
-   * @param link_name The link id to check
+   * @param link_id The link id to check
    * @return True if active, otherwise false
    */
   bool isActiveLinkId(const tesseract::common::LinkId& link_id) const;
 
   /**
    * @brief Check if link id exists
-   * @param link_name The link id to check for
+   * @param link_id The link id to check for
    * @return True if it exists, otherwise false
    */
   bool hasLinkId(const tesseract::common::LinkId& link_id) const;

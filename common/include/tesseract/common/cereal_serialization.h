@@ -63,8 +63,8 @@ void save(Archive& ar, const AllowedCollisionMatrix& obj)
 {
   // Serialize as string-based format for backwards compatibility
   std::map<std::pair<std::string, std::string>, std::string> compat;
-  for (const auto& [key, entry] : obj.lookup_table_)
-    compat[{ key.first().name(), key.second().name() }] = entry.reason;
+  for (const auto& [key, reason] : obj.lookup_table_)
+    compat[{ key.first().name(), key.second().name() }] = reason;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 
@@ -88,8 +88,8 @@ void save(Archive& ar, const CollisionMarginPairData& obj)
 {
   // Serialize as string-based format for backwards compatibility
   std::map<std::pair<std::string, std::string>, double> compat;
-  for (const auto& [key, entry] : obj.lookup_table_)
-    compat[{ key.first().name(), key.second().name() }] = entry.margin;
+  for (const auto& [key, margin] : obj.lookup_table_)
+    compat[{ key.first().name(), key.second().name() }] = margin;
   ar(cereal::make_nvp("lookup_table", compat));
 }
 

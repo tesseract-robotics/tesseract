@@ -311,8 +311,6 @@ public:
    */
   void setState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joints = {});
-
-  /** @brief Set state using vector of JointIds (avoids string-to-ID conversion) */
   void setState(const std::vector<tesseract::common::JointId>& joint_ids,
                 const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                 const tesseract::common::JointIdTransformMap& floating_joints = {});
@@ -330,8 +328,6 @@ public:
    */
   tesseract::scene_graph::SceneState getState(const tesseract::scene_graph::SceneState::JointValues& joint_values,
                                               const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
-
-  /** @brief Get state using vector of JointIds (avoids string-to-ID conversion) */
   tesseract::scene_graph::SceneState getState(const std::vector<tesseract::common::JointId>& joint_ids,
                                               const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                               const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
@@ -386,21 +382,21 @@ public:
 
   /**
    * @brief Get a link in the environment
-   * @param name The id of the link
+   * @param id The id of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
   std::shared_ptr<const tesseract::scene_graph::Link> getLink(const common::LinkId& id) const;
 
   /**
    * @brief Get joint by id
-   * @param name The id of the joint
+   * @param id The id of the joint
    * @return Joint Const Pointer
    */
   std::shared_ptr<const tesseract::scene_graph::Joint> getJoint(const common::JointId& id) const;
 
   /**
    * @brief Gets the limits associated with a joint
-   * @param joint_name Id of the joint to be updated
+   * @param joint_id Id of the joint to be updated
    * @return The joint limits set for the given joint
    */
   std::shared_ptr<const tesseract::scene_graph::JointLimits> getJointLimits(const common::JointId& joint_id) const;
@@ -511,9 +507,9 @@ public:
 
   /**
    * @brief Get transform between two links using the current state
-   * @param from_link_name The link id the transform should be relative to
-   * @param to_link_name The link id to get transform
-   * @return The relative transform = inv(Transform(from_link_name)) * Transform(to_link_name)
+   * @param from_link_id The link id the transform should be relative to
+   * @param to_link_id The link id to get transform
+   * @return The relative transform = inv(Transform(from_link_id)) * Transform(to_link_id)
    */
   Eigen::Isometry3d getRelativeLinkTransform(const tesseract::common::LinkId& from_link_id,
                                              const tesseract::common::LinkId& to_link_id) const;

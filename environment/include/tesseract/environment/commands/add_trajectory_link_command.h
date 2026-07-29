@@ -90,7 +90,7 @@ public:
    *        with a joint name of joint_{link name}".
    *
    * @param link_id The link id
-   * @param parent_link_if The parent link id
+   * @param parent_link_id The parent link id
    * @param trajectory The trajectory to used for generating link
    * @param replace_allowed If true then if the link exists it will be replaced, otherwise if false it will fail.
    * @param method Specifies how the trajectory is represented as a collision object in the environment.

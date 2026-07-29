@@ -353,8 +353,6 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
     if (jnt.getType() == KDL::Joint::None)
       continue;
 
-    // Compute the JointId once and reuse it for all four sites below; the JointId
-    // ctor performs a name->id lookup so reusing avoids redundant map lookups.
     const JointId jid(jnt.getName());
 
     joint_to_qnr_.insert(std::make_pair(jid, seg.second.q_nr));
@@ -397,8 +395,8 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
                       data_.tree.getRootSegment(),
                       Eigen::Isometry3d::Identity());
 
-  // Build O(1) mirrors of the active/all link id vectors so isActiveLinkId/hasLinkId
-  // can avoid the linear std::find that previously dominated lookups in hot paths.
+  // Mirrors of the active/all link id vectors queried by isActiveLinkId/hasLinkId; both must be
+  // rebuilt whenever those vectors change.
   active_link_ids_set_.clear();
   active_link_ids_set_.insert(data_.active_link_ids.begin(), data_.active_link_ids.end());
   link_ids_set_.clear();
