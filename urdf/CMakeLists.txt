@@ -48,13 +48,12 @@ add_library(tesseract::urdf ALIAS urdf)
 set_target_properties(urdf PROPERTIES OUTPUT_NAME tesseract_urdf)
 target_link_libraries(
   urdf
-  PUBLIC Boost::boost
-         Eigen3::Eigen
+  PUBLIC Eigen3::Eigen
          tesseract::common
          tesseract::geometry
          tesseract::scene_graph
          tesseract::collision_bullet
-         console_bridge::console_bridge)
+  PRIVATE Boost::boost console_bridge::console_bridge)
 target_compile_options(urdf PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(urdf PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(urdf PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
