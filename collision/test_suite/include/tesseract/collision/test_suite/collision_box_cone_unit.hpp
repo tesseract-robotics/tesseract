@@ -120,9 +120,10 @@ inline void runTest(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "box_link", "cone_link" });
+  std::vector<tesseract::common::LinkId> active_links{ "box_link", "cone_link" };
+  checker.setActiveCollisionObjects(active_links);
   EXPECT_EQ(checker.getActiveCollisionObjectIds(),
-            (std::unordered_set<tesseract::common::LinkId>{ "box_link", "cone_link" }));
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

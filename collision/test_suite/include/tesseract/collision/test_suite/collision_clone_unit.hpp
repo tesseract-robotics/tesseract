@@ -129,9 +129,10 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  std::vector<tesseract::common::LinkId> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
   EXPECT_EQ(checker.getActiveCollisionObjectIds(),
-            (std::unordered_set<tesseract::common::LinkId>{ "sphere_link", "sphere1_link" }));
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

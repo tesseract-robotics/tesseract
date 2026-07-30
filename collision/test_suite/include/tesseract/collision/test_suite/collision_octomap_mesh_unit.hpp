@@ -83,9 +83,10 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "octomap_link", "plane_link" });
+  std::vector<tesseract::common::LinkId> active_links{ "octomap_link", "plane_link" };
+  checker.setActiveCollisionObjects(active_links);
   EXPECT_EQ(checker.getActiveCollisionObjectIds(),
-            (std::unordered_set<tesseract::common::LinkId>{ "octomap_link", "plane_link" }));
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 

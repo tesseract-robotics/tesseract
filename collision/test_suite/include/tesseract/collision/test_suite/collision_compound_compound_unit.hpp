@@ -3,8 +3,8 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <octomap/octomap.h>
 #include <gtest/gtest.h>
+#include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/discrete_contact_manager.h>
@@ -80,9 +80,10 @@ inline void runTestCompound(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "octomap1_link", "octomap2_link" });
+  std::vector<tesseract::common::LinkId> active_links{ "octomap1_link", "octomap2_link" };
+  checker.setActiveCollisionObjects(active_links);
   EXPECT_EQ(checker.getActiveCollisionObjectIds(),
-            (std::unordered_set<tesseract::common::LinkId>{ "octomap1_link", "octomap2_link" }));
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -114,8 +115,10 @@ inline void runTestCompound(ContinuousContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "octomap1_link" });
-  EXPECT_EQ(checker.getActiveCollisionObjectIds(), (std::unordered_set<tesseract::common::LinkId>{ "octomap1_link" }));
+  std::vector<tesseract::common::LinkId> active_links{ "octomap1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
