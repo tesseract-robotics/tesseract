@@ -229,3 +229,25 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 add_gtest_discover_tests(tesseract_kinematics_factory_unit)
 add_dependencies(tesseract_kinematics_factory_unit tesseract::kinematics)
+
+add_executable(tesseract_kinematics_factory_utils_unit factory_utils_unit.cpp)
+target_link_libraries(
+  tesseract_kinematics_factory_utils_unit
+  PRIVATE GTest::GTest
+          GTest::Main
+          tesseract::kinematics_factories
+          tesseract::scene_graph
+          tesseract::common)
+target_compile_options(tesseract_kinematics_factory_utils_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                       ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(tesseract_kinematics_factory_utils_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(tesseract_kinematics_factory_utils_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(tesseract_kinematics_factory_utils_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(
+  tesseract_kinematics_factory_utils_unit
+  PRIVATE
+  ALL
+  EXCLUDE ${COVERAGE_EXCLUDE}
+  ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
+add_gtest_discover_tests(tesseract_kinematics_factory_utils_unit)
+add_dependencies(tesseract_kinematics_factory_utils_unit tesseract::kinematics_factories)
