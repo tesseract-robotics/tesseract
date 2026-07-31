@@ -7,6 +7,7 @@ add_library(
   src/joint_group.cpp
   src/kinematic_group.cpp
   src/kinematics_plugin_factory.cpp
+  src/factory_utils.cpp
   src/utils.cpp
   src/validate.cpp
   src/yaml_extensions.cpp)
