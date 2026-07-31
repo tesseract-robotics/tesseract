@@ -134,6 +134,7 @@ public:
   std::shared_ptr<CollisionObjectWrapper> clone() const
   {
     auto clone_cow = std::make_shared<CollisionObjectWrapper>();
+    clone_cow->world_pose_ = world_pose_;
     clone_cow->name_ = name_;
     clone_cow->type_id_ = type_id_;
     clone_cow->shapes_ = shapes_;
