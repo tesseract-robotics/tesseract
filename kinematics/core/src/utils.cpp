@@ -27,9 +27,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Dense>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <cmath>
+
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/joint_group.h>
 #include <tesseract/kinematics/forward_kinematics.h>
+#include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
 
 namespace tesseract::kinematics
 {
@@ -270,4 +274,126 @@ Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacob
 
   return manip;
 }
+
+double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                   const tesseract::common::LinkId& base_link_id,
+                                   const tesseract::common::LinkId& tip_link_id)
+{
+  if (scene_graph.getLink(base_link_id) == nullptr)
+    throw std::runtime_error("computeChainReachUpperBound: base link '" + base_link_id.name() +
+                             "' not found in scene graph");
+  if (scene_graph.getLink(tip_link_id) == nullptr)
+    throw std::runtime_error("computeChainReachUpperBound: tip link '" + tip_link_id.name() +
+                             "' not found in scene graph");
+
+  if (base_link_id == tip_link_id)
+    return 0.0;
+
+  const auto path = scene_graph.getShortestPath(base_link_id, tip_link_id);
+  if (path.joints.empty())
+    throw std::runtime_error("computeChainReachUpperBound: no path from '" + base_link_id.name() + "' to '" +
+                             tip_link_id.name() + "'");
+
+  double bound = 0.0;
+  for (const auto& joint_id : path.joints)
+  {
+    const auto joint = scene_graph.getJoint(joint_id);
+    if (joint == nullptr)
+      throw std::runtime_error("computeChainReachUpperBound: joint '" + joint_id.name() + "' missing from scene graph");
+
+    bound += joint->parent_to_joint_origin_transform.translation().norm();
+
+    switch (joint->type)
+    {
+      case tesseract::scene_graph::JointType::REVOLUTE:
+      case tesseract::scene_graph::JointType::CONTINUOUS:
+      case tesseract::scene_graph::JointType::FIXED:
+        break;  // No additional linear contribution.
+      case tesseract::scene_graph::JointType::PRISMATIC:
+      {
+        // Mimic prismatics follow another joint: own `limits` are typically unset, so the
+        // max-extension formula would silently under-count. Refuse rather than produce a bound
+        // that can be violated.
+        if (joint->mimic != nullptr)
+          throw std::runtime_error("computeChainReachUpperBound: prismatic joint '" + joint_id.name() +
+                                   "' is a mimic joint (unsupported)");
+        if (joint->limits == nullptr)
+          throw std::runtime_error("computeChainReachUpperBound: prismatic joint '" + joint_id.name() +
+                                   "' has no limits");
+        if (!std::isfinite(joint->limits->lower) || !std::isfinite(joint->limits->upper))
+          throw std::runtime_error("computeChainReachUpperBound: prismatic joint '" + joint_id.name() +
+                                   "' has non-finite limits");
+        bound += std::max(std::abs(joint->limits->lower), std::abs(joint->limits->upper));
+        break;
+      }
+      case tesseract::scene_graph::JointType::FLOATING:
+      case tesseract::scene_graph::JointType::PLANAR:
+      case tesseract::scene_graph::JointType::UNKNOWN:
+      default:
+        throw std::runtime_error("computeChainReachUpperBound: joint '" + joint_id.name() +
+                                 "' has unsupported type for reach derivation");
+    }
+  }
+  return bound;
+}
+
+Eigen::MatrixX2d gatherJointLimits(const tesseract::scene_graph::SceneGraph& scene_graph,
+                                   const std::vector<tesseract::common::JointId>& joint_ids)
+{
+  const auto n = static_cast<Eigen::Index>(joint_ids.size());
+  Eigen::MatrixX2d limits(n, 2);
+  for (Eigen::Index i = 0; i < n; ++i)
+  {
+    const auto& id = joint_ids[static_cast<std::size_t>(i)];
+    auto joint = scene_graph.getJoint(id);
+    if (joint == nullptr)
+      throw std::runtime_error("gatherJointLimits: joint '" + id.name() + "' not found in scene graph");
+    if (joint->limits == nullptr)
+      throw std::runtime_error("gatherJointLimits: joint '" + id.name() + "' has no limits");
+    limits(i, 0) = joint->limits->lower;
+    limits(i, 1) = joint->limits->upper;
+  }
+  return limits;
+}
+
+std::vector<Eigen::VectorXd> buildSampleGrid(const Eigen::MatrixX2d& range, const Eigen::VectorXd& resolution)
+{
+  // Upper bound on samples for a single joint. Not a modelling limit - it turns a misconfigured
+  // range/resolution pair into a diagnosable exception instead of a multi-gigabyte allocation.
+  // Any legitimate positioner discretisation is orders of magnitude below this.
+  constexpr Eigen::Index max_samples_per_joint = 10000000;
+
+  const Eigen::Index n = range.rows();
+  if (resolution.size() != n)
+    throw std::runtime_error("buildSampleGrid: resolution size (" + std::to_string(resolution.size()) +
+                             ") does not match range row count (" + std::to_string(n) + ")");
+
+  std::vector<Eigen::VectorXd> grid;
+  grid.reserve(static_cast<std::size_t>(n));
+  for (Eigen::Index d = 0; d < n; ++d)
+  {
+    const std::string joint = "joint " + std::to_string(d);
+
+    if (!std::isfinite(range(d, 0)) || !std::isfinite(range(d, 1)))
+      throw std::runtime_error("buildSampleGrid: " + joint + " has a non-finite sample range");
+    if (range(d, 0) > range(d, 1))
+      throw std::runtime_error("buildSampleGrid: " + joint + " sample range minimum is greater than maximum");
+    if (!std::isfinite(resolution(d)) || resolution(d) <= 0)
+      throw std::runtime_error("buildSampleGrid: " + joint + " resolution is not a finite positive number");
+
+    // Compute the interval count in double before narrowing: narrowing a value the target type
+    // cannot represent is undefined, and Eigen::LinSpaced would then read the result as a size.
+    const double steps = std::ceil((range(d, 1) - range(d, 0)) / resolution(d));
+    if (steps + 1 > static_cast<double>(max_samples_per_joint))
+      throw std::runtime_error("buildSampleGrid: " + joint + " would require more than " +
+                               std::to_string(max_samples_per_joint) + " samples to cover range [" +
+                               std::to_string(range(d, 0)) + ", " + std::to_string(range(d, 1)) + "] at resolution " +
+                               std::to_string(resolution(d)));
+
+    const auto cnt = static_cast<Eigen::Index>(steps) + 1;
+    grid.emplace_back(Eigen::VectorXd::LinSpaced(cnt, range(d, 0), range(d, 1)));
+  }
+  return grid;
+}
+
 }  // namespace tesseract::kinematics
