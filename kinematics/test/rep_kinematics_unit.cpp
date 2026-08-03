@@ -218,9 +218,9 @@ TEST(TesseractKinematicsUnit, RobotWithExternalPositionerClonePreservesStateUnit
 
   auto robot_fwd_kin = getRobotFwdKinematics(*scene_graph);
   auto opw_kin = std::make_unique<OPWInvKin>(getOPWKinematicsParamABB(),
-                                             robot_fwd_kin->getBaseLinkName(),
-                                             robot_fwd_kin->getTipLinkNames()[0],
-                                             robot_fwd_kin->getJointNames());
+                                             robot_fwd_kin->getBaseLinkId(),
+                                             robot_fwd_kin->getTipLinkIds()[0],
+                                             robot_fwd_kin->getJointIds());
   auto positioner_kin = getPositionerFwdKinematics(*scene_graph);
   Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(2, 1, 0.1);
 

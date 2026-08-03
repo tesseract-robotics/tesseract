@@ -227,9 +227,9 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerClonePreservesStateUnit)  // NOLI
 
   auto robot_fwd_kin = getRobotFwdKinematics(*scene_graph);
   auto opw_kin = std::make_unique<OPWInvKin>(getOPWKinematicsParamABB(),
-                                             robot_fwd_kin->getBaseLinkName(),
-                                             robot_fwd_kin->getTipLinkNames()[0],
-                                             robot_fwd_kin->getJointNames());
+                                             robot_fwd_kin->getBaseLinkId(),
+                                             robot_fwd_kin->getTipLinkIds()[0],
+                                             robot_fwd_kin->getJointIds());
   auto positioner_kin = getPositionerFwdKinematics(*scene_graph);
   Eigen::VectorXd positioner_resolution = Eigen::VectorXd::Constant(1, 1, 0.1);
 
@@ -255,7 +255,7 @@ TEST(TesseractKinematicsUnit, RobotOnPositionerClonePreservesStateUnit)  // NOLI
   q(1) = 0.3;
   q(2) = -0.4;
   q(4) = 0.5;
-  tesseract::common::TransformMap tip_link_poses{ { "tool0", full_fwd_kin->calcFwdKin(q).at("tool0") } };
+  tesseract::common::LinkIdTransformMap tip_link_poses{ { "tool0", full_fwd_kin->calcFwdKin(q).at("tool0") } };
   Eigen::VectorXd seed = Eigen::VectorXd::Zero(full_fwd_kin->numJoints());
 
   IKSolutions original_solutions;
