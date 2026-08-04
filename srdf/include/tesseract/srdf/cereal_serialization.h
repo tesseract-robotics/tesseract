@@ -31,13 +31,13 @@ void serialize(Archive& ar, KinematicsInformation& obj)
 template <class Archive>
 void serialize(Archive& ar, SRDFModel& obj)
 {
-  ar(cereal::make_nvp("group_names", obj.name));
-  ar(cereal::make_nvp("group_names", obj.version));
-  ar(cereal::make_nvp("group_names", obj.kinematics_information));
-  ar(cereal::make_nvp("group_names", obj.contact_managers_plugin_info));
-  ar(cereal::make_nvp("group_names", obj.acm));
-  ar(cereal::make_nvp("group_names", obj.collision_margin_data));
-  ar(cereal::make_nvp("group_names", obj.calibration_info));
+  ar(cereal::make_nvp("name", obj.name));
+  ar(cereal::make_nvp("version", obj.version));
+  ar(cereal::make_nvp("kinematics_information", obj.kinematics_information));
+  ar(cereal::make_nvp("contact_managers_plugin_info", obj.contact_managers_plugin_info));
+  ar(cereal::make_nvp("acm", obj.acm));
+  ar(cereal::make_nvp("collision_margin_data", obj.collision_margin_data));
+  ar(cereal::make_nvp("calibration_info", obj.calibration_info));
 }
 }  // namespace tesseract::srdf
 
