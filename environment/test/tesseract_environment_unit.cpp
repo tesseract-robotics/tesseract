@@ -531,10 +531,10 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
     const std::vector<tesseract::common::LinkId> e_active_list = env->getActiveLinkIds();
     const std::unordered_set<tesseract::common::LinkId> expected(e_active_list.begin(), e_active_list.end());
-    EXPECT_EQ(discrete_manager->getActiveCollisionObjectIds(), expected);
+    EXPECT_EQ(discrete_manager->getActiveCollisionObjects(), expected);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    EXPECT_EQ(cast_manager->getActiveCollisionObjectIds(), expected);
+    EXPECT_EQ(cast_manager->getActiveCollisionObjects(), expected);
   }
 
   {  // Get the environment
@@ -544,10 +544,10 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
     const std::vector<tesseract::common::LinkId> e_active_list = env->getActiveLinkIds();
     const std::unordered_set<tesseract::common::LinkId> expected(e_active_list.begin(), e_active_list.end());
-    EXPECT_EQ(discrete_manager->getActiveCollisionObjectIds(), expected);
+    EXPECT_EQ(discrete_manager->getActiveCollisionObjects(), expected);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    EXPECT_EQ(cast_manager->getActiveCollisionObjectIds(), expected);
+    EXPECT_EQ(cast_manager->getActiveCollisionObjects(), expected);
   }
 
   {  // Get the environment
@@ -557,10 +557,10 @@ TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
     tesseract::collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
     const std::vector<tesseract::common::LinkId> e_active_list = env->getActiveLinkIds();
     const std::unordered_set<tesseract::common::LinkId> expected(e_active_list.begin(), e_active_list.end());
-    EXPECT_EQ(discrete_manager->getActiveCollisionObjectIds(), expected);
+    EXPECT_EQ(discrete_manager->getActiveCollisionObjects(), expected);
 
     tesseract::collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
-    EXPECT_EQ(cast_manager->getActiveCollisionObjectIds(), expected);
+    EXPECT_EQ(cast_manager->getActiveCollisionObjects(), expected);
   }
 }
 

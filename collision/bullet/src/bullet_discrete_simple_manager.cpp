@@ -229,7 +229,7 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::unordered
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId>& BulletDiscreteSimpleManager::getActiveCollisionObjectIds() const
+const std::unordered_set<tesseract::common::LinkId>& BulletDiscreteSimpleManager::getActiveCollisionObjects() const
 {
   return active_;
 }

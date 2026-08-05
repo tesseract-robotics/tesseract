@@ -32,8 +32,6 @@ JointState::JointState(std::vector<JointId> joint_ids, const Eigen::Ref<const Ei
 {
 }
 
-const std::vector<JointId>& JointState::getJointIds() const { return joint_ids; }
-
 bool JointState::operator==(const JointState& other) const
 {
   bool ret_val = true;

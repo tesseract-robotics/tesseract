@@ -164,12 +164,11 @@ bool BulletCastBVHManager::removeCollisionObject(const tesseract::common::LinkId
     removeCollisionObjectFromBroadphase(cow1, broadphase_, dispatcher_);
     link2cow_.erase(it);
 
+    // Every object in link2cow_ has a mate in link2castcow_; both are written by addCollisionObject.
     auto cast_it = link2castcow_.find(id);
-    if (cast_it != link2castcow_.end())
-    {
-      removeCollisionObjectFromBroadphase(cast_it->second, broadphase_, dispatcher_);
-      link2castcow_.erase(cast_it);
-    }
+    assert(cast_it != link2castcow_.end());
+    removeCollisionObjectFromBroadphase(cast_it->second, broadphase_, dispatcher_);
+    link2castcow_.erase(cast_it);
 
     active_.erase(id);
     return true;
@@ -422,7 +421,7 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::unordered_set<te
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId>& BulletCastBVHManager::getActiveCollisionObjectIds() const
+const std::unordered_set<tesseract::common::LinkId>& BulletCastBVHManager::getActiveCollisionObjects() const
 {
   return active_;
 }

@@ -138,9 +138,11 @@ whole override surface at once — for scale, migrating the Coal collision backe
 1,400 added and 900 removed lines.
 
 The `std::string` conveniences on both managers are gone.
-`setActiveCollisionObjects(const std::vector<std::string>&)` and
-`getActiveCollisionObjectNames()` are deleted — call `setActiveCollisionObjects`
-with a `std::vector<LinkId>` and `getActiveCollisionObjectIds()` instead. The
+`setActiveCollisionObjects(const std::vector<std::string>&)` is deleted — call
+`setActiveCollisionObjects` with a `std::vector<LinkId>` instead.
+`getActiveCollisionObjects()` keeps its name but returns
+`const std::unordered_set<LinkId>&` rather than `const std::vector<std::string>&`;
+see Iteration order is unspecified below. The
 parallel-array `setCollisionObjectsTransform(const std::vector<std::string>&, ...)`
 overloads are replaced by `std::vector<LinkId>` equivalents, which throw
 `std::runtime_error` on an id/pose size mismatch rather than reading out of bounds.
@@ -196,6 +198,11 @@ libraries (libstdc++ / libc++ / MSVC). Consequences:
   now **unspecified**: `SceneGraph::getJointChildrenIds` (the vector overload),
   `KinematicGroup::getAllValidWorkingFrames()`, and `Environment::getStaticLinkIds(joint_ids)`.
   Sort by `.name()` yourself where display order matters.
+- `ContactManager::getActiveCollisionObjects()` keeps its name but returns
+  `const std::unordered_set<LinkId>&` instead of `const std::vector<std::string>&`. The active set
+  is a membership test — `isLinkActive()` is now an O(1) `count` rather than a linear `std::find` —
+  and it cannot hold duplicates by construction. Indexing (`operator[]`, `at()`, `.data()`) is a
+  compile error on the new type, so the only silent change is **iteration order**.
 - The same applies to any id-keyed ordered container you write: do not rely on its iteration
   order across platforms, and never persist an order derived from it (hash values are
   runtime-only — see `IDENTITY_DESIGN.md`, Serialization).

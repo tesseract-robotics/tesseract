@@ -225,7 +225,7 @@ public:
    * @brief Get which collision objects can move
    * @return A set of active collision object LinkIds
    */
-  virtual const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjectIds() const = 0;
+  virtual const std::unordered_set<tesseract::common::LinkId>& getActiveCollisionObjects() const = 0;
 
   /**
    * @brief Set the contact distance threshold

@@ -331,7 +331,7 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::unordered_set
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId>& BulletCastSimpleManager::getActiveCollisionObjectIds() const
+const std::unordered_set<tesseract::common::LinkId>& BulletCastSimpleManager::getActiveCollisionObjects() const
 {
   return active_;
 }

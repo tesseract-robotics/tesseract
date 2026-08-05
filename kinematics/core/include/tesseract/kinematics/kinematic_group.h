@@ -50,7 +50,7 @@ struct KinGroupIKInput
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   // LCOV_EXCL_STOP
 
-  KinGroupIKInput(Eigen::Isometry3d p, tesseract::common::LinkId wf, tesseract::common::LinkId tl);
+  KinGroupIKInput(const Eigen::Isometry3d& p, tesseract::common::LinkId wf, tesseract::common::LinkId tl);
 
   KinGroupIKInput() = default;
 

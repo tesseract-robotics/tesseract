@@ -75,7 +75,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   // Check if they are in collision
   checker.setActiveCollisionObjects(link_ids);
-  EXPECT_EQ(checker.getActiveCollisionObjectIds(),
+  EXPECT_EQ(checker.getActiveCollisionObjects(),
             std::unordered_set<tesseract::common::LinkId>(link_ids.begin(), link_ids.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);

@@ -738,16 +738,12 @@ Environment::Implementation::getGroupJointIds(const std::string& group_name) con
     tesseract::scene_graph::ShortestPath path =
         scene_graph->getShortestPath(chain_it->second.begin()->first, chain_it->second.begin()->second);
 
-    group_joint_ids_cache[group_name] = std::move(path.active_joints);
-    return group_joint_ids_cache[group_name];
+    return group_joint_ids_cache.emplace(group_name, std::move(path.active_joints)).first->second;
   }
 
   auto joint_it = kinematics_information.joint_groups.find(group_name);
   if (joint_it != kinematics_information.joint_groups.end())
-  {
-    group_joint_ids_cache[group_name] = joint_it->second;
-    return joint_it->second;
-  }
+    return group_joint_ids_cache.emplace(group_name, joint_it->second).first->second;
 
   auto link_it = kinematics_information.link_groups.find(group_name);
   if (link_it != kinematics_information.link_groups.end())

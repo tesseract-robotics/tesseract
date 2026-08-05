@@ -251,7 +251,7 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::unordered_se
   }
 }
 
-const std::unordered_set<tesseract::common::LinkId>& BulletDiscreteBVHManager::getActiveCollisionObjectIds() const
+const std::unordered_set<tesseract::common::LinkId>& BulletDiscreteBVHManager::getActiveCollisionObjects() const
 {
   return active_;
 }

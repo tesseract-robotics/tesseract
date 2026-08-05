@@ -46,9 +46,6 @@ public:
   /** @brief The joint IDs corresponding to the position vector. */
   std::vector<JointId> joint_ids;
 
-  /** @brief Get the joint IDs */
-  const std::vector<JointId>& getJointIds() const;
-
   /** @brief The joint position at the waypoint */
   Eigen::VectorXd position;
 

@@ -100,8 +100,9 @@ namespace tesseract::kinematics
 {
 using tesseract::common::LinkId;
 
-KinGroupIKInput::KinGroupIKInput(Eigen::Isometry3d p, tesseract::common::LinkId wf, tesseract::common::LinkId tl)
-  : pose(std::move(p)), working_frame(std::move(wf)), tip_link_id(std::move(tl))
+// NOLINTNEXTLINE(modernize-pass-by-value) Eigen objects by ref
+KinGroupIKInput::KinGroupIKInput(const Eigen::Isometry3d& p, tesseract::common::LinkId wf, tesseract::common::LinkId tl)
+  : pose(p), working_frame(std::move(wf)), tip_link_id(std::move(tl))
 {
 }
 

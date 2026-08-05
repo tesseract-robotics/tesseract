@@ -134,14 +134,7 @@ public:
   virtual bool setEnvironmentState(const std::string& monitor_namespace,
                                    const std::vector<tesseract::common::JointId>& joint_ids,
                                    const std::vector<double>& joint_values,
-                                   const tesseract::common::JointIdTransformMap& floating_joints = {}) const
-  {
-    return setEnvironmentState(
-        monitor_namespace,
-        joint_ids,
-        Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size())),
-        floating_joints);
-  }
+                                   const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
 
   /**
    * @brief Set environment state for all monitor namespaces
@@ -164,13 +157,7 @@ public:
   virtual std::vector<std::string>
   setEnvironmentState(const std::vector<tesseract::common::JointId>& joint_ids,
                       const std::vector<double>& joint_values,
-                      const tesseract::common::JointIdTransformMap& floating_joints = {}) const
-  {
-    return setEnvironmentState(
-        joint_ids,
-        Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size())),
-        floating_joints);
-  }
+                      const tesseract::common::JointIdTransformMap& floating_joints = {}) const;
 
   /**
    * @brief Pull information from the environment in the provided namespace and create a Environment Object
