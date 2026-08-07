@@ -5362,10 +5362,12 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
         checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
-    EXPECT_EQ(contacts.at(0).size(), 1);
+    // FIRST keeps one contact per substep, so a step accumulates a pair for every pair the
+    // substeps happen to reach first; steps 0 and 3 straddle the link_6/link_7 handover.
+    EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 1);
     EXPECT_EQ(contacts.at(2).size(), 1);
-    EXPECT_EQ(contacts.at(3).size(), 1);
+    EXPECT_EQ(contacts.at(3).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(135));
     EXPECT_EQ(traj_results.numContacts(), static_cast<int>(135));
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
@@ -5388,7 +5390,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     contacts.clear();
     EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_names, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
-    EXPECT_EQ(contacts.at(0).size(), 1);
+    EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(contacts.at(1).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(67));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
