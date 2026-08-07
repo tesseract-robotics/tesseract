@@ -704,6 +704,7 @@ std::shared_ptr<CollisionObjectWrapper> CollisionObjectWrapper::clone()
   clone_cow->m_data = m_data;
   clone_cow->setCollisionShape(getCollisionShape());
   clone_cow->setWorldTransform(getWorldTransform());
+  clone_cow->setContactProcessingThreshold(getContactProcessingThreshold());
   clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
   clone_cow->m_collisionFilterMask = m_collisionFilterMask;
   clone_cow->m_enabled = m_enabled;
