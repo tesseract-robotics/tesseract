@@ -47,6 +47,9 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 
 set(SUPPORTED_COMPONENTS "")
 
+# Several subdirectories gate a test_suite component on this, so it must be declared ahead of them all.
+option(TESSERACT_BUILD_TEST_SUITE "Build Test Suite components" ON)
+
 if(TESSERACT_ENABLE_TESTING)
   # Enable testing for colcon test discovery
   enable_testing()

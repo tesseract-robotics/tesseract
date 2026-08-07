@@ -29,7 +29,7 @@ elseif(TARGET Boost::stacktrace_noop)
   set(TESSERACT_BACKTRACE_LIB "Boost::stacktrace_noop")
 endif()
 
-set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "common" PARENT_SCOPE)
+list(APPEND SUPPORTED_COMPONENTS common)
 
 add_library(
   common
@@ -119,6 +119,12 @@ install(
   DESTINATION lib/cmake/${PROJECT_NAME}
   COMPONENT common)
 
+# Test Suite
+if(TESSERACT_BUILD_TEST_SUITE)
+  list(APPEND SUPPORTED_COMPONENTS common_test_suite)
+  add_subdirectory(test_suite)
+endif()
+
 if(TESSERACT_ENABLE_TESTING OR TESSERACT_COMMON_ENABLE_TESTING)
   enable_testing()
   add_subdirectory(test)
@@ -155,3 +161,6 @@ if(TESSERACT_PACKAGE)
       DISTRIBUTIONS ${TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS})
   endif()
 endif()
+
+# Propagate accumulated components to parent scope
+set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} PARENT_SCOPE)

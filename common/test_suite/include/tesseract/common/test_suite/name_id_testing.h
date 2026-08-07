@@ -21,13 +21,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMON_TEST_NAME_ID_TESTING_H
-#define TESSERACT_COMMON_TEST_NAME_ID_TESTING_H
+#ifndef TESSERACT_COMMON_TEST_SUITE_NAME_ID_TESTING_H
+#define TESSERACT_COMMON_TEST_SUITE_NAME_ID_TESTING_H
 
 #include <tesseract/common/types.h>
 
 namespace tesseract::common
 {
+/** @brief Test-only access to NameId internals; NameId declares this a friend. */
 struct NameIdTestAccess
 {
   /** @brief Construct an id with an explicit value/name combination, e.g. a manufactured hash collision. */
@@ -42,4 +43,4 @@ struct NameIdTestAccess
 };
 }  // namespace tesseract::common
 
-#endif  // TESSERACT_COMMON_TEST_NAME_ID_TESTING_H
+#endif  // TESSERACT_COMMON_TEST_SUITE_NAME_ID_TESTING_H

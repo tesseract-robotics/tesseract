@@ -18,7 +18,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/types.h>
 #include <tesseract/common/cereal_serialization.h>
-#include "name_id_testing.h"
+#include <tesseract/common/test_suite/name_id_testing.h>
 
 using namespace tesseract::common;
 

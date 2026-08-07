@@ -2,7 +2,12 @@ find_gtest()
 find_package(boost_plugin_loader REQUIRED)
 
 add_executable(tesseract_common_serialization_unit tesseract_common_serialization_unit.cpp)
-target_link_libraries(tesseract_common_serialization_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
+target_link_libraries(
+  tesseract_common_serialization_unit
+  PRIVATE GTest::GTest
+          GTest::Main
+          tesseract::common
+          tesseract::common_test_suite)
 target_compile_options(tesseract_common_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(tesseract_common_serialization_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
@@ -18,7 +23,12 @@ add_gtest_discover_tests(tesseract_common_serialization_unit)
 add_dependencies(tesseract_common_serialization_unit tesseract::common)
 
 add_executable(tesseract_common_unit tesseract_common_unit.cpp)
-target_link_libraries(tesseract_common_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
+target_link_libraries(
+  tesseract_common_unit
+  PRIVATE GTest::GTest
+          GTest::Main
+          tesseract::common
+          tesseract::common_test_suite)
 target_compile_options(tesseract_common_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                      ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(tesseract_common_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
@@ -142,7 +152,12 @@ add_gtest_discover_tests(tesseract_common_utils_unit)
 add_dependencies(tesseract_common_utils_unit tesseract::common)
 
 add_executable(tesseract_common_name_id_unit name_id_unit.cpp)
-target_link_libraries(tesseract_common_name_id_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
+target_link_libraries(
+  tesseract_common_name_id_unit
+  PRIVATE GTest::GTest
+          GTest::Main
+          tesseract::common
+          tesseract::common_test_suite)
 target_compile_options(tesseract_common_name_id_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(tesseract_common_name_id_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})

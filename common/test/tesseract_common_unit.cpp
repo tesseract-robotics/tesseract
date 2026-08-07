@@ -26,7 +26,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/serialization.h>
 #include <tesseract/common/cereal_serialization.h>
 #include <tesseract/common/unit_test_utils.h>
-#include "name_id_testing.h"
+#include <tesseract/common/test_suite/name_id_testing.h>
 
 class TestProfile : public tesseract::common::Profile
 {

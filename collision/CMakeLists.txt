@@ -23,7 +23,6 @@ list(APPEND SUPPORTED_COMPONENTS collision_bullet)
 add_subdirectory(bullet)
 
 # Test Suite
-option(TESSERACT_BUILD_TEST_SUITE "Build Test Suite components" ON)
 if(TESSERACT_BUILD_TEST_SUITE)
   message("Building Test Suite components")
   list(APPEND SUPPORTED_COMPONENTS collision_test_suite)
