@@ -10,6 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/collision_margin_data.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
+#include <tesseract/common/test_suite/name_id_testing.h>
 #include <tesseract/srdf/collision_margins.h>
 #include <tesseract/srdf/configs.h>
 #include <tesseract/srdf/disabled_collisions.h>
@@ -2504,33 +2505,65 @@ TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
   }
 }
 
-TEST(TesseractSRDFUnit, GetAlphabeticalACMEntriesUnit)  // NOLINT
+TEST(TesseractSRDFUnit, GetAlphabeticalACMKeysUnit)  // NOLINT
 {
-  // AllowedCollisionMatrix's pair keys are canonically ordered by LinkId hash value, which is
-  // *not* alphabetical. getAlphabeticalACMEntries must resolve each entry's names from its pair
-  // key, normalize so name1<=name2 alphabetically, then sort entries by (name1, name2).
+  // A LinkIdPair is canonically ordered by hash value, which is *not* alphabetical, so the keys
+  // must sort by each pair's alphabetically smaller name and then by its larger, independently of
+  // which of first()/second() holds which.
   tesseract::common::AllowedCollisionEntries entries;
   entries[{ "gamma", "beta" }] = "r_bg";
   entries[{ "delta", "alpha" }] = "r_ad";
   entries[{ "beta", "alpha" }] = "r_ba";
 
-  auto sorted = tesseract::srdf::getAlphabeticalACMEntries(entries);
+  auto keys = tesseract::srdf::getAlphabeticalACMKeys(entries);
 
-  ASSERT_EQ(sorted.size(), 3U);
-  // Each entry's names must be alphabetical; entries sorted by (name1, then name2) ascending.
-  EXPECT_EQ(sorted[0].name1, "alpha");
-  EXPECT_EQ(sorted[0].name2, "beta");
-  EXPECT_EQ(sorted[0].reason, "r_ba");
+  ASSERT_EQ(keys.size(), 3U);
+  EXPECT_EQ(keys[0].get().orderedNameView().first, "alpha");
+  EXPECT_EQ(keys[0].get().orderedNameView().second, "beta");
+  EXPECT_EQ(keys[1].get().orderedNameView().first, "alpha");
+  EXPECT_EQ(keys[1].get().orderedNameView().second, "delta");
+  EXPECT_EQ(keys[2].get().orderedNameView().first, "beta");
+  EXPECT_EQ(keys[2].get().orderedNameView().second, "gamma");
 
-  EXPECT_EQ(sorted[1].name1, "alpha");
-  EXPECT_EQ(sorted[1].name2, "delta");
-  EXPECT_EQ(sorted[1].reason, "r_ad");
+  // The keys reference the argument's entries, so each still resolves its reason.
+  EXPECT_EQ(entries.at(keys[0].get()), "r_ba");
+  EXPECT_EQ(entries.at(keys[1].get()), "r_ad");
+  EXPECT_EQ(entries.at(keys[2].get()), "r_bg");
 
-  EXPECT_EQ(sorted[2].name1, "beta");
-  EXPECT_EQ(sorted[2].name2, "gamma");
-  EXPECT_EQ(sorted[2].reason, "r_bg");
+  EXPECT_TRUE(tesseract::srdf::getAlphabeticalACMKeys({}).empty());
+}
 
-  EXPECT_TRUE(tesseract::srdf::getAlphabeticalACMEntries({}).empty());
+TEST(TesseractSRDFUnit, SavedXmlEmitsLinkPairsAlphabetically)  // NOLINT
+{
+  using tesseract::common::CollisionMarginData;
+  using tesseract::common::LinkId;
+  using tesseract::common::NameIdTestAccess;
+  using tesseract::srdf::SRDFModel;
+
+  // The ids' canonical order must be the reverse of alphabetical, or the assertions below hold even
+  // when a writer emits first()/second() as stored and guard nothing.
+  const auto [smaller, larger] = NameIdTestAccess::createReverseCanonical<LinkId>("link_a", "link_b");
+
+  std::string expected_acm(R"(<disable_collisions link1=")");
+  expected_acm.append(smaller.name()).append(R"(" link2=")").append(larger.name()).append(R"(")");
+
+  std::string expected_margin(R"(<pair_margin link1=")");
+  expected_margin.append(smaller.name()).append(R"(" link2=")").append(larger.name()).append(R"(")");
+
+  // Both symmetric pair writers must emit link1/link2 alphabetically, not in the pair's canonical
+  // order. A save/load round trip cannot show this — it reads back whatever it wrote.
+  SRDFModel srdf;
+  srdf.name = "test_robot";
+  srdf.acm.addAllowedCollision(smaller, larger, "Never");
+  srdf.collision_margin_data = std::make_shared<CollisionMarginData>(0.05);
+  srdf.collision_margin_data->setCollisionMargin(smaller, larger, 0.01);
+
+  const std::string save_path = tesseract::common::getTempPath() + "unit_test_pair_order.srdf";
+  ASSERT_TRUE(srdf.saveToFile(save_path));
+
+  const std::string xml = tesseract::common::fileToString(save_path);
+  EXPECT_NE(xml.find(expected_acm), std::string::npos) << xml;
+  EXPECT_NE(xml.find(expected_margin), std::string::npos) << xml;
 }
 
 int main(int argc, char** argv)

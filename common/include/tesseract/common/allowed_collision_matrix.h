@@ -20,9 +20,7 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
 class AllowedCollisionMatrix;
 
 template <class Archive>
-void save(Archive& ar, const AllowedCollisionMatrix& obj);
-template <class Archive>
-void load(Archive& ar, AllowedCollisionMatrix& obj);
+void serialize(Archive& ar, AllowedCollisionMatrix& obj);
 
 class AllowedCollisionMatrix
 {
@@ -120,9 +118,7 @@ private:
   AllowedCollisionEntries lookup_table_;
 
   template <class Archive>
-  friend void ::tesseract::common::save(Archive& ar, const AllowedCollisionMatrix& obj);
-  template <class Archive>
-  friend void ::tesseract::common::load(Archive& ar, AllowedCollisionMatrix& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, AllowedCollisionMatrix& obj);
 };
 
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm);

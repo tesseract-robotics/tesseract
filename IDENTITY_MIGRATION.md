@@ -189,10 +189,9 @@ boundary with `toIds<LinkId>(names)`.
 
 ## Iteration order is unspecified (and changed vs. the string era)
 
-`NameId::operator<` orders by the cached hash, not by name, and `std::hash<std::string>` is
-implementation-defined — so ordered containers of ids (`std::map<LinkId, …>`, `std::set<LinkId>`,
-sorted vectors) iterate in an order that is not alphabetical and differs across standard
-libraries (libstdc++ / libc++ / MSVC). Consequences:
+`NameId::operator<` orders by the cached hash, not by name — so ordered containers of ids
+(`std::map<LinkId, …>`, `std::set<LinkId>`, sorted vectors) iterate in an order that is not
+alphabetical and is not stable across builds. Consequences:
 
 - Results that were alphabetically ordered in the string era no longer are, and their order is
   now **unspecified**: `SceneGraph::getJointChildrenIds` (the vector overload),

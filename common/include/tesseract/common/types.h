@@ -27,10 +27,11 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <cstdint>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -62,17 +63,20 @@ namespace tesseract::common
 // ---------------------------------------------------------------------------
 
 /**
- * @brief Underlying numeric type for NameId hash values, as produced by std::hash<std::string>.
+ * @brief Underlying numeric type for NameId hash values, as produced by boost::hash<std::string>.
+ *
+ * std::size_t, the width every standard and boost hashed container reduces a hash to. Naming it
+ * separately marks the values that are raw name hashes — they are runtime-only and must never be
+ * persisted (see the cereal serializers, which archive names).
  */
-using NameIdValue = std::uint64_t;
+using NameIdValue = std::size_t;
 
 /**
- * @brief The NameIdValue reserved for invalid (default-constructed, empty-name) NameIds.
- *
- * No valid id ever carries this value: a name whose hash lands on it is remapped at
- * construction (see the NameId string constructor).
+ * @brief Hash a name into a NameIdValue.
+ * @details boost::hash<std::string>, which is avalanching and identical on every platform. Defined
+ *          out of line so this header stays free of boost includes.
  */
-inline constexpr NameIdValue INVALID_NAME_ID_VALUE{ 0 };
+[[nodiscard]] NameIdValue nameIdHash(const std::string& name) noexcept;
 
 struct LinkTag
 {
@@ -84,7 +88,7 @@ struct JointTag
 /**
  * @brief Tagged integer identity type for links and joints.
  *
- * Wraps a NameIdValue computed from the name via std::hash<std::string>.
+ * Wraps a NameIdValue computed from the name via boost::hash<std::string>.
  * Distinct tag types (LinkTag, JointTag) prevent accidental cross-use.
  * IDs are runtime-only — never persisted. Deterministic within a single
  * process execution.
@@ -95,12 +99,11 @@ struct NameId
   NameId() = default;
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  TESSERACT_NAMEID_EXPLICIT NameId(std::string name)
+  TESSERACT_NAMEID_EXPLICIT NameId(std::string name) noexcept
   {
     if (!name.empty())
     {
-      auto h = static_cast<NameIdValue>(std::hash<std::string>{}(name));
-      value_ = (h == INVALID_NAME_ID_VALUE) ? INVALID_NAME_ID_VALUE + 1 : h;
+      value_ = nameIdHash(name);
       name_ = std::move(name);
     }
   }
@@ -108,18 +111,22 @@ struct NameId
   // NOLINTNEXTLINE(google-explicit-constructor)
   TESSERACT_NAMEID_EXPLICIT NameId(const char* name) : NameId(name != nullptr ? std::string(name) : std::string{}) {}
 
-  /** @brief The numeric hash of the name. INVALID_NAME_ID_VALUE means invalid/default-constructed. */
+  /**
+   * @brief The numeric hash of the name. Zero for an invalid id, but zero is not reserved — a name
+   *        may legitimately hash to it, so validity is decided by the name, not by this value.
+   */
   [[nodiscard]] constexpr NameIdValue value() const noexcept { return value_; }
 
   /** @brief Access the original name string. Empty for default-constructed (invalid) IDs. */
   [[nodiscard]] const std::string& name() const noexcept { return name_; }
 
-  [[nodiscard]] constexpr bool isValid() const noexcept { return value_ != INVALID_NAME_ID_VALUE; }
+  /** @brief An id is valid iff it carries a name; the string constructors are the only source of one. */
+  [[nodiscard]] bool isValid() const noexcept { return !name_.empty(); }
 
   /**
    * @brief Watertight (hybrid) equality: compare the cached hash value first; only when the
    *        values match, confirm with the name strings. Two distinct names that collide on the
-   *        64-bit hash therefore compare UNEQUAL, so hash-keyed containers keep them as distinct
+   *        hash value therefore compare UNEQUAL, so hash-keyed containers keep them as distinct
    *        keys and resolve the collision exactly like a string-keyed hash map would.
    * @details Load-bearing invariant: every valid NameId carries the name it was constructed
    *          from (the string constructors are the only public way to obtain a valid id), so
@@ -147,7 +154,7 @@ private:
    */
   friend struct NameIdTestAccess;
 
-  NameIdValue value_{ INVALID_NAME_ID_VALUE };
+  NameIdValue value_{ 0 };
   std::string name_;
 };
 
@@ -158,11 +165,19 @@ inline const LinkId INVALID_LINK_ID{};
 inline const JointId INVALID_JOINT_ID{};
 
 /**
+ * @brief Mix two id values into one bucket hash — the hash of the OrderedIdPair holding them, so a
+ *        caller can compute a pair's bucket hash without constructing one.
+ * @details boost::hash_combine over the two values. Defined out of line so this header stays free
+ *          of boost includes.
+ */
+[[nodiscard]] std::size_t combineNameIdHash(NameIdValue f, NameIdValue s) noexcept;
+
+/**
  * @brief Canonically ordered pair of ids with cached combined hash — the key type for
  *        pair-keyed maps (ACM, collision margins, collision coefficients).
  *
  * Stores the two full NameIds (values AND names) so pair equality can confirm names whenever
- * the 64-bit values match — the same hybrid scheme as NameId::operator==. This makes every
+ * the hash values match — the same hybrid scheme as NameId::operator==. This makes every
  * pair-keyed container watertight against hash collisions: colliding pairs compare unequal
  * and coexist as distinct keys, exactly as in a string-keyed hash map.
  *
@@ -194,12 +209,33 @@ struct OrderedIdPair
     const bool a_first = (a.value() < b.value()) || (a.value() == b.value() && a.name() <= b.name());
     first_ = a_first ? a : b;
     second_ = a_first ? b : a;
-    hash_ = combineHash(first_.value(), second_.value());
+    hash_ = combineNameIdHash(first_.value(), second_.value());
   }
 
   [[nodiscard]] const NameId<Tag>& first() const noexcept { return first_; }
   [[nodiscard]] const NameId<Tag>& second() const noexcept { return second_; }
   [[nodiscard]] std::size_t hash() const noexcept { return hash_; }
+
+  /**
+   * @brief References to the two names, lexicographically smaller first.
+   * @details first() and second() order by hash value, which is a runtime property and not
+   *          alphabetical. Anything writing the pair somewhere its order is observable — an
+   *          archive, a document, a file — must use this instead, or the output depends on the
+   *          hashing implementation.
+   *
+   *          The result references this pair's names and does not own them. Besides the usual
+   *          rule that it must not outlive the pair, assign() re-canonicalizes in place and
+   *          reuses the ids' string capacity, so a result taken before an assign() is invalidated
+   *          by it even though the pair itself is still alive. Copy the names if either applies.
+   */
+  [[nodiscard]] std::pair<const std::string&, const std::string&> orderedNameView() const& noexcept
+  {
+    // std::minmax, spelled out so types.h does not pull <algorithm> into every consumer.
+    using View = std::pair<const std::string&, const std::string&>;
+    return (first_.name() <= second_.name()) ? View(first_.name(), second_.name()) :
+                                               View(second_.name(), first_.name());
+  }
+  std::pair<const std::string&, const std::string&> orderedNameView() const&& = delete;
 
   /** @brief Hybrid equality: both values are compared first, the names confirm on matches. */
   bool operator==(const OrderedIdPair& other) const noexcept
@@ -221,47 +257,22 @@ struct OrderedIdPair
     return second_.name() < other.second_.name();
   }
 
-  /**
-   * @brief Mix two id values into one bucket hash. Public so callers can compute a pair's hash
-   *        from two ids without constructing an OrderedIdPair.
-   */
-  static constexpr std::size_t combineHash(NameIdValue f, NameIdValue s) noexcept
-  {
-    auto h = static_cast<std::size_t>(f);
-    h ^= static_cast<std::size_t>(s) + static_cast<std::size_t>(0x9e3779b97f4a7c15ULL) + (h << 6) + (h >> 2);
-    return h;
-  }
-
 private:
   /** @brief Delegation target: canonical order already decided, so members initialize directly. */
   OrderedIdPair(const NameId<Tag>& a, const NameId<Tag>& b, bool a_first)
-    : first_(a_first ? a : b), second_(a_first ? b : a), hash_(combineHash(first_.value(), second_.value()))
+    : first_(a_first ? a : b), second_(a_first ? b : a), hash_(combineNameIdHash(first_.value(), second_.value()))
   {
   }
 
   NameId<Tag> first_;
   NameId<Tag> second_;
-  std::size_t hash_{ combineHash(INVALID_NAME_ID_VALUE, INVALID_NAME_ID_VALUE) };
+  std::size_t hash_{ combineNameIdHash(0, 0) };
 };
 
 using LinkIdPair = OrderedIdPair<LinkTag>;
 
 static_assert(sizeof(LinkIdPair) == (2 * sizeof(LinkId)) + sizeof(std::size_t),
               "LinkIdPair is two full NameIds plus the cached pair hash");
-
-/** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
-template <typename Tag>
-constexpr std::size_t hash_value(const NameId<Tag>& id) noexcept
-{
-  return static_cast<std::size_t>(id.value());
-}
-
-/** @brief ADL hook for boost::hash and boost-hashed containers (e.g. boost::unordered_flat_map). */
-template <typename Tag>
-std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
-{
-  return p.hash();
-}
 
 /** @brief Stream insertion: writes exactly id.name(). Print value() explicitly where the numeric id matters. */
 template <typename Tag>
@@ -294,22 +305,28 @@ inline std::vector<std::string> toNames(const Container& ids)
 
 }  // namespace tesseract::common
 
-// std::hash specializations
+// std::hash specializations — enables use with std::unordered_map/set.
+// For boost::hash, boost::hash_combine and boost's unordered containers, include types_boost_hash.h.
 namespace std
 {
-/** @brief Identity hash for NameId types — enables use with std::unordered_map/set. */
+/** @brief Hash for NameId — returns the cached hash value; no rehash per lookup. */
 template <typename Tag>
 struct hash<tesseract::common::NameId<Tag>>
 {
+  using is_avalanching = std::true_type;  // Instruct Boost.Unordered to not use post-mixing
+
   constexpr std::size_t operator()(const tesseract::common::NameId<Tag>& id) const noexcept
   {
     return static_cast<std::size_t>(id.value());
   }
 };
 
+/** @brief Hash for OrderedIdPair — returns the cached combined hash; no rehash per lookup. */
 template <typename Tag>
 struct hash<tesseract::common::OrderedIdPair<Tag>>
 {
+  using is_avalanching = std::true_type;  // Instruct Boost.Unordered to not use post-mixing
+
   std::size_t operator()(const tesseract::common::OrderedIdPair<Tag>& p) const noexcept { return p.hash(); }
 };
 

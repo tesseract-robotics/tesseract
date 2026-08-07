@@ -93,17 +93,17 @@ bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
   {
     if (verbose)
     {
-      CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
-                              pair.first().name().c_str(),
-                              pair.second().name().c_str());
+      const auto [link1, link2] = pair.orderedNameView();
+      CONSOLE_BRIDGE_logError(
+          "Collision between '%s' and '%s' is allowed. No contacts are computed.", link1.c_str(), link2.c_str());
     }
     return true;
   }
 
   if (verbose)
   {
-    CONSOLE_BRIDGE_logError(
-        "Actually checking collisions between %s and %s", pair.first().name().c_str(), pair.second().name().c_str());
+    const auto [link1, link2] = pair.orderedNameView();
+    CONSOLE_BRIDGE_logError("Actually checking collisions between %s and %s", link1.c_str(), link2.c_str());
   }
 
   return false;

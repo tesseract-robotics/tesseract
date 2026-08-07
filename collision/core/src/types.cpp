@@ -352,7 +352,8 @@ std::string ContactResultMap::getSummary() const
                                       collision_counts.end(),
                                       [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
 
-  ss << max_element->first.first() << " - " << max_element->first.second() << ": " << max_element->second
+  const auto [link1, link2] = max_element->first.orderedNameView();
+  ss << link1 << " - " << link2 << ": " << max_element->second
      << " collisions, min dist: " << closest_distances[max_element->first];
 
   return ss.str();
@@ -791,10 +792,8 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         {
           if (collision.second.empty())
             continue;
-          std::string link1_name = collision.second.front().link_ids[0].name();
+          const auto [link1_name, link2_name] = collision.first.orderedNameView();
           longest_link1_width = std::max(static_cast<int>(link1_name.size()) + 2, longest_link1_width);
-
-          std::string link2_name = collision.second.front().link_ids[1].name();
           longest_link2_width = std::max(static_cast<int>(link2_name.size()) + 2, longest_link2_width);
         }
       }
@@ -875,10 +874,12 @@ std::stringstream ContactTrajectoryResults::trajectoryCollisionResultsTable() co
         // Add vertical bar
         ss << "|";
 
-        // Add specific contact information
+        // Add specific contact information. The pair identity comes from the map key, not from a
+        // result's link_ids, whose order is the contact's own and can differ between substeps.
+        const auto [link1_name, link2_name] = collision.first.orderedNameView();
         ss << std::setw(longest_substep_width) << substep_string;
-        ss << std::setw(longest_link1_width) << collision.second.front().link_ids[0];
-        ss << std::setw(longest_link2_width) << collision.second.front().link_ids[1];
+        ss << std::setw(longest_link1_width) << link1_name;
+        ss << std::setw(longest_link2_width) << link2_name;
         ss << std::setw(longest_distance_width) << collision.second.front().distance;
         ss << "\n";
         line_number++;
@@ -931,8 +932,12 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const auto id0 = contact_pair.first.first();
-        const auto id1 = contact_pair.first.second();
+        // Index in alphabetical order: first()/second() order by hash value, which would tie the
+        // matrix layout to the hashing implementation.
+        const auto& link_pair = contact_pair.first;
+        const bool a_first = link_pair.first().name() <= link_pair.second().name();
+        const auto& id0 = a_first ? link_pair.first() : link_pair.second();
+        const auto& id1 = a_first ? link_pair.second() : link_pair.first();
         if (link_index_map.find(id0) == link_index_map.end())
         {
           link_index_map[id0] = index++;
@@ -958,8 +963,9 @@ std::stringstream ContactTrajectoryResults::collisionFrequencyPerLink() const
       {
         if (contact_pair.second.empty())
           continue;
-        const auto cid0 = contact_pair.first.first();
-        const auto cid1 = contact_pair.first.second();
+        // Order is irrelevant here: the matrix is symmetric, so both cells are incremented.
+        const auto& cid0 = contact_pair.first.first();
+        const auto& cid1 = contact_pair.first.second();
         std::size_t row = link_index_map[cid0];
         std::size_t col = link_index_map[cid1];
         collision_matrix[row][col]++;
@@ -1067,8 +1073,9 @@ std::stringstream ContactTrajectoryResults::condensedSummary() const
         const auto& first_contact = collision_pair.second.front();
 
         // Format: "14.4: [link_a, link_b]->0.001"
-        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": [" << first_contact.link_ids[0]
-           << ", " << first_contact.link_ids[1] << "] @ " << std::setprecision(4) << first_contact.distance << "\n";
+        const auto [link1_name, link2_name] = collision_pair.first.orderedNameView();
+        ss << "Step " << std::fixed << std::setprecision(1) << step_with_substep << ": [" << link1_name << ", "
+           << link2_name << "] @ " << std::setprecision(4) << first_contact.distance << "\n";
 
         found_first_collision = true;
         break;

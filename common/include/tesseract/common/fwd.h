@@ -25,12 +25,13 @@
 #ifndef TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
 #define TESSERACT_COMMON_TESSERACT_COMMON_FWD_H
 
+#include <cstddef>
 #include <cstdint>
 
 namespace tesseract::common
 {
 // types.h — identity types (NameId family)
-using NameIdValue = std::uint64_t;
+using NameIdValue = std::size_t;
 struct LinkTag;
 struct JointTag;
 template <typename Tag>

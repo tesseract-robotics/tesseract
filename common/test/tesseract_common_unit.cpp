@@ -3162,8 +3162,8 @@ TEST(TesseractCommonUnit, ACMAddAllowedCollisionByLinkIdPair)  // NOLINT
   ASSERT_EQ(acm.getAllAllowedCollisions().size(), 1U);
   const auto& [stored_key, stored_reason] = *acm.getAllAllowedCollisions().begin();
   EXPECT_EQ(stored_key, key);
-  // The canonical slot is decided by hash value, which differs across std::hash<std::string>
-  // implementations; assert both names survived storage without assuming which slot each lands in.
+  // The canonical slot is decided by hash value, which is not stable across builds; assert both
+  // names survived storage without assuming which slot each lands in.
   const std::string f = stored_key.first().name();
   const std::string s = stored_key.second().name();
   EXPECT_TRUE((f == "link_a" && s == "link_b") || (f == "link_b" && s == "link_a")) << "first=" << f << " second=" << s;
@@ -4207,6 +4207,32 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairOverrideType)  // NOLINT
   }
 }
 
+TEST(TesseractCommonUnit, YamlLinkIdPairKeyEmitsFlowSequenceOfNames)  // NOLINT
+{
+  using tesseract::common::LinkId;
+  using tesseract::common::LinkIdPair;
+
+  // The ids' canonical order must be the reverse of alphabetical, or this test holds even when
+  // encode emits first()/second() as stored and guards nothing.
+  const auto [smaller, larger] = tesseract::common::NameIdTestAccess::createReverseCanonical<LinkId>("aaa", "zzz");
+
+  // The key emits as an inline sequence of the two names in alphabetical order. yaml-cpp's own
+  // std::pair converter is deliberately not used for this, so nothing but a test holds the two
+  // forms together; a round trip does not, since it reads back whatever it wrote.
+  YAML::Node expected_key(YAML::NodeType::Sequence);
+  expected_key.push_back(smaller.name());
+  expected_key.push_back(larger.name());
+  expected_key.SetStyle(YAML::EmitterStyle::Flow);
+
+  YAML::Node expected;
+  expected[expected_key] = 0.5;
+
+  tesseract::common::PairsCollisionMarginData data;
+  data[LinkIdPair(smaller, larger)] = 0.5;
+
+  EXPECT_EQ(YAML::Dump(expected), YAML::Dump(YAML::Node(data)));
+}
+
 TEST(TesseractCommonUnit, YamlPairsCollisionMarginData)  // NOLINT
 {
   const std::string yaml_string = R"(
@@ -4266,11 +4292,11 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairData)  // NOLINT
     auto data = n.as<tesseract::common::CollisionMarginPairData>();
     EXPECT_EQ(data.getCollisionMargins().size(), 2U);
     // NOLINTNEXTLINE
-    EXPECT_DOUBLE_EQ(data.getCollisionMargin("link1", "link2").value(),
-                     data_original.getCollisionMargin("link1", "link2").value());
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin({ "link1", "link2" }).value(),
+                     data_original.getCollisionMargin({ "link1", "link2" }).value());
     // NOLINTNEXTLINE
-    EXPECT_DOUBLE_EQ(data.getCollisionMargin("base", "tool0").value(),
-                     data_original.getCollisionMargin("base", "tool0").value());
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin({ "base", "tool0" }).value(),
+                     data_original.getCollisionMargin({ "base", "tool0" }).value());
   }
 
   {
@@ -4278,11 +4304,11 @@ TEST(TesseractCommonUnit, YamlCollisionMarginPairData)  // NOLINT
     auto data = n.as<tesseract::common::CollisionMarginPairData>();
     EXPECT_EQ(data.getCollisionMargins().size(), 2U);
     // NOLINTNEXTLINE
-    EXPECT_DOUBLE_EQ(data.getCollisionMargin("link1", "link2").value(),
-                     data_original.getCollisionMargin("link1", "link2").value());
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin({ "link1", "link2" }).value(),
+                     data_original.getCollisionMargin({ "link1", "link2" }).value());
     // NOLINTNEXTLINE
-    EXPECT_DOUBLE_EQ(data.getCollisionMargin("base", "tool0").value(),
-                     data_original.getCollisionMargin("base", "tool0").value());
+    EXPECT_DOUBLE_EQ(data.getCollisionMargin({ "base", "tool0" }).value(),
+                     data_original.getCollisionMargin({ "base", "tool0" }).value());
   }
 }
 
@@ -5153,11 +5179,11 @@ TEST(CollisionMarginPairDataUnit, CollidingPairsCoexist)  // NOLINT
   tesseract::common::CollisionMarginPairData margins;
   margins.setCollisionMargin(a, x, 0.01);
   margins.setCollisionMargin(b, x, 0.02);
-  ASSERT_TRUE(margins.getCollisionMargin(a, x).has_value());
-  ASSERT_TRUE(margins.getCollisionMargin(b, x).has_value());
+  ASSERT_TRUE(margins.getCollisionMargin({ a, x }).has_value());
+  ASSERT_TRUE(margins.getCollisionMargin({ b, x }).has_value());
   // NOLINTBEGIN(bugprone-unchecked-optional-access)
-  EXPECT_DOUBLE_EQ(*margins.getCollisionMargin(a, x), 0.01);
-  EXPECT_DOUBLE_EQ(*margins.getCollisionMargin(b, x), 0.02);
+  EXPECT_DOUBLE_EQ(*margins.getCollisionMargin({ a, x }), 0.01);
+  EXPECT_DOUBLE_EQ(*margins.getCollisionMargin({ b, x }), 0.02);
   // NOLINTEND(bugprone-unchecked-optional-access)
 }
 

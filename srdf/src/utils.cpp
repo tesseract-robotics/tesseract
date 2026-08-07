@@ -36,27 +36,28 @@ void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_grap
     scene_graph.addAllowedCollision(key, reason);
 }
 
-std::vector<AlphabeticalACMEntry>
-getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries)
+bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkIdPair> pair1,
+                                   std::reference_wrapper<const tesseract::common::LinkIdPair> pair2)
 {
-  std::vector<AlphabeticalACMEntry> entries;
-  entries.reserve(allowed_collision_entries.size());
-  for (const auto& [key, reason] : allowed_collision_entries)
+  // orderedNameView() returns references into each pair, so the comparison copies no strings. Both
+  // pairs outlive it.
+  return pair1.get().orderedNameView() < pair2.get().orderedNameView();
+}
+
+std::vector<std::reference_wrapper<const tesseract::common::LinkIdPair>>
+getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries)
+{
+  std::vector<std::reference_wrapper<const tesseract::common::LinkIdPair>> acm_keys;
+  acm_keys.reserve(allowed_collision_entries.size());
+  for (const auto& acm_pair : allowed_collision_entries)
   {
-    std::string name1 = key.first().name();
-    std::string name2 = key.second().name();
-    if (name2 < name1)
-      std::swap(name1, name2);
-    entries.push_back(AlphabeticalACMEntry{ std::move(name1), std::move(name2), reason });
+    acm_keys.push_back(std::ref(acm_pair.first));
   }
 
-  std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
-    if (a.name1 != b.name1)
-      return a.name1 < b.name1;
-    return a.name2 < b.name2;
-  });
+  // Sort the keys alphabetically
+  sort(acm_keys.begin(), acm_keys.end(), compareLinkPairAlphabetically);
 
-  return entries;
+  return acm_keys;
 }
 
 }  // namespace tesseract::srdf

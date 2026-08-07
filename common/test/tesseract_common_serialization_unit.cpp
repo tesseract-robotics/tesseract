@@ -27,6 +27,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/serialization.h>
 #include <tesseract/common/cereal_serialization.h>
+#include <tesseract/common/test_suite/name_id_testing.h>
 #include <tesseract/common/unit_test_utils.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/allowed_collision_matrix.h>
@@ -478,6 +479,27 @@ TEST(TesseractCommonSerializeUnit, ExtensionBinaryMacro)  // NOLINT
 
   std::string default_ext = tesseract::common::serialization::binary::extension<ExtensionMacroTestB>::value;
   EXPECT_EQ(default_ext, ".trsb");
+}
+
+TEST(TesseractCommonSerializeUnit, LinkIdPairKeyArchivesAsStringPair)  // NOLINT
+{
+  using tesseract::common::LinkId;
+  using tesseract::common::LinkIdPair;
+  using tesseract::common::NameIdTestAccess;
+  using tesseract::common::Serialization;
+
+  // The ids' canonical order must be the reverse of alphabetical, or this test holds even when the
+  // serializer emits first()/second() as stored and guards nothing.
+  const auto [smaller, larger] = NameIdTestAccess::createReverseCanonical<LinkId>("link_a", "link_b");
+
+  // A pair keyed on ids must archive exactly as the same pair keyed on two strings. A round trip
+  // cannot show this — it passes just as happily when both directions share the same error.
+  const std::map<std::pair<std::string, std::string>, double> string_keyed{ { { smaller.name(), larger.name() },
+                                                                              0.5 } };
+  const std::unordered_map<LinkIdPair, double> id_keyed{ { LinkIdPair(smaller, larger), 0.5 } };
+
+  EXPECT_EQ(Serialization::toArchiveStringJSON(string_keyed, "lookup_table"),
+            Serialization::toArchiveStringJSON(id_keyed, "lookup_table"));
 }
 
 int main(int argc, char** argv)

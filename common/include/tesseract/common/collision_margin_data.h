@@ -42,14 +42,10 @@ class CollisionMarginPairData;
 class CollisionMarginData;
 
 template <class Archive>
-void save(Archive& ar, const CollisionMarginPairData& obj);
-template <class Archive>
-void load(Archive& ar, CollisionMarginPairData& obj);
+void serialize(Archive& ar, CollisionMarginPairData& obj);
 
 template <class Archive>
-void save(Archive& ar, const CollisionMarginData& obj);
-template <class Archive>
-void load(Archive& ar, CollisionMarginData& obj);
+void serialize(Archive& ar, CollisionMarginData& obj);
 
 /** @brief Identifies how the provided contact margin data should be applied */
 enum class CollisionMarginPairOverrideType : std::uint8_t
@@ -90,14 +86,6 @@ public:
    * @return A link pair contact margin if exists
    */
   std::optional<double> getCollisionMargin(const LinkIdPair& pair) const;
-
-  /**
-   * @brief Get the pairs collision margin data, or nullopt if the pair has no entry.
-   * @param id1 The first object id
-   * @param id2 The second object id
-   * @return A link pair contact margin if exists
-   */
-  std::optional<double> getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
   /**
    * @brief Get the largest pair collision margin
@@ -161,16 +149,11 @@ private:
    *  value+name equality) so hash-colliding links do not merge into one max-margin entry */
   std::unordered_map<LinkId, double> object_max_margins_;
 
-  /** @brief Set the margin for a given contact pair without updating the max margins */
-  void setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin);
-
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
 
   template <class Archive>
-  friend void ::tesseract::common::save(Archive& ar, const CollisionMarginPairData& obj);
-  template <class Archive>
-  friend void ::tesseract::common::load(Archive& ar, CollisionMarginPairData& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, CollisionMarginPairData& obj);
 };
 
 /** @brief Stores information about how the margins allowed between collision objects */
@@ -285,9 +268,7 @@ private:
   CollisionMarginPairData pair_margins_;
 
   template <class Archive>
-  friend void ::tesseract::common::save(Archive& ar, const CollisionMarginData& obj);
-  template <class Archive>
-  friend void ::tesseract::common::load(Archive& ar, CollisionMarginData& obj);
+  friend void ::tesseract::common::serialize(Archive& ar, CollisionMarginData& obj);
 };
 }  // namespace tesseract::common
 

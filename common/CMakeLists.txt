@@ -54,6 +54,7 @@ add_library(
   src/yaml_extensions.cpp
   src/stopwatch.cpp
   src/timer.cpp
+  src/types.cpp
   src/yaml_utils.cpp)
 add_library(tesseract::common ALIAS common)
 if(NOT WIN32)

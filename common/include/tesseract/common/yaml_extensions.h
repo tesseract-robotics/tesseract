@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/plugin_info.h>
 #include <tesseract/common/calibration_info.h>
 #include <tesseract/common/collision_margin_data.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::common
 {
@@ -41,6 +42,63 @@ class PropertyTree;
 
 namespace YAML
 {
+/**
+ * @brief A NameId converts to and from the bare name scalar; the hash value is never emitted.
+ * @details It is a runtime cache, is not stable across platforms or boost versions, and cannot be
+ *          turned back into an id without the name. Because the id carries its own conversion, a
+ *          node holding one needs no per-site .name() call, and no site can accidentally emit
+ *          anything else.
+ */
+template <typename Tag>
+struct convert<tesseract::common::NameId<Tag>>
+{
+  static Node encode(const tesseract::common::NameId<Tag>& rhs) { return Node(rhs.name()); }
+
+  static bool decode(const Node& node, tesseract::common::NameId<Tag>& rhs)
+  {
+    if (!node.IsScalar())
+      return false;
+
+    rhs = tesseract::common::NameId<Tag>(node.Scalar());
+    return true;
+  }
+};
+
+/**
+ * @brief An OrderedIdPair converts to and from a 2-element flow sequence of names, [a, b].
+ * @details The names are emitted in lexicographic order rather than the pair's canonical order,
+ *          which is decided by hash value and so would tie the document to the hashing
+ *          implementation. Decoding re-canonicalizes, so the order read back is irrelevant.
+ */
+template <typename Tag>
+struct convert<tesseract::common::OrderedIdPair<Tag>>
+{
+  static Node encode(const tesseract::common::OrderedIdPair<Tag>& rhs)
+  {
+    const auto [a, b] = rhs.orderedNameView();
+
+    Node node(NodeType::Sequence);
+    node.push_back(a);
+    node.push_back(b);
+
+    // yaml-cpp's own std::pair converter is not used here because it cannot carry this: without
+    // it the sequence emits across three lines instead of as [a, b].
+    node.SetStyle(YAML::EmitterStyle::Flow);
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract::common::OrderedIdPair<Tag>& rhs)
+  {
+    if (!node.IsSequence() || node.size() != 2)
+      return false;
+
+    rhs.assign(node[0].as<tesseract::common::NameId<Tag>>(), node[1].as<tesseract::common::NameId<Tag>>());
+
+    return true;
+  }
+};
+
 template <>
 struct convert<tesseract::common::PluginInfo>
 {
@@ -715,7 +773,7 @@ struct convert<tesseract::common::JointIdTransformMap>
   {
     Node node;
     for (const auto& pair : rhs)
-      node[pair.first.name()] = pair.second;
+      node[pair.first] = pair.second;
 
     return node;
   }
@@ -726,7 +784,7 @@ struct convert<tesseract::common::JointIdTransformMap>
       return false;
 
     for (const auto& pair : node)
-      rhs[tesseract::common::JointId(pair.first.as<std::string>())] = pair.second.as<Eigen::Isometry3d>();
+      rhs[pair.first.as<tesseract::common::JointId>()] = pair.second.as<Eigen::Isometry3d>();
 
     return true;
   }
@@ -837,48 +895,47 @@ struct convert<tesseract::common::CollisionMarginPairOverrideType>
   static tesseract::common::PropertyTree schema();
 };
 
-//============================ PairsCollisionMarginData ============================
-template <>
-struct convert<tesseract::common::PairsCollisionMarginData>
+//========================= Maps keyed on a LinkIdPair =========================
+/**
+ * @brief Shared encode/decode for the std::unordered_map<LinkIdPair, V> aliases below.
+ * @details Those aliases name the very specialization the generic std::unordered_map converter would
+ *          otherwise supply, so they cannot delegate to it — an explicit specialization replaces it.
+ *          Each alias still needs its own schema(), which is the reason the specializations exist.
+ *          A key that is not a two-element sequence yields false here rather than throwing.
+ */
+template <typename V>
+struct LinkIdPairMapConvert
 {
-  static Node encode(const tesseract::common::PairsCollisionMarginData& rhs)
+  static Node encode(const std::unordered_map<tesseract::common::LinkIdPair, V>& rhs)
   {
     Node node(NodeType::Map);
-    for (const auto& [key, margin] : rhs)
-    {
-      Node key_node(NodeType::Sequence);
-      key_node.push_back(key.first().name());
-      key_node.push_back(key.second().name());
-
-      // tell yaml-cpp “emit this sequence in [a, b] inline style”
-      key_node.SetStyle(YAML::EmitterStyle::Flow);
-
-      node[key_node] = margin;
-    }
+    for (const auto& [key, value] : rhs)
+      node[key] = value;
 
     return node;
   }
 
-  static bool decode(const Node& node, tesseract::common::PairsCollisionMarginData& rhs)
+  static bool decode(const Node& node, std::unordered_map<tesseract::common::LinkIdPair, V>& rhs)
   {
     if (!node.IsMap())
       return false;
 
     for (auto it = node.begin(); it != node.end(); ++it)
     {
-      Node key_node = it->first;
-      if (!key_node.IsSequence() || key_node.size() != 2)
+      tesseract::common::LinkIdPair key;
+      if (!convert<tesseract::common::LinkIdPair>::decode(it->first, key))
         return false;
 
-      tesseract::common::LinkIdPair key(tesseract::common::LinkId(key_node[0].as<std::string>()),
-                                        tesseract::common::LinkId(key_node[1].as<std::string>()));
-
-      auto v = it->second.as<double>();
-      rhs[std::move(key)] = v;
+      rhs[std::move(key)] = it->second.as<V>();
     }
     return true;
   }
+};
 
+//============================ PairsCollisionMarginData ============================
+template <>
+struct convert<tesseract::common::PairsCollisionMarginData> : LinkIdPairMapConvert<double>
+{
   static tesseract::common::PropertyTree schema();
 };
 
@@ -904,46 +961,8 @@ struct convert<tesseract::common::CollisionMarginPairData>
 
 //============================ AllowedCollisionEntries ============================
 template <>
-struct convert<tesseract::common::AllowedCollisionEntries>
+struct convert<tesseract::common::AllowedCollisionEntries> : LinkIdPairMapConvert<std::string>
 {
-  static Node encode(const tesseract::common::AllowedCollisionEntries& rhs)
-  {
-    Node node(NodeType::Map);
-    for (const auto& [key, reason] : rhs)
-    {
-      Node key_node(NodeType::Sequence);
-      key_node.push_back(key.first().name());
-      key_node.push_back(key.second().name());
-
-      // tell yaml-cpp “emit this sequence in [a, b] inline style”
-      key_node.SetStyle(YAML::EmitterStyle::Flow);
-
-      node[key_node] = reason;
-    }
-
-    return node;
-  }
-
-  static bool decode(const Node& node, tesseract::common::AllowedCollisionEntries& rhs)
-  {
-    if (!node.IsMap())
-      return false;
-
-    for (auto it = node.begin(); it != node.end(); ++it)
-    {
-      Node key_node = it->first;
-      if (!key_node.IsSequence() || key_node.size() != 2)
-        return false;
-
-      tesseract::common::LinkIdPair key(tesseract::common::LinkId(key_node[0].as<std::string>()),
-                                        tesseract::common::LinkId(key_node[1].as<std::string>()));
-
-      auto v = it->second.as<std::string>();
-      rhs[std::move(key)] = v;
-    }
-    return true;
-  }
-
   static tesseract::common::PropertyTree schema();
 };
 

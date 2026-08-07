@@ -373,13 +373,14 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
 
   // Write the ACM
   const auto& allowed_collision_entries = acm.getAllAllowedCollisions();
-  auto sorted_entries = getAlphabeticalACMEntries(allowed_collision_entries);
-  for (const auto& entry : sorted_entries)
+  auto acm_keys = getAlphabeticalACMKeys(allowed_collision_entries);
+  for (const auto& key : acm_keys)
   {
+    const auto [link1, link2] = key.get().orderedNameView();
     tinyxml2::XMLElement* xml_acm_entry = doc.NewElement("disable_collisions");
-    xml_acm_entry->SetAttribute("link1", entry.name1.c_str());
-    xml_acm_entry->SetAttribute("link2", entry.name2.c_str());
-    xml_acm_entry->SetAttribute("reason", entry.reason.c_str());
+    xml_acm_entry->SetAttribute("link1", link1.c_str());
+    xml_acm_entry->SetAttribute("link2", link2.c_str());
+    xml_acm_entry->SetAttribute("reason", allowed_collision_entries.at(key.get()).c_str());
     xml_root->InsertEndChild(xml_acm_entry);
   }
 
@@ -389,9 +390,10 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_cm_entry->SetAttribute("default_margin", collision_margin_data->getDefaultCollisionMargin());
     for (const auto& [key, margin] : collision_margin_data->getCollisionMarginPairData().getCollisionMargins())
     {
+      const auto [link1, link2] = key.orderedNameView();
       tinyxml2::XMLElement* xml_cm_pair_entry = doc.NewElement("pair_margin");
-      xml_cm_pair_entry->SetAttribute("link1", key.first().name().c_str());
-      xml_cm_pair_entry->SetAttribute("link2", key.second().name().c_str());
+      xml_cm_pair_entry->SetAttribute("link1", link1.c_str());
+      xml_cm_pair_entry->SetAttribute("link2", link2.c_str());
       xml_cm_pair_entry->SetAttribute("margin", margin);
       xml_cm_entry->InsertEndChild(xml_cm_pair_entry);
     }

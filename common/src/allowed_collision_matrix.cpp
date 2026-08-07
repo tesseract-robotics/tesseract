@@ -54,6 +54,7 @@ void AllowedCollisionMatrix::addAllowedCollision(const LinkId& link_id1,
                                                  const LinkId& link_id2,
                                                  const std::string& reason)
 {
+  // Temporary, not a reused scratch pair: operator[] stores the key, so only an rvalue can move the names in.
   lookup_table_[LinkIdPair(link_id1, link_id2)] = reason;
 }
 
@@ -66,7 +67,9 @@ const AllowedCollisionEntries& AllowedCollisionMatrix::getAllAllowedCollisions()
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkId& link_id1, const LinkId& link_id2)
 {
-  lookup_table_.erase(LinkIdPair(link_id1, link_id2));
+  TESSERACT_THREAD_LOCAL LinkIdPair link_pair;
+  link_pair.assign(link_id1, link_id2);
+  lookup_table_.erase(link_pair);
 }
 
 void AllowedCollisionMatrix::removeAllowedCollision(const LinkIdPair& pair) { lookup_table_.erase(pair); }
@@ -113,7 +116,10 @@ bool AllowedCollisionMatrix::operator!=(const AllowedCollisionMatrix& rhs) const
 std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
 {
   for (const auto& [key, reason] : acm.getAllAllowedCollisions())
-    os << "link=" << key.first() << " link=" << key.second() << " reason=" << reason << "\n";
+  {
+    const auto [link1, link2] = key.orderedNameView();
+    os << "link=" << link1 << " link=" << link2 << " reason=" << reason << "\n";
+  }
   return os;
 }
 }  // namespace tesseract::common

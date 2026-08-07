@@ -14,10 +14,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 #include <cereal/archives/xml.hpp>
 #include <sstream>
+#include <boost/container_hash/hash.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/types.h>
+#include <tesseract/common/types_boost_hash.h>
 #include <tesseract/common/cereal_serialization.h>
+#include <tesseract/common/serialization.h>
 #include <tesseract/common/test_suite/name_id_testing.h>
 
 using namespace tesseract::common;
@@ -57,18 +60,20 @@ TEST(NameIdTest, SentinelIsInvalid)  // NOLINT
   EXPECT_EQ(INVALID_JOINT_ID.value(), 0U);
 }
 
-TEST(NameIdTest, ZeroGuard)  // NOLINT
+TEST(NameIdTest, ValidityIsCarriedByTheName)  // NOLINT
 {
-  // Empty name returns the invalid sentinel, not a hashed ID
+  // An empty name yields the invalid id; it is not hashed.
   const LinkId empty_id = LinkId("");
   EXPECT_FALSE(empty_id.isValid());
   EXPECT_EQ(empty_id.value(), 0U);
   EXPECT_TRUE(empty_id.name().empty());
 
-  // Non-empty names always produce a valid (non-zero) ID even if hash happens to be 0
-  const LinkId valid_id = LinkId("any_link");
-  EXPECT_TRUE(valid_id.isValid());
-  EXPECT_NE(valid_id.value(), 0U);
+  // Zero is not a reserved value. A name hashing onto it still gives a valid id, and that id stays
+  // distinct from the invalid one because equality confirms the names.
+  const auto zero_valued = NameIdTestAccess::create<LinkId>(0, "hashes_to_zero");
+  EXPECT_TRUE(zero_valued.isValid());
+  EXPECT_EQ(zero_valued.value(), 0U);
+  EXPECT_NE(zero_valued, INVALID_LINK_ID);
 }
 
 // ======================== Name accessor ========================
@@ -104,6 +109,18 @@ TEST(NameIdTest, LinkIdAndJointIdAreDistinctTypes)  // NOLINT
   const LinkId link = LinkId("foo");
   const JointId joint = JointId("foo");
   EXPECT_EQ(link.value(), joint.value());
+}
+
+TEST(NameIdTest, NothrowOperations)  // NOLINT
+{
+  // Move operations must stay nothrow or std::vector falls back to copying on growth.
+  static_assert(std::is_nothrow_move_constructible_v<LinkId>, "LinkId move must not throw");
+  static_assert(std::is_nothrow_move_assignable_v<LinkId>, "LinkId move-assign must not throw");
+  static_assert(std::is_nothrow_move_constructible_v<LinkIdPair>, "LinkIdPair move must not throw");
+  static_assert(std::is_nothrow_move_assignable_v<LinkIdPair>, "LinkIdPair move-assign must not throw");
+
+  // Hashing a name and taking ownership of it cannot throw; building the string can.
+  static_assert(std::is_nothrow_constructible_v<LinkId, std::string>, "hashing an owned name must not throw");
 }
 
 // ======================== Hash ========================
@@ -203,6 +220,20 @@ TEST(LinkIdPairTest, BoostHashAdlHook)  // NOLINT
   EXPECT_EQ(hash_value(pair), pair.hash());
 }
 
+#ifdef TESSERACT_COMMON_HAS_HASH_IS_AVALANCHING
+TEST(LinkIdPairTest, BoostHashIsAvalanching)  // NOLINT
+{
+  // boost's open-addressing containers consult this trait to decide whether to remix the hash.
+  static_assert(boost::unordered::hash_is_avalanching<boost::hash<LinkIdPair>>::value,
+                "LinkIdPair's boost hash is declared avalanching");
+  static_assert(boost::unordered::hash_is_avalanching<boost::hash<LinkId>>::value,
+                "LinkId's boost hash is declared avalanching");
+
+  const LinkIdPair pair = LinkIdPair(LinkId("a"), LinkId("b"));
+  EXPECT_EQ(boost::hash<LinkIdPair>{}(pair), pair.hash());
+}
+#endif
+
 TEST(LinkIdPairTest, SameLinkPair)  // NOLINT
 {
   const LinkId a = LinkId("self");
@@ -292,26 +323,29 @@ TEST(LinkIdPairTest, AssignInvalidIds)  // NOLINT
 
 // ======================== Cereal serialization ========================
 
+TEST(NameIdTest, CerealArchivesTheNameOnly)  // NOLINT
+{
+  // A NameId's entire wire form is its name. save_minimal returns a std::string, and cereal rejects
+  // a type carrying both a minimal pair and a serialize/save function, so no second field can be
+  // added without first removing this one. The hash value is runtime-only and must never be
+  // archived: it is not stable across builds, so a reader would rebuild different ids.
+  static_assert(cereal::traits::has_non_member_save_minimal<LinkId, cereal::XMLOutputArchive>::value,
+                "LinkId must serialize through save_minimal");
+  static_assert(!cereal::traits::has_non_member_serialize<LinkId, cereal::XMLOutputArchive>::value,
+                "LinkId must not gain a serialize function; it would open room for a second field");
+
+  const LinkId id("test_link");
+  const std::string xml = Serialization::toArchiveStringXML(id, "id");
+  EXPECT_NE(xml.find("test_link"), std::string::npos) << xml;
+  EXPECT_EQ(xml.find(std::to_string(id.value())), std::string::npos) << "Hash value leaked into wire output: " << xml;
+}
+
 TEST(NameIdTest, CerealRoundTripValid)  // NOLINT
 {
   const LinkId original = LinkId("test_link");
 
-  std::string xml;
-  {
-    std::ostringstream oss;
-    {
-      cereal::XMLOutputArchive ar(oss);
-      ar(cereal::make_nvp("id", original));
-    }
-    xml = oss.str();
-  }
-
-  LinkId loaded{};
-  {
-    std::istringstream iss(xml);
-    cereal::XMLInputArchive ar(iss);
-    ar(cereal::make_nvp("id", loaded));
-  }
+  const std::string xml = Serialization::toArchiveStringXML(original, "id");
+  const auto loaded = Serialization::fromArchiveStringXML<LinkId>(xml, "id");
 
   EXPECT_EQ(original, loaded);
   EXPECT_EQ(original.name(), loaded.name());
@@ -323,15 +357,7 @@ TEST(NameIdTest, CerealRoundTripInvalidSentinel)  // NOLINT
   const LinkId original{};  // default-constructed = invalid
   EXPECT_FALSE(original.isValid());
 
-  std::string xml;
-  {
-    std::ostringstream oss;
-    {
-      cereal::XMLOutputArchive ar(oss);
-      ar(cereal::make_nvp("id", original));
-    }
-    xml = oss.str();
-  }
+  const std::string xml = Serialization::toArchiveStringXML(original, "id");
 
   LinkId loaded = LinkId("placeholder");  // start non-default to prove overwrite
   {
@@ -343,6 +369,37 @@ TEST(NameIdTest, CerealRoundTripInvalidSentinel)  // NOLINT
   EXPECT_FALSE(loaded.isValid());
   EXPECT_EQ(original, loaded);
   EXPECT_TRUE(loaded.name().empty());
+}
+
+TEST(LinkIdPairTest, CerealArchivesTwoNamesLikeStdPair)  // NOLINT
+{
+  // A pair archives exactly as the std::pair<std::string, std::string> it replaced, so containers
+  // keyed on it keep the wire format they had when keyed on names. The archive must not inherit
+  // canonical order, so the pair is built with its canonical order the reverse of alphabetical.
+  const auto [smaller, larger] = NameIdTestAccess::createReverseCanonical<LinkId>("link_a", "link_b");
+  const LinkIdPair pair(smaller, larger);
+  ASSERT_EQ(pair.first().name(), larger.name());  // the guarantee createReverseCanonical() makes
+
+  const std::string xml = Serialization::toArchiveStringXML(pair, "pair");
+  EXPECT_EQ(xml, Serialization::toArchiveStringXML(std::pair<std::string, std::string>{ "link_a", "link_b" }, "pair"));
+
+  // Loading rebuilds the ids from the archived names, so the recovered pair carries real hash
+  // values rather than the injected ones — equality against `pair` would not hold.
+  const LinkIdPair rebuilt(LinkId("link_a"), LinkId("link_b"));
+  EXPECT_EQ(Serialization::fromArchiveStringXML<LinkIdPair>(xml, "pair"), rebuilt);
+}
+
+TEST(LinkIdPairTest, CerealPairKeyedContainerNeedsNoHandWrittenSupport)  // NOLINT
+{
+  using Entries = std::unordered_map<LinkIdPair, std::string>;
+  Entries original;
+  original[LinkIdPair(LinkId("link_a"), LinkId("link_b"))] = "reason";
+
+  const std::string xml = Serialization::toArchiveStringXML(original, "entries");
+  EXPECT_EQ(xml.find(std::to_string(original.begin()->first.hash())), std::string::npos)
+      << "Pair hash leaked into wire output: " << xml;
+
+  EXPECT_EQ(Serialization::fromArchiveStringXML<Entries>(xml, "entries"), original);
 }
 
 // ======================== Implicit constructor tests ========================
@@ -483,8 +540,8 @@ TEST(OrderedIdPairHybrid, KeyCarriesNames)  // NOLINT
   const tesseract::common::LinkId d("link_d");
   const tesseract::common::LinkIdPair p(c, d);
   EXPECT_TRUE(p == tesseract::common::LinkIdPair(d, c));
-  // The canonical slot is decided by hash value, which differs across std::hash<std::string>
-  // implementations; assert both names are carried without assuming which slot each lands in.
+  // The canonical slot is decided by hash value, which is not stable across builds; assert both
+  // names are carried without assuming which slot each lands in.
   const std::string f = p.first().name();
   const std::string s = p.second().name();
   EXPECT_TRUE((f == "link_c" && s == "link_d") || (f == "link_d" && s == "link_c")) << "first=" << f << " second=" << s;

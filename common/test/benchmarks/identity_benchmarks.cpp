@@ -124,9 +124,11 @@ static void BM_MarginLookup_TwoIds(benchmark::State& state)
     for (std::size_t b = a + 1; b < ids.size(); ++b)
       margins.setCollisionMargin(ids[a], ids[b], 0.01);
   std::size_t i = 0;
+  LinkIdPair key;
   for (auto _ : state)  // NOLINT
   {
-    benchmark::DoNotOptimize(margins.getCollisionMargin(ids[i & 63U], ids[(i + 7) & 63U]));
+    key.assign(ids[i & 63U], ids[(i + 7) & 63U]);
+    benchmark::DoNotOptimize(margins.getCollisionMargin(key));
     ++i;
   }
 }

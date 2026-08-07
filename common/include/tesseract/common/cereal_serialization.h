@@ -19,7 +19,6 @@
 
 #include <cereal/cereal.hpp>
 #include <cereal/types/variant.hpp>
-#include <cereal/types/map.hpp>
 #include <cereal/types/unordered_map.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
@@ -42,9 +41,35 @@ void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
   id = NameId<Tag>(value);
 }
 
-// OrderedIdPair has no cereal specialization: its NameIdValue ids are hashes that are not stable
-// across builds. Wrapping containers (AllowedCollisionMatrix, CollisionMarginPairData) serialize
-// the key's name-bearing NameIds instead and rebuild the pair on load.
+/**
+ * @brief OrderedIdPair archives as its two names, under the same NVPs cereal gives std::pair.
+ *
+ * A container keyed on OrderedIdPair therefore writes the format its string-keyed predecessor
+ * wrote, when the key was std::pair<std::string, std::string>. The ids are name hashes and are
+ * never written; they are recomputed from the names on load.
+ *
+ * The names are emitted lexicographically rather than in the pair's canonical order, which is
+ * decided by hash value and so would tie the archive to the hashing implementation.
+ */
+template <class Archive, typename Tag>
+void save(Archive& ar, const OrderedIdPair<Tag>& pair)
+{
+  auto names = pair.orderedNameView();
+
+  // Hand the names to cereal's own std::pair serializer rather than emitting "first"/"second"
+  // here, so the two forms cannot drift apart. A pair of references serializes identically on
+  // the save path, which is why the names need not be copied. Call it directly: ar(names) would
+  // nest the pair under a generated name instead of writing it at this level.
+  cereal::serialize(ar, names);
+}
+
+template <class Archive, typename Tag>
+void load(Archive& ar, OrderedIdPair<Tag>& pair)
+{
+  std::pair<std::string, std::string> names;
+  cereal::serialize(ar, names);
+  pair.assign(NameId<Tag>(std::move(names.first)), NameId<Tag>(std::move(names.second)));
+}
 
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
@@ -59,22 +84,9 @@ void serialize(Archive& ar, AnyPoly& obj)
 }
 
 template <class Archive>
-void save(Archive& ar, const AllowedCollisionMatrix& obj)
+void serialize(Archive& ar, AllowedCollisionMatrix& obj)
 {
-  // Serialize as string-based format for backwards compatibility
-  std::map<std::pair<std::string, std::string>, std::string> compat;
-  for (const auto& [key, reason] : obj.lookup_table_)
-    compat[{ key.first().name(), key.second().name() }] = reason;
-  ar(cereal::make_nvp("lookup_table", compat));
-}
-
-template <class Archive>
-void load(Archive& ar, AllowedCollisionMatrix& obj)
-{
-  std::map<std::pair<std::string, std::string>, std::string> compat;
-  ar(cereal::make_nvp("lookup_table", compat));
-  for (const auto& [names, reason] : compat)
-    obj.addAllowedCollision(LinkId(names.first), LinkId(names.second), reason);
+  ar(cereal::make_nvp("lookup_table", obj.lookup_table_));
 }
 
 template <class Archive>
@@ -84,33 +96,19 @@ void serialize(Archive& ar, CalibrationInfo& obj)
 }
 
 template <class Archive>
-void save(Archive& ar, const CollisionMarginPairData& obj)
+void serialize(Archive& ar, CollisionMarginPairData& obj)
 {
-  // Serialize as string-based format for backwards compatibility
-  std::map<std::pair<std::string, std::string>, double> compat;
-  for (const auto& [key, margin] : obj.lookup_table_)
-    compat[{ key.first().name(), key.second().name() }] = margin;
-  ar(cereal::make_nvp("lookup_table", compat));
+  ar(cereal::make_nvp("lookup_table", obj.lookup_table_));
+
+  // Recreate max_collision_margin_ and object_max_margins_ after deserialization
+  if (Archive::is_loading::value)
+  {
+    obj.updateMaxMargins();
+  }
 }
 
 template <class Archive>
-void load(Archive& ar, CollisionMarginPairData& obj)
-{
-  std::map<std::pair<std::string, std::string>, double> compat;
-  ar(cereal::make_nvp("lookup_table", compat));
-  for (const auto& [names, margin] : compat)
-    obj.setCollisionMargin(LinkId(names.first), LinkId(names.second), margin);
-}
-
-template <class Archive>
-void save(Archive& ar, const CollisionMarginData& obj)
-{
-  ar(cereal::make_nvp("default_collision_margin", obj.default_collision_margin_));
-  ar(cereal::make_nvp("pair_margins", obj.pair_margins_));
-}
-
-template <class Archive>
-void load(Archive& ar, CollisionMarginData& obj)
+void serialize(Archive& ar, CollisionMarginData& obj)
 {
   ar(cereal::make_nvp("default_collision_margin", obj.default_collision_margin_));
   ar(cereal::make_nvp("pair_margins", obj.pair_margins_));
@@ -151,41 +149,13 @@ void serialize(Archive& ar, JointTrajectory& obj)
 }
 
 template <class Archive>
-void save(Archive& ar, const ManipulatorInfo& obj)
+void serialize(Archive& ar, ManipulatorInfo& obj)
 {
   ar(cereal::make_nvp("manipulator", obj.manipulator));
   ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
   ar(cereal::make_nvp("working_frame", obj.working_frame));
   ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
-
-  // Serialize tcp_offset as variant<string, Isometry3d> for backward compat
-  if (obj.tcp_offset.index() == 0)
-  {
-    std::variant<std::string, Eigen::Isometry3d> tcp_offset_str(std::get<LinkId>(obj.tcp_offset).name());
-    ar(cereal::make_nvp("tcp_offset", tcp_offset_str));
-  }
-  else
-  {
-    std::variant<std::string, Eigen::Isometry3d> tcp_offset_tf(std::get<Eigen::Isometry3d>(obj.tcp_offset));
-    ar(cereal::make_nvp("tcp_offset", tcp_offset_tf));
-  }
-}
-
-template <class Archive>
-void load(Archive& ar, ManipulatorInfo& obj)
-{
-  ar(cereal::make_nvp("manipulator", obj.manipulator));
-  ar(cereal::make_nvp("manipulator_ik_solver", obj.manipulator_ik_solver));
-  ar(cereal::make_nvp("working_frame", obj.working_frame));
-  ar(cereal::make_nvp("tcp_frame", obj.tcp_frame));
-
-  // Load tcp_offset as variant<string, Isometry3d>, then convert string to LinkId
-  std::variant<std::string, Eigen::Isometry3d> tcp_offset_compat;
-  ar(cereal::make_nvp("tcp_offset", tcp_offset_compat));
-  if (tcp_offset_compat.index() == 0)
-    obj.tcp_offset = LinkId(std::get<std::string>(tcp_offset_compat));
-  else
-    obj.tcp_offset = std::get<Eigen::Isometry3d>(tcp_offset_compat);
+  ar(cereal::make_nvp("tcp_offset", obj.tcp_offset));
 }
 
 template <class Archive>

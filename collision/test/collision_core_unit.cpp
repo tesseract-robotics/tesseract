@@ -16,6 +16,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/utils.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/cereal_serialization.h>
+#include <tesseract/common/serialization.h>
 
 #include <tesseract/collision/common.h>
 #include <tesseract/collision/types.h>
@@ -507,13 +508,13 @@ TEST(TesseractCoreUnit, ContactManagerConfigTest)  // NOLINT
     EXPECT_TRUE(config.default_margin.has_value());
     EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(config.default_margin.value(), 0.05));  // NOLINT
     EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(
-        config.pair_margin_data.getCollisionMargin("link1", "link2").value(), 0.05 + 0.025));  // NOLINT
+        config.pair_margin_data.getCollisionMargin({ "link1", "link2" }).value(), 0.05 + 0.025));  // NOLINT
 
     config.scaleMargins(2.0);
     EXPECT_TRUE(config.default_margin.has_value());
     EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(config.default_margin.value(), 2.0 * 0.05));  // NOLINT
     EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(
-        config.pair_margin_data.getCollisionMargin("link1", "link2").value(), 2.0 * (0.05 + 0.025)));  // NOLINT
+        config.pair_margin_data.getCollisionMargin({ "link1", "link2" }).value(), 2.0 * (0.05 + 0.025)));  // NOLINT
   }
 
   {
@@ -1411,10 +1412,10 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactResultMapCerealUsesStringKeyedWireFormat)  // NOLINT
 {
-  // ContactResultMap persists as a string-keyed std::map under NVP "container". Serializing the
-  // LinkIdPair key by its raw NameIdValue would leak hash digits onto the wire (not stable across
-  // builds); this test pins the string-keyed format and the round-trip recovery of the LinkIdPair
-  // key from the per-result link names.
+  // ContactResultMap persists under NVP "container", its LinkIdPair keys emitting as two names
+  // through the shared pair serializer. Serializing a key by its raw NameIdValue would leak hash
+  // digits onto the wire (not stable across builds); this test pins the string-keyed format,
+  // asserts no hash value reaches the archive at all, and checks round-trip recovery of the key.
   using namespace tesseract::collision;
   using namespace tesseract::common;
 
@@ -1425,12 +1426,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesStringKeyedWireFormat)  // NOL
   LinkIdPair key(result.link_ids[0], result.link_ids[1]);
   original.addContactResult(key, result);
 
-  std::stringstream ss;
-  {
-    cereal::JSONOutputArchive ar(ss);
-    ar(cereal::make_nvp("contact_result_map", original));
-  }
-  const std::string archive_text = ss.str();
+  const std::string archive_text = Serialization::toArchiveStringJSON(original, "contact_result_map");
   // Wire format: NVP key "container" + string names, no raw hash digits.
   EXPECT_NE(archive_text.find("container"), std::string::npos) << archive_text;
   EXPECT_NE(archive_text.find("link_a"), std::string::npos) << archive_text;
@@ -1442,11 +1438,14 @@ TEST(TesseractCoreUnit, ContactResultMapCerealUsesStringKeyedWireFormat)  // NOL
   EXPECT_EQ(archive_text.find("entries"), std::string::npos)
       << "Vector-of-entries format leaked into wire output: " << archive_text;
 
-  ContactResultMap loaded;
-  {
-    cereal::JSONInputArchive ar(ss);
-    ar(cereal::make_nvp("contact_result_map", loaded));
-  }
+  // No id or pair hash value may appear anywhere in the output, whatever a field is called.
+  for (const auto& digits : { std::to_string(result.link_ids[0].value()),
+                              std::to_string(result.link_ids[1].value()),
+                              std::to_string(key.hash()) })
+    EXPECT_EQ(archive_text.find(digits), std::string::npos)
+        << "Hash value " << digits << " leaked into wire output: " << archive_text;
+
+  const auto loaded = Serialization::fromArchiveStringJSON<ContactResultMap>(archive_text, "contact_result_map");
   ASSERT_EQ(loaded.size(), 1U);
   const auto& [stored_key, stored_results] = *loaded.getContainer().begin();
   EXPECT_EQ(stored_key, key);
@@ -1523,12 +1522,7 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsStringKeyedFormatLiteral)  //
     }
   })JSON";
 
-  ContactResultMap loaded;
-  {
-    std::stringstream ss(string_keyed_format);
-    cereal::JSONInputArchive ar(ss);
-    ar(cereal::make_nvp("contact_result_map", loaded));
-  }
+  const auto loaded = Serialization::fromArchiveStringJSON<ContactResultMap>(string_keyed_format, "contact_result_map");
 
   ASSERT_EQ(loaded.size(), 1U);
   const auto& [stored_key, stored_results] = *loaded.getContainer().begin();
@@ -1540,23 +1534,26 @@ TEST(TesseractCoreUnit, ContactResultMapCerealLoadsStringKeyedFormatLiteral)  //
   EXPECT_DOUBLE_EQ(stored_results[0].distance, 0.125);
 }
 
-TEST(TesseractCoreUnit, ContactResultMapCerealSaveRejectsInvalidLinkIds)  // NOLINT
+TEST(TesseractCoreUnit, ContactResultMapCerealKeyComesFromMapKey)  // NOLINT
 {
-  // Defensive guard: the save path derives the on-disk key from the stored
-  // ContactResult's link_ids names. A default-constructed ContactResult would silently emit
-  // ("","") on the wire and lose the LinkIdPair identity. Confirm save throws instead.
+  // The on-disk key is the map key's own two names. Nothing requires a stored ContactResult's
+  // link_ids to match the key it was filed under, so reading the names back off a result would
+  // write an identity the map never held — here, an empty one.
   using namespace tesseract::collision;
   using namespace tesseract::common;
 
   ContactResultMap result_map;
-  // Use addContactResult with a default ContactResult — link_ids are INVALID_LINK_ID, so
-  // names are empty.
+  // A default ContactResult carries no link_ids at all.
   result_map.addContactResult({ "real_a", "real_b" }, ContactResult{});
 
-  std::stringstream ss;
-  cereal::JSONOutputArchive ar(ss);
-  EXPECT_THROW(ar(cereal::make_nvp("contact_result_map", result_map)),  // NOLINT
-               std::runtime_error);
+  const std::string archive_text = Serialization::toArchiveStringJSON(result_map, "contact_result_map");
+  EXPECT_NE(archive_text.find("real_a"), std::string::npos) << archive_text;
+  EXPECT_NE(archive_text.find("real_b"), std::string::npos) << archive_text;
+
+  const auto loaded = Serialization::fromArchiveStringJSON<ContactResultMap>(archive_text, "contact_result_map");
+
+  ASSERT_EQ(loaded.getContainer().size(), 1U);
+  EXPECT_EQ(loaded.getContainer().begin()->first, LinkIdPair("real_a", "real_b"));
 }
 
 TEST(TesseractCoreUnit, ContactRequestUnit)  // NOLINT

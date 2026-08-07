@@ -9,7 +9,7 @@
 #include <cereal/cereal.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
-#include <cereal/types/map.hpp>
+#include <cereal/types/unordered_map.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/utility.hpp>
 #include <cereal/types/polymorphic.hpp>
@@ -23,64 +23,12 @@ namespace tesseract::scene_graph
 // id: a NameId serializes as its name string (see common save_minimal), so the on-disk archive key
 // stays stable and portable. Do not rename a key to match a renamed field — it breaks old archives.
 template <class Archive>
-void save(Archive& ar, const SceneState& obj)
+void serialize(Archive& ar, SceneState& obj)
 {
-  // Save as string-keyed maps for backwards compatibility. Ordered (std::map) so the archive lists
-  // elements in a deterministic name-sorted order rather than unspecified hash order; the load path
-  // is key-driven and does not depend on element order.
-  std::map<std::string, double> joints_str;
-  for (const auto& [id, val] : obj.joints)
-    joints_str[id.name()] = val;
-
-  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> floating_joints_str;
-  for (const auto& [id, tf] : obj.floating_joints)
-    floating_joints_str[id.name()] = tf;
-
-  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> link_transforms_str;
-  for (const auto& [id, tf] : obj.link_transforms)
-    link_transforms_str[id.name()] = tf;
-
-  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
-  for (const auto& [id, tf] : obj.joint_transforms)
-    joint_transforms_str[id.name()] = tf;
-
-  ar(cereal::make_nvp("joints", joints_str));
-  ar(cereal::make_nvp("floating_joints", floating_joints_str));
-  ar(cereal::make_nvp("link_transforms", link_transforms_str));
-  ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
-}
-
-template <class Archive>
-void load(Archive& ar, SceneState& obj)
-{
-  using tesseract::common::JointId;
-  using tesseract::common::LinkId;
-
-  // load overwrites the target; clear so stale keys from a reused object do not survive.
-  obj.joints.clear();
-  obj.floating_joints.clear();
-  obj.link_transforms.clear();
-  obj.joint_transforms.clear();
-
-  std::map<std::string, double> joints_str;
-  ar(cereal::make_nvp("joints", joints_str));
-  for (const auto& [key, val] : joints_str)
-    obj.joints[JointId(key)] = val;
-
-  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> floating_joints_str;
-  ar(cereal::make_nvp("floating_joints", floating_joints_str));
-  for (const auto& [key, tf] : floating_joints_str)
-    obj.floating_joints[JointId(key)] = tf;
-
-  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> link_transforms_str;
-  ar(cereal::make_nvp("link_transforms", link_transforms_str));
-  for (const auto& [key, tf] : link_transforms_str)
-    obj.link_transforms[LinkId(key)] = tf;
-
-  tesseract::common::AlignedMap<std::string, Eigen::Isometry3d> joint_transforms_str;
-  ar(cereal::make_nvp("joint_transforms", joint_transforms_str));
-  for (const auto& [key, tf] : joint_transforms_str)
-    obj.joint_transforms[JointId(key)] = tf;
+  ar(cereal::make_nvp("joints", obj.joints));
+  ar(cereal::make_nvp("floating_joints", obj.floating_joints));
+  ar(cereal::make_nvp("link_transforms", obj.link_transforms));
+  ar(cereal::make_nvp("joint_transforms", obj.joint_transforms));
 }
 
 template <class Archive>
@@ -214,9 +162,9 @@ void serialize(Archive& ar, SceneGraph& obj)
 
     ar(cereal::make_nvp("acm", obj.acm_));
 
-    std::string root_link_name;
-    ar(cereal::make_nvp("root_link_name", root_link_name));
-    obj.setRoot(tesseract::common::LinkId(root_link_name));
+    tesseract::common::LinkId root_link_id;
+    ar(cereal::make_nvp("root_link_name", root_link_id));  // name key; field is an id
+    obj.setRoot(root_link_id);
   }
   else
   {
@@ -239,8 +187,8 @@ void serialize(Archive& ar, SceneGraph& obj)
 
     ar(cereal::make_nvp("acm", obj.acm_));
 
-    std::string root_link_name = obj.getRoot().name();
-    ar(cereal::make_nvp("root_link_name", root_link_name));
+    tesseract::common::LinkId root_link_id = obj.getRoot();
+    ar(cereal::make_nvp("root_link_name", root_link_id));  // name key; field is an id
   }
 }
 }  // namespace tesseract::scene_graph

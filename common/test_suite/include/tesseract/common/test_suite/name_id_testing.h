@@ -24,6 +24,8 @@
 #ifndef TESSERACT_COMMON_TEST_SUITE_NAME_ID_TESTING_H
 #define TESSERACT_COMMON_TEST_SUITE_NAME_ID_TESTING_H
 
+#include <utility>
+
 #include <tesseract/common/types.h>
 
 namespace tesseract::common
@@ -39,6 +41,19 @@ struct NameIdTestAccess
     id.value_ = value;
     id.name_ = name;
     return id;
+  }
+
+  /**
+   * @brief Two ids whose canonical pair order is the reverse of their alphabetical order.
+   * @details OrderedIdPair canonicalizes by hash value, so a test that must tell canonical order apart from
+   *          alphabetical order cannot use real hashes — those move with the boost version. The values here are
+   *          injected so that OrderedIdPair(first, second).first() is the alphabetically later name.
+   */
+  template <typename IdT>
+  [[nodiscard]] static std::pair<IdT, IdT> createReverseCanonical(const std::string& alphabetically_first,
+                                                                  const std::string& alphabetically_second)
+  {
+    return { create<IdT>(2, alphabetically_first), create<IdT>(1, alphabetically_second) };
   }
 };
 }  // namespace tesseract::common

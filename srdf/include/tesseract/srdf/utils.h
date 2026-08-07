@@ -24,7 +24,7 @@
 #ifndef TESSERACT_SRDF_UTILS_H
 #define TESSERACT_SRDF_UTILS_H
 
-#include <string>
+#include <functional>
 
 #include <tesseract/common/types.h>
 #include <tesseract/common/allowed_collision_matrix.h>
@@ -42,30 +42,24 @@ class SRDFModel;
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model);
 
 /**
- * @brief One allowed-collision entry with names resolved from the pair key and alphabetically
- *        ordered — see @ref getAlphabeticalACMEntries.
+ * @brief Used to sort a pair of link ids alphabetically by name - first by the alphabetically
+ *        smaller name of each pair and then by the larger
+ * @details A LinkIdPair is canonically ordered by hash value, so neither name sits at a fixed
+ *          position; each pair's smaller and larger name are selected here rather than read off
+ *          first() and second() in order.
+ * @param pair1 First pair of link ids
+ * @param pair2 Second pair of link ids
+ * @return True if pair1 should go before pair2 (is closer to A)
  */
-struct AlphabeticalACMEntry
-{
-  std::string name1;
-  std::string name2;
-  std::string reason;
-};
+bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkIdPair> pair1,
+                                   std::reference_wrapper<const tesseract::common::LinkIdPair> pair2);
 
 /**
- * @brief Returns a deterministically alphabetically sorted vector of ACM entries.
- *
- * An AllowedCollisionMatrix's pair keys are canonically ordered by LinkId hash value, not
- * alphabetically — and std::hash<std::string> is not portable across standard library
- * implementations, so that order is unstable for cross-library output. This function resolves
- * each entry's names from its pair key, normalizes them so `name1 <= name2` alphabetically, then
- * sorts the entries by (name1, name2), producing output suitable for deterministic serialization.
- *
+ * @brief Returns an alphabetically sorted vector of ACM keys (the link pairs)
  * @param allowed_collision_entries Entries to be sorted
- * @return An alphabetically sorted vector of entries (by name1, then name2), with each entry's
- *         names themselves in alphabetical order.
+ * @return An alphabetically sorted vector of ACM keys (the link pairs)
  */
-std::vector<AlphabeticalACMEntry>
-getAlphabeticalACMEntries(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
+std::vector<std::reference_wrapper<const tesseract::common::LinkIdPair>>
+getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries);
 }  // namespace tesseract::srdf
 #endif  // TESSERACT_SRDF_UTILS_H

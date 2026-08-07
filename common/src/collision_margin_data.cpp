@@ -37,15 +37,9 @@ CollisionMarginPairData::CollisionMarginPairData(const PairsCollisionMarginData&
 
 void CollisionMarginPairData::setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin)
 {
-  setCollisionMarginHelper(id1, id2, margin);
+  // Temporary, not a reused scratch pair: operator[] stores the key, so only an rvalue can move the names in.
+  lookup_table_[LinkIdPair(id1, id2)] = margin;
   updateMaxMargins();
-}
-
-void CollisionMarginPairData::setCollisionMarginHelper(const LinkId& id1, const LinkId& id2, double margin)
-{
-  TESSERACT_THREAD_LOCAL LinkIdPair key;
-  key.assign(id1, id2);
-  lookup_table_[key] = margin;
 }
 
 std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkIdPair& pair) const
@@ -54,13 +48,6 @@ std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkIdPa
   if (it != lookup_table_.end())
     return it->second;
   return {};
-}
-
-std::optional<double> CollisionMarginPairData::getCollisionMargin(const LinkId& id1, const LinkId& id2) const
-{
-  TESSERACT_THREAD_LOCAL LinkIdPair key;
-  key.assign(id1, id2);
-  return getCollisionMargin(key);
 }
 
 std::optional<double> CollisionMarginPairData::getMaxCollisionMargin() const { return max_collision_margin_; }
