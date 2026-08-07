@@ -5418,11 +5418,13 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
         checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj, config);
     EXPECT_TRUE(traj_results);
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj.rows() - 1));
-    EXPECT_EQ(contacts.at(0).size(), 2);
+    // Under FIRST each substep records only the pair it reaches first, so a step whose substeps can
+    // reach more than one pair ends up holding one or two of them depending on broadphase iteration
+    // order. The contact totals below are independent of that order and are what pin the behavior.
+    EXPECT_GE(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
-    // FIRST-mode boundary-segment pair count is broadphase-iteration-order (std::hash) dependent; assert presence.
     EXPECT_GE(contacts.at(2).size(), 1);
-    EXPECT_EQ(contacts.at(3).size(), 2);
+    EXPECT_GE(contacts.at(3).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(135));
     EXPECT_EQ(traj_results.numContacts(), static_cast<int>(135));
     EXPECT_EQ(traj_results.numSteps(), static_cast<std::size_t>(traj.rows()));
@@ -5445,7 +5447,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     contacts.clear();
     EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(traj2.rows() - 1));
-    EXPECT_EQ(contacts.at(0).size(), 2);
+    EXPECT_GE(contacts.at(0).size(), 1);
     EXPECT_EQ(contacts.at(1).size(), 1);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(67));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));

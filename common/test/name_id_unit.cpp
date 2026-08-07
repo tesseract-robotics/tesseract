@@ -220,13 +220,13 @@ TEST(LinkIdPairTest, BoostHashAdlHook)  // NOLINT
   EXPECT_EQ(hash_value(pair), pair.hash());
 }
 
-#ifdef TESSERACT_COMMON_HAS_HASH_IS_AVALANCHING
+#ifdef TESSERACT_COMMON_AVALANCHING_NAMESPACE
 TEST(LinkIdPairTest, BoostHashIsAvalanching)  // NOLINT
 {
   // boost's open-addressing containers consult this trait to decide whether to remix the hash.
-  static_assert(boost::unordered::hash_is_avalanching<boost::hash<LinkIdPair>>::value,
+  static_assert(TESSERACT_COMMON_AVALANCHING_NAMESPACE::hash_is_avalanching<boost::hash<LinkIdPair>>::value,
                 "LinkIdPair's boost hash is declared avalanching");
-  static_assert(boost::unordered::hash_is_avalanching<boost::hash<LinkId>>::value,
+  static_assert(TESSERACT_COMMON_AVALANCHING_NAMESPACE::hash_is_avalanching<boost::hash<LinkId>>::value,
                 "LinkId's boost hash is declared avalanching");
 
   const LinkIdPair pair = LinkIdPair(LinkId("a"), LinkId("b"));

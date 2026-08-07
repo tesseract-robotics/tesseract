@@ -28,14 +28,22 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/version.hpp>
 #include <boost/container_hash/hash_fwd.hpp>
-#if BOOST_VERSION >= 108100
+/**
+ * @brief Namespace owning boost's hash_is_avalanching, and defined iff boost has the trait at all.
+ * @details Boost gained the trait in 1.81 and moved it out of boost::unordered in 1.89, where the
+ *          old name survives only as a using-declaration that cannot be specialized.
+ */
+#if BOOST_VERSION >= 108900
+#include <boost/container_hash/hash_is_avalanching.hpp>
+#define TESSERACT_COMMON_AVALANCHING_NAMESPACE boost
+#elif BOOST_VERSION >= 108100
 #include <boost/unordered/hash_traits.hpp>
-/** @brief Defined iff this header declares the boost hashes avalanching; boost::unordered::hash_traits is older. */
-#define TESSERACT_COMMON_HAS_HASH_IS_AVALANCHING
+#define TESSERACT_COMMON_AVALANCHING_NAMESPACE boost::unordered
 #endif
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <cstddef>
+#include <type_traits>
 
 #include <tesseract/common/types.h>
 
@@ -70,26 +78,26 @@ std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
 
 }  // namespace tesseract::common
 
-#ifdef TESSERACT_COMMON_HAS_HASH_IS_AVALANCHING
-namespace boost::unordered
+#ifdef TESSERACT_COMMON_AVALANCHING_NAMESPACE
+namespace TESSERACT_COMMON_AVALANCHING_NAMESPACE
 {
 /**
  * @brief The id value is boost::hash<std::string> output, which boost itself declares avalanching.
- * @details Boost gained this trait in 1.81; on older boost the containers that consult it do not
- *          exist yet, so its absence costs nothing.
+ * @details On boost too old to have the trait the containers that consult it do not exist either,
+ *          so its absence costs nothing.
  */
 template <typename Tag>
-struct hash_is_avalanching<boost::hash<tesseract::common::NameId<Tag>>> : boost::true_type
+struct hash_is_avalanching<boost::hash<tesseract::common::NameId<Tag>>> : std::true_type
 {
 };
 
 /** @brief The pair hash is boost::hash_combine output, avalanching whatever its inputs were. */
 template <typename Tag>
-struct hash_is_avalanching<boost::hash<tesseract::common::OrderedIdPair<Tag>>> : boost::true_type
+struct hash_is_avalanching<boost::hash<tesseract::common::OrderedIdPair<Tag>>> : std::true_type
 {
 };
 
-}  // namespace boost::unordered
+}  // namespace TESSERACT_COMMON_AVALANCHING_NAMESPACE
 #endif
 
 #endif  // TESSERACT_COMMON_TYPES_BOOST_HASH_H
