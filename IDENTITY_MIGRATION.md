@@ -3,8 +3,8 @@
 This guide covers migrating downstream code from string link/joint names to the integer identity
 types `LinkId` / `JointId`, which are now the primary currency of the Tesseract API. For the
 design rationale, the collision-resolution model, and the performance model, see
-`IDENTITY_DESIGN.md`; measured costs are in `IDENTITY_BENCHMARKS.md`. The single-package CMake
-restructure (include paths, targets, `find_package`) is covered separately in `MIGRATION.md`.
+`IDENTITY_DESIGN.md`. The single-package CMake restructure (include paths, targets,
+`find_package`) is covered separately in `MIGRATION.md`.
 
 ## What stays compatible
 
