@@ -19,18 +19,14 @@ namespace tesseract::collision::test_suite
 {
 
 /**
- * @brief Verify that ContactResult::link_ids are valid (non-empty name, non-zero value).
+ * @brief Verify that every ContactResult::link_ids entry is valid, i.e. carries a name.
  */
 inline void verifyLinkIdsConsistency(const ContactResultVector& results)
 {
   for (const auto& r : results)
   {
     for (std::size_t i = 0; i < 2; ++i)
-    {
-      EXPECT_FALSE(r.link_ids[i].name().empty()) << "link_ids[" << i << "] has empty name";
-      EXPECT_NE(r.link_ids[i], tesseract::common::INVALID_LINK_ID)
-          << "link_ids[" << i << "] is INVALID (name=" << r.link_ids[i] << ")";
-    }
+      EXPECT_TRUE(r.link_ids[i].isValid()) << "link_ids[" << i << "] is invalid (empty name)";
   }
 }
 

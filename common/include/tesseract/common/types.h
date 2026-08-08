@@ -63,20 +63,11 @@ namespace tesseract::common
 // ---------------------------------------------------------------------------
 
 /**
- * @brief Underlying numeric type for NameId hash values, as produced by boost::hash<std::string>.
- *
- * std::size_t, the width every standard and boost hashed container reduces a hash to. Naming it
- * separately marks the values that are raw name hashes — they are runtime-only and must never be
- * persisted (see the cereal serializers, which archive names).
- */
-using NameIdValue = std::size_t;
-
-/**
- * @brief Hash a name into a NameIdValue.
+ * @brief Hash a name into a NameId value.
  * @details boost::hash<std::string>, which is avalanching and identical on every platform. Defined
  *          out of line so this header stays free of boost includes.
  */
-[[nodiscard]] NameIdValue nameIdHash(const std::string& name) noexcept;
+[[nodiscard]] std::size_t nameIdHash(const std::string& name) noexcept;
 
 struct LinkTag
 {
@@ -88,7 +79,7 @@ struct JointTag
 /**
  * @brief Tagged integer identity type for links and joints.
  *
- * Wraps a NameIdValue computed from the name via boost::hash<std::string>.
+ * Wraps a hash value computed from the name via boost::hash<std::string>.
  * Distinct tag types (LinkTag, JointTag) prevent accidental cross-use.
  * IDs are runtime-only — never persisted. Deterministic within a single
  * process execution.
@@ -115,7 +106,7 @@ struct NameId
    * @brief The numeric hash of the name. Zero for an invalid id, but zero is not reserved — a name
    *        may legitimately hash to it, so validity is decided by the name, not by this value.
    */
-  [[nodiscard]] constexpr NameIdValue value() const noexcept { return value_; }
+  [[nodiscard]] constexpr std::size_t value() const noexcept { return value_; }
 
   /** @brief Access the original name string. Empty for default-constructed (invalid) IDs. */
   [[nodiscard]] const std::string& name() const noexcept { return name_; }
@@ -154,15 +145,12 @@ private:
    */
   friend struct NameIdTestAccess;
 
-  NameIdValue value_{ 0 };
+  std::size_t value_{ 0 };
   std::string name_;
 };
 
 using LinkId = NameId<LinkTag>;
 using JointId = NameId<JointTag>;
-
-inline const LinkId INVALID_LINK_ID{};
-inline const JointId INVALID_JOINT_ID{};
 
 /**
  * @brief Mix two id values into one bucket hash — the hash of the OrderedIdPair holding them, so a
@@ -170,7 +158,7 @@ inline const JointId INVALID_JOINT_ID{};
  * @details boost::hash_combine over the two values. Defined out of line so this header stays free
  *          of boost includes.
  */
-[[nodiscard]] std::size_t combineNameIdHash(NameIdValue f, NameIdValue s) noexcept;
+[[nodiscard]] std::size_t combineNameIdHash(std::size_t f, std::size_t s) noexcept;
 
 /**
  * @brief Canonically ordered pair of ids with cached combined hash — the key type for

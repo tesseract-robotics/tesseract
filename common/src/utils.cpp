@@ -543,7 +543,7 @@ std::vector<LinkId> getAllowedCollisions(const std::vector<LinkId>& link_ids,
                                          const AllowedCollisionEntries& acm_entries,
                                          bool remove_duplicates)
 {
-  // Full LinkId (value + name), not just the raw NameIdValue: two different link names sharing a
+  // Full LinkId (value + name), not just the raw hash value: two different link names sharing a
   // hash value must not be treated as the same query link (see removeAllowedCollision(LinkId) for
   // the same class of bug).
   std::unordered_set<LinkId> query_ids;

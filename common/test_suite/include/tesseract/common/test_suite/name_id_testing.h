@@ -24,6 +24,7 @@
 #ifndef TESSERACT_COMMON_TEST_SUITE_NAME_ID_TESTING_H
 #define TESSERACT_COMMON_TEST_SUITE_NAME_ID_TESTING_H
 
+#include <cstddef>
 #include <utility>
 
 #include <tesseract/common/types.h>
@@ -35,7 +36,7 @@ struct NameIdTestAccess
 {
   /** @brief Construct an id with an explicit value/name combination, e.g. a manufactured hash collision. */
   template <typename IdT>
-  [[nodiscard]] static IdT create(NameIdValue value, const std::string& name)
+  [[nodiscard]] static IdT create(std::size_t value, const std::string& name)
   {
     IdT id;
     id.value_ = value;

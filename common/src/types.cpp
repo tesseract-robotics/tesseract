@@ -32,9 +32,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::common
 {
-NameIdValue nameIdHash(const std::string& name) noexcept { return boost::hash<std::string>{}(name); }
+std::size_t nameIdHash(const std::string& name) noexcept { return boost::hash<std::string>{}(name); }
 
-std::size_t combineNameIdHash(NameIdValue f, NameIdValue s) noexcept
+std::size_t combineNameIdHash(std::size_t f, std::size_t s) noexcept
 {
   std::size_t seed{ 0 };
   boost::hash_combine(seed, f);

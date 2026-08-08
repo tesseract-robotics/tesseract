@@ -1413,7 +1413,7 @@ TEST(TesseractCoreUnit, ContactResultMapUnit)  // NOLINT
 TEST(TesseractCoreUnit, ContactResultMapCerealUsesStringKeyedWireFormat)  // NOLINT
 {
   // ContactResultMap persists under NVP "container", its LinkIdPair keys emitting as two names
-  // through the shared pair serializer. Serializing a key by its raw NameIdValue would leak hash
+  // through the shared pair serializer. Serializing a key by its raw hash value would leak hash
   // digits onto the wire (not stable across builds); this test pins the string-keyed format,
   // asserts no hash value reaches the archive at all, and checks round-trip recovery of the key.
   using namespace tesseract::collision;
@@ -2769,10 +2769,10 @@ TEST(TesseractCoreUnit, ContactTrajectoryResultsUnit)  // NOLINT
 
 TEST(TesseractCoreUnit, ContactResultLinkIdsUnit)  // NOLINT
 {
-  // Default-constructed link_ids should be INVALID_LINK_ID
+  // Default-constructed link_ids should be invalid
   tesseract::collision::ContactResult result;
-  EXPECT_EQ(result.link_ids[0], tesseract::common::INVALID_LINK_ID);
-  EXPECT_EQ(result.link_ids[1], tesseract::common::INVALID_LINK_ID);
+  EXPECT_FALSE(result.link_ids[0].isValid());
+  EXPECT_FALSE(result.link_ids[1].isValid());
 
   // Set link_ids and verify retrievable
   result.link_ids[0] = "link_a";
@@ -2788,8 +2788,8 @@ TEST(TesseractCoreUnit, ContactResultLinkIdsUnit)  // NOLINT
 
   // Verify clear resets link_ids
   result.clear();
-  EXPECT_EQ(result.link_ids[0], tesseract::common::INVALID_LINK_ID);
-  EXPECT_EQ(result.link_ids[1], tesseract::common::INVALID_LINK_ID);
+  EXPECT_FALSE(result.link_ids[0].isValid());
+  EXPECT_FALSE(result.link_ids[1].isValid());
 }
 
 TEST(TesseractCoreUnit, IsContactAllowedLinkIdUnit)  // NOLINT

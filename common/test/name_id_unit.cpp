@@ -52,14 +52,6 @@ TEST(NameIdTest, IsValid)  // NOLINT
   EXPECT_EQ(invalid.value(), 0U);
 }
 
-TEST(NameIdTest, SentinelIsInvalid)  // NOLINT
-{
-  EXPECT_FALSE(INVALID_LINK_ID.isValid());
-  EXPECT_EQ(INVALID_LINK_ID.value(), 0U);
-  EXPECT_FALSE(INVALID_JOINT_ID.isValid());
-  EXPECT_EQ(INVALID_JOINT_ID.value(), 0U);
-}
-
 TEST(NameIdTest, ValidityIsCarriedByTheName)  // NOLINT
 {
   // An empty name yields the invalid id; it is not hashed.
@@ -73,7 +65,7 @@ TEST(NameIdTest, ValidityIsCarriedByTheName)  // NOLINT
   const auto zero_valued = NameIdTestAccess::create<LinkId>(0, "hashes_to_zero");
   EXPECT_TRUE(zero_valued.isValid());
   EXPECT_EQ(zero_valued.value(), 0U);
-  EXPECT_NE(zero_valued, INVALID_LINK_ID);
+  EXPECT_NE(zero_valued, LinkId{});
 }
 
 // ======================== Name accessor ========================
@@ -89,12 +81,6 @@ TEST(NameIdTest, DefaultConstructedHasEmptyName)  // NOLINT
   const LinkId id{};
   EXPECT_TRUE(id.name().empty());
   EXPECT_FALSE(id.isValid());
-}
-
-TEST(NameIdTest, InvalidIdHasEmptyName)  // NOLINT
-{
-  EXPECT_TRUE(INVALID_LINK_ID.name().empty());
-  EXPECT_TRUE(INVALID_JOINT_ID.name().empty());
 }
 
 // ======================== Type safety ========================
@@ -175,7 +161,7 @@ TEST(NameIdTest, StreamInsertionWritesName)  // NOLINT
 TEST(NameIdTest, StreamInsertionInvalidIdWritesNothing)  // NOLINT
 {
   std::ostringstream oss;
-  oss << INVALID_LINK_ID;
+  oss << LinkId{};
   EXPECT_TRUE(oss.str().empty());
 }
 
@@ -352,7 +338,7 @@ TEST(NameIdTest, CerealRoundTripValid)  // NOLINT
   EXPECT_TRUE(loaded.isValid());
 }
 
-TEST(NameIdTest, CerealRoundTripInvalidSentinel)  // NOLINT
+TEST(NameIdTest, CerealRoundTripInvalidId)  // NOLINT
 {
   const LinkId original{};  // default-constructed = invalid
   EXPECT_FALSE(original.isValid());

@@ -58,18 +58,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // translation unit that saw only the hooks would give the same container type
 // a different bucket placement than one that also saw the trait, and the two
 // would disagree about where a key lives.
+//
+// The trait is specialized rather than marking the hash with a nested
+// is_avalanching typedef, which would need no version gate: that typedef has to
+// live on the hash functor, and the functor reached through an ADL hook is
+// boost's own boost::hash. types.h can use the typedef because the functor it
+// declares avalanching is the std::hash specialization it owns.
 // ---------------------------------------------------------------------------
 
 namespace tesseract::common
 {
-/** @brief ADL hook for boost::hash. Returns the same value as std::hash<NameId<Tag>>. */
+/** @brief ADL hook for boost::hash. Returns the cached id value; no rehash per lookup. */
 template <typename Tag>
 constexpr std::size_t hash_value(const NameId<Tag>& id) noexcept
 {
   return id.value();
 }
 
-/** @brief ADL hook for boost::hash. Returns the same value as std::hash<OrderedIdPair<Tag>>. */
+/** @brief ADL hook for boost::hash. Returns the cached combined hash; no rehash per lookup. */
 template <typename Tag>
 std::size_t hash_value(const OrderedIdPair<Tag>& p) noexcept
 {
