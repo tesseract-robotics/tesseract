@@ -24,33 +24,30 @@
 #include <tesseract/srdf/utils.h>
 #include <tesseract/common/allowed_collision_matrix.h>
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
+#include <tesseract/scene_graph/link.h>
 #include <tesseract/srdf/srdf_model.h>
 
 namespace tesseract::srdf
 {
 void processSRDFAllowedCollisions(tesseract::scene_graph::SceneGraph& scene_graph, const SRDFModel& srdf_model)
 {
-  for (const auto& pair : srdf_model.acm.getAllAllowedCollisions())
-    scene_graph.addAllowedCollision(pair.first.first, pair.first.second, pair.second);
+  for (const auto& [key, reason] : srdf_model.acm.getAllAllowedCollisions())
+    scene_graph.addAllowedCollision(key, reason);
 }
 
-bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkNamesPair> pair1,
-                                   std::reference_wrapper<const tesseract::common::LinkNamesPair> pair2)
+bool compareLinkPairAlphabetically(std::reference_wrapper<const tesseract::common::LinkIdPair> pair1,
+                                   std::reference_wrapper<const tesseract::common::LinkIdPair> pair2)
 {
-  // Sort first by the first string
-  if (pair1.get().first != pair2.get().first)
-  {
-    return pair1.get().first < pair2.get().first;
-  }
-
-  // Then sort by the second
-  return pair1.get().second < pair2.get().second;
+  // orderedNameView() returns references into each pair, so the comparison copies no strings. Both
+  // pairs outlive it.
+  return pair1.get().orderedNameView() < pair2.get().orderedNameView();
 }
 
-std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>>
+std::vector<std::reference_wrapper<const tesseract::common::LinkIdPair>>
 getAlphabeticalACMKeys(const tesseract::common::AllowedCollisionEntries& allowed_collision_entries)
 {
-  std::vector<std::reference_wrapper<const tesseract::common::LinkNamesPair>> acm_keys;
+  std::vector<std::reference_wrapper<const tesseract::common::LinkIdPair>> acm_keys;
   acm_keys.reserve(allowed_collision_entries.size());
   for (const auto& acm_pair : allowed_collision_entries)
   {

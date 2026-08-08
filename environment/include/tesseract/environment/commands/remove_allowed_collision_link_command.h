@@ -27,9 +27,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -48,17 +48,17 @@ public:
 
   /**
    * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
-   * @param link_name Collision object name
+   * @param link_id Collision object id
    */
-  RemoveAllowedCollisionLinkCommand(std::string link_name);
+  RemoveAllowedCollisionLinkCommand(common::LinkId link_id);
 
-  const std::string& getLinkName() const;
+  const common::LinkId& getLinkId() const;
 
   bool operator==(const RemoveAllowedCollisionLinkCommand& rhs) const;
   bool operator!=(const RemoveAllowedCollisionLinkCommand& rhs) const;
 
 private:
-  std::string link_name_;
+  common::LinkId link_id_;
 
   template <class Archive>
   friend void ::tesseract::environment::serialize(Archive& ar, RemoveAllowedCollisionLinkCommand& obj);

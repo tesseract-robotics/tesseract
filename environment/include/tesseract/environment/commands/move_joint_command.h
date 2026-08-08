@@ -27,9 +27,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/types.h>
 #include <tesseract/environment/command.h>
 
 namespace tesseract::environment
@@ -51,20 +51,20 @@ public:
    *
    *        All child links & joints should follow
    *
-   * @param joint_name The name of the joint to move
-   * @param new_parent_link The name of the link to move to.e
+   * @param joint_id The id of the joint to move
+   * @param new_parent_link The id of the link to move to
    */
-  MoveJointCommand(std::string joint_name, std::string parent_link);
+  MoveJointCommand(common::JointId joint_id, common::LinkId parent_link);
 
-  const std::string& getJointName() const;
-  const std::string& getParentLink() const;
+  const common::JointId& getJointId() const;
+  const common::LinkId& getParentLink() const;
 
   bool operator==(const MoveJointCommand& rhs) const;
   bool operator!=(const MoveJointCommand& rhs) const;
 
 private:
-  std::string joint_name_;
-  std::string parent_link_;
+  common::JointId joint_id_;
+  common::LinkId parent_link_;
 
   template <class Archive>
   friend void ::tesseract::environment::serialize(Archive& ar, MoveJointCommand& obj);

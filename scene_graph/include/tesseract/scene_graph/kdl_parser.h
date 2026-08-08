@@ -39,7 +39,6 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <string>
 #include <vector>
 #include <memory>
 #include <unordered_map>
@@ -127,14 +126,14 @@ struct KDLTreeData
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   KDL::Tree tree;
-  std::string base_link_name;
-  std::vector<std::string> joint_names;
-  std::vector<std::string> active_joint_names;
-  std::vector<std::string> floating_joint_names;
-  std::vector<std::string> link_names;
-  std::vector<std::string> active_link_names;
-  std::vector<std::string> static_link_names;
-  tesseract::common::TransformMap floating_joint_values;
+  tesseract::common::LinkId base_link_id;
+  std::vector<tesseract::common::JointId> joint_ids;
+  std::vector<tesseract::common::JointId> active_joint_ids;
+  std::vector<tesseract::common::JointId> floating_joint_ids;
+  std::vector<tesseract::common::LinkId> link_ids;
+  std::vector<tesseract::common::LinkId> active_link_ids;
+  std::vector<tesseract::common::LinkId> static_link_ids;
+  tesseract::common::JointIdTransformMap floating_joint_values;
 
   bool operator==(const KDLTreeData& rhs) const;
   bool operator!=(const KDLTreeData& rhs) const;
@@ -150,21 +149,36 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph);
 
 /**
  * @brief Convert a portion of a Tesseract SceneGraph into a KDL Tree
- * @details This will create a new tree from multiple sub tree defined by the provided joint names
+ * @details This will create a new tree from multiple sub tree defined by the provided joint names.
  * The values are used to convert non fixed joints that are not listed in joint_names to a
  * fixed joint. The first tree found a link is defined attaching world to the base link and all
  * other trees are attached to this link by a fixed joint.
- * @throws If graph is not a tree it will return false.
+ *
+ * @note **Precondition**: @p joint_values must contain an entry for *every* non-FIXED, non-FLOATING
+ * joint that is reachable from the root during the depth-first traversal, including joints that are
+ * **not** listed in @p joint_ids.  Joints absent from @p joint_ids are treated as fixed segments
+ * whose pose is determined by the value in @p joint_values.  A missing entry throws
+ * `std::runtime_error` naming the offending joint so the caller can identify and fix the omission.
+ *
+ * @note **Precondition**: @p floating_joint_values must contain an entry for *every* FLOATING joint
+ * reachable from the root during the depth-first traversal.  A missing entry throws
+ * `std::runtime_error` naming the offending FLOATING joint so the caller can identify and fix the
+ * omission.
+ *
+ * @throws std::runtime_error If the graph is not a tree, if the generated tree does not contain
+ * exactly `joint_ids.size()` active joints, if @p joint_values is missing a value for a non-FIXED,
+ * non-FLOATING joint reachable from the root, or if @p floating_joint_values is missing a transform
+ * for a FLOATING joint reachable from the root.
  * @param scene_graph The Tesseract Scene Graph
- * @param joint_names The active joint names
- * @param joint_values The active joint values
- * @param floating_joint_values The floating joint values
+ * @param joint_ids The active joint ids
+ * @param joint_values Values for every non-FIXED, non-FLOATING joint reachable from the root
+ * @param floating_joint_values Transforms for every FLOATING joint reachable from the root
  * @return Returns KDL tree representation of the sub scene graph
  */
 KDLTreeData parseSceneGraph(const SceneGraph& scene_graph,
-                            const std::vector<std::string>& joint_names,
-                            const std::unordered_map<std::string, double>& joint_values,
-                            const tesseract::common::TransformMap& floating_joint_values = {});
+                            const std::vector<tesseract::common::JointId>& joint_ids,
+                            const std::unordered_map<tesseract::common::JointId, double>& joint_values,
+                            const tesseract::common::JointIdTransformMap& floating_joint_values = {});
 
 }  // namespace tesseract::scene_graph
 

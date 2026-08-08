@@ -29,7 +29,6 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
-#include <string>
 #include <unordered_map>
 #include <optional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -63,7 +62,7 @@ enum class CollisionMarginPairOverrideType : std::uint8_t
   MODIFY
 };
 
-using PairsCollisionMarginData = std::unordered_map<tesseract::common::LinkNamesPair, double>;
+using PairsCollisionMarginData = std::unordered_map<LinkIdPair, double>;
 
 class CollisionMarginPairData
 {
@@ -75,24 +74,18 @@ public:
 
   /**
    * @brief Set the margin for a given contact pair
-   *        * The order of the object names does not matter, that is handled internal to
-   * the class.
-   *        * @param obj1 The first object name. Order doesn't matter
-   * @param obj2 The Second object name. Order doesn't matter
+   * @param id1 The first object LinkId. Order doesn't matter
+   * @param id2 The second object LinkId. Order doesn't matter
    * @param margin contacts with distance < collision_margin are considered in collision
    */
-  void setCollisionMargin(const std::string& obj1, const std::string& obj2, double margin);
+  void setCollisionMargin(const LinkId& id1, const LinkId& id2, double margin);
 
   /**
-   * @brief Get the pairs collision margin data
-   *
-   * If a collision margin for the request pair does not exist it returns the default collision margin data.
-   *
-   * @param obj1 The first object name
-   * @param obj2 The second object name
+   * @brief Get the pairs collision margin data, or nullopt if the pair has no entry.
+   * @param par The link id pair
    * @return A link pair contact margin if exists
    */
-  std::optional<double> getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
+  std::optional<double> getCollisionMargin(const LinkIdPair& pair) const;
 
   /**
    * @brief Get the largest pair collision margin
@@ -104,7 +97,7 @@ public:
    * @brief Get the largest collision margin for the given object
    * @return Max contact distance threshold if object exists
    */
-  std::optional<double> getMaxCollisionMargin(const std::string& obj) const;
+  std::optional<double> getMaxCollisionMargin(const LinkId& obj_id) const;
 
   /**
    * @brief Get Collision Margin Data for stored pairs
@@ -152,11 +145,9 @@ private:
   /** @brief Stores the largest collision margin */
   std::optional<double> max_collision_margin_;
 
-  /** @brief Stores the maximum collision margin for each object */
-  std::unordered_map<std::string, double> object_max_margins_;
-
-  /** @brief Set the margin for a given contact pair without updating the max margins */
-  void setCollisionMarginHelper(const std::string& obj1, const std::string& obj2, double margin);
+  /** @brief Stores the maximum collision margin for each object, keyed by full LinkId (hybrid
+   *  value+name equality) so hash-colliding links do not merge into one max-margin entry */
+  std::unordered_map<LinkId, double> object_max_margins_;
 
   /** @brief Recalculate the overall and the per-object max margins */
   void updateMaxMargins();
@@ -196,22 +187,32 @@ public:
    * The order of the object names does not matter, that is handled internal to
    * the class.
    *
-   * @param obj1 The first object name. Order doesn't matter
-   * @param obj2 The Second object name. Order doesn't matter
+   * @param id1 The first object LinkId. Order doesn't matter
+   * @param id2 The second object LinkId. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  void setCollisionMargin(const std::string& obj1, const std::string& obj2, double collision_margin);
+  void setCollisionMargin(const LinkId& id1, const LinkId& id2, double collision_margin);
 
   /**
    * @brief Get the pairs collision margin data
    *
    * If a collision margin for the request pair does not exist it returns the default collision margin data.
    *
-   * @param obj1 The first object name
-   * @param obj2 The second object name
-   * @return A Vector2d[Contact Distance Threshold, Coefficient]
+   * @param pair The link id pair
+   * @return A link pair contact margin
    */
-  double getCollisionMargin(const std::string& obj1, const std::string& obj2) const;
+  double getCollisionMargin(const LinkIdPair& pair) const;
+
+  /**
+   * @brief Get the pairs collision margin data
+   *
+   * If a collision margin for the request pair does not exist it returns the default collision margin data.
+   *
+   * @param id1 The first object id
+   * @param id2 The second object id
+   * @return A link pair contact margin
+   */
+  double getCollisionMargin(const LinkId& id1, const LinkId& id2) const;
 
   /**
    * @brief Get Collision Margin Data for stored pairs
@@ -235,7 +236,7 @@ public:
    *
    * @return Max contact distance threshold
    */
-  double getMaxCollisionMargin(const std::string& obj) const;
+  double getMaxCollisionMargin(const LinkId& obj_id) const;
 
   /**
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins

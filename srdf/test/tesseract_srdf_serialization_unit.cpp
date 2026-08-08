@@ -23,11 +23,15 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/calibration_info.h>
+#include <tesseract/common/collision_margin_data.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/serialization.h>
 #include <tesseract/common/unit_test_utils.h>
+#include <cereal/archives/json.hpp>
 #include <tesseract/common/utils.h>
 #include <tesseract/srdf/kinematics_information.h>
 #include <tesseract/srdf/srdf_model.h>
@@ -67,61 +71,61 @@ SceneGraph getSceneGraph()
   EXPECT_TRUE(g.addLink(tool0));
 
   Joint joint_1("joint_a1");
-  joint_1.parent_link_name = "base_link";
-  joint_1.child_link_name = "link_1";
+  joint_1.parent_link_id = "base_link";
+  joint_1.child_link_id = "link_1";
   joint_1.type = JointType::FIXED;
   EXPECT_TRUE(g.addJoint(joint_1));
 
   Joint joint_2("joint_a2");
-  joint_2.parent_link_name = "link_1";
-  joint_2.child_link_name = "link_2";
+  joint_2.parent_link_id = "link_1";
+  joint_2.child_link_id = "link_2";
   joint_2.type = JointType::REVOLUTE;
   joint_2.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_2));
 
   Joint joint_3("joint_a3");
   joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3.parent_link_name = "link_2";
-  joint_3.child_link_name = "link_3";
+  joint_3.parent_link_id = "link_2";
+  joint_3.child_link_id = "link_3";
   joint_3.type = JointType::REVOLUTE;
   joint_3.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_3));
 
   Joint joint_4("joint_a4");
   joint_4.parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_4.parent_link_name = "link_3";
-  joint_4.child_link_name = "link_4";
+  joint_4.parent_link_id = "link_3";
+  joint_4.child_link_id = "link_4";
   joint_4.type = JointType::REVOLUTE;
   joint_4.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_4));
 
   Joint joint_5("joint_a5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5.parent_link_name = "link_4";
-  joint_5.child_link_name = "link_5";
+  joint_5.parent_link_id = "link_4";
+  joint_5.child_link_id = "link_5";
   joint_5.type = JointType::REVOLUTE;
   joint_5.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_5));
 
   Joint joint_6("joint_a6");
   joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_6.parent_link_name = "link_5";
-  joint_6.child_link_name = "link_6";
+  joint_6.parent_link_id = "link_5";
+  joint_6.child_link_id = "link_6";
   joint_6.type = JointType::REVOLUTE;
   joint_6.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_6));
 
   Joint joint_7("joint_a7");
   joint_7.parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_7.parent_link_name = "link_6";
-  joint_7.child_link_name = "link_7";
+  joint_7.parent_link_id = "link_6";
+  joint_7.child_link_id = "link_7";
   joint_7.type = JointType::REVOLUTE;
   joint_7.limits = std::make_shared<JointLimits>(-7, 7, 0, 5, 10, 20);
   EXPECT_TRUE(g.addJoint(joint_7));
 
   Joint joint_tool0("joint_tool0");
-  joint_tool0.parent_link_name = "link_7";
-  joint_tool0.child_link_name = "tool0";
+  joint_tool0.parent_link_id = "link_7";
+  joint_tool0.child_link_id = "tool0";
   joint_tool0.type = JointType::FIXED;
   EXPECT_TRUE(g.addJoint(joint_tool0));
 
@@ -154,6 +158,44 @@ TEST(TesseractSRDFSerializeUnit, SRDFModel)  // NOLINT
   auto srdf = getSRDFModel(graph, locator);
 
   tesseract::common::testSerialization<SRDFModel>(*srdf, "SRDFModel");
+}
+
+TEST(TesseractSRDFSerializeUnit, SRDFModelJsonRoundTripPerField)  // NOLINT
+{
+  GeneralResourceLocator locator;
+  auto graph = getSceneGraph();
+  auto srdf = getSRDFModel(graph, locator);
+
+  // Populate collision_margin_data and calibration_info — the SRDF fixture leaves both empty,
+  // so give every member a non-default value to exercise per-field round-tripping.
+  srdf->collision_margin_data = std::make_shared<tesseract::common::CollisionMarginData>(0.05);
+  srdf->collision_margin_data->setCollisionMargin("link_1", "link_2", 0.01);
+  srdf->collision_margin_data->setCollisionMargin("link_3", "link_4", 0.02);
+
+  Eigen::Isometry3d cal_tf = Eigen::Isometry3d::Identity();
+  cal_tf.translation() = Eigen::Vector3d(0.1, 0.2, 0.3);
+  srdf->calibration_info.joints["joint_a2"] = cal_tf;
+
+  std::stringstream ss;
+  {
+    cereal::JSONOutputArchive ar(ss);
+    ar(*srdf);
+  }
+  SRDFModel loaded;
+  {
+    cereal::JSONInputArchive ar(ss);
+    ar(loaded);
+  }
+
+  EXPECT_EQ(loaded.name, srdf->name);
+  EXPECT_EQ(loaded.version, srdf->version);
+  EXPECT_EQ(loaded.kinematics_information, srdf->kinematics_information);
+  EXPECT_EQ(loaded.contact_managers_plugin_info, srdf->contact_managers_plugin_info);
+  EXPECT_EQ(loaded.acm, srdf->acm);
+  ASSERT_NE(srdf->collision_margin_data, nullptr);
+  ASSERT_NE(loaded.collision_margin_data, nullptr);
+  EXPECT_EQ(*loaded.collision_margin_data, *srdf->collision_margin_data);
+  EXPECT_EQ(loaded.calibration_info, srdf->calibration_info);
 }
 
 int main(int argc, char** argv)

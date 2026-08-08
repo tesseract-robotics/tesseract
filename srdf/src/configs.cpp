@@ -28,11 +28,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/joint.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
 #include <tesseract/srdf/configs.h>
+#include <tesseract/srdf/utils.h>
 
 namespace tesseract::srdf
 {
@@ -88,7 +90,8 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
   for (const auto& cal_joint : info.joints)
   {
     if (scene_graph.getJoint(cal_joint.first) == nullptr)
-      std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first + "' does not exist!"));
+      std::throw_with_nested(
+          std::runtime_error("calibration_config: joint '" + cal_joint.first.name() + "' does not exist!"));
   }
 
   return info;
@@ -117,7 +120,8 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
   for (const auto& cal_joint : info.joints)
   {
     if (scene_graph.getJoint(cal_joint.first) == nullptr)
-      std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first + "' does not exist!"));
+      std::throw_with_nested(
+          std::runtime_error("calibration_config: joint '" + cal_joint.first.name() + "' does not exist!"));
   }
 
   return info;
@@ -147,7 +151,8 @@ tesseract::common::CalibrationInfo parseCalibrationConfig(const tesseract::scene
   for (const auto& cal_joint : info.joints)
   {
     if (scene_graph.getJoint(cal_joint.first) == nullptr)
-      std::throw_with_nested(std::runtime_error("calibration_config: joint '" + cal_joint.first + "' does not exist!"));
+      std::throw_with_nested(
+          std::runtime_error("calibration_config: joint '" + cal_joint.first.name() + "' does not exist!"));
   }
 
   return info;

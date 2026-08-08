@@ -3,6 +3,7 @@
  * @brief Common Tesseract Types
  *
  * @author Levi Armstrong
+ * @author Roelof Oomen
  * @date January 18, 2018
  *
  * @copyright Copyright (c) 2017, Southwest Research Institute
@@ -31,36 +32,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::common
 {
-LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
-{
-  return (link_name1 <= link_name2) ? std::make_pair(link_name1, link_name2) : std::make_pair(link_name2, link_name1);
-}
+std::size_t nameIdHash(const std::string& name) noexcept { return boost::hash<std::string>{}(name); }
 
-void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2)
-{
-  if (link_name1 <= link_name2)
-  {
-    pair.first = link_name1;
-    pair.second = link_name2;
-  }
-  else
-  {
-    pair.first = link_name2;
-    pair.second = link_name1;
-  }
-}
-
-}  // namespace tesseract::common
-
-namespace std
-{
-std::size_t
-hash<tesseract::common::LinkNamesPair>::operator()(const tesseract::common::LinkNamesPair& pair) const noexcept
+std::size_t combineNameIdHash(std::size_t f, std::size_t s) noexcept
 {
   std::size_t seed{ 0 };
-  boost::hash_combine(seed, pair.first);
-  boost::hash_combine(seed, pair.second);
+  boost::hash_combine(seed, f);
+  boost::hash_combine(seed, s);
   return seed;
 }
 
-}  // namespace std
+}  // namespace tesseract::common

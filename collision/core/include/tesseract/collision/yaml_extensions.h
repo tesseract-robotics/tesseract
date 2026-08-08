@@ -273,7 +273,13 @@ struct convert<tesseract::collision::ContactManagerConfig>
       rhs.acm = n.as<tesseract::common::AllowedCollisionMatrix>();
 
     if (const YAML::Node& n = node["modify_object_enabled"])
-      rhs.modify_object_enabled = n.as<std::unordered_map<std::string, bool>>();
+    {
+      // Decoded through the converter rather than as<>() so a non-map node returns false here
+      // instead of throwing out of the loop.
+      rhs.modify_object_enabled.clear();
+      if (!convert<decltype(rhs.modify_object_enabled)>::decode(n, rhs.modify_object_enabled))
+        return false;
+    }
 
     return true;
   }

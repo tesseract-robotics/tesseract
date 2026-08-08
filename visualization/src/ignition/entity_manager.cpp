@@ -42,22 +42,22 @@ EntityID EntityManager::getModel(const std::string& name) const
 
 const EntityMap& EntityManager::getModels() const { return model_id_map_; }
 
-EntityID EntityManager::addLink(const std::string& name)
+EntityID EntityManager::addLink(const tesseract::common::LinkId& id)
 {
-  link_id_map_[name] = ++entity_counter_;
-  return link_id_map_[name];
+  link_id_map_[id] = ++entity_counter_;
+  return link_id_map_[id];
 }
 
-EntityID EntityManager::getLink(const std::string& name) const
+EntityID EntityManager::getLink(const tesseract::common::LinkId& id) const
 {
-  auto it = link_id_map_.find(name);
+  auto it = link_id_map_.find(id);
   if (it == link_id_map_.end())
     return NULL_ENTITY_ID;
 
   return it->second;
 }
 
-const EntityMap& EntityManager::getLinks() const { return link_id_map_; }
+const EntityLinkMap& EntityManager::getLinks() const { return link_id_map_; }
 
 EntityID EntityManager::addVisual(const std::string& name)
 {
