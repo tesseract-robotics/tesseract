@@ -370,7 +370,7 @@ void reorder(Eigen::Ref<Eigen::VectorXd> v, std::vector<Eigen::Index> order)
 {
   assert(v.rows() == static_cast<Eigen::Index>(order.size()));
   // for all elements to put in place
-  for (std::size_t i = 0; i < order.size() - 1; ++i)
+  for (std::size_t i = 0; i + 1 < order.size(); ++i)
   {
     if (order[i] == static_cast<Eigen::Index>(i))
       continue;

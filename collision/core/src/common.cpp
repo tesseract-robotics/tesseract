@@ -48,7 +48,7 @@ getCollisionObjectPairs(const std::vector<std::string>& active_links,
   clp.reserve(num_pairs);
 
   // Create active to active pairs
-  for (std::size_t i = 0; i < active_links.size() - 1; ++i)
+  for (std::size_t i = 0; i + 1 < active_links.size(); ++i)
   {
     const std::string& l1 = active_links[i];
     for (std::size_t j = i + 1; j < active_links.size(); ++j)
