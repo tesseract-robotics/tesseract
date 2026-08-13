@@ -131,8 +131,46 @@ auto schema = PropertyTreeBuilder()
 Type methods: `container`, `string`, `character`, `boolean`, `int32`, `uint32`,
 `int64`, `uint64`, `float32`, `float64`, `customType`
 
+Composition method: `compose` (copy children from an existing PropertyTree into the current scope)
+
+OneOf methods: `beginOneOf` / `endOneOf` (for inline oneOf groups within a container)
+
 Attribute setters: `doc`, `required`, `defaultVal`, `enumValues`, `minimum`, `maximum`,
 `label`, `placeholder`, `group`, `readOnly`, `hidden`, `validator`, `attribute`
+
+@subsection pt_compose Schema Composition
+
+The `compose()` method copies all children from another PropertyTree into the current
+builder scope.  This enables building schemas incrementally by reusing base schemas:
+
+@code
+// Base schema for a task node
+auto node_schema = PropertyTreeBuilder()
+    .attribute(TYPE, CONTAINER)
+    .string("namespace").done()
+    .boolean("conditional").done()
+    .container("inputs").done()
+    .container("outputs").done()
+    .build();
+
+// Task schema inherits all node fields, adds trigger_abort
+auto task_schema = PropertyTreeBuilder()
+    .attribute(TYPE, CONTAINER)
+    .compose(node_schema)           // namespace, conditional, inputs, outputs
+    .boolean("trigger_abort").done()
+    .build();
+
+// Concrete task schema inherits all task fields, adds its own
+auto remap_schema = PropertyTreeBuilder()
+    .attribute(TYPE, CONTAINER)
+    .compose(task_schema)           // all task fields
+    .boolean("copy").done()
+    .build();
+@endcode
+
+This pattern eliminates the need for helper functions that pass builders around.
+Each class can define a static `schema()` method that returns a complete PropertyTree,
+and derived schemas simply call `compose()` to pull in the base fields.
 
 @section pt_validation Validation
 
@@ -187,9 +225,12 @@ When merging config into a oneOf schema, PropertyTree:
 4. Fails if multiple branches match (ambiguous - could be either)
 5. Selects the matching branch and flattens the schema to that branch's structure
 
-<b>Example - Shape Definition:</b>
+@subsection pt_oneof_standalone Standalone OneOf
+
+Use a standalone oneOf when the entire config is one-of-many variants and there are
+no shared fields:
+
 @code
-// Define a oneOf schema with two shape variants
 auto shape_schema = PropertyTreeBuilder()
     .attribute(TYPE, ONEOF)
     .container("circle")
@@ -206,35 +247,50 @@ YAML::Node config1;
 config1["radius"] = 5.0;
 shape_schema.mergeConfig(config1);  // Selects "circle" branch
 auto error1 = shape_schema.validate();  // Validates against circle schema
-
-// Different configuration specifies rectangle
-YAML::Node config2;
-config2["width"] = 10.0;
-config2["height"] = 20.0;
-shape_schema.mergeConfig(config2);  // Selects "rectangle" branch
-auto error2 = shape_schema.validate();  // Validates against rectangle schema
 @endcode
 
-<b>Example - Plugin Selection:</b>
+@subsection pt_oneof_inline Inline OneOf (within a container)
+
+Use an inline oneOf when a config has shared fields alongside mutually exclusive fields.
+The `beginOneOf()` / `endOneOf()` builder methods create an inline oneOf group where:
+
+- Shared fields are defined normally in the parent container
+- Only the mutually exclusive portions go inside `beginOneOf()` / `endOneOf()`
+- During merge, branch selection uses the parent's full config
+- The chosen branch's children are hoisted into the parent alongside the shared fields
+
+<b>Example - Robot kinematics with model enum OR explicit parameters:</b>
 @code
-auto plugin_schema = PropertyTreeBuilder()
-    .attribute(TYPE, ONEOF)
-    .container("usb_plugin")
-        .string("port").required().done()
-        .integer("baud_rate").required().done()
+auto schema = PropertyTreeBuilder()
+    .attribute(TYPE, CONTAINER)
+    .string("base_link").required().done()
+    .string("tip_link").required().done()
+    .beginOneOf()
+        .container("by_model")
+            .string("model").required()
+                .enumValues({"UR3", "UR5", "UR10"}).done()
         .done()
-    .container("ethernet_plugin")
-        .string("ip_address").required().done()
-        .integer("port").required().done()
+        .container("by_params")
+            .container("params").required()
+                .doubleNum("d1").required().done()
+                .doubleNum("a2").required().done()
+            .done()
         .done()
+    .endOneOf()
     .build();
 
-// User chooses USB
-YAML::Node usb_config;
-usb_config["port"] = "/dev/ttyUSB0";
-usb_config["baud_rate"] = 115200;
-plugin_schema.mergeConfig(usb_config);  // Selects "usb_plugin" branch
+// Config using model enum
+YAML::Node config;
+config["base_link"] = "base";
+config["tip_link"] = "tool0";
+config["model"] = "UR5";
+schema.mergeConfig(config);  // Selects "by_model", hoists "model" into parent
+auto errors = schema.validate();  // Validates base_link, tip_link, AND model
 @endcode
+
+Note: `base_link` and `tip_link` are defined once and shared across all branches, avoiding
+duplication. The branch names ("by_model", "by_params") are for selection only - they do not
+appear in the YAML config.
 
 <b>Branch Selection Rules:</b>
 - A branch is "applicable" if all its required fields are present in the config
