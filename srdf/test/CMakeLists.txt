@@ -9,7 +9,7 @@ target_link_libraries(
           tesseract::geometry)
 target_compile_options(tesseract_srdf_serialization_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_srdf_serialization_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_srdf_serialization_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_srdf_serialization_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_srdf_serialization_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -27,10 +27,11 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           tesseract::srdf
-          tesseract::geometry)
+          tesseract::geometry
+          tesseract::common_test_suite)
 target_compile_options(tesseract_srdf_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_srdf_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_srdf_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_srdf_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_srdf_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

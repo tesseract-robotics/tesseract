@@ -29,7 +29,7 @@ elseif(TARGET Boost::stacktrace_noop)
   set(TESSERACT_BACKTRACE_LIB "Boost::stacktrace_noop")
 endif()
 
-set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "common" PARENT_SCOPE)
+list(APPEND SUPPORTED_COMPONENTS common)
 
 add_library(
   common
@@ -52,9 +52,9 @@ add_library(
   src/schema_registry.cpp
   src/schema_registration.cpp
   src/yaml_extensions.cpp
-  src/types.cpp
   src/stopwatch.cpp
   src/timer.cpp
+  src/types.cpp
   src/yaml_utils.cpp)
 add_library(tesseract::common ALIAS common)
 if(NOT WIN32)
@@ -77,7 +77,8 @@ target_link_libraries(
          yaml-cpp)
 target_compile_options(common PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_options(common PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
-target_compile_definitions(common PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${TESSERACT_BACKTRACE_DEFINITION})
+target_compile_definitions(common PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC} ${TESSERACT_BACKTRACE_DEFINITION})
+target_compile_definitions(common PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
 target_clang_tidy(common ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(common PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
@@ -119,6 +120,12 @@ install(
   DESTINATION lib/cmake/${PROJECT_NAME}
   COMPONENT common)
 
+# Test Suite
+if(TESSERACT_BUILD_TEST_SUITE)
+  list(APPEND SUPPORTED_COMPONENTS common_test_suite)
+  add_subdirectory(test_suite)
+endif()
+
 if(TESSERACT_ENABLE_TESTING OR TESSERACT_COMMON_ENABLE_TESTING)
   enable_testing()
   add_subdirectory(test)
@@ -155,3 +162,6 @@ if(TESSERACT_PACKAGE)
       DISTRIBUTIONS ${TESSERACT_PACKAGE_SOURCE_DISTRIBUTIONS})
   endif()
 endif()
+
+# Propagate accumulated components to parent scope
+set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} PARENT_SCOPE)

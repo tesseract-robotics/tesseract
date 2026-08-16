@@ -67,34 +67,34 @@ public:
   /**
    * @brief init Initialize UR Inverse Kinematics
    * @param params UR kinematics parameters
-   * @param base_link_name The name of the base link for the kinematic chain
-   * @param tip_link_name The name of the tip link for the kinematic chain
-   * @param joint_names The joint names for the kinematic chain
+   * @param base_link_id The id of the base link for the kinematic chain
+   * @param tip_link_id The id of the tip link for the kinematic chain
+   * @param joint_ids The joint ids for the kinematic chain
    * @param solver_name The solver name of the kinematic chain
    */
   URInvKin(URParameters params,
-           std::string base_link_name,
-           std::string tip_link_name,
-           std::vector<std::string> joint_names,
+           tesseract::common::LinkId base_link_id,
+           tesseract::common::LinkId tip_link_id,
+           std::vector<common::JointId> joint_ids,
            std::string solver_name = UR_INV_KIN_CHAIN_SOLVER_NAME);
 
   void calcInvKin(IKSolutions& solutions,
-                  const tesseract::common::TransformMap& tip_link_poses,
+                  const tesseract::common::LinkIdTransformMap& tip_link_poses,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override final;
 
   Eigen::Index numJoints() const override final;
-  std::vector<std::string> getJointNames() const override final;
-  std::string getBaseLinkName() const override final;
-  std::string getWorkingFrame() const override final;
-  std::vector<std::string> getTipLinkNames() const override final;
+  std::vector<tesseract::common::JointId> getJointIds() const override final;
+  tesseract::common::LinkId getBaseLinkId() const override final;
+  tesseract::common::LinkId getWorkingFrame() const override final;
+  std::vector<tesseract::common::LinkId> getTipLinkIds() const override final;
   std::string getSolverName() const override final;
   InverseKinematics::UPtr clone() const override final;
 
 protected:
-  URParameters params_;                  /**< @brief The UR Inverse kinematics parameters */
-  std::string base_link_name_;           /**< @brief Link name of first link in the kinematic object */
-  std::string tip_link_name_;            /**< @brief Link name of last kink in the kinematic object */
-  std::vector<std::string> joint_names_; /**< @brief Joint names for the kinematic object */
+  URParameters params_;                                     /**< @brief The UR Inverse kinematics parameters */
+  tesseract::common::LinkId base_link_id_;                  /**< @brief First link in the kinematic object */
+  tesseract::common::LinkId tip_link_id_;                   /**< @brief Last link in the kinematic object */
+  std::vector<tesseract::common::JointId> joint_ids_;       /**< @brief Joints of the kinematic object */
   std::string solver_name_{ UR_INV_KIN_CHAIN_SOLVER_NAME }; /**< @brief Name of this solver */
 };
 }  // namespace tesseract::kinematics

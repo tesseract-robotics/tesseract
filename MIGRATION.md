@@ -1,5 +1,9 @@
 # Migration Guide
 
+This guide covers the single-package CMake restructure (include paths, targets, `find_package`).
+The API migration from string link/joint names to `LinkId`/`JointId` is covered in
+`IDENTITY_MIGRATION.md`.
+
 ## Single Package with Components
 
 Previously, tesseract was split into many separate CMake packages (`tesseract_common`, `tesseract_collision`, `tesseract_kinematics`, etc.). Now it is a **single CMake package** called `tesseract` with components.

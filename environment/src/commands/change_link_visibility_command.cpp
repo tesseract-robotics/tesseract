@@ -24,25 +24,23 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/change_link_visibility_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 ChangeLinkVisibilityCommand::ChangeLinkVisibilityCommand() : Command(CommandType::CHANGE_LINK_VISIBILITY) {}
 
-ChangeLinkVisibilityCommand::ChangeLinkVisibilityCommand(std::string link_name, bool enabled)
-  : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(std::move(link_name)), enabled_(enabled)
+ChangeLinkVisibilityCommand::ChangeLinkVisibilityCommand(common::LinkId link_id, bool enabled)
+  : Command(CommandType::CHANGE_LINK_VISIBILITY), link_id_(std::move(link_id)), enabled_(enabled)
 {
 }
 
-const std::string& ChangeLinkVisibilityCommand::getLinkName() const { return link_name_; }
+const common::LinkId& ChangeLinkVisibilityCommand::getLinkId() const { return link_id_; }
 bool ChangeLinkVisibilityCommand::getEnabled() const { return enabled_; }
 
 bool ChangeLinkVisibilityCommand::operator==(const ChangeLinkVisibilityCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= link_name_ == rhs.link_name_;
+  equal &= link_id_ == rhs.link_id_;
   equal &= enabled_ == rhs.enabled_;
   return equal;
 }

@@ -24,9 +24,47 @@
 
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/collision/utils.h>
+#include <tesseract/common/types.h>
+
+#include <stdexcept>
+#include <string>
 
 namespace tesseract::collision
 {
+void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                                            const tesseract::common::VectorIsometry3d& poses)
+{
+  if (ids.size() != poses.size())
+    throw std::runtime_error("ContinuousContactManager, setCollisionObjectsTransform received " +
+                             std::to_string(ids.size()) + " ids but " + std::to_string(poses.size()) + " poses!");
+
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    setCollisionObjectsTransform(ids[i], poses[i]);
+}
+
+void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                                            const tesseract::common::VectorIsometry3d& pose1,
+                                                            const tesseract::common::VectorIsometry3d& pose2)
+{
+  if (ids.size() != pose1.size() || ids.size() != pose2.size())
+    throw std::runtime_error("ContinuousContactManager, setCollisionObjectsTransform received " +
+                             std::to_string(ids.size()) + " ids but " + std::to_string(pose1.size()) +
+                             " start poses and " + std::to_string(pose2.size()) + " end poses!");
+
+  for (std::size_t i = 0; i < ids.size(); ++i)
+    setCollisionObjectsTransform(ids[i], pose1[i], pose2[i]);
+}
+
+void ContinuousContactManager::setActiveCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
+}
+
+void ContinuousContactManager::setActiveCollisionObjects(std::initializer_list<tesseract::common::LinkId> ids)
+{
+  setActiveCollisionObjects(std::unordered_set<tesseract::common::LinkId>(ids.begin(), ids.end()));
+}
+
 void ContinuousContactManager::applyContactManagerConfig(const ContactManagerConfig& config)
 {
   config.validate();

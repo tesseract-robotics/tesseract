@@ -38,6 +38,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/types.h>
 #include <tesseract/collision/contact_result_validator.h>
+#include <tesseract/common/eigen_types.h>
+#include <tesseract/common/types.h>
 
 namespace tesseract::collision
 {
@@ -50,7 +52,8 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 {
   ar(cereal::make_nvp("distance", g.distance));
   ar(cereal::make_nvp("type_id", g.type_id));
-  ar(cereal::make_nvp("link_names", g.link_names));
+  // Keep the "link_names" archive key though the field is link_ids (the ids serialize as their names).
+  ar(cereal::make_nvp("link_names", g.link_ids));
   ar(cereal::make_nvp("shape_id", g.shape_id));
   ar(cereal::make_nvp("subshape_id", g.subshape_id));
   ar(cereal::make_nvp("nearest_points", g.nearest_points));
@@ -69,7 +72,17 @@ void serialize(Archive& ar, tesseract::collision::ContactResult& g)
 template <class Archive>
 void save(Archive& ar, const tesseract::collision::ContactResultMap& g)
 {
-  ar(cereal::make_nvp("container", g.getContainer()));
+  tesseract::collision::ContactResultMap::ContainerType container;
+  for (const auto& [key, results] : g.getContainer())
+  {
+    // Empty buckets are not persisted: the load path inserts through addContactResult, which
+    // requires a non-empty result vector.
+    if (results.empty())
+      continue;
+
+    container.emplace(key, results);
+  }
+  ar(cereal::make_nvp("container", container));
 }
 
 template <class Archive>
@@ -136,7 +149,8 @@ template <class Archive>
 void serialize(Archive& ar, tesseract::collision::ContactTrajectoryResults& g)
 {
   ar(cereal::make_nvp("steps", g.steps));
-  ar(cereal::make_nvp("joint_names", g.joint_names));
+  // Keep the "joint_names" archive key though the field is joint_ids (the ids serialize as their names).
+  ar(cereal::make_nvp("joint_names", g.joint_ids));
   ar(cereal::make_nvp("total_steps", g.total_steps));
 }
 }  // namespace tesseract::collision

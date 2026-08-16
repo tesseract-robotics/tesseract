@@ -106,7 +106,7 @@ void TesseractIgnitionVisualization::plotTrajectory(const tesseract_common::Join
   std::chrono::duration<double> fp_s(5.0 / static_cast<double>(traj.size()));
   for (const auto& traj_state : traj)
   {
-    tesseract_scene_graph::SceneState state = state_solver.getState(traj_state.joint_names, traj_state.position);
+    tesseract_scene_graph::SceneState state = state_solver.getState(traj_state.joint_ids, traj_state.position);
     sendSceneState(state);
     std::this_thread::sleep_for(fp_s);
   }
@@ -260,7 +260,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
       for (size_t i = 0; i < m.dist_results.size(); ++i)
       {
         const tesseract::collision::ContactResult& dist = m.dist_results[i];
-        double safety_distance = m.margin_data.getPairCollisionMargin(dist.link_names[0], dist.link_names[1]);
+        double safety_distance = m.margin_data.getPairCollisionMargin(dist.link_ids[0], dist.link_ids[1]);
 
         std::string link_name = model_name + std::to_string(++cnt);
         gz::msgs::Link* link_msg = model->add_link();
@@ -299,10 +299,10 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
           addArrow(entity_manager_, *link_msg, cnt, am);
         }
 
-        auto it0 = std::find(m.link_names.begin(), m.link_names.end(), dist.link_names[0]);
-        auto it1 = std::find(m.link_names.begin(), m.link_names.end(), dist.link_names[1]);
+        auto it0 = std::find(m.link_ids.begin(), m.link_ids.end(), dist.link_ids[0]);
+        auto it1 = std::find(m.link_ids.begin(), m.link_ids.end(), dist.link_ids[1]);
 
-        if (it0 != m.link_names.end() && it1 != m.link_names.end())
+        if (it0 != m.link_ids.end() && it1 != m.link_ids.end())
         {
           ArrowMarker am1(dist.nearest_points[0], dist.nearest_points[1]);
           am1.material = base_material;
@@ -312,7 +312,7 @@ void TesseractIgnitionVisualization::plotMarker(const Marker& marker, std::strin
           am2.material = base_material;
           addArrow(entity_manager_, *link_msg, cnt, am2);
         }
-        else if (it0 != m.link_names.end())
+        else if (it0 != m.link_ids.end())
         {
           ArrowMarker am(dist.nearest_points[1], dist.nearest_points[0]);
           am.material = base_material;
@@ -372,7 +372,7 @@ void TesseractIgnitionVisualization::sendSceneState(const tesseract_scene_graph:
   {
     gz::msgs::Pose* pose = pose_v.add_pose();
     pose->CopyFrom(gz::msgs::Convert(gz::math::eigen3::convert(pair.second)));
-    pose->set_name(pair.first);
+    pose->set_name(pair.first.name());
     pose->set_id(static_cast<unsigned>(entity_manager_.getLink(pair.first)));
   }
 

@@ -36,10 +36,11 @@ namespace tesseract::kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract::scene_graph::SceneGraph& scene_graph,
-                                         const std::vector<std::pair<std::string, std::string>>& chains,
-                                         Config kdl_config,
-                                         std::string solver_name)
+KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(
+    const tesseract::scene_graph::SceneGraph& scene_graph,
+    const std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>& chains,
+    Config kdl_config,
+    std::string solver_name)
   : kdl_config_(kdl_config), solver_name_(std::move(solver_name))
 {
   if (!scene_graph.getLink(scene_graph.getRoot()))
@@ -62,8 +63,8 @@ KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract::scene_graph::SceneGrap
 }
 
 KDLInvKinChainNR_JL::KDLInvKinChainNR_JL(const tesseract::scene_graph::SceneGraph& scene_graph,
-                                         const std::string& base_link,
-                                         const std::string& tip_link,
+                                         const tesseract::common::LinkId& base_link,
+                                         const tesseract::common::LinkId& tip_link,
                                          Config kdl_config,
                                          std::string solver_name)
   : KDLInvKinChainNR_JL(scene_graph, { std::make_pair(base_link, tip_link) }, kdl_config, std::move(solver_name))
@@ -157,22 +158,22 @@ void KDLInvKinChainNR_JL::calcInvKinHelper(IKSolutions& solutions,
 }
 
 void KDLInvKinChainNR_JL::calcInvKin(IKSolutions& solutions,
-                                     const tesseract::common::TransformMap& tip_link_poses,
+                                     const tesseract::common::LinkIdTransformMap& tip_link_poses,
                                      const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
-  assert(tip_link_poses.find(kdl_data_.tip_link_name) != tip_link_poses.end());
-  calcInvKinHelper(solutions, tip_link_poses.at(kdl_data_.tip_link_name), seed);
+  assert(tip_link_poses.find(kdl_data_.tip_link_id) != tip_link_poses.end());
+  calcInvKinHelper(solutions, tip_link_poses.at(kdl_data_.tip_link_id), seed);
 }
 
-std::vector<std::string> KDLInvKinChainNR_JL::getJointNames() const { return kdl_data_.joint_names; }
+std::vector<tesseract::common::JointId> KDLInvKinChainNR_JL::getJointIds() const { return kdl_data_.joint_ids; }
 
 Eigen::Index KDLInvKinChainNR_JL::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
 
-std::string KDLInvKinChainNR_JL::getBaseLinkName() const { return kdl_data_.base_link_name; }
+tesseract::common::LinkId KDLInvKinChainNR_JL::getBaseLinkId() const { return kdl_data_.base_link_id; }
 
-std::string KDLInvKinChainNR_JL::getWorkingFrame() const { return kdl_data_.base_link_name; }
+tesseract::common::LinkId KDLInvKinChainNR_JL::getWorkingFrame() const { return kdl_data_.base_link_id; }
 
-std::vector<std::string> KDLInvKinChainNR_JL::getTipLinkNames() const { return { kdl_data_.tip_link_name }; }
+std::vector<tesseract::common::LinkId> KDLInvKinChainNR_JL::getTipLinkIds() const { return { kdl_data_.tip_link_id }; }
 
 std::string KDLInvKinChainNR_JL::getSolverName() const { return solver_name_; }
 

@@ -99,7 +99,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryUntimedTest)  // NOLINT
   using namespace tesseract::visualization;
   using namespace tesseract::common;
 
-  std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  std::vector<JointId> joint_ids = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;
   int first = 0;
   int last = 9;
@@ -110,7 +110,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryUntimedTest)  // NOLINT
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
     p(0) = static_cast<double>(i);
-    trajectory.push_back(JointState(joint_names, p));
+    trajectory.push_back(JointState(joint_ids, p));
   }
 
   TrajectoryPlayer player;
@@ -136,7 +136,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTimedTest)  // NOLINT
   using namespace tesseract::visualization;
   using namespace tesseract::common;
 
-  std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  std::vector<JointId> joint_ids = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;
   int first = 0;
   int last = 9;
@@ -147,7 +147,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTimedTest)  // NOLINT
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
     p(0) = static_cast<double>(i);
-    trajectory.push_back(JointState(joint_names, p));
+    trajectory.push_back(JointState(joint_ids, p));
     trajectory.back().time = static_cast<double>(i);
   }
 
@@ -159,7 +159,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryNonzeroStartTest)  // NOLINT
   using namespace tesseract::visualization;
   using namespace tesseract::common;
 
-  std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  std::vector<JointId> joint_ids = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;
   int first = 5;
   int last = 14;
@@ -169,7 +169,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryNonzeroStartTest)  // NOLINT
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
     p(0) = static_cast<double>(i);
-    trajectory.push_back(JointState(joint_names, p));
+    trajectory.push_back(JointState(joint_ids, p));
     trajectory.back().time = static_cast<double>(i);
   }
 
@@ -181,7 +181,7 @@ TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
   using namespace tesseract::visualization;
   using namespace tesseract::common;
 
-  std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  std::vector<JointId> joint_ids = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
   JointTrajectory trajectory;
   double time_scale = 0.5;
 
@@ -190,7 +190,7 @@ TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
     p(0) = static_cast<double>(i);
-    trajectory.push_back(JointState(joint_names, p));
+    trajectory.push_back(JointState(joint_ids, p));
     trajectory.back().time = static_cast<double>(i) * time_scale;
   }
 

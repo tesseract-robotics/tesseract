@@ -19,7 +19,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <cmath>
-#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -70,7 +69,7 @@ void runSDFTest(DiscreteContactManager& checker)
 
   // Place the probe sphere center just inside the SDF surface: SDF(0.45,0,0) = 0.45 - 0.5 = -0.05.
   // Reported contact distance = SDF(center) - sphere_radius = -0.05 - 0.1 = -0.15.
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d sphere_tf = Eigen::Isometry3d::Identity();
   sphere_tf.translation().x() = 0.45;
@@ -120,7 +119,7 @@ void runSDFPositiveDistanceTest(DiscreteContactManager& checker)
 
   // Probe center at x = 0.63: SDF(center) = 0.63 - 0.5 = 0.13; separation to the
   // probe sphere surface = 0.13 - 0.1 = +0.03, INSIDE the 0.05 margin band.
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d sphere_tf = Eigen::Isometry3d::Identity();
   sphere_tf.translation().x() = 0.63;
@@ -163,7 +162,7 @@ void runSDFPairTest(DiscreteContactManager& checker)
   checker.addCollisionObject("sdf1_link", 0, sdf1_shapes, poses, true);
   checker.setActiveCollisionObjects({ "sdf0_link", "sdf1_link" });
 
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sdf0_link"] = Eigen::Isometry3d::Identity();
   location["sdf1_link"] = Eigen::Translation3d(0.8, 0.0, 0.0) * Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
@@ -175,7 +174,7 @@ void runSDFPairTest(DiscreteContactManager& checker)
 
   ASSERT_FALSE(result_vector.empty());
   const ContactResult& penetrating_contact = result_vector.front();
-  const double expected_normal_x = (penetrating_contact.link_names[0] == "sdf0_link") ? 1.0 : -1.0;
+  const double expected_normal_x = (penetrating_contact.link_ids[0] == "sdf0_link") ? 1.0 : -1.0;
   EXPECT_NEAR(penetrating_contact.distance, -0.2, 0.02);
   EXPECT_NEAR(penetrating_contact.normal.norm(), 1.0, 1e-3);
   EXPECT_NEAR(penetrating_contact.normal.x(), expected_normal_x, 0.05);
@@ -271,7 +270,7 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, FCLRejectsUnsupportedSDFPair)  /
   checker.addCollisionObject("plane_link", 0, plane_shapes, poses, true);
   checker.setActiveCollisionObjects({ "sdf_link", "plane_link" });
 
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
   location["plane_link"] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);
@@ -313,7 +312,7 @@ void runSDFCapsuleTest(DiscreteContactManager& checker)
   // SDF(0.45,0,0) - radius = -0.05 - 0.1 = -0.15, same as the sphere probe.
   addCapsuleObjects(checker);
 
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d capsule_tf = Eigen::Isometry3d::Identity();
   capsule_tf.translation().x() = 0.45;
@@ -376,7 +375,7 @@ void runSDFBoxTest(DiscreteContactManager& checker)
 
   // Penetration: the box's inner face is at x = 0.4 and the sphere surface is at x = 0.5,
   // giving a surface-to-surface penetration depth of 0.1.
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d box_tf = Eigen::Isometry3d::Identity();
   box_tf.translation().x() = 0.5;
@@ -476,7 +475,7 @@ void runSDFCurvedPrimitiveTest(DiscreteContactManager& checker,
 
   // Place the primitive across the SDF surface. Sampling the exact barrel/side and cap patches
   // must produce at least one penetrating contact.
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sdf_link"] = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d primitive_tf = Eigen::Isometry3d::Identity();
   primitive_tf.translation().x() = 0.45;

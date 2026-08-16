@@ -7,6 +7,7 @@
 #include <tesseract/common/collision_margin_data.h>
 #include <tesseract/common/contact_allowed_validator.h>
 #include <tesseract/common/joint_state.h>
+#include <tesseract/common/types.h>
 #include <tesseract/common/manipulator_info.h>
 #include <tesseract/common/kinematic_limits.h>
 #include <tesseract/common/resource_locator.h>
@@ -28,6 +29,48 @@
 
 namespace tesseract::common
 {
+template <class Archive, typename Tag>
+std::string save_minimal(const Archive&, const NameId<Tag>& id)
+{
+  return id.name();
+}
+
+template <class Archive, typename Tag>
+void load_minimal(const Archive&, NameId<Tag>& id, const std::string& value)
+{
+  id = NameId<Tag>(value);
+}
+
+/**
+ * @brief OrderedIdPair archives as its two names, under the same NVPs cereal gives std::pair.
+ *
+ * A container keyed on OrderedIdPair therefore writes the format its string-keyed predecessor
+ * wrote, when the key was std::pair<std::string, std::string>. The ids are name hashes and are
+ * never written; they are recomputed from the names on load.
+ *
+ * The names are emitted lexicographically rather than in the pair's canonical order, which is
+ * decided by hash value and so would tie the archive to the hashing implementation.
+ */
+template <class Archive, typename Tag>
+void save(Archive& ar, const OrderedIdPair<Tag>& pair)
+{
+  auto names = pair.orderedNameView();
+
+  // Hand the names to cereal's own std::pair serializer rather than emitting "first"/"second"
+  // here, so the two forms cannot drift apart. A pair of references serializes identically on
+  // the save path, which is why the names need not be copied. Call it directly: ar(names) would
+  // nest the pair under a generated name instead of writing it at this level.
+  cereal::serialize(ar, names);
+}
+
+template <class Archive, typename Tag>
+void load(Archive& ar, OrderedIdPair<Tag>& pair)
+{
+  std::pair<std::string, std::string> names;
+  cereal::serialize(ar, names);
+  pair.assign(NameId<Tag>(std::move(names.first)), NameId<Tag>(std::move(names.second)));
+}
+
 template <class Archive, class T>
 void serialize(Archive& ar, AnyWrapper<T>& obj)
 {
@@ -87,7 +130,9 @@ void serialize(Archive& ar, CombinedContactAllowedValidator& obj)
 template <class Archive>
 void serialize(Archive& ar, JointState& obj)
 {
-  ar(cereal::make_nvp("joint_names", obj.joint_names));
+  // Keep the "joint_names" archive key though the field is joint_ids: a NameId serializes as its
+  // name string (see save_minimal), so the on-disk key stays stable and portable across builds.
+  ar(cereal::make_nvp("joint_names", obj.joint_ids));
   ar(cereal::make_nvp("position", obj.position));
   ar(cereal::make_nvp("velocity", obj.velocity));
   ar(cereal::make_nvp("acceleration", obj.acceleration));

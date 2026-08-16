@@ -24,8 +24,6 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/change_link_collision_enabled_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 ChangeLinkCollisionEnabledCommand::ChangeLinkCollisionEnabledCommand()
@@ -33,19 +31,19 @@ ChangeLinkCollisionEnabledCommand::ChangeLinkCollisionEnabledCommand()
 {
 }
 
-ChangeLinkCollisionEnabledCommand::ChangeLinkCollisionEnabledCommand(std::string link_name, bool enabled)
-  : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(std::move(link_name)), enabled_(enabled)
+ChangeLinkCollisionEnabledCommand::ChangeLinkCollisionEnabledCommand(common::LinkId link_id, bool enabled)
+  : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_id_(std::move(link_id)), enabled_(enabled)
 {
 }
 
-const std::string& ChangeLinkCollisionEnabledCommand::getLinkName() const { return link_name_; }
+const common::LinkId& ChangeLinkCollisionEnabledCommand::getLinkId() const { return link_id_; }
 bool ChangeLinkCollisionEnabledCommand::getEnabled() const { return enabled_; }
 
 bool ChangeLinkCollisionEnabledCommand::operator==(const ChangeLinkCollisionEnabledCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= link_name_ == rhs.link_name_;
+  equal &= link_id_ == rhs.link_id_;
   equal &= enabled_ == rhs.enabled_;
   return equal;
 }
