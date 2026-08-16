@@ -20,7 +20,8 @@ target_link_libraries(
          octomath)
 target_compile_options(collision_fcl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(collision_fcl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(collision_fcl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(collision_fcl PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(collision_fcl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_cxx_version(collision_fcl PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_clang_tidy(collision_fcl ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_code_coverage(
@@ -37,7 +38,8 @@ set_target_properties(collision_fcl_factories PROPERTIES OUTPUT_NAME tesseract_c
 target_link_libraries(collision_fcl_factories PUBLIC collision_fcl)
 target_compile_options(collision_fcl_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(collision_fcl_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(collision_fcl_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(collision_fcl_factories PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
+target_compile_definitions(collision_fcl_factories PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(collision_fcl_factories ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(collision_fcl_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

@@ -24,19 +24,17 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/change_joint_origin_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 ChangeJointOriginCommand::ChangeJointOriginCommand() : Command(CommandType::CHANGE_JOINT_ORIGIN){};
 
 // NOLINTNEXTLINE(modernize-pass-by-value)
-ChangeJointOriginCommand::ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin)
-  : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(std::move(joint_name)), origin_(origin)
+ChangeJointOriginCommand::ChangeJointOriginCommand(common::JointId joint_id, const Eigen::Isometry3d& origin)
+  : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_id_(std::move(joint_id)), origin_(origin)
 {
 }
 
-const std::string& ChangeJointOriginCommand::getJointName() const { return joint_name_; }
+const common::JointId& ChangeJointOriginCommand::getJointId() const { return joint_id_; }
 const Eigen::Isometry3d& ChangeJointOriginCommand::getOrigin() const { return origin_; }
 
 bool ChangeJointOriginCommand::operator==(const ChangeJointOriginCommand& rhs) const
@@ -44,7 +42,7 @@ bool ChangeJointOriginCommand::operator==(const ChangeJointOriginCommand& rhs) c
   bool equal = true;
   equal &= Command::operator==(rhs);
   equal &= origin_.isApprox(rhs.origin_, 1e-5);
-  equal &= joint_name_ == rhs.joint_name_;
+  equal &= joint_id_ == rhs.joint_id_;
   return equal;
 }
 bool ChangeJointOriginCommand::operator!=(const ChangeJointOriginCommand& rhs) const { return !operator==(rhs); }

@@ -26,4 +26,28 @@
 namespace tesseract::environment
 {
 EnvironmentMonitorInterface::EnvironmentMonitorInterface(std::string env_name) : env_name_(std::move(env_name)) {}
+
+bool EnvironmentMonitorInterface::setEnvironmentState(
+    const std::string& monitor_namespace,
+    const std::vector<tesseract::common::JointId>& joint_ids,
+    const std::vector<double>& joint_values,
+    const tesseract::common::JointIdTransformMap& floating_joints) const
+{
+  return setEnvironmentState(
+      monitor_namespace,
+      joint_ids,
+      Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size())),
+      floating_joints);
+}
+
+std::vector<std::string>
+EnvironmentMonitorInterface::setEnvironmentState(const std::vector<tesseract::common::JointId>& joint_ids,
+                                                 const std::vector<double>& joint_values,
+                                                 const tesseract::common::JointIdTransformMap& floating_joints) const
+{
+  return setEnvironmentState(
+      joint_ids,
+      Eigen::Map<const Eigen::VectorXd>(joint_values.data(), static_cast<Eigen::Index>(joint_values.size())),
+      floating_joints);
+}
 }  // namespace tesseract::environment

@@ -38,7 +38,7 @@ target_link_libraries(
 target_include_directories(tesseract_urdf_unit PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
 target_compile_options(tesseract_urdf_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_urdf_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(tesseract_urdf_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(tesseract_urdf_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_urdf_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(

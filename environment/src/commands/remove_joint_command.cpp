@@ -24,24 +24,22 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/remove_joint_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 RemoveJointCommand::RemoveJointCommand() : Command(CommandType::REMOVE_JOINT) {}
 
-RemoveJointCommand::RemoveJointCommand(std::string joint_name)
-  : Command(CommandType::REMOVE_JOINT), joint_name_(std::move(joint_name))
+RemoveJointCommand::RemoveJointCommand(common::JointId joint_id)
+  : Command(CommandType::REMOVE_JOINT), joint_id_(std::move(joint_id))
 {
 }
 
-const std::string& RemoveJointCommand::getJointName() const { return joint_name_; }
+const common::JointId& RemoveJointCommand::getJointId() const { return joint_id_; }
 
 bool RemoveJointCommand::operator==(const RemoveJointCommand& rhs) const
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= joint_name_ == rhs.joint_name_;
+  equal &= joint_id_ == rhs.joint_id_;
   return equal;
 }
 bool RemoveJointCommand::operator!=(const RemoveJointCommand& rhs) const { return !operator==(rhs); }

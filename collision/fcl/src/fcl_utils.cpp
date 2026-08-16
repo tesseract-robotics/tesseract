@@ -52,6 +52,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/fwd.h>
 #include <tesseract/collision/fcl/fcl_utils.h>
 #include <tesseract/collision/fcl/fcl_collision_geometry_cache.h>
 #include <tesseract/collision/implicit_sdf_collision_solver.h>
@@ -236,12 +237,12 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
 
 bool needsCollisionCheck(const CollisionObjectWrapper* cd1,
                          const CollisionObjectWrapper* cd2,
-                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator,
-                         bool verbose)
+                         const tesseract::common::LinkIdPair& pair,
+                         const std::shared_ptr<const tesseract::common::ContactAllowedValidator>& validator)
 {
   return cd1->m_enabled && cd2->m_enabled && (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&  // NOLINT
          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&                                      // NOLINT
-         !isContactAllowed(cd1->getName(), cd2->getName(), validator, verbose);
+         !isContactAllowed(pair, validator);
 }
 
 namespace
@@ -263,6 +264,7 @@ bool processImplicitSDFPair(const CollisionObjectWrapper& cow1,
                             const fcl::CollisionObjectd* object1,
                             const CollisionObjectWrapper& cow2,
                             const fcl::CollisionObjectd* object2,
+                            const tesseract::common::LinkIdPair& link_pair,
                             ContactTestData& cdata)
 {
   const int shape_index1 = CollisionObjectWrapper::getShapeIndex(object1);
@@ -283,8 +285,10 @@ bool processImplicitSDFPair(const CollisionObjectWrapper& cow1,
                              std::to_string(static_cast<int>(geometry1->getType())) + " and " +
                              std::to_string(static_cast<int>(geometry2->getType())));
 
+  const double security_margin = cdata.collision_margin_data.getCollisionMargin(link_pair);
+
   ImplicitSDFCollisionConfig config;
-  config.contact_margin = cdata.collision_margin_data.getCollisionMargin(cow1.getName(), cow2.getName());
+  config.contact_margin = security_margin;
   config.max_contacts =
       (cdata.req.contact_limit > 0) ?
           static_cast<int>(std::min<std::int64_t>(cdata.req.contact_limit, std::numeric_limits<int>::max())) :
@@ -300,13 +304,11 @@ bool processImplicitSDFPair(const CollisionObjectWrapper& cow1,
   const Eigen::Isometry3d& link_pose2 = cow2.getCollisionObjectsTransform();
   const Eigen::Isometry3d link_pose1_inv = link_pose1.inverse();
   const Eigen::Isometry3d link_pose2_inv = link_pose2.inverse();
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, cow1.getName(), cow2.getName());
 
   for (const auto& implicit_contact : implicit_contacts)
   {
     ContactResult contact;
-    contact.link_names = { cow1.getName(), cow2.getName() };
+    contact.link_ids = { cow1.getLinkId(), cow2.getLinkId() };
     contact.shape_id = { shape_index1, shape_index2 };
     contact.subshape_id = { -1, -1 };
     contact.nearest_points = implicit_contact.nearest_points;
@@ -319,7 +321,7 @@ bool processImplicitSDFPair(const CollisionObjectWrapper& cow1,
 
     const auto existing = cdata.res->find(link_pair);
     const bool found = (existing != cdata.res->end() && !existing->second.empty());
-    processResult(cdata, contact, link_pair, found);
+    processResult(cdata, contact, link_pair, security_margin, found);
     if (cdata.done)
       break;
   }
@@ -337,11 +339,14 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkIdPair link_pair;
+  link_pair.assign(cd1->getLinkId(), cd2->getLinkId());
+
+  if (!needsCollisionCheck(cd1, cd2, link_pair, cdata->validator))
     return false;
 
   if (isImplicitSDFPair(*cd1, o1, *cd2, o2))
-    return processImplicitSDFPair(*cd1, o1, *cd2, o2, *cdata);
+    return processImplicitSDFPair(*cd1, o1, *cd2, o2, link_pair, *cdata);
 
   std::size_t num_contacts = (cdata->req.contact_limit > 0) ? static_cast<std::size_t>(cdata->req.contact_limit) :
                                                               std::numeric_limits<std::size_t>::max();
@@ -354,20 +359,19 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!col_result.isCollision())
     return false;
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
-
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
   const Eigen::Isometry3d& tf2 = cd2->getCollisionObjectsTransform();
   Eigen::Isometry3d tf1_inv = tf1.inverse();
   Eigen::Isometry3d tf2_inv = tf2.inverse();
 
+  const double security_margin = cdata->collision_margin_data.getCollisionMargin(link_pair);
+
   for (size_t i = 0; i < col_result.numContacts(); ++i)
   {
     const fcl::Contactd& fcl_contact = col_result.getContact(i);
     ContactResult contact;
-    contact.link_names[0] = cd1->getName();
-    contact.link_names[1] = cd2->getName();
+    contact.link_ids[0] = cd1->getLinkId();
+    contact.link_ids[1] = cd2->getLinkId();
     contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
     contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
     contact.subshape_id[0] = static_cast<int>(fcl_contact.b1);
@@ -386,7 +390,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
     const auto it = cdata->res->find(link_pair);
     bool found = (it != cdata->res->end() && !it->second.empty());
 
-    processResult(*cdata, contact, link_pair, found);
+    processResult(*cdata, contact, link_pair, security_margin, found);
   }
 
   return cdata->done;
@@ -402,17 +406,21 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  if (!needsCollisionCheck(cd1, cd2, cdata->validator, false))
+  TESSERACT_THREAD_LOCAL tesseract::common::LinkIdPair link_pair;
+  link_pair.assign(cd1->getLinkId(), cd2->getLinkId());
+
+  if (!needsCollisionCheck(cd1, cd2, link_pair, cdata->validator))
     return false;
 
   if (isImplicitSDFPair(*cd1, o1, *cd2, o2))
-    return processImplicitSDFPair(*cd1, o1, *cd2, o2, *cdata);
+    return processImplicitSDFPair(*cd1, o1, *cd2, o2, link_pair, *cdata);
 
   fcl::DistanceResultd fcl_result;
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  if (d > cdata->collision_margin_data.getCollisionMargin(cd1->getName(), cd2->getName()))
+  const double security_margin = cdata->collision_margin_data.getCollisionMargin(link_pair);
+  if (d > security_margin)
     return false;
 
   const Eigen::Isometry3d& tf1 = cd1->getCollisionObjectsTransform();
@@ -421,8 +429,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   Eigen::Isometry3d tf2_inv = tf2.inverse();
 
   ContactResult contact;
-  contact.link_names[0] = cd1->getName();
-  contact.link_names[1] = cd2->getName();
+  contact.link_ids[0] = cd1->getLinkId();
+  contact.link_ids[1] = cd2->getLinkId();
   contact.shape_id[0] = CollisionObjectWrapper::getShapeIndex(o1);
   contact.shape_id[1] = CollisionObjectWrapper::getShapeIndex(o2);
   contact.subshape_id[0] = static_cast<int>(fcl_result.b1);
@@ -443,25 +451,23 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   // TODO: There is an issue with FCL need to track down
   assert(!std::isnan(contact.nearest_points[0](0)));
 
-  TESSERACT_THREAD_LOCAL tesseract::common::LinkNamesPair link_pair;
-  tesseract::common::makeOrderedLinkPair(link_pair, cd1->getName(), cd2->getName());
   const auto it = cdata->res->find(link_pair);
   bool found = (it != cdata->res->end() && !it->second.empty());
 
-  processResult(*cdata, contact, link_pair, found);
+  processResult(*cdata, contact, link_pair, security_margin, found);
 
   return cdata->done;
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
+CollisionObjectWrapper::CollisionObjectWrapper(tesseract::common::LinkId id,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract::common::VectorIsometry3d shape_poses)
-  : name_(std::move(name)), type_id_(type_id), shapes_(std::move(shapes)), shape_poses_(std::move(shape_poses))
+  : link_id_(std::move(id)), type_id_(type_id), shapes_(std::move(shapes)), shape_poses_(std::move(shape_poses))
 {
   assert(!shapes_.empty());                       // NOLINT
   assert(!shape_poses_.empty());                  // NOLINT
-  assert(!name_.empty());                         // NOLINT
+  assert(link_id_.isValid());                     // NOLINT
   assert(shapes_.size() == shape_poses_.size());  // NOLINT
 
   m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;

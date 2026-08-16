@@ -168,8 +168,8 @@ std::ostream& operator<<(std::ostream& os, const JointCalibration& calibration)
 /*********************************************************/
 /******                  JointMimic                  *****/
 /*********************************************************/
-JointMimic::JointMimic(double offset, double multiplier, std::string joint_name)
-  : offset(offset), multiplier(multiplier), joint_name(std::move(joint_name))
+JointMimic::JointMimic(double offset, double multiplier, common::JointId joint_id)
+  : offset(offset), multiplier(multiplier), joint_id(std::move(joint_id))
 {
 }
 
@@ -177,7 +177,7 @@ void JointMimic::clear()
 {
   offset = 0.0;
   multiplier = 1.0;
-  joint_name.clear();
+  joint_id = common::JointId();
 }
 
 bool JointMimic::operator==(const JointMimic& rhs) const
@@ -185,7 +185,7 @@ bool JointMimic::operator==(const JointMimic& rhs) const
   bool equal = true;
   equal &= tesseract::common::almostEqualRelativeAndAbs(offset, rhs.offset);
   equal &= tesseract::common::almostEqualRelativeAndAbs(multiplier, rhs.multiplier);
-  equal &= joint_name == rhs.joint_name;
+  equal &= joint_id == rhs.joint_id;
 
   return equal;
 }
@@ -193,22 +193,24 @@ bool JointMimic::operator!=(const JointMimic& rhs) const { return !operator==(rh
 
 std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
 {
-  os << "joint_name=" << mimic.joint_name << " offset=" << mimic.offset << " multiplier=" << mimic.multiplier;
+  os << "joint_id=" << mimic.joint_id << " offset=" << mimic.offset << " multiplier=" << mimic.multiplier;
   return os;
 }
 
 /*********************************************************/
 /******                     Joint                    *****/
 /*********************************************************/
-Joint::Joint(std::string name) : name_(std::move(name)) { this->clear(); }
+Joint::Joint(common::JointId id) : id_(std::move(id)) { this->clear(); }
 
-const std::string& Joint::getName() const { return name_; }
+const std::string& Joint::getName() const { return id_.name(); }
+
+const common::JointId& Joint::getId() const { return id_; }
 
 void Joint::clear()
 {
   this->axis = Eigen::Vector3d(1, 0, 0);
-  this->child_link_name.clear();
-  this->parent_link_name.clear();
+  this->child_link_id = common::LinkId{};
+  this->parent_link_id = common::LinkId{};
   this->parent_to_joint_origin_transform.setIdentity();
   this->dynamics.reset();
   this->limits.reset();
@@ -218,14 +220,14 @@ void Joint::clear()
   this->type = JointType::UNKNOWN;
 }
 
-Joint Joint::clone() const { return clone(name_); }
+Joint Joint::clone() const { return clone(id_); }
 
-Joint Joint::clone(const std::string& name) const
+Joint Joint::clone(common::JointId id) const
 {
-  Joint ret(name);
+  Joint ret(std::move(id));
   ret.axis = this->axis;
-  ret.child_link_name = this->child_link_name;
-  ret.parent_link_name = this->parent_link_name;
+  ret.child_link_id = this->child_link_id;
+  ret.parent_link_id = this->parent_link_id;
   ret.parent_to_joint_origin_transform = this->parent_to_joint_origin_transform;
   ret.type = this->type;
   if (this->dynamics)
@@ -256,15 +258,15 @@ bool Joint::operator==(const Joint& rhs) const
   bool equal = true;
   equal &= type == rhs.type;
   equal &= tesseract::common::almostEqualRelativeAndAbs(axis, rhs.axis);
-  equal &= child_link_name == rhs.child_link_name;
-  equal &= parent_link_name == rhs.parent_link_name;
+  equal &= child_link_id == rhs.child_link_id;
+  equal &= parent_link_id == rhs.parent_link_id;
   equal &= parent_to_joint_origin_transform.isApprox(rhs.parent_to_joint_origin_transform, 1e-5);
   equal &= tesseract::common::pointersEqual(dynamics, rhs.dynamics);
   equal &= tesseract::common::pointersEqual(limits, rhs.limits);
   equal &= tesseract::common::pointersEqual(safety, rhs.safety);
   equal &= tesseract::common::pointersEqual(calibration, rhs.calibration);
   equal &= tesseract::common::pointersEqual(mimic, rhs.mimic);
-  equal &= name_ == rhs.name_;
+  equal &= id_ == rhs.id_;
   return equal;
 }
 bool Joint::operator!=(const Joint& rhs) const { return !operator==(rhs); }

@@ -40,8 +40,10 @@ namespace tesseract::urdf
 tesseract::scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* xml_element)
 {
   auto m = std::make_shared<tesseract::scene_graph::JointMimic>();
-  if (tesseract::common::QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
+  std::string joint_name;
+  if (tesseract::common::QueryStringAttribute(xml_element, "joint", joint_name) != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Mimic: Missing or failed to parse mimic attribute 'joint'!"));
+  m->joint_id = tesseract::common::JointId(joint_name);
 
   if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") == nullptr)
     CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset' and 'multiplier', using default value 0 and 1!");
@@ -68,7 +70,7 @@ tinyxml2::XMLElement* writeMimic(const std::shared_ptr<const tesseract::scene_gr
     std::throw_with_nested(std::runtime_error("Mimic Joint is nullptr and cannot be converted to XML"));
   tinyxml2::XMLElement* xml_element = doc.NewElement(MIMIC_ELEMENT_NAME.data());
 
-  xml_element->SetAttribute("joint", mimic->joint_name.c_str());
+  xml_element->SetAttribute("joint", mimic->joint_id.name().c_str());
   xml_element->SetAttribute("offset", toString(mimic->offset).c_str());
   xml_element->SetAttribute("multiplier", toString(mimic->multiplier).c_str());
 

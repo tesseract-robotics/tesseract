@@ -25,28 +25,26 @@
 #include <tesseract/common/utils.h>
 #include <tesseract/environment/commands/add_trajectory_link_command.h>
 
-#include <string>
-
 namespace tesseract::environment
 {
 AddTrajectoryLinkCommand::AddTrajectoryLinkCommand() : Command(CommandType::ADD_TRAJECTORY_LINK) {}
 
-AddTrajectoryLinkCommand::AddTrajectoryLinkCommand(std::string link_name,
-                                                   std::string parent_link_name,
+AddTrajectoryLinkCommand::AddTrajectoryLinkCommand(common::LinkId link_id,
+                                                   common::LinkId parent_link_id,
                                                    tesseract::common::JointTrajectory trajectory,
                                                    bool replace_allowed,
                                                    Method method)
   : Command(CommandType::ADD_TRAJECTORY_LINK)
-  , link_name_(std::move(link_name))
-  , parent_link_name_(std::move(parent_link_name))
+  , link_id_(std::move(link_id))
+  , parent_link_id_(std::move(parent_link_id))
   , trajectory_(std::move(trajectory))
   , replace_allowed_(replace_allowed)
   , method_(method)
 {
 }
 
-const std::string& AddTrajectoryLinkCommand::getLinkName() const { return link_name_; }
-const std::string& AddTrajectoryLinkCommand::getParentLinkName() const { return parent_link_name_; }
+const common::LinkId& AddTrajectoryLinkCommand::getLinkId() const { return link_id_; }
+const common::LinkId& AddTrajectoryLinkCommand::getParentLinkId() const { return parent_link_id_; }
 const tesseract::common::JointTrajectory& AddTrajectoryLinkCommand::getTrajectory() const { return trajectory_; }
 bool AddTrajectoryLinkCommand::replaceAllowed() const { return replace_allowed_; }
 AddTrajectoryLinkCommand::Method AddTrajectoryLinkCommand::getMethod() const { return method_; }
@@ -55,8 +53,8 @@ bool AddTrajectoryLinkCommand::operator==(const AddTrajectoryLinkCommand& rhs) c
 {
   bool equal = true;
   equal &= Command::operator==(rhs);
-  equal &= (link_name_ == rhs.link_name_);
-  equal &= (parent_link_name_ == rhs.parent_link_name_);
+  equal &= (link_id_ == rhs.link_id_);
+  equal &= (parent_link_id_ == rhs.parent_link_id_);
   equal &= (trajectory_ == rhs.trajectory_);
   equal &= (replace_allowed_ == rhs.replace_allowed_);
   equal &= (method_ == rhs.method_);

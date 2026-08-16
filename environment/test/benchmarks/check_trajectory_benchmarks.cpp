@@ -46,7 +46,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
                                               std::vector<tesseract::collision::ContactResultMap> contacts,
                                               const tesseract::collision::ContinuousContactManager::Ptr& manager,
                                               const StateSolver::Ptr& state_solver,
-                                              const std::vector<std::string>& joint_names,
+                                              const std::vector<tesseract::common::JointId>& joint_ids,
                                               const tesseract::common::TrajArray& traj,
                                               const tesseract::collision::CollisionCheckConfig& config,
                                               bool log_level_debug)
@@ -58,7 +58,7 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
 
   for (auto _ : state)  // NOLINT
   {
-    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
+    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_ids, traj, config));
   }
 }
 
@@ -85,7 +85,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
                                             std::vector<tesseract::collision::ContactResultMap> contacts,
                                             const tesseract::collision::DiscreteContactManager::Ptr& manager,
                                             const StateSolver::Ptr& state_solver,
-                                            const std::vector<std::string>& joint_names,
+                                            const std::vector<tesseract::common::JointId>& joint_ids,
                                             const tesseract::common::TrajArray& traj,
                                             const tesseract::collision::CollisionCheckConfig& config,
                                             bool log_level_debug)
@@ -97,7 +97,7 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
 
   for (auto _ : state)  // NOLINT
   {
-    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_names, traj, config));
+    benchmark::DoNotOptimize(checkTrajectory(contacts, *manager, *state_solver, joint_ids, traj, config));
   }
 }
 
@@ -143,8 +143,8 @@ int main(int argc, char** argv)
   link_sphere.collision.push_back(collision);
 
   Joint joint_sphere("joint_sphere_attached");
-  joint_sphere.parent_link_name = "base_link";
-  joint_sphere.child_link_name = link_sphere.getName();
+  joint_sphere.parent_link_id = "base_link";
+  joint_sphere.child_link_id = link_sphere.getName();
   joint_sphere.type = JointType::FIXED;
 
   auto cmd = std::make_shared<tesseract::environment::AddLinkCommand>(link_sphere, joint_sphere);
@@ -152,14 +152,14 @@ int main(int argc, char** argv)
   env->applyCommand(cmd);
 
   // Set the robot initial state
-  std::vector<std::string> joint_names;
-  joint_names.emplace_back("joint_a1");
-  joint_names.emplace_back("joint_a2");
-  joint_names.emplace_back("joint_a3");
-  joint_names.emplace_back("joint_a4");
-  joint_names.emplace_back("joint_a5");
-  joint_names.emplace_back("joint_a6");
-  joint_names.emplace_back("joint_a7");
+  std::vector<tesseract::common::JointId> joint_ids;
+  joint_ids.emplace_back("joint_a1");
+  joint_ids.emplace_back("joint_a2");
+  joint_ids.emplace_back("joint_a3");
+  joint_ids.emplace_back("joint_a4");
+  joint_ids.emplace_back("joint_a5");
+  joint_ids.emplace_back("joint_a6");
+  joint_ids.emplace_back("joint_a7");
 
   Eigen::VectorXd joint_start_pos(7);
   joint_start_pos(0) = -0.4;
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
                        std::vector<tesseract::collision::ContactResultMap>,
                        tesseract::collision::ContinuousContactManager::Ptr,
                        StateSolver::Ptr,
-                       std::vector<std::string>,
+                       std::vector<tesseract::common::JointId>,
                        tesseract::common::TrajArray,
                        tesseract::collision::CollisionCheckConfig,
                        bool)>
@@ -268,7 +268,7 @@ int main(int argc, char** argv)
                        std::vector<tesseract::collision::ContactResultMap>,
                        tesseract::collision::DiscreteContactManager::Ptr,
                        StateSolver::Ptr,
-                       std::vector<std::string>,
+                       std::vector<tesseract::common::JointId>,
                        tesseract::common::TrajArray,
                        tesseract::collision::CollisionCheckConfig,
                        bool)>
@@ -312,7 +312,7 @@ int main(int argc, char** argv)
                                      contacts,
                                      continuous_manager,
                                      state_solver,
-                                     joint_names,
+                                     joint_ids,
                                      traj_array,
                                      continuous_config,
                                      log_level_debug)
@@ -324,7 +324,7 @@ int main(int argc, char** argv)
                                      contacts,
                                      continuous_manager,
                                      state_solver,
-                                     joint_names,
+                                     joint_ids,
                                      traj_array,
                                      continuous_lvs_config,
                                      log_level_debug)
@@ -358,7 +358,7 @@ int main(int argc, char** argv)
                                      contacts,
                                      discrete_manager,
                                      state_solver,
-                                     joint_names,
+                                     joint_ids,
                                      traj_array,
                                      discrete_config,
                                      log_level_debug)
@@ -370,7 +370,7 @@ int main(int argc, char** argv)
                                      contacts,
                                      discrete_manager,
                                      state_solver,
-                                     joint_names,
+                                     joint_ids,
                                      traj_array,
                                      discrete_lvs_config,
                                      log_level_debug)

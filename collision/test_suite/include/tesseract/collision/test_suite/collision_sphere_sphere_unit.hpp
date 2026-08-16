@@ -1,6 +1,11 @@
 #ifndef TESSERACT_COLLISION_COLLISION_SPHERE_SPHERE_UNIT_HPP
 #define TESSERACT_COLLISION_COLLISION_SPHERE_SPHERE_UNIT_HPP
 
+#include <tesseract/common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/collision/bullet/convex_hull_utils.h>
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/common.h>
@@ -8,8 +13,23 @@
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/ply_io.h>
 
+#include <unordered_set>
+
 namespace tesseract::collision::test_suite
 {
+
+/**
+ * @brief Verify that every ContactResult::link_ids entry is valid, i.e. carries a name.
+ */
+inline void verifyLinkIdsConsistency(const ContactResultVector& results)
+{
+  for (const auto& r : results)
+  {
+    for (std::size_t i = 0; i < 2; ++i)
+      EXPECT_TRUE(r.link_ids[i].isValid()) << "link_ids[" << i << "] is invalid (empty name)";
+  }
+}
+
 namespace detail
 {
 inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh = false)
@@ -137,10 +157,10 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "sphere_link", "sphere1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjects(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -148,7 +168,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Test when object is inside another
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(0) = 0.2;
@@ -162,10 +182,11 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
+  verifyLinkIdsConsistency(result_vector);
   EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -221,7 +242,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -254,10 +275,10 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "sphere_link", "sphere1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjects(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -265,7 +286,7 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Test when object is inside another
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(0) = 0.2;
@@ -281,10 +302,11 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   result.flattenMoveResults(result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
+  verifyLinkIdsConsistency(result_vector);
   EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -340,7 +362,7 @@ inline void runTestPrimitiveDistanceDisabled(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
 
   idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -373,10 +395,10 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   ///////////////////////////////////////////////////////////////////
   // Test when object is in collision (Closest Feature Edge to Edge)
   ///////////////////////////////////////////////////////////////////
-  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "sphere_link", "sphere1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjects(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
@@ -384,7 +406,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Test when object is inside another
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(0) = 0.2;
@@ -403,7 +425,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.270548, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -451,14 +473,14 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   ContactResultMap result;
   ContactResultVector result_vector;
 
-  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "sphere_link", "sphere1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjects(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
@@ -477,7 +499,7 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)
@@ -501,17 +523,17 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   //////////////////////////////////////////////////////////////////////
   // Test when object is in collision (Closest Feature face to edge)
   //////////////////////////////////////////////////////////////////////
-  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  std::vector<tesseract::common::LinkId> active_links{ "sphere_link", "sphere1_link" };
   checker.setActiveCollisionObjects(active_links);
-  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
-  EXPECT_TRUE(tesseract::common::isIdentical<std::string>(active_links, check_active_links, false));
+  EXPECT_EQ(checker.getActiveCollisionObjects(),
+            std::unordered_set<tesseract::common::LinkId>(active_links.begin(), active_links.end()));
 
   EXPECT_TRUE(checker.getContactAllowedValidator() == nullptr);
 
   checker.setCollisionMarginData(CollisionMarginData(0.1));
   EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
-  tesseract::common::TransformMap location;
+  tesseract::common::LinkIdTransformMap location;
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(1) = 0.2;
   checker.setCollisionObjectsTransform(location);
@@ -528,7 +550,7 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].distance, -0.280223, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "sphere_link")
+  if (result_vector[0].link_ids[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
   if (result_vector[0].single_contact_point)

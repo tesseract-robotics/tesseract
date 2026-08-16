@@ -38,16 +38,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::srdf
 {
-using GroupsJointState = std::unordered_map<std::string, double>;
+using GroupsJointState = std::unordered_map<tesseract::common::JointId, double>;
 using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
 using GroupJointStates = std::unordered_map<std::string, GroupsJointStates>;
-using GroupsTCPs = tesseract::common::TransformMap;
+using GroupsTCPs = tesseract::common::LinkIdTransformMap;
 using GroupTCPs = tesseract::common::AlignedUnorderedMap<std::string, GroupsTCPs>;
-using ChainGroup = std::vector<std::pair<std::string, std::string>>;
+using ChainGroup = std::vector<std::pair<tesseract::common::LinkId, tesseract::common::LinkId>>;
 using ChainGroups = std::unordered_map<std::string, ChainGroup>;
-using JointGroup = std::vector<std::string>;
+using JointGroup = std::vector<tesseract::common::JointId>;
 using JointGroups = std::unordered_map<std::string, JointGroup>;
-using LinkGroup = std::vector<std::string>;
+using LinkGroup = std::vector<tesseract::common::LinkId>;
 using LinkGroups = std::unordered_map<std::string, LinkGroup>;
 using GroupNames = std::set<std::string>;
 
@@ -130,13 +130,13 @@ struct KinematicsInformation
   bool hasGroupJointState(const std::string& group_name, const std::string& state_name) const;
 
   /** @brief Add group tool center point */
-  void addGroupTCP(const std::string& group_name, const std::string& tcp_name, const Eigen::Isometry3d& tcp);
+  void addGroupTCP(const std::string& group_name, const common::LinkId& tcp_id, const Eigen::Isometry3d& tcp);
 
   /** @brief Remove group tool center point */
-  void removeGroupTCP(const std::string& group_name, const std::string& tcp_name);
+  void removeGroupTCP(const std::string& group_name, const common::LinkId& tcp_id);
 
   /** @brief Check if group tool center point exists */
-  bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
+  bool hasGroupTCP(const std::string& group_name, const common::LinkId& tcp_id) const;
 
   bool operator==(const KinematicsInformation& rhs) const;
   bool operator!=(const KinematicsInformation& rhs) const;

@@ -23,9 +23,10 @@ target_link_libraries(
          console_bridge::console_bridge)
 target_compile_options(scene_graph PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(scene_graph PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(scene_graph PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
 target_compile_definitions(
   scene_graph
-  PUBLIC ${TESSERACT_COMPILE_DEFINITIONS}
+  PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC}
          Boost_USE_STATIC_LIBS=OFF
          Boost_USE_MULTITHREADED=ON
          Boost_USE_STATIC_RUNTIME=OFF)

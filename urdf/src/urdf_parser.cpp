@@ -135,7 +135,7 @@ std::unique_ptr<tesseract::scene_graph::SceneGraph> parseURDFString(const std::s
     }
 
     // Check if link name is unique
-    if (sg->getLink(l->getName()) != nullptr)
+    if (sg->getLink(l->getId()) != nullptr)
       std::throw_with_nested(std::runtime_error("URDF: Error link name '" + l->getName() +
                                                 "' is not unique for robot '" + robot_name + "'!"));
 
@@ -162,7 +162,7 @@ std::unique_ptr<tesseract::scene_graph::SceneGraph> parseURDFString(const std::s
     }
 
     // Check if joint name is unique
-    if (sg->getJoint(j->getName()) != nullptr)
+    if (sg->getJoint(j->getId()) != nullptr)
       std::throw_with_nested(std::runtime_error("URDF: Error joint name '" + j->getName() +
                                                 "' is not unique for robot '" + robot_name + "'!"));
 
@@ -186,8 +186,8 @@ std::unique_ptr<tesseract::scene_graph::SceneGraph> parseURDFString(const std::s
 
   // Find root link
   for (const auto& l : sg->getLinks())
-    if (sg->getInboundJoints(l->getName()).empty())
-      sg->setRoot(l->getName());
+    if (sg->getInboundJoints(l->getId()).empty())
+      sg->setRoot(l->getId());
 
   return sg;
 }
@@ -263,7 +263,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract::scene_graph::SceneGrap
   // Iterate through the sorted names and write the corresponding links to XML
   for (const std::string& s : link_names)
   {
-    const tesseract::scene_graph::Link::ConstPtr& l = sg->getLink(s);
+    const tesseract::scene_graph::Link::ConstPtr& l = sg->getLink(common::LinkId(s));
     try
     {
       tinyxml2::XMLElement* xml_link = writeLink(l, doc, package_path);
@@ -292,7 +292,7 @@ void writeURDFFile(const std::shared_ptr<const tesseract::scene_graph::SceneGrap
   // Iterate through the sorted joint names and write the corresponding joints to xml
   for (const std::string& s : joint_names)
   {
-    const tesseract::scene_graph::Joint::ConstPtr& j = sg->getJoint(s);
+    const tesseract::scene_graph::Joint::ConstPtr& j = sg->getJoint(common::JointId(s));
     try
     {
       tinyxml2::XMLElement* xml_joint = writeJoint(j, doc);
