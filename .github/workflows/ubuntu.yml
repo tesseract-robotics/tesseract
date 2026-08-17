@@ -46,6 +46,7 @@ jobs:
           echo "CCACHE_MAXSIZE=1G" >> "$GITHUB_ENV"
           # Set in the environment, not via --cmake-args: colcon's --cmake-args is last-wins, so a
           # launcher passed there is dropped by the next --cmake-args on the command line.
+          echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
           echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
 
       - name: Install Depends
