@@ -27,6 +27,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
 #include <console_bridge/console.h>
+// pcl/memory.h #errors when Eigen's allocation convention in this translation unit differs from the
+// one PCL was built with (a PCL built with AVX uses Eigen's handmade aligned malloc; a consumer at
+// Eigen's default alignment uses plain malloc, and a buffer allocated by one and freed by the other
+// corrupts the heap). That check is a blanket include-time test with no way to see which API is
+// called, and the hazard it guards against is not present here: the only object handed to pcl_io is
+// a PCLPointCloud2, whose storage uses std::allocator, and PCDReader::read is a header template, so
+// the Eigen::aligned_allocator resize of PointCloud::points and its release both happen in this
+// translation unit. Any PCL call added to this file must preserve that -- never pass an
+// Eigen-allocated container into pcl_io to be resized, and do not raise this file's Eigen alignment
+// above the rest of the workspace to silence the check instead.
+#define PCL_SILENCE_MALLOC_WARNING 1
 #include <pcl/io/pcd_io.h>
 #include <tesseract/common/utils.h>
 #include <tinyxml2.h>
