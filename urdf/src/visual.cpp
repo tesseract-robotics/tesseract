@@ -148,9 +148,6 @@ tinyxml2::XMLElement* writeVisual(const std::shared_ptr<const tesseract::scene_g
 
   try
   {
-    std::string filename = "visual/" + link_name + "_visual";
-    if (id >= 0)
-      filename += "_" + std::to_string(id);
     tinyxml2::XMLElement* xml_geometry = writeGeometry(visual->geometry, doc, package_path, filename);
     xml_element->InsertEndChild(xml_geometry);
   }
