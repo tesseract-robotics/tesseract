@@ -124,14 +124,14 @@ std::unique_ptr<InverseKinematics> OPWInvKinFactory::create(const std::string& s
     }
 
     path = scene_graph.getShortestPath(base_link, tip_link);
+
+    return std::make_unique<OPWInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("OPWInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<OPWInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(OPWFactoriesAnchor)

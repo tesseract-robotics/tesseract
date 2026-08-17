@@ -212,6 +212,10 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           tesseract::kinematics
+          kinematics_factories
+          kinematics_kdl_factories
+          kinematics_opw_factory
+          kinematics_ur_factory
           tesseract::urdf
           tesseract::scene_graph)
 target_compile_options(tesseract_kinematics_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}

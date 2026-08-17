@@ -56,14 +56,14 @@ KDLFwdKinChainFactory::create(const std::string& solver_name,
       tip_link = common::LinkId(n.as<std::string>());
     else
       throw std::runtime_error("KDLFwdKinChainFactory, missing 'tip_link' entry");
+
+    return std::make_unique<KDLFwdKinChain>(scene_graph, base_link, tip_link, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("KDLFwdKinChainFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<KDLFwdKinChain>(scene_graph, base_link, tip_link, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>
@@ -107,14 +107,14 @@ KDLInvKinChainLMAFactory::create(const std::string& solver_name,
 
     if (YAML::Node n = config["eps_joints"])
       kdl_config.eps_joints = n.as<double>();
+
+    return std::make_unique<KDLInvKinChainLMA>(scene_graph, base_link, tip_link, kdl_config, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("KDLInvKinChainLMAFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<KDLInvKinChainLMA>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>
@@ -152,14 +152,14 @@ KDLInvKinChainNRFactory::create(const std::string& solver_name,
 
     if (YAML::Node n = config["position_iterations"])
       kdl_config.pos_iterations = n.as<int>();
+
+    return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, kdl_config, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("KDLInvKinChainNRFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>
@@ -196,14 +196,14 @@ KDLInvKinChainNR_JLFactory::create(const std::string& solver_name,
 
     if (YAML::Node n = config["position_iterations"])
       kdl_config.pos_iterations = n.as<int>();
+
+    return std::make_unique<KDLInvKinChainNR_JL>(scene_graph, base_link, tip_link, kdl_config, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("KDLInvKinChainNR_JLFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<KDLInvKinChainNR_JL>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(KDLFactoriesAnchor)

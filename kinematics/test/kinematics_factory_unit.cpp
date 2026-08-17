@@ -29,6 +29,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "kinematics_test_utils.h"
 #include <tesseract/kinematics/kinematics_plugin_factory.h>
+#include <tesseract/kinematics/rop_factory.h>
+#include <tesseract/kinematics/rep_factory.h>
+#include <tesseract/kinematics/kdl/kdl_factories.h>
+#include <tesseract/kinematics/opw/opw_factory.h>
+#include <tesseract/kinematics/ur/ur_factory.h>
 #include <tesseract/state_solver/kdl/kdl_state_solver.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/yaml_utils.h>
@@ -164,12 +169,11 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
 
 TEST(TesseractKinematicsFactoryUnit, RopRepFactoryMissingPositionerJointUnit)  // NOLINT
 {
-  // The ROP and REP factories throw "positioner sample resolution missing joint" when
-  // the sample_res_map has the correct count but contains
-  // joint names that do not match the fwd_kin positioner joint ids. The sample names
-  // must still refer to real scene-graph joints (to pass the earlier getJoint check),
-  // so we pick abb-manipulator joints while the positioner fwd_kin reports the
-  // positioner_joint_* ids.
+  // InvKinFactory::create reports failure by returning nullptr. The ROP and REP factories fail with
+  // "positioner sample resolution missing joint" when the sample_res_map has the correct count but
+  // contains joint names that do not match the fwd_kin positioner joint ids. The sample names must
+  // still refer to real scene-graph joints (to pass the earlier getJoint check), so abb-manipulator
+  // joints are used while the positioner fwd_kin reports the positioner_joint_* ids.
   tesseract::common::GeneralResourceLocator locator;
   std::filesystem::path file_path(__FILE__);
   std::filesystem::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
@@ -236,12 +240,9 @@ manipulator:
     tesseract::scene_graph::KDLStateSolver ss(*rop_sg);
     auto state = ss.getState();
 
-    tesseract::common::PluginInfo info;
-    info.class_name = "ROPInvKinFactory";
-    info.config = YAML::Load(rop_config);
-    // KinematicsPluginFactory::createInvKin wraps the throw and returns nullptr after logging,
-    // but the target throw inside ROPInvKinFactory::create still executes.
-    EXPECT_EQ(factory.createInvKin("ROPInvKinFactory", info, *rop_sg, state), nullptr);
+    const ROPInvKinFactory rop_factory;
+    const InvKinFactory& inv_kin_factory = rop_factory;
+    EXPECT_EQ(inv_kin_factory.create("ROPInvKin", *rop_sg, state, factory, YAML::Load(rop_config)), nullptr);
   }
 
   {
@@ -249,10 +250,165 @@ manipulator:
     tesseract::scene_graph::KDLStateSolver ss(*rep_sg);
     auto state = ss.getState();
 
-    tesseract::common::PluginInfo info;
-    info.class_name = "REPInvKinFactory";
-    info.config = YAML::Load(rep_config);
-    EXPECT_EQ(factory.createInvKin("REPInvKinFactory", info, *rep_sg, state), nullptr);
+    const REPInvKinFactory rep_factory;
+    const InvKinFactory& inv_kin_factory = rep_factory;
+    EXPECT_EQ(inv_kin_factory.create("REPInvKin", *rep_sg, state, factory, YAML::Load(rep_config)), nullptr);
+  }
+}
+
+TEST(TesseractKinematicsFactoryUnit, RopRepFactoryCreateReturnsNullOnConstructionFailureUnit)  // NOLINT
+{
+  // InvKinFactory::create reports failure by returning nullptr. Neither factory checks that
+  // 'manipulator_reach' is positive, but both solver constructors reject it, so a reach of zero is
+  // a config that parses and builds both sub-solvers before construction fails.
+  tesseract::common::GeneralResourceLocator locator;
+  std::filesystem::path file_path(__FILE__);
+  std::filesystem::path config_path = file_path.parent_path() / "kinematic_plugins.yaml";
+  KinematicsPluginFactory factory(config_path, locator);
+
+  const char* manipulator_config = R"(
+  class: OPWInvKinFactory
+  config:
+    base_link: base_link
+    tip_link: tool0
+    params:
+      a1: 0.100
+      a2: -0.135
+      b: 0.00
+      c1: 0.615
+      c2: 0.705
+      c3: 0.755
+      c4: 0.086
+      offsets: [0, 0, -1.57079632679, 0, 0, 0]
+      sign_corrections: [1, 1, 1, 1, 1, 1]
+)";
+
+  const std::string rop_config = std::string(R"(
+manipulator_reach: 0.0
+positioner_sample_resolution:
+  - name: positioner_joint_1
+    value: 0.1
+positioner:
+  class: KDLFwdKinChainFactory
+  config:
+    base_link: positioner_base_link
+    tip_link: positioner_tool0
+manipulator:)") + manipulator_config;
+
+  const std::string rep_config = std::string(R"(
+manipulator_reach: 0.0
+positioner_sample_resolution:
+  - name: positioner_joint_1
+    value: 0.1
+  - name: positioner_joint_2
+    value: 0.1
+positioner:
+  class: KDLFwdKinChainFactory
+  config:
+    base_link: positioner_base_link
+    tip_link: positioner_tool0
+manipulator:)") + manipulator_config;
+
+  {
+    auto rop_sg = getSceneGraphABBOnPositioner(locator);
+    tesseract::scene_graph::KDLStateSolver ss(*rop_sg);
+    auto state = ss.getState();
+
+    const ROPInvKinFactory rop_factory;
+    const InvKinFactory& inv_kin_factory = rop_factory;
+    EXPECT_EQ(inv_kin_factory.create("ROPInvKin", *rop_sg, state, factory, YAML::Load(rop_config)), nullptr);
+  }
+
+  {
+    auto rep_sg = getSceneGraphABBExternalPositioner(locator);
+    tesseract::scene_graph::KDLStateSolver ss(*rep_sg);
+    auto state = ss.getState();
+
+    const REPInvKinFactory rep_factory;
+    const InvKinFactory& inv_kin_factory = rep_factory;
+    EXPECT_EQ(inv_kin_factory.create("REPInvKin", *rep_sg, state, factory, YAML::Load(rep_config)), nullptr);
+  }
+}
+
+TEST(TesseractKinematicsFactoryUnit, KdlFactoryCreateReturnsNullOnConstructionFailureUnit)  // NOLINT
+{
+  // FwdKinFactory::create and InvKinFactory::create report failure by returning nullptr. The KDL
+  // solvers require a scene graph that is a tree, and an unparented link makes the iiwa graph fail
+  // that check while base_link and tool0 stay valid links -- so the config parses and the solver
+  // constructor is what fails. The KDL factories ignore the scene state, so a default one is passed.
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphIIWA(locator);
+  scene_graph->addLink(tesseract::scene_graph::Link("unparented_link"));
+  ASSERT_FALSE(scene_graph->isTree());
+
+  const tesseract::scene_graph::SceneState scene_state;
+  const KinematicsPluginFactory plugin_factory;
+  YAML::Node config = YAML::Load(R"(base_link: base_link
+tip_link: tool0)");
+
+  {
+    const KDLFwdKinChainFactory kdl_factory;
+    const FwdKinFactory& factory = kdl_factory;
+    EXPECT_EQ(factory.create("KDLFwdKinChain", *scene_graph, scene_state, plugin_factory, config), nullptr);
+  }
+
+  {
+    const KDLInvKinChainLMAFactory kdl_factory;
+    const InvKinFactory& factory = kdl_factory;
+    EXPECT_EQ(factory.create("KDLInvKinChainLMA", *scene_graph, scene_state, plugin_factory, config), nullptr);
+  }
+
+  {
+    const KDLInvKinChainNRFactory kdl_factory;
+    const InvKinFactory& factory = kdl_factory;
+    EXPECT_EQ(factory.create("KDLInvKinChainNR", *scene_graph, scene_state, plugin_factory, config), nullptr);
+  }
+
+  {
+    const KDLInvKinChainNR_JLFactory kdl_factory;
+    const InvKinFactory& factory = kdl_factory;
+    EXPECT_EQ(factory.create("KDLInvKinChainNR_JL", *scene_graph, scene_state, plugin_factory, config), nullptr);
+  }
+}
+
+TEST(TesseractKinematicsFactoryUnit, OpwUrFactoryCreateReturnsNullOnConstructionFailureUnit)  // NOLINT
+{
+  // InvKinFactory::create reports failure by returning nullptr. Both solvers only support six
+  // joints, and the iiwa base_link -> tool0 path has seven, so getShortestPath succeeds and the
+  // solver constructor is what fails. Both factories ignore the scene state, so a default one is
+  // passed.
+  tesseract::common::GeneralResourceLocator locator;
+  tesseract::scene_graph::SceneGraph::UPtr scene_graph = getSceneGraphIIWA(locator);
+  ASSERT_EQ(scene_graph->getShortestPath("base_link", "tool0").active_joints.size(), 7);
+
+  const tesseract::scene_graph::SceneState scene_state;
+  const KinematicsPluginFactory plugin_factory;
+
+  {
+    YAML::Node config = YAML::Load(R"(base_link: base_link
+tip_link: tool0
+params:
+  a1: 0.100
+  a2: -0.135
+  b: 0.00
+  c1: 0.615
+  c2: 0.705
+  c3: 0.755
+  c4: 0.086)");
+
+    const OPWInvKinFactory opw_factory;
+    const InvKinFactory& factory = opw_factory;
+    EXPECT_EQ(factory.create("OPWInvKin", *scene_graph, scene_state, plugin_factory, config), nullptr);
+  }
+
+  {
+    YAML::Node config = YAML::Load(R"(base_link: base_link
+tip_link: tool0
+model: UR10)");
+
+    const URInvKinFactory ur_factory;
+    const InvKinFactory& factory = ur_factory;
+    EXPECT_EQ(factory.create("URInvKin", *scene_graph, scene_state, plugin_factory, config), nullptr);
   }
 }
 
