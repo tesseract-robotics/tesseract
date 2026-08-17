@@ -69,7 +69,7 @@ tinyxml2::XMLElement* writeDynamics(const std::shared_ptr<const tesseract::scene
   tinyxml2::XMLElement* xml_element = doc.NewElement(DYNAMICS_ELEMENT_NAME.data());
 
   xml_element->SetAttribute("damping", toString(dynamics->damping).c_str());
-  xml_element->SetAttribute("friction", toString(dynamics->damping).c_str());
+  xml_element->SetAttribute("friction", toString(dynamics->friction).c_str());
 
   return xml_element;
 }
