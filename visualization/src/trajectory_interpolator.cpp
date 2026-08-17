@@ -136,6 +136,8 @@ double TrajectoryInterpolator::getStateDuration(long index) const
   int s = static_cast<int>(trajectory_.size());
   if (index >= s)
     index = s - 1;
+  if (index < 0)
+    index = 0;
 
   return trajectory_[static_cast<std::size_t>(index)].time;
 }

@@ -216,6 +216,31 @@ TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
     double duration = interpolator.getStateDuration(i);
     EXPECT_NEAR(duration, static_cast<double>(i) * time_scale, 1e-5);
   }
+
+  // An out-of-range index clamps to the nearest end, in both directions. The second trajectory
+  // starts at a non-zero time so that the lower clamp is distinguishable from an out-of-range read.
+  EXPECT_NEAR(interpolator.getStateDuration(10), 9 * time_scale, 1e-5);
+
+  JointTrajectory offset_trajectory = trajectory;
+  for (auto& state : offset_trajectory)
+    state.time += 5.0;
+
+  TrajectoryInterpolator offset_interpolator(offset_trajectory);
+  EXPECT_NEAR(offset_interpolator.getStateDuration(0), 5.0, 1e-5);
+  EXPECT_NEAR(offset_interpolator.getStateDuration(-1), 5.0, 1e-5);
+}
+
+TEST(TesseracTrajectoryPlayerUnit, PlayerWithoutTrajectoryTest)  // NOLINT
+{
+  using namespace tesseract::visualization;
+
+  // Every accessor that dereferences the trajectory rejects a player that has none
+  TrajectoryPlayer player;
+  EXPECT_EQ(player.size(), 0);
+  EXPECT_THROW(player.getByIndex(0), std::runtime_error);                 // NOLINT
+  EXPECT_THROW(player.getNext(), std::runtime_error);                     // NOLINT
+  EXPECT_THROW(player.setCurrentDuration(0), std::runtime_error);         // NOLINT
+  EXPECT_THROW(player.setCurrentDurationByIndex(0), std::runtime_error);  // NOLINT
 }
 
 int main(int argc, char** argv)
