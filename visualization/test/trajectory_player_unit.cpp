@@ -81,6 +81,16 @@ void CheckTrajectory(const tesseract::common::JointTrajectory& trajectory, int f
   }
 
   {
+    // Seeking by index clears finished, just as seeking by duration does
+    player.setCurrentDuration(last + 1);
+    ASSERT_TRUE(player.isFinished());
+    JointState s = player.setCurrentDurationByIndex(0);
+    EXPECT_NEAR(s.time, first, 1e-5);
+    EXPECT_NEAR(s.position(0), first, 1e-5);
+    EXPECT_FALSE(player.isFinished());
+  }
+
+  {
     JointState s = player.setCurrentDurationByIndex(-1);
     EXPECT_NEAR(s.time, first, 1e-5);
     EXPECT_NEAR(s.position(0), first, 1e-5);
