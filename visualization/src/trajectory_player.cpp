@@ -125,6 +125,9 @@ tesseract::common::JointState TrajectoryPlayer::getNext()
 
 tesseract::common::JointState TrajectoryPlayer::getByIndex(long index) const
 {
+  if (!trajectory_ || trajectory_->empty())
+    throw std::runtime_error("Trajectory is empty!");
+
   return trajectory_->getState(trajectory_->getStateDuration(index));
 }
 
