@@ -123,14 +123,14 @@ std::unique_ptr<InverseKinematics> URInvKinFactory::create(const std::string& so
     }
 
     path = scene_graph.getShortestPath(base_link, tip_link);
+
+    return std::make_unique<URInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
   }
   catch (const std::exception& e)
   {
     CONSOLE_BRIDGE_logError("URInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
     return nullptr;
   }
-
-  return std::make_unique<URInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(URFactoriesAnchor)

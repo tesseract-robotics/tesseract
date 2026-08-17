@@ -269,9 +269,12 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
     return plugin->create(name, plugin_info.config);
   }
   // LCOV_EXCL_START
-  catch (const std::exception&)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Failed to create discrete contact manager '%s' with factory '%s'! Details: %s",
+                           name.c_str(),
+                           plugin_info.class_name.c_str(),
+                           e.what());
     return nullptr;
   }
   // LCOV_EXCL_STOP
@@ -312,9 +315,12 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
     return plugin->create(name, plugin_info.config);
   }
   // LCOV_EXCL_START
-  catch (const std::exception&)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Failed to create continuous contact manager '%s' with factory '%s'! Details: %s",
+                           name.c_str(),
+                           plugin_info.class_name.c_str(),
+                           e.what());
     return nullptr;
   }
   // LCOV_EXCL_STOP

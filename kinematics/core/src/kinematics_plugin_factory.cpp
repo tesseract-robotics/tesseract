@@ -292,9 +292,12 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
     fwd_kin_factories_[plugin_info.class_name] = plugin;
     return plugin->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
   }
-  catch (const std::exception&)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+    CONSOLE_BRIDGE_logWarn("Failed to create fwd kin solver '%s' with factory '%s'! Details: %s",
+                           solver_name.c_str(),
+                           plugin_info.class_name.c_str(),
+                           e.what());
     return nullptr;
   }
 }
@@ -349,9 +352,12 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
     inv_kin_factories_[plugin_info.class_name] = plugin;
     return plugin->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
   }
-  catch (const std::exception& ex)
+  catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn(ex.what());
+    CONSOLE_BRIDGE_logWarn("Failed to create inv kin solver '%s' with factory '%s'! Details: %s",
+                           solver_name.c_str(),
+                           plugin_info.class_name.c_str(),
+                           e.what());
     return nullptr;
   }
 }
