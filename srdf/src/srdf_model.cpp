@@ -421,6 +421,7 @@ void SRDFModel::clear()
   contact_managers_plugin_info.clear();
   acm.clearAllowedCollisions();
   collision_margin_data = nullptr;
+  calibration_info.clear();
 }
 
 bool SRDFModel::operator==(const SRDFModel& rhs) const

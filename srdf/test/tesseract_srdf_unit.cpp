@@ -440,6 +440,31 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   srdf_reload.saveToFile(tesseract::common::getTempPath() + "test_reload.srdf");
 }
 
+TEST(TesseractSRDFUnit, SRDFModelClearResetsEveryMember)  // NOLINT
+{
+  using namespace tesseract::common;
+  using namespace tesseract::srdf;
+
+  SRDFModel srdf;
+  srdf.name = "populated";
+  srdf.version = { { 2, 3, 4 } };
+  srdf.kinematics_information.chain_groups["manipulator"] = { std::make_pair("base_link", "link_5") };
+  srdf.contact_managers_plugin_info.search_libraries.emplace_back("tesseract_collision_bullet_factories");
+  srdf.acm.addAllowedCollision("link_1", "link_2", "Adjacent");
+  srdf.collision_margin_data = std::make_shared<CollisionMarginData>(0.025);
+  srdf.calibration_info.joints[JointId("joint_1")] = Eigen::Isometry3d::Identity();
+
+  srdf.clear();
+
+  EXPECT_EQ(srdf.name, "undefined");
+  EXPECT_EQ(srdf.version, (std::array<int, 3>{ { 1, 0, 0 } }));
+  EXPECT_TRUE(srdf.kinematics_information.chain_groups.empty());
+  EXPECT_TRUE(srdf.contact_managers_plugin_info.empty());
+  EXPECT_TRUE(srdf.acm.getAllAllowedCollisions().empty());
+  EXPECT_EQ(srdf.collision_margin_data, nullptr);
+  EXPECT_TRUE(srdf.calibration_info.empty());
+}
+
 TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
