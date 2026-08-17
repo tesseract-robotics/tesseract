@@ -55,6 +55,7 @@ tesseract::common::JointState TrajectoryPlayer::setCurrentDurationByIndex(long i
   if (!trajectory_ || trajectory_->empty())
     throw std::runtime_error("Trajectory is empty!");
 
+  finished_ = false;
   if (trajectory_->getStateCount() > 0)
   {
     if (index > 0)
