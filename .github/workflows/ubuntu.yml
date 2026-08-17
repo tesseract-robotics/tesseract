@@ -29,7 +29,6 @@ jobs:
     container:
       image: ubuntu:${{ matrix.distro }}
       env:
-        CCACHE_DIR: "$GITHUB_WORKSPACE/${{ matrix.distro }}/.ccache"
         DEBIAN_FRONTEND: noninteractive
         TZ: Etc/UTC
     steps:
@@ -37,6 +36,17 @@ jobs:
         uses: actions/checkout@v7
         with:
           path: target_ws/src
+
+      - name: Configure ccache
+        shell: bash
+        run: |
+          # Must match the ccache-prefix given to colcon-action below: that is the directory it caches.
+          mkdir -p "$GITHUB_WORKSPACE/${{ matrix.distro }}/.ccache"
+          echo "CCACHE_DIR=$GITHUB_WORKSPACE/${{ matrix.distro }}/.ccache" >> "$GITHUB_ENV"
+          echo "CCACHE_MAXSIZE=1G" >> "$GITHUB_ENV"
+          # Set in the environment, not via --cmake-args: colcon's --cmake-args is last-wins, so a
+          # launcher passed there is dropped by the next --cmake-args on the command line.
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
 
       - name: Install Depends
         shell: bash
@@ -54,3 +64,8 @@ jobs:
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
           target-args: --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DTESSERACT_PACKAGE=ON
+
+      - name: Report ccache statistics
+        if: always()
+        shell: bash
+        run: ccache -s
