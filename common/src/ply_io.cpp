@@ -29,12 +29,42 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 
 namespace tesseract::common
 {
+namespace
+{
+/**
+ * @brief Read one line and split it on runs of whitespace
+ * @details Surrounding whitespace, including a trailing carriage return, is dropped, so no token is
+ * ever empty. Returns false at end of file.
+ */
+bool readTokens(std::ifstream& stream, std::string& line, std::vector<std::string>& tokens)
+{
+  if (!std::getline(stream, line))
+    return false;
+
+  trim(line);
+  tokens.clear();
+  if (!line.empty())
+    boost::split(tokens, line, boost::is_any_of(" \t"), boost::token_compress_on);
+
+  return true;
+}
+
+/** @brief Convert a whole token to a double, failing if any character is left unconsumed */
+bool toDouble(const std::string& token, double& value)
+{
+  char* end = nullptr;
+  value = std::strtod(token.c_str(), &end);
+  return !token.empty() && end == token.c_str() + token.size();
+}
+}  // namespace
+
 bool writeSimplePlyFile(const std::string& path,
                         const tesseract::common::VectorVector3d& vertices,
                         const std::vector<Eigen::Vector3i>& vectices_color,
@@ -69,6 +99,16 @@ bool writeSimplePlyFile(const std::string& path,
   //  4 1 5 6 2
   //  4 2 6 7 3
   //  4 3 7 4 0
+  // A single color is applied to every vertex; otherwise there must be exactly one per vertex
+  if (vectices_color.size() > 1 && vectices_color.size() != vertices.size())
+  {
+    CONSOLE_BRIDGE_logError("Number of vertex colors (%zu) does not match the number of vertices (%zu): %s",
+                            vectices_color.size(),
+                            vertices.size(),
+                            path.c_str());
+    return false;
+  }
+
   std::ofstream myfile;
   myfile.open(path);
   if (myfile.fail())
@@ -190,37 +230,39 @@ int loadSimplePlyFile(const std::string& path,
     CONSOLE_BRIDGE_logError("Failed to open file: %s", path.c_str());
     return 0;
   }
+  // The header is parsed by keyword rather than by line offset, so optional property lines
+  // (vertex colors, for example) do not shift the element counts out from under the parse.
   std::string str;
-  std::getline(myfile, str);
-  std::getline(myfile, str);
-  std::getline(myfile, str);
-  std::getline(myfile, str);
   std::vector<std::string> tokens;
-  boost::split(tokens, str, boost::is_any_of(" "));
-  if (tokens.size() != 3 || !isNumeric(tokens.back()))
+  size_t num_vertices{ 0 };
+  size_t num_faces{ 0 };
+  bool found_vertices{ false };
+  bool found_faces{ false };
+  bool found_end_header{ false };
+  while (readTokens(myfile, str, tokens))
   {
-    CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
-    return 0;
+    if (str == "end_header")
+    {
+      found_end_header = true;
+      break;
+    }
+
+    if (tokens.size() != 3 || tokens[0] != "element" || !isNumeric(tokens.back()))
+      continue;
+
+    if (tokens[1] == "vertex")
+    {
+      num_vertices = static_cast<size_t>(std::stoi(tokens.back()));
+      found_vertices = true;
+    }
+    else if (tokens[1] == "face")
+    {
+      num_faces = static_cast<size_t>(std::stoi(tokens.back()));
+      found_faces = true;
+    }
   }
-  auto num_vertices = static_cast<size_t>(std::stoi(tokens.back()));
 
-  std::getline(myfile, str);
-  std::getline(myfile, str);
-  std::getline(myfile, str);
-  std::getline(myfile, str);
-
-  tokens.clear();
-  boost::split(tokens, str, boost::is_any_of(" "));
-  if (tokens.size() != 3 || !isNumeric(tokens.back()))
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
-    return 0;
-  }
-
-  auto num_faces = static_cast<size_t>(std::stoi(tokens.back()));
-  std::getline(myfile, str);
-  std::getline(myfile, str);
-  if (str != "end_header")
+  if (!found_end_header || !found_vertices || !found_faces)
   {
     CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
     return 0;
@@ -229,16 +271,19 @@ int loadSimplePlyFile(const std::string& path,
   vertices.reserve(num_vertices);
   for (size_t i = 0; i < num_vertices; ++i)
   {
-    std::getline(myfile, str);
-    tokens.clear();
-    boost::split(tokens, str, boost::is_any_of(" "));
-    if (tokens.size() != 3)
+    // Columns beyond the first three are optional vertex properties (color, for example)
+    Eigen::Vector3d vertex;
+    bool parsed = readTokens(myfile, str, tokens) && tokens.size() >= 3;
+    for (Eigen::Index k = 0; parsed && k < 3; ++k)
+      parsed = toDouble(tokens[static_cast<std::size_t>(k)], vertex(k));
+
+    if (!parsed)
     {
       CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
       return 0;
     }
 
-    vertices.emplace_back(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2]));
+    vertices.push_back(vertex);
   }
 
   std::vector<int> local_faces;
@@ -246,10 +291,7 @@ int loadSimplePlyFile(const std::string& path,
   size_t copy_num_faces = num_faces;  // Becuase num_faces can change within for loop
   for (size_t i = 0; i < copy_num_faces; ++i)
   {
-    std::getline(myfile, str);
-    tokens.clear();
-    boost::split(tokens, str, boost::is_any_of(" "));
-    if (tokens.size() < 4)
+    if (!readTokens(myfile, str, tokens) || tokens.size() < 4)
     {
       CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
       return 0;
@@ -264,13 +306,13 @@ int loadSimplePlyFile(const std::string& path,
       local_faces.push_back(std::stoi(tokens[1]));
       local_faces.push_back(std::stoi(tokens[2]));
       local_faces.push_back(std::stoi(tokens[3]));
-      for (size_t i = 3; i < tokens.size() - 1; ++i)
+      for (size_t k = 3; k < tokens.size() - 1; ++k)
       {
         num_faces += 1;
         local_faces.push_back(3);
         local_faces.push_back(std::stoi(tokens[1]));
-        local_faces.push_back(std::stoi(tokens[i]));
-        local_faces.push_back(std::stoi(tokens[i + 1]));
+        local_faces.push_back(std::stoi(tokens[k]));
+        local_faces.push_back(std::stoi(tokens[k + 1]));
       }
     }
     else
