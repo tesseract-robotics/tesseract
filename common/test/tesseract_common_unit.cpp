@@ -4719,6 +4719,8 @@ static constexpr char const* NO_COLOR_PLY = "test_no_color.ply";
 static constexpr char const* SINGLE_COLOR_PLY = "test_single_color.ply";
 static constexpr char const* PER_VERTEX_COLOR_PLY = "test_per_vertex_color.ply";
 static constexpr char const* MISSING_PLY = "no_such_file.ply";
+static constexpr char const* COLOR_ROUND_TRIP_PLY = "test_color_round_trip.ply";
+static constexpr char const* SHORT_COLOR_PLY = "test_short_color.ply";
 
 TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColor)  // NOLINT
 {
@@ -4861,6 +4863,51 @@ TEST(TesseractCommonUnit, PlyIO_WriteWithPerVertexColors)
     EXPECT_EQ(tokens[4], std::to_string(colors[i][1]));
     EXPECT_EQ(tokens[5], std::to_string(colors[i][2]));
   }
+}
+
+TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithPerVertexColors)  // NOLINT
+{
+  // A file this writer produces with color must be one this loader can read back
+  tesseract::common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  std::vector<Eigen::Vector3i> colors{ Eigen::Vector3i{ 10, 20, 30 },
+                                       Eigen::Vector3i{ 40, 50, 60 },
+                                       Eigen::Vector3i{ 70, 80, 90 } };
+
+  Eigen::VectorXi faces(4);
+  faces << 3, 0, 1, 2;
+  const int num_faces = 1;
+
+  const std::string path = tesseract::common::getTempPath() + COLOR_ROUND_TRIP_PLY;
+  EXPECT_TRUE(tesseract::common::writeSimplePlyFile(path, verts, colors, faces, num_faces));
+
+  tesseract::common::VectorVector3d loaded_verts;
+  Eigen::VectorXi loaded_faces;
+  const int ret = tesseract::common::loadSimplePlyFile(path, loaded_verts, loaded_faces, false);
+
+  EXPECT_EQ(ret, num_faces);
+  ASSERT_EQ(loaded_verts.size(), verts.size());
+  for (std::size_t i = 0; i < verts.size(); ++i)
+  {
+    EXPECT_DOUBLE_EQ(loaded_verts[i].x(), verts[i].x());
+    EXPECT_DOUBLE_EQ(loaded_verts[i].y(), verts[i].y());
+    EXPECT_DOUBLE_EQ(loaded_verts[i].z(), verts[i].z());
+  }
+  ASSERT_EQ(loaded_faces.size(), faces.size());
+  for (int i = 0; i < faces.size(); ++i)
+    EXPECT_EQ(loaded_faces[i], faces[i]);
+}
+
+TEST(TesseractCommonUnit, PlyIO_WriteRejectsShortColorArray)  // NOLINT
+{
+  // Fewer colors than vertices is rejected rather than read off the end of the array
+  tesseract::common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  std::vector<Eigen::Vector3i> colors{ Eigen::Vector3i{ 10, 20, 30 }, Eigen::Vector3i{ 40, 50, 60 } };
+
+  Eigen::VectorXi faces(4);
+  faces << 3, 0, 1, 2;
+
+  EXPECT_FALSE(tesseract::common::writeSimplePlyFile(
+      tesseract::common::getTempPath() + SHORT_COLOR_PLY, verts, colors, faces, 1));
 }
 
 TEST(TesseractCommonUnit, PlyIO_WriteAndLoadWithoutColorAndUseTriangles)  // NOLINT
