@@ -30,12 +30,13 @@ namespace tesseract::scene_graph
 /*********************************************************/
 /******                 Material                     *****/
 /*********************************************************/
+Material::Material() { this->clear(); }
+
 Material::Material(std::string name) : name_(std::move(name)) { this->clear(); }
 
 std::shared_ptr<Material> Material::getDefaultMaterial()
 {
-  static auto default_material = std::make_shared<Material>("default_tesseract_material");
-  return default_material;
+  return std::make_shared<Material>("default_tesseract_material");
 }
 
 const std::string& Material::getName() const { return name_; }
