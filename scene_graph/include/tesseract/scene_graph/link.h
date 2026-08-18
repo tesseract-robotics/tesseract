@@ -67,7 +67,7 @@ public:
   using Ptr = std::shared_ptr<Material>;
   using ConstPtr = std::shared_ptr<const Material>;
 
-  Material() = default;
+  Material();
   explicit Material(std::string name);
   ~Material() = default;
 
@@ -78,6 +78,11 @@ public:
 
   const std::string& getName() const;
 
+  /**
+   * @brief Get a new instance of the default material
+   * @details Each call returns a distinct object, so two Visuals constructed independently do not
+   * share one. Copying a Visual still shares its material with the copy.
+   */
   static std::shared_ptr<Material> getDefaultMaterial();
 
   std::string texture_filename;

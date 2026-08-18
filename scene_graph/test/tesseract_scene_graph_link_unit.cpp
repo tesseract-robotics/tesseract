@@ -66,7 +66,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkVisualUnit)  // NOLINT
   Visual m;
 
   EXPECT_TRUE(m.origin.isApprox(Eigen::Isometry3d::Identity()));
-  EXPECT_TRUE(m.material == Material::getDefaultMaterial());
+  EXPECT_TRUE(*m.material == *Material::getDefaultMaterial());
   EXPECT_TRUE(m.geometry == nullptr);
   EXPECT_TRUE(m.name.empty());
 
@@ -78,9 +78,31 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkVisualUnit)  // NOLINT
   m.clear();
 
   EXPECT_TRUE(m.origin.isApprox(Eigen::Isometry3d::Identity()));
-  EXPECT_TRUE(m.material == Material::getDefaultMaterial());
+  EXPECT_TRUE(*m.material == *Material::getDefaultMaterial());
   EXPECT_TRUE(m.geometry == nullptr);
   EXPECT_TRUE(m.name.empty());
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkDefaultMaterialUnit)  // NOLINT
+{
+  using namespace tesseract::scene_graph;
+
+  // The defaulted default constructor initializes color, so a default material equals itself
+  Material m;
+  EXPECT_TRUE(m.color.isApprox(Eigen::Vector4d(0.5, 0.5, 0.5, 1.0)));
+  EXPECT_TRUE(m.texture_filename.empty());
+  EXPECT_TRUE(Material{} == Material{});
+
+  // Each Visual owns its material, so recoloring one leaves the others alone
+  Visual v1;
+  Visual v2;
+  ASSERT_TRUE(v1.material != nullptr);
+  ASSERT_TRUE(v2.material != nullptr);
+  EXPECT_NE(v1.material.get(), v2.material.get());
+
+  v1.material->color = Eigen::Vector4d(1, 0, 0, 1);
+  EXPECT_TRUE(v2.material->color.isApprox(Eigen::Vector4d(0.5, 0.5, 0.5, 1.0)));
+  EXPECT_TRUE(Material::getDefaultMaterial()->color.isApprox(Eigen::Vector4d(0.5, 0.5, 0.5, 1.0)));
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphLinkCollisionUnit)  // NOLINT
