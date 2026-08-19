@@ -53,14 +53,13 @@ class XMLAttribute;
 
 namespace tesseract::common
 {
-#if __cplusplus < 201703L
-/** @brief Random number generator */
-static std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
-#else
-/** @brief Random number generator */
+/**
+ * @brief Random number generator, one independently seeded instance per thread
+ * @details Seeding affects only the calling thread. On Windows each DLL additionally gets its own
+ * instance, so a seed set in one module does not reach draws made in another.
+ */
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
-#endif
+inline thread_local std::mt19937 mersenne{ std::random_device{}() };
 
 template <typename... Args>
 std::string strFormat(const std::string& format, Args... args)

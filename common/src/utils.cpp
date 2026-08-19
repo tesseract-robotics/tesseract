@@ -25,6 +25,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ctime>
+#include <random>
 #include <string>
 #include <type_traits>
 #include <console_bridge/console.h>
@@ -281,14 +282,18 @@ Eigen::VectorXd calcJacobianTransformErrorDiff(const Eigen::Isometry3d& target,
 Eigen::Vector4d computeRandomColor()
 {
   Eigen::Vector4d c;
+  // Zeroed so the first condition check reads defined values, and so it enters the loop
   c.setZero();
   c[3] = 1;
+  // The hundredth grid is load-bearing: a continuous distribution would make the distinctness
+  // rejection below unreachable, because two such draws are never almost equal.
+  std::uniform_int_distribution<int> sample(0, 99);
   while (almostEqualRelativeAndAbs(c[0], c[1]) || almostEqualRelativeAndAbs(c[2], c[1]) ||
          almostEqualRelativeAndAbs(c[2], c[0]))
   {
-    c[0] = (rand() % 100) / 100.0;
-    c[1] = (rand() % 100) / 100.0;
-    c[2] = (rand() % 100) / 100.0;
+    c[0] = sample(mersenne) / 100.0;
+    c[1] = sample(mersenne) / 100.0;
+    c[2] = sample(mersenne) / 100.0;
   }
   return c;
 }
