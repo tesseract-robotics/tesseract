@@ -90,7 +90,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
     auto triangles = std::make_shared<Eigen::VectorXi>();
     std::shared_ptr<tesseract::common::VectorVector3d> vertex_normals = nullptr;
-    std::shared_ptr<tesseract::common::VectorVector4d> vertex_colors = nullptr;
+    std::shared_ptr<tesseract::common::VectorVector4d> vertex_colors_out = nullptr;
     MeshMaterial::Ptr material = nullptr;
     std::shared_ptr<std::vector<MeshTexture::Ptr>> textures = nullptr;
 
@@ -141,12 +141,12 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
 
     if (vertex_colors && a->HasVertexColors(0))
     {
-      vertex_colors = std::make_shared<tesseract::common::VectorVector4d>();
-      vertex_colors->reserve(a->mNumVertices);
+      vertex_colors_out = std::make_shared<tesseract::common::VectorVector4d>();
+      vertex_colors_out->reserve(a->mNumVertices);
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
         aiColor4D v = a->mColors[0][i];
-        vertex_colors->emplace_back(
+        vertex_colors_out->emplace_back(
             static_cast<double>(v.r), static_cast<double>(v.g), static_cast<double>(v.b), static_cast<double>(v.a));
       }
     }
@@ -249,9 +249,9 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                 texture_image = tex_resource;
               }
               aiVector3D* tex_coords = a->mTextureCoords[i];
-              for (unsigned int j = 0; j < a->mNumVertices; ++j)
+              for (unsigned int k = 0; k < a->mNumVertices; ++k)
               {
-                aiVector3D v = tex_coords[j];
+                aiVector3D v = tex_coords[k];
                 uvs.emplace_back(static_cast<double>(v.x), static_cast<double>(v.y));
               }
               auto tex = std::make_shared<MeshTexture>(
@@ -273,7 +273,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                                          resource,
                                          scale,
                                          vertex_normals,
-                                         vertex_colors,
+                                         vertex_colors_out,
                                          material,
                                          textures));
   }

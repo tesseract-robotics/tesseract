@@ -74,33 +74,15 @@ Mesh::Mesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
 
 Geometry::Ptr Mesh::clone() const
 {
-  // getMaterial returns a pointer-to-const, so deference and make_shared, but also guard against nullptr
-  std::shared_ptr<Mesh> ptr;
-  if (getMaterial() != nullptr)
-  {
-    ptr = std::make_shared<Mesh>(getVertices(),
-                                 getFaces(),
-                                 getFaceCount(),
-                                 getResource(),
-                                 getScale(),
-                                 getNormals(),
-                                 getVertexColors(),
-                                 std::make_shared<MeshMaterial>(*getMaterial()),
-                                 getTextures());
-  }
-  else
-  {
-    ptr = std::make_shared<Mesh>(getVertices(),
-                                 getFaces(),
-                                 getFaceCount(),
-                                 getResource(),
-                                 getScale(),
-                                 getNormals(),
-                                 getVertexColors(),
-                                 nullptr,
-                                 getTextures());
-  }
-  return ptr;
+  return std::make_shared<Mesh>(getVertices(),
+                                getFaces(),
+                                getFaceCount(),
+                                getResource(),
+                                getScale(),
+                                getNormals(),
+                                getVertexColors(),
+                                cloneMaterial(),
+                                getTextures());
 }
 
 bool Mesh::operator==(const Mesh& rhs) const

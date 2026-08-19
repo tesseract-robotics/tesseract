@@ -103,9 +103,15 @@ MeshMaterial::ConstPtr PolygonMesh::getMaterial() const { return mesh_material_;
 
 const std::shared_ptr<const std::vector<MeshTexture::Ptr>>& PolygonMesh::getTextures() const { return mesh_textures_; }
 
+MeshMaterial::Ptr PolygonMesh::cloneMaterial() const
+{
+  return (mesh_material_ != nullptr) ? std::make_shared<MeshMaterial>(*mesh_material_) : nullptr;
+}
+
 Geometry::Ptr PolygonMesh::clone() const
 {
-  return std::make_shared<PolygonMesh>(vertices_, faces_, face_count_, resource_, scale_);
+  return std::make_shared<PolygonMesh>(
+      vertices_, faces_, face_count_, resource_, scale_, normals_, vertex_colors_, cloneMaterial(), mesh_textures_);
 }
 
 bool PolygonMesh::operator==(const PolygonMesh& rhs) const
@@ -115,7 +121,9 @@ bool PolygonMesh::operator==(const PolygonMesh& rhs) const
   equal &= vertex_count_ == rhs.vertex_count_;
   equal &= face_count_ == rhs.face_count_;
   equal &= tesseract::common::almostEqualRelativeAndAbs(scale_, rhs.scale_);
-  /// @todo Finish PolygonMesh == operator
+  equal &= tesseract::common::pointersEqual(vertices_, rhs.vertices_);
+  equal &= tesseract::common::pointersEqual(faces_, rhs.faces_);
+  /// @todo Compare resource, normals, vertex colors, material and textures
   return equal;
 }
 bool PolygonMesh::operator!=(const PolygonMesh& rhs) const { return !operator==(rhs); }

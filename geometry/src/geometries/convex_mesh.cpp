@@ -74,7 +74,17 @@ void ConvexMesh::setCreationMethod(CreationMethod method) { creation_method_ = m
 
 Geometry::Ptr ConvexMesh::clone() const
 {
-  return std::make_shared<ConvexMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
+  auto cloned = std::make_shared<ConvexMesh>(getVertices(),
+                                             getFaces(),
+                                             getFaceCount(),
+                                             getResource(),
+                                             getScale(),
+                                             getNormals(),
+                                             getVertexColors(),
+                                             cloneMaterial(),
+                                             getTextures());
+  cloned->setCreationMethod(creation_method_);
+  return cloned;
 }
 
 bool ConvexMesh::operator==(const ConvexMesh& rhs) const

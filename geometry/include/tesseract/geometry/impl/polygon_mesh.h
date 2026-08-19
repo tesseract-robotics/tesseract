@@ -192,6 +192,13 @@ public:
   bool operator==(const PolygonMesh& rhs) const;
   bool operator!=(const PolygonMesh& rhs) const;
 
+protected:
+  /**
+   * @brief Deep copy of the mesh material, or nullptr when there is none
+   * @details Used by clone() so a cloned mesh shares no mutable material state with its original
+   */
+  std::shared_ptr<MeshMaterial> cloneMaterial() const;
+
 private:
   std::shared_ptr<const tesseract::common::VectorVector3d> vertices_;
   std::shared_ptr<const Eigen::VectorXi> faces_;
@@ -199,7 +206,7 @@ private:
   int vertex_count_{ 0 };
   int face_count_{ 0 };
   std::shared_ptr<const tesseract::common::Resource> resource_;
-  Eigen::Vector3d scale_;
+  Eigen::Vector3d scale_{ 1, 1, 1 };
   std::shared_ptr<const tesseract::common::VectorVector3d> normals_;
   std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors_;
   std::shared_ptr<MeshMaterial> mesh_material_;
