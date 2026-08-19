@@ -113,10 +113,10 @@ public:
 
 private:
   // Mesh material based on simplified glTF 2.0 pbrMetallicRoughness parameters
-  Eigen::Vector4d base_color_factor_;
+  Eigen::Vector4d base_color_factor_{ Eigen::Vector4d::Zero() };
   double metallic_factor_ = 0;
   double roughness_factor_ = 0.5;
-  Eigen::Vector4d emissive_factor_;
+  Eigen::Vector4d emissive_factor_{ Eigen::Vector4d::Zero() };
 };
 
 /**

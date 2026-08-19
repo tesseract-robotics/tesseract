@@ -14,6 +14,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/resource_locator.h>
+#include <tesseract/common/ply_io.h>
 #include <cstring>
 
 static constexpr double BIG_TOL = 1e6;
@@ -327,6 +328,119 @@ TEST(TesseractGeometryUnit, PolygonMesh)  // NOLINT
                                        std::make_shared<Eigen::VectorXi>())));
 }
 
+TEST(TesseractGeometryUnit, MeshParserVertexColors)  // NOLINT
+{
+  // The vertex_colors flag reaches the loaded mesh; the normals arm is the control
+  tesseract::common::VectorVector3d verts{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  std::vector<Eigen::Vector3i> colors{ Eigen::Vector3i{ 255, 0, 0 },
+                                       Eigen::Vector3i{ 0, 255, 0 },
+                                       Eigen::Vector3i{ 0, 0, 255 } };
+  Eigen::VectorXi faces(4);
+  faces << 3, 0, 1, 2;
+
+  const std::string path = tesseract::common::getTempPath() + "vertex_color_mesh.ply";
+  ASSERT_TRUE(tesseract::common::writeSimplePlyFile(path, verts, colors, faces, 1));
+
+  auto resource = std::make_shared<tesseract::common::SimpleLocatedResource>(path, path);
+
+  auto with_colors = tesseract::geometry::createMeshFromResource<tesseract::geometry::Mesh>(
+      resource, Eigen::Vector3d(1, 1, 1), true, true, true, true, true);
+  ASSERT_EQ(with_colors.size(), 1U);
+  ASSERT_TRUE(with_colors.front()->getVertexColors() != nullptr);
+  ASSERT_EQ(with_colors.front()->getVertexColors()->size(), verts.size());
+  for (std::size_t i = 0; i < colors.size(); ++i)
+  {
+    const Eigen::Vector4d& c = with_colors.front()->getVertexColors()->at(i);
+    EXPECT_NEAR(c(0), colors[i](0) / 255.0, 1e-3);
+    EXPECT_NEAR(c(1), colors[i](1) / 255.0, 1e-3);
+    EXPECT_NEAR(c(2), colors[i](2) / 255.0, 1e-3);
+  }
+
+  auto without_colors = tesseract::geometry::createMeshFromResource<tesseract::geometry::Mesh>(
+      resource, Eigen::Vector3d(1, 1, 1), true, true, true, false, true);
+  ASSERT_EQ(without_colors.size(), 1U);
+  EXPECT_TRUE(without_colors.front()->getVertexColors() == nullptr);
+}
+
+/** @brief The optional data a mesh carries in addition to its vertices and faces */
+struct MeshDecorations
+{
+  std::shared_ptr<const tesseract::common::VectorVector3d> normals;
+  std::shared_ptr<const tesseract::common::VectorVector4d> vertex_colors;
+  std::shared_ptr<tesseract::geometry::MeshMaterial> material;
+  std::shared_ptr<const std::vector<tesseract::geometry::MeshTexture::Ptr>> textures;
+};
+
+/** @brief Build a full set of decorations for a mesh of @p vertex_count vertices */
+MeshDecorations makeMeshDecorations(std::size_t vertex_count)
+{
+  auto uvs = std::make_shared<tesseract::common::VectorVector2d>(1, Eigen::Vector2d(0, 0));
+  return { std::make_shared<tesseract::common::VectorVector3d>(vertex_count, Eigen::Vector3d(0, 0, 1)),
+           std::make_shared<tesseract::common::VectorVector4d>(vertex_count, Eigen::Vector4d(1, 0, 0, 1)),
+           std::make_shared<tesseract::geometry::MeshMaterial>(
+               Eigen::Vector4d(0.1, 0.2, 0.3, 1.0), 0.25, 0.75, Eigen::Vector4d(0.4, 0.5, 0.6, 1.0)),
+           std::make_shared<std::vector<tesseract::geometry::MeshTexture::Ptr>>(
+               1, std::make_shared<tesseract::geometry::MeshTexture>(nullptr, uvs)) };
+}
+
+/**
+ * @brief Check @p clone carries the decorations it was built from
+ * @details The containers are shared with the source, but the material is deep copied, so the clone must hold an
+ * equal material in a different object.
+ */
+void expectDecorationsCloned(const tesseract::geometry::PolygonMesh& clone, const MeshDecorations& source)
+{
+  EXPECT_EQ(clone.getNormals(), source.normals);
+  EXPECT_EQ(clone.getVertexColors(), source.vertex_colors);
+  EXPECT_EQ(clone.getTextures(), source.textures);
+
+  const auto material = clone.getMaterial();
+  ASSERT_TRUE(material != nullptr);
+  EXPECT_NE(material.get(), source.material.get());
+  EXPECT_TRUE(material->getBaseColorFactor().isApprox(source.material->getBaseColorFactor()));
+  EXPECT_TRUE(material->getEmissiveFactor().isApprox(source.material->getEmissiveFactor()));
+  EXPECT_DOUBLE_EQ(material->getMetallicFactor(), source.material->getMetallicFactor());
+  EXPECT_DOUBLE_EQ(material->getRoughnessFactor(), source.material->getRoughnessFactor());
+}
+
+TEST(TesseractGeometryUnit, PolygonMeshCloneAndEquality)  // NOLINT
+{
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  vertices->emplace_back(1, 1, 0);
+  vertices->emplace_back(1, -1, 0);
+  vertices->emplace_back(-1, -1, 0);
+
+  auto faces = std::make_shared<Eigen::VectorXi>();
+  faces->resize(4);
+  (*faces) << 3, 0, 1, 2;
+
+  auto deco = makeMeshDecorations(3);
+
+  using T = tesseract::geometry::PolygonMesh;
+  auto geom = std::make_shared<T>(vertices,
+                                  faces,
+                                  1,
+                                  nullptr,
+                                  Eigen::Vector3d(1, 1, 1),
+                                  deco.normals,
+                                  deco.vertex_colors,
+                                  deco.material,
+                                  deco.textures);
+
+  auto clone = std::static_pointer_cast<T>(geom->clone());
+  expectDecorationsCloned(*clone, deco);
+  EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *clone));
+
+  // Equality looks at the geometry, not just the counts and scale
+  auto other_vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  other_vertices->emplace_back(5, 5, 0);
+  other_vertices->emplace_back(5, -5, 0);
+  other_vertices->emplace_back(-5, -5, 0);
+  T other(other_vertices, faces, 1);
+  other.setUUID(geom->getUUID());
+  EXPECT_TRUE(*geom != other);
+}
+
 TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
 {
   auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
@@ -343,8 +457,17 @@ TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
   (*faces)(3) = 2;
   (*faces)(4) = 3;
 
+  auto deco = makeMeshDecorations(4);
+
   using T = tesseract::geometry::ConvexMesh;
-  auto geom = std::make_shared<T>(vertices, faces);
+  auto geom = std::make_shared<T>(vertices,
+                                  faces,
+                                  nullptr,
+                                  Eigen::Vector3d(1, 1, 1),
+                                  deco.normals,
+                                  deco.vertex_colors,
+                                  deco.material,
+                                  deco.textures);
   EXPECT_TRUE(geom->getVertices() != nullptr);
   EXPECT_TRUE(geom->getFaces() != nullptr);
   EXPECT_TRUE(geom->getVertexCount() == 4);
@@ -355,21 +478,22 @@ TEST(TesseractGeometryUnit, ConvexMesh)  // NOLINT
   EXPECT_EQ(geom->getCreationMethod(), tesseract::geometry::ConvexMesh::CreationMethod::CONVERTED);
   EXPECT_FALSE(geom->getUUID().is_nil());
 
-  auto geom_clone = geom->clone();
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
-  EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 1);
-  EXPECT_EQ(geom_clone->getType(), tesseract::geometry::GeometryType::CONVEX_MESH);
-  EXPECT_EQ(geom->getCreationMethod(), tesseract::geometry::ConvexMesh::CreationMethod::CONVERTED);
-  EXPECT_FALSE(geom_clone->getUUID().is_nil());
-  EXPECT_NE(geom_clone->getUUID(), geom->getUUID());
+  auto clone = std::static_pointer_cast<T>(geom->clone());
+  EXPECT_TRUE(clone->getVertices() != nullptr);
+  EXPECT_TRUE(clone->getFaces() != nullptr);
+  EXPECT_TRUE(clone->getVertexCount() == 4);
+  EXPECT_TRUE(clone->getFaceCount() == 1);
+  EXPECT_EQ(clone->getType(), tesseract::geometry::GeometryType::CONVEX_MESH);
+  EXPECT_EQ(clone->getCreationMethod(), tesseract::geometry::ConvexMesh::CreationMethod::CONVERTED);
+  expectDecorationsCloned(*clone, deco);
+  EXPECT_FALSE(clone->getUUID().is_nil());
+  EXPECT_NE(clone->getUUID(), geom->getUUID());
 
-  geom->setUUID(geom_clone->getUUID());
-  EXPECT_EQ(geom_clone->getUUID(), geom->getUUID());
+  geom->setUUID(clone->getUUID());
+  EXPECT_EQ(clone->getUUID(), geom->getUUID());
 
   // Test isIdentical
-  EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *geom_clone));
+  EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *clone));
   EXPECT_FALSE(tesseract::geometry::isIdentical(
       *geom,
       tesseract::geometry::ConvexMesh(std::make_shared<tesseract::common::VectorVector3d>(),
@@ -536,8 +660,15 @@ TEST(TesseractGeometryUnit, Mesh)  // NOLINT
   }
 
   {
-    auto mat = std::make_shared<tesseract::geometry::MeshMaterial>();
-    auto geom = std::make_shared<T>(vertices, faces, nullptr, Eigen::Vector3d(1, 1, 1), nullptr, nullptr, mat);
+    auto deco = makeMeshDecorations(4);
+    auto geom = std::make_shared<T>(vertices,
+                                    faces,
+                                    nullptr,
+                                    Eigen::Vector3d(1, 1, 1),
+                                    deco.normals,
+                                    deco.vertex_colors,
+                                    deco.material,
+                                    deco.textures);
     EXPECT_TRUE(geom->getVertices() != nullptr);
     EXPECT_TRUE(geom->getFaces() != nullptr);
     EXPECT_TRUE(geom->getVertexCount() == 4);
@@ -546,21 +677,21 @@ TEST(TesseractGeometryUnit, Mesh)  // NOLINT
     EXPECT_EQ(geom->getType(), tesseract::geometry::GeometryType::MESH);
     EXPECT_FALSE(geom->getUUID().is_nil());
 
-    auto geom_clone = geom->clone();
-    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertices() != nullptr);
-    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaces() != nullptr);
-    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getVertexCount() == 4);
-    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getFaceCount() == 2);
-    EXPECT_TRUE(std::static_pointer_cast<T>(geom_clone)->getMaterial() != nullptr);
-    EXPECT_EQ(geom_clone->getType(), tesseract::geometry::GeometryType::MESH);
-    EXPECT_FALSE(geom_clone->getUUID().is_nil());
-    EXPECT_NE(geom_clone->getUUID(), geom->getUUID());
+    auto clone = std::static_pointer_cast<T>(geom->clone());
+    EXPECT_TRUE(clone->getVertices() != nullptr);
+    EXPECT_TRUE(clone->getFaces() != nullptr);
+    EXPECT_TRUE(clone->getVertexCount() == 4);
+    EXPECT_TRUE(clone->getFaceCount() == 2);
+    expectDecorationsCloned(*clone, deco);
+    EXPECT_EQ(clone->getType(), tesseract::geometry::GeometryType::MESH);
+    EXPECT_FALSE(clone->getUUID().is_nil());
+    EXPECT_NE(clone->getUUID(), geom->getUUID());
 
-    geom->setUUID(geom_clone->getUUID());
-    EXPECT_EQ(geom_clone->getUUID(), geom->getUUID());
+    geom->setUUID(clone->getUUID());
+    EXPECT_EQ(clone->getUUID(), geom->getUUID());
 
     // Test isIdentical
-    EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *geom_clone));
+    EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *clone));
     EXPECT_FALSE(tesseract::geometry::isIdentical(
         *geom,
         tesseract::geometry::Mesh(std::make_shared<tesseract::common::VectorVector3d>(),
