@@ -22,18 +22,6 @@ jobs:
         with:
           path: target_ws/src
 
-      - name: Configure ccache
-        shell: bash
-        run: |
-          # Must match the ccache-prefix given to colcon-action below: that is the directory it caches.
-          mkdir -p "$GITHUB_WORKSPACE/benchmarks/.ccache"
-          echo "CCACHE_DIR=$GITHUB_WORKSPACE/benchmarks/.ccache" >> "$GITHUB_ENV"
-          echo "CCACHE_MAXSIZE=1G" >> "$GITHUB_ENV"
-          # Set in the environment, not via --cmake-args: colcon's --cmake-args is last-wins, so a
-          # launcher passed there is dropped by the next --cmake-args on the command line.
-          echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
-          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
-
       - name: Install Depends
         shell: bash
         run: |
@@ -42,7 +30,7 @@ jobs:
           apt install -y liboctomap-dev
 
       - name: Build
-        uses: tesseract-robotics/colcon-action@v14
+        uses: tesseract-robotics/colcon-action@v15
         with:
           ccache-prefix: benchmarks
           vcs-file: dependencies_jammy.repos

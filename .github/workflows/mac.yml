@@ -66,16 +66,8 @@ jobs:
       run: |
         echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GITHUB_WORKSPACE/vcpkg/installed/${{ matrix.config.vcpkg_triplet }}/lib" >> "$GITHUB_ENV"
         echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$GITHUB_WORKSPACE/vcpkg/installed/${{ matrix.config.vcpkg_triplet }}" >> "$GITHUB_ENV"
-        # Must match the ccache-prefix given to colcon-action below: that is the directory it caches.
-        mkdir -p "$GITHUB_WORKSPACE/ci-mac-build-${{ matrix.config.arch }}/.ccache"
-        echo "CCACHE_DIR=$GITHUB_WORKSPACE/ci-mac-build-${{ matrix.config.arch }}/.ccache" >> "$GITHUB_ENV"
-        echo "CCACHE_MAXSIZE=1G" >> "$GITHUB_ENV"
-        # Set in the environment, not via --cmake-args: colcon's --cmake-args is last-wins, so a
-        # launcher passed there is dropped by the next --cmake-args on the command line.
-        echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
-        echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
     - name: Build and Tests
-      uses: tesseract-robotics/colcon-action@v14
+      uses: tesseract-robotics/colcon-action@v15
       with:
         ccache-prefix: ci-mac-build-${{ matrix.config.arch }}
         vcs-file: .github/workflows/windows_dependencies.repos
@@ -105,9 +97,3 @@ jobs:
           -DOpenMP_C_LIB_NAMES=libomp -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp" \
           -DOpenMP_libomp_LIBRARY=${{ matrix.config.homebrew_root }}/opt/libomp/lib/libomp.dylib
         run-tests-args: --merge-install --ctest-args -E "TesseractEnvironmentUnit.checkTrajectoryUnit|TesseractCommonUnit.timer"
-
-    - name: Report ccache statistics
-      if: always()
-      shell: bash
-      run: ccache -s
-        
