@@ -865,13 +865,23 @@ TEST(TesseractKinematicsUnit, RTPInvKinRejectsToolBaseNotInSceneGraph)  // NOLIN
   auto bad_tool = std::make_unique<StubFwdKin>("does_not_exist_link");
   Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
 
-  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
-      *scene_graph,
-      scene_state,
-      std::move(opw_kin),
-      2.0,
-      std::move(bad_tool),
-      tool_resolution));
+  // The tool base is required in the scene state before it is looked up in the graph, so a link
+  // absent from both is rejected by the earlier guard. Seeding the state makes the graph lookup
+  // the check under test; the message assertion below is what pins that.
+  scene_state.link_transforms["does_not_exist_link"] = Eigen::Isometry3d::Identity();
+
+  try
+  {
+    auto kin = std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, std::move(opw_kin), 2.0, std::move(bad_tool), tool_resolution);
+    ADD_FAILURE() << "Expected rejection for a tool base link absent from the scene graph";
+  }
+  catch (const std::runtime_error& e)
+  {
+    EXPECT_NE(std::string(e.what()).find("Tool positioner base link 'does_not_exist_link' not found in scene graph"),
+              std::string::npos)
+        << "threw for the wrong reason: " << e.what();
+  }
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinRejectsToolBaseDisconnectedFromManipTip)  // NOLINT
@@ -888,13 +898,50 @@ TEST(TesseractKinematicsUnit, RTPInvKinRejectsToolBaseDisconnectedFromManipTip) 
   auto disconnected_tool = std::make_unique<StubFwdKin>("phantom_island");
   Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
 
-  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
-      *scene_graph,
-      scene_state,
-      std::move(opw_kin),
-      2.0,
-      std::move(disconnected_tool),
-      tool_resolution));
+  // The state was captured before the link was added, so it too must be seeded — otherwise the
+  // scene-state guard fires first and the connectivity check is never reached.
+  scene_state.link_transforms["phantom_island"] = Eigen::Isometry3d::Identity();
+
+  try
+  {
+    auto kin = std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, std::move(opw_kin), 2.0, std::move(disconnected_tool), tool_resolution);
+    ADD_FAILURE() << "Expected rejection for a tool base link disconnected from the manipulator tip";
+  }
+  catch (const std::runtime_error& e)
+  {
+    EXPECT_NE(std::string(e.what()).find("is not connected to manipulator tip link"), std::string::npos)
+        << "threw for the wrong reason: " << e.what();
+  }
+}
+
+TEST(TesseractKinematicsUnit, RTPInvKinRejectsToolSampleGridExceedingCap)  // NOLINT
+{
+  // The cap is on the product across tool joints, not on any one of them: each row below is far
+  // inside buildSampleGrid's per-joint limit and only their product exceeds the combined cap.
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphABBWithMultiJointToolPositioner(locator);
+  tesseract::scene_graph::KDLStateSolver state_solver(*scene_graph);
+  tesseract::scene_graph::SceneState scene_state = state_solver.getState();
+
+  auto opw_kin = makeOPWInvKinABB(*scene_graph);
+  auto tool_kin = std::make_unique<KDLFwdKinChain>(*scene_graph, "tool0", "tool_tip");
+
+  Eigen::MatrixX2d tool_range(2, 2);
+  tool_range << -1.0, 1.0, -1.0, 1.0;
+  Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(2, 2e-3);  // 1001 samples per joint
+
+  try
+  {
+    auto kin = std::make_unique<RTPInvKin>(
+        *scene_graph, scene_state, std::move(opw_kin), 2.0, std::move(tool_kin), tool_range, tool_resolution);
+    ADD_FAILURE() << "Expected rejection for a tool sample grid above the combined cap";
+  }
+  catch (const std::runtime_error& e)
+  {
+    EXPECT_NE(std::string(e.what()).find("combined samples"), std::string::npos)
+        << "threw for the wrong reason: " << e.what();
+  }
 }
 
 TEST(TesseractKinematicsUnit, RTPInvKinReturnsNoSolutionsWhenManipIKEmpty)  // NOLINT
