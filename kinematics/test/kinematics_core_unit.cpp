@@ -1044,6 +1044,26 @@ TEST(TesseractKinematicsUnit, ChainReachUpperBoundMissingLinkThrows)  // NOLINT
   EXPECT_THROW(tesseract::kinematics::computeChainReachUpperBound(*sg, "no_such_link", "tip"), std::runtime_error);
 }
 
+TEST(TesseractKinematicsUnit, ChainReachUpperBoundDisconnectedLinkThrows)  // NOLINT
+{
+  auto sg = makeSingleJointSceneGraph(
+      tesseract::scene_graph::JointType::REVOLUTE, Eigen::Vector3d(0.0, 0.0, 0.1), -M_PI, M_PI);
+  sg->addLink(tesseract::scene_graph::Link("island"));
+
+  // Both links are present, so this is the empty-joint-path rejection and not the missing-link one
+  // above. The message assertion is what keeps the two apart.
+  try
+  {
+    tesseract::kinematics::computeChainReachUpperBound(*sg, "base", "island");
+    ADD_FAILURE() << "Expected rejection for a tip link with no path from the base link";
+  }
+  catch (const std::runtime_error& e)
+  {
+    EXPECT_NE(std::string(e.what()).find("no path from 'base' to 'island'"), std::string::npos)
+        << "threw for the wrong reason: " << e.what();
+  }
+}
+
 TEST(TesseractKinematicsUnit, ChainReachUpperBoundBranchedTree)  // NOLINT
 {
   // Two siblings hanging off a shared parent. The function must walk only the
