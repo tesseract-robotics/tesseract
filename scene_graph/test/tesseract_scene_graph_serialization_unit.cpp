@@ -243,7 +243,7 @@ TEST(TesseractSceneGraphSerializationUnit, SceneStateWithFloatingJoints)  // NOL
   Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
   tf.translate(Eigen::Vector3d(0.5, -0.25, 1.0));
   object->floating_joints["floating_1"] = tf;
-  tesseract::common::testSerialization<SceneState>(*object, "SceneState");
+  tesseract::common::testSerialization<SceneState>(*object, "SceneStateWithFloatingJoints");
 }
 
 int main(int argc, char** argv)
