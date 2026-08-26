@@ -9,25 +9,24 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   export CXXFLAGS="${CXXFLAGS//-fvisibility-inlines-hidden/}"
 fi
 
-# SPIKE: compiler caching, Linux only. rattler-build works in a directory whose name carries a
-# unix timestamp, so every -I flag differs between runs; CCACHE_BASEDIR rewrites paths under the
-# build root to relative ones so the hashes match anyway. The compiler lives at a path that moves
-# too, hence compilercheck=content, and conda unpacks headers fresh each run, hence the mtime
-# sloppiness.
+# SPIKE: compiler caching, Linux only, and paired with --no-build-id on the rattler-build call.
+# Without that flag the build directory carries a unix timestamp and no compile would ever hit.
+# CCACHE_BASEDIR would paper over that, but it rewrites the source path the compiler is given, so
+# __FILE__ turns relative and every test deriving a data path from it fails; a stable directory is
+# what makes the absolute paths match instead.
+#
+# CCACHE_DIR is named outright because rattler-build clears the environment and points HOME at
+# $SRC_DIR, inside the build tree that is deleted with the build.
 CCACHE_LAUNCHERS=""
-if [[ "$OSTYPE" == "linux"* ]]; then
-  export CCACHE_DIR="${CCACHE_DIR:-$HOME/.cache/ccache}"
-  export CCACHE_BASEDIR="$(dirname "$PREFIX")"
+CCACHE_ROOT=/home/runner/.cache/ccache
+if [[ "$OSTYPE" == "linux"* ]] && command -v ccache > /dev/null 2>&1 && mkdir -p "$CCACHE_ROOT" 2>/dev/null; then
+  export CCACHE_DIR="$CCACHE_ROOT"
   export CCACHE_COMPILERCHECK=content
   export CCACHE_SLOPPINESS=locale,time_macros,include_file_ctime,include_file_mtime,pch_defines,system_headers
-  export CCACHE_NOHASHDIR=true
   export CCACHE_MAXSIZE=2G
   echo "=== ccache spike diagnostics ==="
-  echo "HOME=$HOME"
   echo "PWD=$PWD"
-  echo "PREFIX=$PREFIX"
   echo "CCACHE_DIR=$CCACHE_DIR"
-  echo "CCACHE_BASEDIR=$CCACHE_BASEDIR"
   ccache --version | head -1
   ccache -z
   echo "=== end diagnostics ==="
