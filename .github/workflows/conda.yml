@@ -32,15 +32,6 @@ jobs:
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
-    # Restores what setup-miniconda would otherwise download. Keyed on the environment file alone,
-    # so a hit never re-saves and the entry does not grow with every run. The trade-off is drift:
-    # the file pins no versions, so the set conda resolves moves on while the cache does not, and
-    # the misses return gradually. Edit the key to bust it.
-    - name: Cache conda packages
-      uses: actions/cache@v4
-      with:
-        path: C:\Users\runneradmin\conda_pkgs_dir
-        key: conda-win-pkgs-${{ hashFiles('workspace/src/tesseract/.github/workflows/conda/environment.yml') }}
     - uses: conda-incubator/setup-miniconda@v4
       with:
         channel-priority: strict
@@ -90,12 +81,6 @@ jobs:
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
-    # See conda-win for why the key is the environment file alone.
-    - name: Cache conda packages
-      uses: actions/cache@v4
-      with:
-        path: /home/runner/conda_pkgs_dir
-        key: conda-linux-pkgs-${{ hashFiles('workspace/src/tesseract/.github/workflows/conda/environment.yml') }}
     - uses: conda-incubator/setup-miniconda@v4
       with:
         channel-priority: strict
@@ -144,12 +129,6 @@ jobs:
     - name: vcs import
       run: >
         vcs import --input "${{ github.workspace }}/workspace/src/tesseract/.github/workflows/windows_dependencies.repos" workspace/src/
-    # See conda-win for why the key is the environment file alone.
-    - name: Cache conda packages
-      uses: actions/cache@v4
-      with:
-        path: /Users/runner/conda_pkgs_dir
-        key: conda-mac-pkgs-${{ hashFiles('workspace/src/tesseract/.github/workflows/conda/environment.yml') }}
     - uses: conda-incubator/setup-miniconda@v4
       with:
         channel-priority: strict
