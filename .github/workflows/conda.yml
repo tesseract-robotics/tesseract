@@ -35,7 +35,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v4
       with:
         channel-priority: strict
-        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.win_64.txt
+        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
         activate-environment: tesseract-build
         channels: conda-forge
         conda-remove-defaults: "true"
@@ -84,7 +84,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v4
       with:
         channel-priority: strict
-        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.linux_64.txt
+        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
         activate-environment: tesseract-build
         channels: conda-forge
         conda-remove-defaults: "true"
@@ -132,7 +132,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v4
       with:
         channel-priority: strict
-        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.osx_64.txt
+        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
         activate-environment: tesseract-build
         channels: conda-forge
         conda-remove-defaults: "true"

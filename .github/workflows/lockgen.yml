@@ -1,0 +1,43 @@
+# THROWAWAY: dumps an explicit lockfile per platform so the conda jobs can skip repodata+solve.
+# Delete once the lockfiles are committed.
+name: Lockgen
+
+on:
+  pull_request:
+
+jobs:
+  lockgen:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            plat: linux_64
+          - os: windows-latest
+            plat: win_64
+          - os: macos-15-intel
+            plat: osx_64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        path: workspace/src/tesseract
+    - uses: conda-incubator/setup-miniconda@v4
+      with:
+        channel-priority: strict
+        environment-file: workspace/src/tesseract/.github/workflows/conda/environment.yml
+        activate-environment: tesseract-build
+        channels: conda-forge
+        conda-remove-defaults: "true"
+    - name: Dump explicit lockfile
+      run: |
+        conda list --explicit --name tesseract-build > "environment.${{ matrix.plat }}.txt"
+        head -5 "environment.${{ matrix.plat }}.txt"
+        wc -l "environment.${{ matrix.plat }}.txt"
+    - uses: actions/upload-artifact@v4
+      with:
+        name: lock-${{ matrix.plat }}
+        path: environment.${{ matrix.plat }}.txt
