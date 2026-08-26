@@ -48,7 +48,7 @@ jobs:
           apt install -y liboctomap-dev
 
       - name: Build and Tests
-        uses: tesseract-robotics/colcon-action@v15
+        uses: tesseract-robotics/colcon-action@main
         with:
           ccache-prefix: nightly-${{ matrix.distro }}
           vcs-file: ${{ matrix.vcs_file }}
