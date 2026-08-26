@@ -56,6 +56,8 @@ jobs:
     defaults:
       run:
         shell: bash -el {0}
+    env:
+      CCACHE_DIR: /home/runner/.cache/ccache
     steps:
     - uses: actions/checkout@v7
       with:
@@ -73,6 +75,13 @@ jobs:
         activate-environment: tesseract-build
         channels: conda-forge
         conda-remove-defaults: "true"
+    - name: Restore ccache
+      uses: actions/cache/restore@v4
+      with:
+        path: /home/runner/.cache/ccache
+        key: conda-linux-ccache-${{ github.run_id }}
+        restore-keys: conda-linux-ccache-
+
     - name: build and test
       run: |
         conda info
@@ -83,6 +92,14 @@ jobs:
         conda-smithy regenerate --no-check-uptodate
         
         rattler-build build -m .ci_support/linux_64_.yaml --recipe recipe/recipe.yaml
+
+    # Saved even on failure: a partially warmed cache is still worth keeping for the next run.
+    - name: Save ccache
+      if: ${{ !cancelled() }}
+      uses: actions/cache/save@v4
+      with:
+        path: /home/runner/.cache/ccache
+        key: conda-linux-ccache-${{ github.run_id }}
 
   conda-mac:
     runs-on: macos-15-intel
