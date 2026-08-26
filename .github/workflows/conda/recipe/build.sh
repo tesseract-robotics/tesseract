@@ -9,34 +9,37 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   export CXXFLAGS="${CXXFLAGS//-fvisibility-inlines-hidden/}"
 fi
 
-# SPIKE: compiler caching, Linux only, and paired with --no-build-id on the rattler-build call.
-# Without that flag the build directory carries a unix timestamp and no compile would ever hit.
-# CCACHE_BASEDIR would paper over that, but it rewrites the source path the compiler is given, so
-# __FILE__ turns relative and every test deriving a data path from it fails; a stable directory is
-# what makes the absolute paths match instead.
+# Compiler caching, paired with --no-build-id on the rattler-build call. Without that flag the
+# build directory carries a unix timestamp and no compile would ever hit. CCACHE_BASEDIR would
+# paper over that, but it rewrites the source path the compiler is given, so __FILE__ turns
+# relative and every test deriving a data path from it fails; a stable build directory is what
+# makes the absolute paths match instead.
 #
-# CCACHE_DIR is named outright because rattler-build clears the environment and points HOME at
-# $SRC_DIR, inside the build tree that is deleted with the build.
-CCACHE_LAUNCHERS=""
-CCACHE_ROOT=/home/runner/.cache/ccache
-if [[ "$OSTYPE" == "linux"* ]] && command -v ccache > /dev/null 2>&1 && mkdir -p "$CCACHE_ROOT" 2>/dev/null; then
+# CCACHE_DIR is named outright, and points outside the build tree, because rattler-build clears the
+# environment and repoints HOME at $SRC_DIR, which is deleted along with the build. The workflow's
+# cache step must name the same directory.
+case "$OSTYPE" in
+  linux*)  CCACHE_ROOT=/home/runner/.cache/ccache ;;
+  darwin*) CCACHE_ROOT=/Users/runner/.cache/ccache ;;
+  *)       CCACHE_ROOT="" ;;
+esac
+if [ -n "$CCACHE_ROOT" ] && command -v ccache > /dev/null 2>&1 && mkdir -p "$CCACHE_ROOT" 2>/dev/null; then
   export CCACHE_DIR="$CCACHE_ROOT"
   export CCACHE_COMPILERCHECK=content
   export CCACHE_SLOPPINESS=locale,time_macros,include_file_ctime,include_file_mtime,pch_defines,system_headers
   export CCACHE_MAXSIZE=2G
-  echo "=== ccache spike diagnostics ==="
-  echo "PWD=$PWD"
-  echo "CCACHE_DIR=$CCACHE_DIR"
+  # CMake reads the launchers from the environment (3.17+), so they stay off the --cmake-args line,
+  # which is last-wins and would drop them if a caller passed its own.
+  export CMAKE_C_COMPILER_LAUNCHER=ccache
+  export CMAKE_CXX_COMPILER_LAUNCHER=ccache
   ccache --version | head -1
-  ccache -z
-  echo "=== end diagnostics ==="
-  CCACHE_LAUNCHERS="-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+  ccache --zero-stats
 fi
 
 colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    --event-handlers console_direct+ \
    --packages-ignore gtest osqp osqp_eigen_ext tesseract_examples trajopt_ifopt trajopt_sqp \
-   --cmake-args $CCACHE_LAUNCHERS -DCMAKE_BUILD_TYPE=Release \
+   --cmake-args -DCMAKE_BUILD_TYPE=Release \
    -DBUILD_SHARED_LIBS=ON \
    -DBUILD_IPOPT=OFF \
    -DBUILD_SNOPT=OFF \
@@ -52,9 +55,8 @@ colcon build --merge-install --install-base="$PREFIX/opt/tesseract_robotics" \
    -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
    -DCMAKE_VERBOSE_MAKEFILE=ON
 
-if [[ "$OSTYPE" == "linux"* ]]; then
-  echo "=== ccache statistics after build ==="
-  ccache -s
+if [ -n "${CCACHE_DIR:-}" ]; then
+  ccache --show-stats
 fi
 
 source "$PREFIX/opt/tesseract_robotics/setup.sh"

@@ -1,4 +1,27 @@
 
+:: Compiler caching. See build.sh for why the rattler-build call needs --no-build-id and why
+:: CCACHE_DIR is named outright rather than left to default under HOME. The workflow's cache step
+:: must name the same directory.
+::
+:: CMake reads the launchers from the environment (3.17+), so they stay off the --cmake-args line,
+:: which is last-wins and would drop them if a caller passed its own. The -GNinja below is what
+:: makes them take effect at all: the Visual Studio generator ignores <LANG>_COMPILER_LAUNCHER
+:: without saying so, and the only symptom is zero cacheable calls.
+set CCACHE_DIR=C:\Users\runneradmin\.cache\ccache
+where ccache >nul 2>&1
+if %errorlevel% equ 0 (
+    if not exist "%CCACHE_DIR%" mkdir "%CCACHE_DIR%"
+    set CCACHE_COMPILERCHECK=content
+    set CCACHE_SLOPPINESS=locale,time_macros,include_file_ctime,include_file_mtime,pch_defines,system_headers
+    set CCACHE_MAXSIZE=2G
+    set CMAKE_C_COMPILER_LAUNCHER=ccache
+    set CMAKE_CXX_COMPILER_LAUNCHER=ccache
+    ccache --version
+    ccache --zero-stats
+) else (
+    set CCACHE_DIR=
+)
+
 colcon build --merge-install --install-base="%PREFIX%\opt\tesseract_robotics" ^
    --event-handlers console_cohesion+ ^
    --packages-ignore gtest osqp osqp_eigen_ext tesseract_examples trajopt_ifopt trajopt_sqp ^
@@ -20,6 +43,8 @@ colcon build --merge-install --install-base="%PREFIX%\opt\tesseract_robotics" ^
    -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF
 
 if %errorlevel% neq 0 exit /b %errorlevel%
+
+if defined CCACHE_DIR ccache --show-stats
 
 call "%PREFIX%\opt\tesseract_robotics\setup.bat"
 

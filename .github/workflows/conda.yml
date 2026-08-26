@@ -39,6 +39,13 @@ jobs:
         activate-environment: tesseract-build
         channels: conda-forge
         conda-remove-defaults: "true"
+    - name: Restore ccache
+      uses: actions/cache/restore@v4
+      with:
+        path: C:\Users\runneradmin\.cache\ccache
+        key: conda-win-ccache-${{ github.run_id }}
+        restore-keys: conda-win-ccache-
+
     - name: build and test
       run: |
         conda info
@@ -49,15 +56,21 @@ jobs:
         cd conda
         conda-smithy regenerate --no-check-uptodate
         
-        rattler-build build -m .ci_support/win_64_.yaml --recipe recipe/recipe.yaml
+        rattler-build build --no-build-id -m .ci_support/win_64_.yaml --recipe recipe/recipe.yaml
+
+    # Saved even on failure: a partially warmed cache is still worth keeping for the next run.
+    - name: Save ccache
+      if: ${{ !cancelled() }}
+      uses: actions/cache/save@v4
+      with:
+        path: C:\Users\runneradmin\.cache\ccache
+        key: conda-win-ccache-${{ github.run_id }}
 
   conda-linux:
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -el {0}
-    env:
-      CCACHE_DIR: /home/runner/.cache/ccache
     steps:
     - uses: actions/checkout@v7
       with:
@@ -123,6 +136,13 @@ jobs:
         activate-environment: tesseract-build
         channels: conda-forge
         conda-remove-defaults: "true"
+    - name: Restore ccache
+      uses: actions/cache/restore@v4
+      with:
+        path: /Users/runner/.cache/ccache
+        key: conda-mac-ccache-${{ github.run_id }}
+        restore-keys: conda-mac-ccache-
+
     - name: build and test
       run: |
         conda info
@@ -132,4 +152,12 @@ jobs:
         cd conda
         conda-smithy regenerate --no-check-uptodate
         
-        rattler-build build -m .ci_support/osx_64_.yaml  --recipe recipe/recipe.yaml
+        rattler-build build --no-build-id -m .ci_support/osx_64_.yaml  --recipe recipe/recipe.yaml
+
+    # Saved even on failure: a partially warmed cache is still worth keeping for the next run.
+    - name: Save ccache
+      if: ${{ !cancelled() }}
+      uses: actions/cache/save@v4
+      with:
+        path: /Users/runner/.cache/ccache
+        key: conda-mac-ccache-${{ github.run_id }}

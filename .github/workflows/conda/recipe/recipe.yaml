@@ -13,9 +13,7 @@ requirements:
     build:
       - ${{ compiler('c') }}
       - ${{ compiler('cxx') }}
-      - if: linux
-        then:
-          - ccache
+      - ccache
       - benchmark
       - gtest
       - gmock
