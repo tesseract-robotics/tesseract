@@ -29,6 +29,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -73,6 +74,27 @@ bool ContinuousContactManager::removeCollisionObjects(const std::vector<tesserac
     success &= removeCollisionObject(id);
 
   return success;
+}
+
+bool ContinuousContactManager::setCollisionObjectsEnabled(
+    const std::unordered_map<tesseract::common::LinkId, bool>& enabled)
+{
+  bool success{ true };
+  for (const auto& entry : enabled)
+    success &= entry.second ? enableCollisionObject(entry.first) : disableCollisionObject(entry.first);
+
+  return success;
+}
+
+bool ContinuousContactManager::setCollisionObjectsEnabled(const std::vector<tesseract::common::LinkId>& ids,
+                                                          bool enabled)
+{
+  std::unordered_map<tesseract::common::LinkId, bool> entries;
+  entries.reserve(ids.size());
+  for (const auto& id : ids)
+    entries[id] = enabled;
+
+  return setCollisionObjectsEnabled(entries);
 }
 
 void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
@@ -132,6 +154,14 @@ void ContinuousContactManager::setCollisionObjectsTransform(const std::unordered
   TESSERACT_THREAD_LOCAL tesseract::common::VectorIsometry3d scratch_poses1;
   scratch_ids.assign(ids.begin(), ids.end());
   gatherPoses(scratch_ids, state0, scratch_poses0);
+
+  // One map passed as both endpoints yields two identical pose arrays, so gather it once and pass it twice.
+  if (&state0 == &state1)
+  {
+    setCollisionObjectsTransform(scratch_ids, scratch_poses0, scratch_poses0);
+    return;
+  }
+
   gatherPoses(scratch_ids, state1, scratch_poses1);
   setCollisionObjectsTransform(scratch_ids, scratch_poses0, scratch_poses1);
 }
@@ -143,6 +173,14 @@ void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<te
   TESSERACT_THREAD_LOCAL tesseract::common::VectorIsometry3d scratch_poses0;
   TESSERACT_THREAD_LOCAL tesseract::common::VectorIsometry3d scratch_poses1;
   gatherPoses(ids, state0, scratch_poses0);
+
+  // One map passed as both endpoints yields two identical pose arrays, so gather it once and pass it twice.
+  if (&state0 == &state1)
+  {
+    setCollisionObjectsTransform(ids, scratch_poses0, scratch_poses0);
+    return;
+  }
+
   gatherPoses(ids, state1, scratch_poses1);
   setCollisionObjectsTransform(ids, scratch_poses0, scratch_poses1);
 }
@@ -166,6 +204,6 @@ void ContinuousContactManager::applyContactManagerConfig(const ContactManagerCon
 
   setCollisionMarginPairData(config.pair_margin_data, config.pair_margin_override_type);
   applyContactAllowedValidatorOverride(*this, config.acm, config.acm_override_type);
-  applyModifyObjectEnabled(*this, config.modify_object_enabled);
+  setCollisionObjectsEnabled(config.modify_object_enabled);
 }
 }  // namespace tesseract::collision

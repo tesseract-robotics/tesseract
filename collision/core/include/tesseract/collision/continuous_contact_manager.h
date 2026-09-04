@@ -88,13 +88,16 @@ public:
                                   bool enabled = true) = 0;
 
   /**
-   * @brief Add a batch of collision objects, applying one broadphase update for the batch
+   * @brief Add a batch of collision objects, applying one broadphase update per batch where the backend
+   *        supports it
    *
    * Observably equivalent to calling addCollisionObject once per entry, in order. A false return still leaves
    * every object that was added registered; only the failing ones are absent. Within one batch a repeated id
    * behaves as the repeated single calls do: the last entry naming that id decides both the object and its
    * position in getCollisionObjects(), and if that last entry fails the id is left unregistered even when an
-   * earlier entry for it succeeded.
+   * earlier entry for it succeeded. Equivalence covers returns, not throws: building an object may throw, and a
+   * backend that builds the whole batch before it mutates anything then leaves the manager untouched where the
+   * repeated single calls would have left the earlier entries applied.
    *
    * @param objects The objects to add
    * @return False if any object failed to be added
@@ -131,7 +134,8 @@ public:
   virtual bool removeCollisionObject(const tesseract::common::LinkId& id) = 0;
 
   /**
-   * @brief Remove a batch of collision objects, applying one broadphase and cache update for the batch
+   * @brief Remove a batch of collision objects, applying one broadphase and cache update per batch where the
+   *        backend supports it
    *
    * Observably equivalent to calling removeCollisionObject once per id, in order. Within one batch a repeated id
    * behaves as the repeated single calls do: the first occurrence removes it and the second reports it absent.
@@ -159,6 +163,30 @@ public:
    * @return True if enabled, otherwise false
    */
   virtual bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const = 0;
+
+  /**
+   * @brief Enable or disable a batch of collision objects, applying one broadphase update per batch where the
+   *        backend supports it
+   *
+   * Observably equivalent to calling enableCollisionObject or disableCollisionObject once per entry. A map key
+   * occurs at most once, so there is no duplicate-id case.
+   *
+   * @param enabled Map of [link id] to true (enable) or false (disable); ids the manager does not hold are skipped
+   * @return False if any id was absent; every id that was present is still applied
+   */
+  virtual bool setCollisionObjectsEnabled(const std::unordered_map<tesseract::common::LinkId, bool>& enabled);
+
+  /**
+   * @brief Enable or disable a batch of collision objects that all take the same state
+   *
+   * Builds the map form's argument and forwards to it, so it carries that overload's contract exactly. It is not
+   * virtual: a backend customises the batch by overriding the map overload.
+   *
+   * @param ids The link ids to enable or disable; ids the manager does not hold are skipped
+   * @param enabled True to enable every named object, false to disable every named object
+   * @return False if any id was absent; every id that was present is still applied
+   */
+  bool setCollisionObjectsEnabled(const std::vector<tesseract::common::LinkId>& ids, bool enabled);
 
   /**
    * @brief Set a single collision object's transform

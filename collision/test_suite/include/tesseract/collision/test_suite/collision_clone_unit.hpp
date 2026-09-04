@@ -6,8 +6,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/continuous_contact_manager.h>
+#include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/geometry/geometries.h>
 
 #include <string>
@@ -115,6 +115,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
     }
   }
 }
+
 /**
  * @brief Add @p count unit boxes at the origin, returning the ids in the order they were added
  */
@@ -232,6 +233,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   EXPECT_NEAR(result_vector[0].normal[1] * idx[2], cloned_result_vector[0].normal[1] * cloned_idx[2], normal_tol);
   EXPECT_NEAR(result_vector[0].normal[2] * idx[2], cloned_result_vector[0].normal[2] * cloned_idx[2], normal_tol);
 }
+
 /**
  * @brief A clone reports its collision objects in the same order as its source
  *

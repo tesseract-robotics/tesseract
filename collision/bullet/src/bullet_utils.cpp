@@ -1574,6 +1574,31 @@ struct RemoveProxySetCallback : public btOverlapCallback
   const std::unordered_set<const btBroadphaseProxy*>&
       proxies_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
+
+/** @brief Clean every cached pair naming any proxy in the set, in one pass over the pair array */
+struct CleanProxySetCallback : public btOverlapCallback
+{
+  CleanProxySetCallback(const std::unordered_set<const btBroadphaseProxy*>& proxies,
+                        btOverlappingPairCache* pair_cache,
+                        btDispatcher* dispatcher)
+    : proxies_(proxies), pair_cache_(pair_cache), dispatcher_(dispatcher)
+  {
+  }
+
+  bool processOverlap(btBroadphasePair& pair) override
+  {
+    if (proxies_.find(pair.m_pProxy0) != proxies_.end() || proxies_.find(pair.m_pProxy1) != proxies_.end())
+      pair_cache_->cleanOverlappingPair(pair, dispatcher_);
+
+    // False: the pair stays in the cache, only its cached algorithm is dropped. This is a clean, not a remove.
+    return false;
+  }
+
+  const std::unordered_set<const btBroadphaseProxy*>&
+      proxies_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+  btOverlappingPairCache* pair_cache_;
+  btDispatcher* dispatcher_;
+};
 }  // namespace
 
 void removeCollisionObjectsFromBroadphase(const std::vector<COW::Ptr>& cows,
@@ -1605,6 +1630,26 @@ void removeCollisionObjectsFromBroadphase(const std::vector<COW::Ptr>& cows,
       cow->setBroadphaseHandle(nullptr);
     }
   }
+}
+
+void cleanCollisionObjectsFromPairs(const std::vector<COW::Ptr>& cows,
+                                    const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                    const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+{
+  std::unordered_set<const btBroadphaseProxy*> proxies;
+  proxies.reserve(cows.size());
+  for (const auto& cow : cows)
+  {
+    if (cow->getBroadphaseHandle() != nullptr)
+      proxies.insert(cow->getBroadphaseHandle());
+  }
+
+  if (proxies.empty())
+    return;
+
+  btOverlappingPairCache* pair_cache = broadphase->getOverlappingPairCache();
+  CleanProxySetCallback callback(proxies, pair_cache, dispatcher.get());
+  pair_cache->processAllOverlappingPairs(&callback, dispatcher.get());
 }
 
 void addCollisionObjectToBroadphase(const COW::Ptr& cow,

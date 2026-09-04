@@ -481,6 +481,21 @@ void updateCollisionObjectFilters(const std::unordered_set<tesseract::common::Li
                                   const std::unique_ptr<btCollisionDispatcher>& dispatcher);
 
 /**
+ * @brief Drop the cached algorithm from every pair naming any of the given collision objects, in one pass
+ *
+ * Unlike removeCollisionObjectsFromBroadphase, the pairs themselves stay in the cache: only their cached algorithm
+ * is dropped, so BroadPhaseFilter is consulted again for each on the next overlap test. Use after changing a
+ * property, such as enabled state, that BroadPhaseFilter depends on.
+ *
+ * @param cows The collision objects whose pairs should be cleaned
+ * @param broadphase The bullet broadphase interface
+ * @param dispatcher The bullet collision dispatcher
+ */
+void cleanCollisionObjectsFromPairs(const std::vector<COW::Ptr>& cows,
+                                    const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                    const std::unique_ptr<btCollisionDispatcher>& dispatcher);
+
+/**
  * @brief Refresh the broadphase data structure
  * @details When change certain properties of a collision object the broadphase is not aware so this function can be
  * called to trigger an update. For example, when changing active links this changes internal flags which may require

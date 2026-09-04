@@ -27,6 +27,8 @@
 #include <tesseract/collision/contact_result_validator.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
+#include <unordered_map>
+
 namespace tesseract::collision
 {
 /**
@@ -62,18 +64,14 @@ inline void applyContactAllowedValidatorOverride(ManagerType& manager,
  * false=disable)
  * @param manager Manager that will be modified
  * @param modify_object_enabled Map of [key]:value = [link ID]:disable or enable
+ * @deprecated Use ManagerType::setCollisionObjectsEnabled, which applies the batch with one broadphase update
  */
 template <typename ManagerType>
-inline void applyModifyObjectEnabled(ManagerType& manager,
-                                     const std::unordered_map<tesseract::common::LinkId, bool>& modify_object_enabled)
+[[deprecated("use ManagerType::setCollisionObjectsEnabled")]] inline void
+applyModifyObjectEnabled(ManagerType& manager,
+                         const std::unordered_map<tesseract::common::LinkId, bool>& modify_object_enabled)
 {
-  for (const auto& entry : modify_object_enabled)
-  {
-    if (entry.second)
-      manager.enableCollisionObject(entry.first);
-    else
-      manager.disableCollisionObject(entry.first);
-  }
+  manager.setCollisionObjectsEnabled(modify_object_enabled);
 }
 }  // namespace tesseract::collision
 

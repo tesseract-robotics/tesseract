@@ -77,6 +77,7 @@ public:
   using ContinuousContactManager::isCollisionObjectEnabled;
   using ContinuousContactManager::removeCollisionObject;
   using ContinuousContactManager::setActiveCollisionObjects;
+  using ContinuousContactManager::setCollisionObjectsEnabled;
   using ContinuousContactManager::setCollisionObjectsTransform;
 
   std::string getName() const override final;
@@ -105,6 +106,8 @@ public:
   bool disableCollisionObject(const tesseract::common::LinkId& id) override final;
 
   bool isCollisionObjectEnabled(const tesseract::common::LinkId& id) const override final;
+
+  bool setCollisionObjectsEnabled(const std::unordered_map<tesseract::common::LinkId, bool>& enabled) override final;
 
   void setCollisionObjectsTransform(const tesseract::common::LinkId& id, const Eigen::Isometry3d& pose) override final;
 

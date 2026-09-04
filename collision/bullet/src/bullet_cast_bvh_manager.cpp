@@ -282,6 +282,38 @@ bool BulletCastBVHManager::disableCollisionObject(const tesseract::common::LinkI
   return false;
 }
 
+bool BulletCastBVHManager::setCollisionObjectsEnabled(
+    const std::unordered_map<tesseract::common::LinkId, bool>& enabled)
+{
+  bool success{ true };
+  std::vector<COW::Ptr> changed;
+  changed.reserve(2 * enabled.size());
+  for (const auto& entry : enabled)
+  {
+    auto it = link2cow_.find(entry.first);
+    if (it == link2cow_.end())
+    {
+      success = false;
+      continue;
+    }
+
+    it->second->m_enabled = entry.second;
+    changed.push_back(it->second);
+
+    // Every object in link2cow_ has a mate in link2castcow_; both must agree on enabled state.
+    auto cast_it = link2castcow_.find(entry.first);
+    assert(cast_it != link2castcow_.end());
+    cast_it->second->m_enabled = entry.second;
+    changed.push_back(cast_it->second);
+  }
+
+  // One pass over the pair array for the whole batch, so BroadPhaseFilter is consulted again for every
+  // object whose enabled state changed.
+  cleanCollisionObjectsFromPairs(changed, broadphase_, dispatcher_);
+
+  return success;
+}
+
 bool BulletCastBVHManager::isCollisionObjectEnabled(const tesseract::common::LinkId& id) const
 {
   auto it = link2cow_.find(id);

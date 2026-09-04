@@ -143,12 +143,14 @@ bool FCLDiscreteBVHManager::addCollisionObjects(const std::vector<CollisionObjec
   // The primitive does not displace an already-registered object, so do here what the single-object entry point
   // does. Skipping this orphans the old object's broadphase proxy. Every id the batch names is removed, including
   // one whose spec failed to build: the single-object form removes before it creates, so a failed spec leaves that
-  // id unregistered.
+  // id unregistered. Bulk removal skips the ids it does not hold, so the batch is passed whole and its return,
+  // which reports only those absences, is not the return of this call.
+  std::vector<tesseract::common::LinkId> displaced;
+  displaced.reserve(objects.size());
   for (const auto& obj : objects)
-  {
-    if (link2cow_.find(obj.id) != link2cow_.end())
-      removeCollisionObject(obj.id);
-  }
+    displaced.push_back(obj.id);
+
+  removeCollisionObjects(displaced);
 
   if (!cows.empty())
     addCollisionObjects(cows);
@@ -217,6 +219,7 @@ bool FCLDiscreteBVHManager::removeCollisionObjects(const std::vector<tesseract::
   const bool any_held = std::any_of(ids.begin(), ids.end(), [this](const tesseract::common::LinkId& id) {
     return link2cow_.find(id) != link2cow_.end();
   });
+  // An empty batch succeeds, as the per-id loop does; a non-empty batch naming only absent ids does not.
   if (!any_held)
     return ids.empty();
 

@@ -29,6 +29,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -73,6 +74,26 @@ bool DiscreteContactManager::removeCollisionObjects(const std::vector<tesseract:
     success &= removeCollisionObject(id);
 
   return success;
+}
+
+bool DiscreteContactManager::setCollisionObjectsEnabled(
+    const std::unordered_map<tesseract::common::LinkId, bool>& enabled)
+{
+  bool success{ true };
+  for (const auto& entry : enabled)
+    success &= entry.second ? enableCollisionObject(entry.first) : disableCollisionObject(entry.first);
+
+  return success;
+}
+
+bool DiscreteContactManager::setCollisionObjectsEnabled(const std::vector<tesseract::common::LinkId>& ids, bool enabled)
+{
+  std::unordered_map<tesseract::common::LinkId, bool> entries;
+  entries.reserve(ids.size());
+  for (const auto& id : ids)
+    entries[id] = enabled;
+
+  return setCollisionObjectsEnabled(entries);
 }
 
 void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
@@ -126,6 +147,6 @@ void DiscreteContactManager::applyContactManagerConfig(const ContactManagerConfi
 
   setCollisionMarginPairData(config.pair_margin_data, config.pair_margin_override_type);
   applyContactAllowedValidatorOverride(*this, config.acm, config.acm_override_type);
-  applyModifyObjectEnabled(*this, config.modify_object_enabled);
+  setCollisionObjectsEnabled(config.modify_object_enabled);
 }
 }  // namespace tesseract::collision
