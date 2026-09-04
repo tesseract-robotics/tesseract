@@ -66,6 +66,15 @@ bool ContinuousContactManager::addCollisionObjects(const std::vector<CollisionOb
   return success;
 }
 
+bool ContinuousContactManager::removeCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  bool success{ true };
+  for (const auto& id : ids)
+    success &= removeCollisionObject(id);
+
+  return success;
+}
+
 void ContinuousContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
                                                             const tesseract::common::VectorIsometry3d& poses)
 {

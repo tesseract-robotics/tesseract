@@ -55,6 +55,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
+#include <unordered_set>
 #include <octomap/octomap.h>
 #include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -1551,10 +1552,58 @@ void removeCollisionObjectFromBroadphase(const COW::Ptr& cow,
   btBroadphaseProxy* bp = cow->getBroadphaseHandle();
   if (bp != nullptr)
   {
-    // only clear the cached algorithms
-    broadphase->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher.get());
+    // destroyProxy removes every cached pair naming this proxy, freeing their algorithms on the way
     broadphase->destroyProxy(bp, dispatcher.get());
     cow->setBroadphaseHandle(nullptr);
+  }
+}
+
+namespace
+{
+/** @brief Remove every cached pair naming any proxy in the set, in one pass over the pair array */
+struct RemoveProxySetCallback : public btOverlapCallback
+{
+  explicit RemoveProxySetCallback(const std::unordered_set<const btBroadphaseProxy*>& proxies) : proxies_(proxies) {}
+
+  bool processOverlap(btBroadphasePair& pair) override
+  {
+    // Returning true makes processAllOverlappingPairs remove the pair, which frees its algorithm on the way.
+    return proxies_.find(pair.m_pProxy0) != proxies_.end() || proxies_.find(pair.m_pProxy1) != proxies_.end();
+  }
+
+  const std::unordered_set<const btBroadphaseProxy*>&
+      proxies_;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+};
+}  // namespace
+
+void removeCollisionObjectsFromBroadphase(const std::vector<COW::Ptr>& cows,
+                                          const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                          const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+{
+  std::unordered_set<const btBroadphaseProxy*> proxies;
+  proxies.reserve(cows.size());
+  for (const auto& cow : cows)
+  {
+    if (cow->getBroadphaseHandle() != nullptr)
+      proxies.insert(cow->getBroadphaseHandle());
+  }
+
+  if (proxies.empty())
+    return;
+
+  // One pass over the pair array for the whole batch, instead of one per proxy inside destroyProxy.
+  RemoveProxySetCallback callback(proxies);
+  broadphase->getOverlappingPairCache()->processAllOverlappingPairs(&callback, dispatcher.get());
+
+  for (const auto& cow : cows)
+  {
+    btBroadphaseProxy* bp = cow->getBroadphaseHandle();
+    if (bp != nullptr)
+    {
+      // Its pairs are already gone, so destroyProxy's own sweep finds nothing to remove.
+      broadphase->destroyProxy(bp, dispatcher.get());
+      cow->setBroadphaseHandle(nullptr);
+    }
   }
 }
 

@@ -40,7 +40,9 @@
 #include <tesseract/collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
+#include <algorithm>
 #include <cassert>
+#include <unordered_set>
 
 extern btScalar gDbvtMargin;  // NOLINT
 
@@ -175,6 +177,53 @@ bool BulletCastBVHManager::removeCollisionObject(const tesseract::common::LinkId
   }
 
   return false;
+}
+
+bool BulletCastBVHManager::removeCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  // Two wrappers per link, both registered in the same broadphase, so one pass over the pair array covers both.
+  std::vector<COW::Ptr> cows;
+  cows.reserve(2 * ids.size());
+  std::unordered_set<tesseract::common::LinkId> removed;
+  removed.reserve(ids.size());
+
+  bool success{ true };
+  for (const auto& id : ids)
+  {
+    auto it = link2cow_.find(id);
+    if (it == link2cow_.end())
+    {
+      success = false;
+      continue;
+    }
+
+    // Copy the pointers before erasing the map entries; the broadphase removal below still reads the wrappers.
+    cows.push_back(it->second);
+    link2cow_.erase(it);
+
+    // Every object in link2cow_ has a mate in link2castcow_; both are written by addCollisionObject.
+    auto cast_it = link2castcow_.find(id);
+    assert(cast_it != link2castcow_.end());
+    cows.push_back(cast_it->second);
+    link2castcow_.erase(cast_it);
+
+    removed.insert(id);
+    active_.erase(id);
+  }
+
+  if (removed.empty())
+    return success;
+
+  removeCollisionObjectsFromBroadphase(cows, broadphase_, dispatcher_);
+
+  // One pass over collision_objects_, preserving the order of the survivors.
+  collision_objects_.erase(
+      std::remove_if(collision_objects_.begin(),
+                     collision_objects_.end(),
+                     [&removed](const tesseract::common::LinkId& id) { return removed.find(id) != removed.end(); }),
+      collision_objects_.end());
+
+  return success;
 }
 
 bool BulletCastBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)

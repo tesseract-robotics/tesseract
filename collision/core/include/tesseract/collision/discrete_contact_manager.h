@@ -128,6 +128,17 @@ public:
   virtual bool removeCollisionObject(const tesseract::common::LinkId& id) = 0;
 
   /**
+   * @brief Remove a batch of collision objects, applying one broadphase and cache update for the batch
+   *
+   * Observably equivalent to calling removeCollisionObject once per id, in order. Within one batch a repeated id
+   * behaves as the repeated single calls do: the first occurrence removes it and the second reports it absent.
+   *
+   * @param ids The LinkIds to remove; ids the manager does not hold are skipped
+   * @return False if any id was absent; every id that was present is still removed
+   */
+  virtual bool removeCollisionObjects(const std::vector<tesseract::common::LinkId>& ids);
+
+  /**
    * @brief Enable an object
    * @param id The LinkId of the object
    */

@@ -445,6 +445,20 @@ void removeCollisionObjectFromBroadphase(const COW::Ptr& cow,
                                          const std::unique_ptr<btCollisionDispatcher>& dispatcher);
 
 /**
+ * @brief Remove a batch of collision objects from broadphase, clearing their cached pairs in one pass
+ *
+ * Observably equivalent to calling removeCollisionObjectFromBroadphase once per entry. The pair array is swept once
+ * for the whole batch; destroyProxy still runs its own sweep per proxy, but finds nothing left to remove.
+ *
+ * @param cows The collision objects
+ * @param broadphase The bullet broadphase interface
+ * @param dispatcher The bullet collision dispatcher
+ */
+void removeCollisionObjectsFromBroadphase(const std::vector<COW::Ptr>& cows,
+                                          const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                          const std::unique_ptr<btCollisionDispatcher>& dispatcher);
+
+/**
  * @brief Add the collision object to broadphase
  * @param cow The collision objects
  * @param broadphase The bullet broadphase interface

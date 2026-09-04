@@ -60,6 +60,16 @@ std::vector<std::pair<std::string, double>> contactDigest(const ContactResultMap
   return digest;
 }
 
+/** @brief The two names joined lowest first, so the key does not depend on which side of a pair a backend reports */
+std::string pairKey(const std::string& a, const std::string& b)
+{
+  const bool ordered = a < b;
+  std::string key = ordered ? a : b;
+  key.append("|");
+  key.append(ordered ? b : a);
+  return key;
+}
+
 /**
  * @brief The distinct link pairs a result reports, each pair's names ordered so the comparison does not depend
  *        on which side of the pair a backend puts first
@@ -72,11 +82,7 @@ std::vector<std::string> contactPairs(const ContactResultMap& result)
   std::vector<std::string> pairs;
   pairs.reserve(flat.size());
   for (const auto& contact : flat)
-  {
-    const std::string first = contact.link_ids[0].name();
-    const std::string second = contact.link_ids[1].name();
-    pairs.push_back(first < second ? first + "|" + second : second + "|" + first);
-  }
+    pairs.push_back(pairKey(contact.link_ids[0].name(), contact.link_ids[1].name()));
 
   std::sort(pairs.begin(), pairs.end());
   pairs.erase(std::unique(pairs.begin(), pairs.end()), pairs.end());

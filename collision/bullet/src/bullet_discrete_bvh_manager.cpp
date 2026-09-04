@@ -40,7 +40,9 @@
 #include <tesseract/collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
+#include <algorithm>
 #include <cassert>
+#include <unordered_set>
 
 extern btScalar gDbvtMargin;  // NOLINT
 
@@ -163,6 +165,45 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const tesseract::common::Li
   }
 
   return false;
+}
+
+bool BulletDiscreteBVHManager::removeCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  std::vector<COW::Ptr> cows;
+  cows.reserve(ids.size());
+  std::unordered_set<tesseract::common::LinkId> removed;
+  removed.reserve(ids.size());
+
+  bool success{ true };
+  for (const auto& id : ids)
+  {
+    auto it = link2cow_.find(id);
+    if (it == link2cow_.end())
+    {
+      success = false;
+      continue;
+    }
+
+    // Copy the pointer before erasing the map entry; the broadphase removal below still reads the wrapper.
+    cows.push_back(it->second);
+    removed.insert(id);
+    link2cow_.erase(it);
+    active_.erase(id);
+  }
+
+  if (removed.empty())
+    return success;
+
+  removeCollisionObjectsFromBroadphase(cows, broadphase_, dispatcher_);
+
+  // One pass over collision_objects_, preserving the order of the survivors.
+  collision_objects_.erase(
+      std::remove_if(collision_objects_.begin(),
+                     collision_objects_.end(),
+                     [&removed](const tesseract::common::LinkId& id) { return removed.find(id) != removed.end(); }),
+      collision_objects_.end());
+
+  return success;
 }
 
 bool BulletDiscreteBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)

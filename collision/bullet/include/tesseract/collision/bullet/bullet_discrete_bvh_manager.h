@@ -98,6 +98,8 @@ public:
 
   bool removeCollisionObject(const tesseract::common::LinkId& id) override final;
 
+  bool removeCollisionObjects(const std::vector<tesseract::common::LinkId>& ids) override final;
+
   bool enableCollisionObject(const tesseract::common::LinkId& id) override final;
 
   bool disableCollisionObject(const tesseract::common::LinkId& id) override final;

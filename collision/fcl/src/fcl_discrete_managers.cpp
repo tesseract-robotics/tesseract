@@ -42,6 +42,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/common/contact_allowed_validator.h>
@@ -207,6 +208,68 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const tesseract::common::LinkI
     return true;
   }
   return false;
+}
+
+bool FCLDiscreteBVHManager::removeCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
+{
+  // Materialising both trees is the expensive part, so skip it for a batch that holds none of the named ids. A
+  // batch naming only links without collision geometry is normal at the environment call site.
+  const bool any_held = std::any_of(ids.begin(), ids.end(), [this](const tesseract::common::LinkId& id) {
+    return link2cow_.find(id) != link2cow_.end();
+  });
+  if (!any_held)
+    return ids.empty();
+
+  // Materialise both trees once for the batch, not once per link, and index them for O(1) membership.
+  std::vector<fcl::CollisionObject<double>*> static_objs;
+  static_manager_->getObjects(static_objs);
+  std::vector<fcl::CollisionObject<double>*> dynamic_objs;
+  dynamic_manager_->getObjects(dynamic_objs);
+
+  const std::unordered_set<fcl::CollisionObject<double>*> in_static(static_objs.begin(), static_objs.end());
+  const std::unordered_set<fcl::CollisionObject<double>*> in_dynamic(dynamic_objs.begin(), dynamic_objs.end());
+
+  std::unordered_set<tesseract::common::LinkId> removed;
+  removed.reserve(ids.size());
+
+  bool success{ true };
+  for (const auto& id : ids)
+  {
+    auto it = link2cow_.find(id);
+    if (it == link2cow_.end())
+    {
+      success = false;
+      continue;
+    }
+
+    std::vector<CollisionObjectPtr>& objects = it->second->getCollisionObjects();
+    fcl_co_count_ -= objects.size();
+
+    // Must check membership before unregistering: unregistering an object a manager does not hold is undefined
+    // behaviour. The sets are built before any unregistering and are not refreshed, which is sound because an
+    // object belongs to exactly one link, so no later iteration can consult an entry this call already removed.
+    for (auto& co : objects)
+    {
+      if (in_static.find(co.get()) != in_static.end())
+        static_manager_->unregisterObject(co.get());
+
+      if (in_dynamic.find(co.get()) != in_dynamic.end())
+        dynamic_manager_->unregisterObject(co.get());
+    }
+
+    removed.insert(id);
+    link2cow_.erase(it);
+    active_.erase(id);
+  }
+
+  // One pass over collision_objects_, preserving the order of the survivors.
+  collision_objects_.erase(
+      std::remove_if(collision_objects_.begin(),
+                     collision_objects_.end(),
+                     [&removed](const tesseract::common::LinkId& id) { return removed.find(id) != removed.end(); }),
+      collision_objects_.end());
+
+  return success;
 }
 
 bool FCLDiscreteBVHManager::enableCollisionObject(const tesseract::common::LinkId& id)

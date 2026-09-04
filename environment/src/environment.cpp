@@ -1084,20 +1084,18 @@ bool Environment::Implementation::removeLinkHelper(const common::LinkId& id)
 
   scene_graph->removeLink(id, true);
 
+  // A child link without collision geometry was never registered, so a false result is expected here.
+  std::vector<common::LinkId> removed_ids;
+  removed_ids.reserve(child_link_ids.size() + 1);
+  removed_ids.push_back(id);
+  removed_ids.insert(removed_ids.end(), child_link_ids.begin(), child_link_ids.end());
+
   std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
   std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
   if (discrete_manager != nullptr)
-    discrete_manager->removeCollisionObject(id);
+    discrete_manager->removeCollisionObjects(removed_ids);
   if (continuous_manager != nullptr)
-    continuous_manager->removeCollisionObject(id);
-
-  for (const auto& link_id : child_link_ids)
-  {
-    if (discrete_manager != nullptr)
-      discrete_manager->removeCollisionObject(link_id);
-    if (continuous_manager != nullptr)
-      continuous_manager->removeCollisionObject(link_id);
-  }
+    continuous_manager->removeCollisionObjects(removed_ids);
 
   return true;
 }
