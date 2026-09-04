@@ -163,6 +163,20 @@ public:
                                             const tesseract::common::VectorIsometry3d& poses);
 
   /**
+   * @brief Set the transforms of a set of collision objects from a transform map
+   * @param ids The LinkIds of the objects to update
+   * @param state A transform map that must contain every id
+   * @throws std::out_of_range if an id is absent from @p state
+   */
+  virtual void setCollisionObjectsTransform(const std::unordered_set<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::LinkIdTransformMap& state);
+
+  /** @brief Set the transforms of a list of collision objects from a transform map
+   *  @throws std::out_of_range if an id is absent from @p state */
+  virtual void setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::LinkIdTransformMap& state);
+
+  /**
    * @brief Get all collision objects
    * @return A list of collision object IDs
    */

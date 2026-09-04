@@ -169,6 +169,20 @@ public:
                                             const tesseract::common::VectorIsometry3d& poses);
 
   /**
+   * @brief Set the transforms of a set of collision objects from a transform map
+   * @param ids The LinkIds of the objects to update
+   * @param state A transform map that must contain every id
+   * @throws std::out_of_range if an id is absent from @p state
+   */
+  virtual void setCollisionObjectsTransform(const std::unordered_set<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::LinkIdTransformMap& state);
+
+  /** @brief Set the transforms of a list of collision objects from a transform map
+   *  @throws std::out_of_range if an id is absent from @p state */
+  virtual void setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::LinkIdTransformMap& state);
+
+  /**
    * @brief Set a single cast(moving) collision object's transforms
    *
    * This should only be used for moving objects. Use the base
@@ -202,6 +216,18 @@ public:
   virtual void setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
                                             const tesseract::common::VectorIsometry3d& pose1,
                                             const tesseract::common::VectorIsometry3d& pose2);
+
+  /** @brief Set the start and end transforms of a set of collision objects from two transform maps
+   *  @throws std::out_of_range if an id is absent from either map */
+  virtual void setCollisionObjectsTransform(const std::unordered_set<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::LinkIdTransformMap& state0,
+                                            const tesseract::common::LinkIdTransformMap& state1);
+
+  /** @brief Set the start and end transforms of a list of collision objects from two transform maps
+   *  @throws std::out_of_range if an id is absent from either map */
+  virtual void setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
+                                            const tesseract::common::LinkIdTransformMap& state0,
+                                            const tesseract::common::LinkIdTransformMap& state1);
 
   /**
    * @brief Get all collision objects
