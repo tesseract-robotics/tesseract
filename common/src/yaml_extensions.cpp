@@ -81,10 +81,8 @@ PropertyTree YAML::convert<tesseract::common::KinematicsPluginInfo>::schema()
       .attribute(TYPE, CONTAINER)
       .customType("search_paths", createList(STRING)).done()
       .customType("search_libraries", createList(STRING)).done()
-      .customType("fwd_kin_plugins", createMap("tesseract::common::PluginInfoContainer"))
-          .validator(validateCustomType).done()
-      .customType("inv_kin_plugins", createMap("tesseract::common::PluginInfoContainer"))
-          .validator(validateCustomType).done()
+      .pluginContainerMap("fwd_kin_plugins", "tesseract::kinematics::FwdKinFactory")
+      .pluginContainerMap("inv_kin_plugins", "tesseract::kinematics::InvKinFactory")
       .build();
   // clang-format on
 }
@@ -97,10 +95,8 @@ PropertyTree YAML::convert<tesseract::common::ContactManagersPluginInfo>::schema
       .attribute(TYPE, CONTAINER)
       .customType("search_paths", createList(STRING)).done()
       .customType("search_libraries", createList(STRING)).done()
-      .customType("discrete_plugins", "tesseract::common::PluginInfoContainer")
-          .validator(validateCustomType).done()
-      .customType("continuous_plugins", "tesseract::common::PluginInfoContainer")
-          .validator(validateCustomType).done()
+      .pluginContainer("discrete_plugins", "tesseract::collision::DiscreteContactManagerFactory")
+      .pluginContainer("continuous_plugins", "tesseract::collision::ContinuousContactManagerFactory")
       .build();
   // clang-format on
 }
@@ -113,10 +109,8 @@ PropertyTree YAML::convert<tesseract::common::TaskComposerPluginInfo>::schema()
       .attribute(TYPE, CONTAINER)
       .customType("search_paths", createList(STRING)).done()
       .customType("search_libraries", createList(STRING)).done()
-      .customType("executors", createMap("tesseract::common::PluginInfoContainer"))
-          .validator(validateCustomType).done()
-      .customType("tasks", createMap("tesseract::common::PluginInfoContainer"))
-          .validator(validateCustomType).done()
+      .pluginContainer("executors", "tesseract::task_composer::TaskComposerExecutorFactory")
+      .pluginContainer("tasks", "tesseract::task_composer::TaskComposerNodeFactory")
       .build();
   // clang-format on
 }

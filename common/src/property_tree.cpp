@@ -30,6 +30,7 @@
 #include <mutex>
 #include <ostream>
 #include <regex>
+#include <set>
 
 const static std::string ATTRIBUTES_KEY{ "_attributes" };
 const static std::string VALUE_KEY{ "_value" };
@@ -168,9 +169,44 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
   // Map: recurse into declared children
   if (config && config.IsMap())
   {
-    // Fill declared children
+    // Handle inline oneOf children first: run branch selection on parent's config,
+    // hoist chosen branch's children into this node, then remove the oneOf child.
+    std::set<std::string> hoisted_keys;
+    std::vector<std::pair<std::string, PropertyTree>> rebuilt_children;
+    rebuilt_children.reserve(children_.size());
     for (auto& [key, child_schema] : children_)
     {
+      auto child_type = child_schema.getAttribute(property_attribute::TYPE);
+      if (child_type.has_value() && child_type->as<std::string>() == property_type::ONEOF)
+      {
+        // Run oneOf branch selection using parent's full config
+        PropertyTree oneof_copy = child_schema;
+        oneof_copy.mergeConfig(config, allow_extra_properties);
+
+        // Hoist only the chosen branch's declared children into this node.
+        // Parent-level shared fields appear as extras inside the temporary oneOf merge
+        // and must not overwrite the parent's existing schema entries.
+        for (auto& [hoisted_key, hoisted_child] : oneof_copy.children_)
+        {
+          if (hoisted_child.hasAttribute(EXTRA_KEY))
+            continue;
+
+          rebuilt_children.emplace_back(hoisted_key, std::move(hoisted_child));
+          hoisted_keys.insert(hoisted_key);
+        }
+      }
+      else
+      {
+        rebuilt_children.emplace_back(key, std::move(child_schema));
+      }
+    }
+    children_ = std::move(rebuilt_children);
+
+    // Fill declared children (skip already-merged hoisted keys)
+    for (auto& [key, child_schema] : children_)
+    {
+      if (hoisted_keys.count(key) > 0)
+        continue;
       auto sub = config[key];
       child_schema.mergeConfig(sub, allow_extra_properties);
     }
@@ -883,6 +919,45 @@ PropertyTreeBuilder& PropertyTreeBuilder::acceptsDerivedTypes()
   return *this;
 }
 
+PropertyTreeBuilder& PropertyTreeBuilder::beginOneOf()
+{
+  static int counter = 0;
+  std::string name = "__oneOf_" + std::to_string(counter++) + "__";
+  auto& child = current()[name];
+  child.setAttribute(property_attribute::TYPE, property_type::ONEOF);
+  stack_.push_back(&child);
+  return *this;
+}
+
+PropertyTreeBuilder& PropertyTreeBuilder::endOneOf() { return done(); }
+
+PropertyTreeBuilder& PropertyTreeBuilder::pluginContainer(std::string_view name, std::string_view factory_base_type)
+{
+  // clang-format off
+  container(name);
+    string("default").done();
+    customType("plugins", property_type::createMap(factory_base_type))
+        .acceptsDerivedTypes()
+        .validator(validateCustomType)
+    .done();
+  done();
+  // clang-format on
+  return *this;
+}
+
+PropertyTreeBuilder& PropertyTreeBuilder::pluginContainerMap(std::string_view name, std::string_view factory_base_type)
+{
+  // Register the inner PluginInfoContainer schema idempotently
+  std::string registry_key = std::string(factory_base_type) + "::PluginInfoContainer";
+  auto reg = SchemaRegistry::instance();
+  if (!reg->contains(registry_key))
+    reg->registerSchema(registry_key, makePluginInfoContainerSchema(factory_base_type));
+
+  // Create a Map[string, <registry_key>] child with custom type validation
+  customType(name, property_type::createMap(registry_key)).validator(validateCustomType).done();
+  return *this;
+}
+
 PropertyTreeBuilder& PropertyTreeBuilder::done()
 {
   if (stack_.size() <= 1)
@@ -891,11 +966,31 @@ PropertyTreeBuilder& PropertyTreeBuilder::done()
   return *this;
 }
 
+PropertyTreeBuilder& PropertyTreeBuilder::compose(const PropertyTree& source)
+{
+  for (const auto& key : source.keys())
+    current()[key] = source.at(key);
+  return *this;
+}
+
 PropertyTree PropertyTreeBuilder::build()
 {
   if (stack_.size() != 1)
     throw std::runtime_error("PropertyTreeBuilder::build() called with unclosed scopes — missing done() calls");
   return std::move(root_);
+}
+
+PropertyTree makePluginInfoContainerSchema(std::string_view factory_base_type)
+{
+  // clang-format off
+  return PropertyTreeBuilder()
+      .attribute(property_attribute::TYPE, property_type::CONTAINER)
+      .string("default").done()
+      .customType("plugins", property_type::createMap(factory_base_type))
+          .acceptsDerivedTypes()
+          .validator(validateCustomType).done()
+      .build();
+  // clang-format on
 }
 
 std::optional<std::pair<std::string, std::size_t>> isSequenceType(std::string_view type)
@@ -1100,8 +1195,9 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
   {
     // Sequence type
     std::string base_element_type = is_sequence.value().first;
+    bool base_in_registry = registry->contains(base_element_type);
 
-    if (!registry->contains(base_element_type))
+    if (!base_in_registry && !accepts_derived)
     {
       std::stringstream ss;
       ss << path << ": no schema registry entry found for key: " << base_element_type;
@@ -1110,7 +1206,9 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
     }
 
     const YAML::Node& sequence = node.getValue();
-    PropertyTree base_schema = registry->get(base_element_type);
+    PropertyTree base_schema;
+    if (base_in_registry)
+      base_schema = registry->get(base_element_type);
     std::size_t idx = 0;
     for (auto it = sequence.begin(); it != sequence.end(); ++it, ++idx)
     {
@@ -1177,8 +1275,9 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
   {
     // Map type
     std::string map_value_type = is_map.value().second;
+    bool base_in_registry = registry->contains(map_value_type);
 
-    if (!registry->contains(map_value_type))
+    if (!base_in_registry && !accepts_derived)
     {
       std::stringstream ss;
       ss << path << ": no schema registry entry found for map value type: " << map_value_type;
@@ -1203,7 +1302,9 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
       return;
     }
 
-    PropertyTree value_schema = registry->get(map_value_type);
+    PropertyTree value_schema;
+    if (base_in_registry)
+      value_schema = registry->get(map_value_type);
     for (auto it = map_node.begin(); it != map_node.end(); ++it)
     {
       auto key = it->first.as<std::string>();
