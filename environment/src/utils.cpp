@@ -78,8 +78,7 @@ void checkTrajectorySegment(tesseract::collision::ContactResultMap& contact_resu
                             const tesseract::common::LinkIdTransformMap& state1,
                             const tesseract::collision::ContactRequest& contact_request)
 {
-  for (const auto& id : manager.getActiveCollisionObjects())
-    manager.setCollisionObjectsTransform(id, state0.at(id), state1.at(id));
+  manager.setCollisionObjectsTransform(manager.getActiveCollisionObjects(), state0, state1);
 
   manager.contactTest(contact_results, contact_request);
 }
@@ -89,8 +88,7 @@ void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_result
                           const tesseract::common::LinkIdTransformMap& state,
                           const tesseract::collision::ContactRequest& contact_request)
 {
-  for (const auto& id : manager.getActiveCollisionObjects())
-    manager.setCollisionObjectsTransform(id, state.at(id));
+  manager.setCollisionObjectsTransform(manager.getActiveCollisionObjects(), state);
 
   manager.contactTest(contact_results, contact_request);
 }
@@ -100,8 +98,7 @@ void checkTrajectoryState(tesseract::collision::ContactResultMap& contact_result
                           const tesseract::common::LinkIdTransformMap& state,
                           const tesseract::collision::ContactRequest& contact_request)
 {
-  for (const auto& id : manager.getActiveCollisionObjects())
-    manager.setCollisionObjectsTransform(id, state.at(id), state.at(id));
+  manager.setCollisionObjectsTransform(manager.getActiveCollisionObjects(), state, state);
 
   manager.contactTest(contact_results, contact_request);
 }

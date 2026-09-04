@@ -71,6 +71,51 @@
 
 namespace tesseract::environment
 {
+namespace
+{
+/**
+ * @brief Apply a state's link transforms to a continuous manager
+ *
+ * Links the solver reports as active take the two-pose path, sweeping from their state pose to itself; the rest
+ * take the single-pose path. The reserve for the static half clamps at zero because the state may hold fewer
+ * links than the solver reports as active, which the empty state a freshly built manager is configured from
+ * does.
+ */
+void applyStateToContinuousManager(tesseract::collision::ContinuousContactManager& manager,
+                                   const tesseract::common::LinkIdTransformMap& link_transforms,
+                                   const std::vector<tesseract::common::LinkId>& active_link_ids)
+{
+  std::vector<tesseract::common::LinkId> cast_ids;
+  tesseract::common::VectorIsometry3d cast_poses;
+  std::vector<tesseract::common::LinkId> static_ids;
+  tesseract::common::VectorIsometry3d static_poses;
+  const std::size_t static_count =
+      link_transforms.size() > active_link_ids.size() ? link_transforms.size() - active_link_ids.size() : 0U;
+  cast_ids.reserve(active_link_ids.size());
+  cast_poses.reserve(active_link_ids.size());
+  static_ids.reserve(static_count);
+  static_poses.reserve(static_count);
+
+  for (const auto& [id, tf] : link_transforms)
+  {
+    if (std::find(active_link_ids.begin(), active_link_ids.end(), id) != active_link_ids.end())
+    {
+      cast_ids.push_back(id);
+      cast_poses.push_back(tf);
+    }
+    else
+    {
+      static_ids.push_back(id);
+      static_poses.push_back(tf);
+    }
+  }
+
+  // A state carries one pose per link, so the cast half sweeps from that pose to itself.
+  manager.setCollisionObjectsTransform(static_ids, static_poses);
+  manager.setCollisionObjectsTransform(cast_ids, cast_poses, cast_poses);
+}
+}  // namespace
+
 EnvironmentContactAllowedValidator::EnvironmentContactAllowedValidator(
     std::shared_ptr<const tesseract::scene_graph::SceneGraph> scene_graph)
   : scene_graph_(std::move(scene_graph))
@@ -91,6 +136,26 @@ void getCollisionObject(std::vector<std::shared_ptr<const tesseract::geometry::G
     shapes.push_back(c->geometry);
     shape_poses.push_back(c->origin);
   }
+}
+
+/** @brief Build one spec per link that carries collision geometry, preserving the order of @p links */
+std::vector<tesseract::collision::CollisionObjectSpec>
+buildCollisionObjectSpecs(const std::vector<tesseract::scene_graph::Link::ConstPtr>& links)
+{
+  std::vector<tesseract::collision::CollisionObjectSpec> objects;
+  objects.reserve(links.size());
+  for (const auto& link : links)
+  {
+    if (!link->collision.empty())
+    {
+      tesseract::collision::CollisionObjectSpec spec;
+      spec.id = link->getId();
+      getCollisionObject(spec.shapes, spec.shape_poses, *link);
+      objects.push_back(std::move(spec));
+    }
+  }
+
+  return objects;
 }
 
 std::vector<std::shared_ptr<const Command>>
@@ -648,16 +713,7 @@ void Environment::Implementation::currentStateChanged()
 
   std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
   if (continuous_manager != nullptr)
-  {
-    const std::vector<tesseract::common::LinkId> active_link_ids = state_solver->getActiveLinkIds();
-    for (const auto& [id, tf] : current_state.link_transforms)
-    {
-      if (std::find(active_link_ids.begin(), active_link_ids.end(), id) != active_link_ids.end())
-        continuous_manager->setCollisionObjectsTransform(id, tf, tf);
-      else
-        continuous_manager->setCollisionObjectsTransform(id, tf);
-    }
-  }
+    applyStateToContinuousManager(*continuous_manager, current_state.link_transforms, state_solver->getActiveLinkIds());
 
   {  // Clear JointGroup and KinematicGroup
     std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex);
@@ -960,19 +1016,8 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
   manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
-    const auto links = scene_graph->getLinks();
-    std::vector<tesseract::collision::CollisionObjectSpec> objects;
-    objects.reserve(links.size());
-    for (const auto& link : links)
-    {
-      if (!link->collision.empty())
-      {
-        tesseract::collision::CollisionObjectSpec spec;
-        spec.id = link->getId();
-        getCollisionObject(spec.shapes, spec.shape_poses, *link);
-        objects.push_back(std::move(spec));
-      }
-    }
+    const std::vector<tesseract::collision::CollisionObjectSpec> objects =
+        buildCollisionObjectSpecs(scene_graph->getLinks());
 
     manager->addCollisionObjects(objects);
 
@@ -998,19 +1043,8 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
   manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
-    const auto links = scene_graph->getLinks();
-    std::vector<tesseract::collision::CollisionObjectSpec> objects;
-    objects.reserve(links.size());
-    for (const auto& link : links)
-    {
-      if (!link->collision.empty())
-      {
-        tesseract::collision::CollisionObjectSpec spec;
-        spec.id = link->getId();
-        getCollisionObject(spec.shapes, spec.shape_poses, *link);
-        objects.push_back(std::move(spec));
-      }
-    }
+    const std::vector<tesseract::collision::CollisionObjectSpec> objects =
+        buildCollisionObjectSpecs(scene_graph->getLinks());
 
     manager->addCollisionObjects(objects);
 
@@ -1019,14 +1053,7 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
 
   manager->setCollisionMarginData(collision_margin_data);
 
-  const std::vector<tesseract::common::LinkId> active_link_ids = state_solver->getActiveLinkIds();
-  for (const auto& [id, tf] : current_state.link_transforms)
-  {
-    if (std::find(active_link_ids.begin(), active_link_ids.end(), id) != active_link_ids.end())
-      manager->setCollisionObjectsTransform(id, tf, tf);
-    else
-      manager->setCollisionObjectsTransform(id, tf);
-  }
+  applyStateToContinuousManager(*manager, current_state.link_transforms, state_solver->getActiveLinkIds());
 
   return manager;
 }
@@ -1911,18 +1938,7 @@ bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<cons
 
   std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
   std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
-  std::vector<tesseract::collision::CollisionObjectSpec> objects;
-  objects.reserve(diff_links.size());
-  for (const auto& link : diff_links)
-  {
-    if (!link->collision.empty())
-    {
-      tesseract::collision::CollisionObjectSpec spec;
-      spec.id = link->getId();
-      getCollisionObject(spec.shapes, spec.shape_poses, *link);
-      objects.push_back(std::move(spec));
-    }
-  }
+  const std::vector<tesseract::collision::CollisionObjectSpec> objects = buildCollisionObjectSpecs(diff_links);
 
   if (discrete_manager != nullptr)
     discrete_manager->addCollisionObjects(objects);
