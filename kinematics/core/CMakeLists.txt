@@ -4,6 +4,7 @@ add_library(
   src/inverse_kinematics.cpp
   src/rop_inv_kin.cpp
   src/rep_inv_kin.cpp
+  src/rtp_inv_kin.cpp
   src/joint_group.cpp
   src/kinematic_group.cpp
   src/kinematics_plugin_factory.cpp
@@ -37,7 +38,13 @@ target_include_directories(kinematics PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_
                                              "$<INSTALL_INTERFACE:include>")
 
 # Add KDL kinematics factories
-add_library(kinematics_factories src/rop_factory.cpp src/rep_factory.cpp)
+add_library(
+  kinematics_factories
+  src/rop_factory.cpp
+  src/rep_factory.cpp
+  src/rtp_factory.cpp
+  src/factory_utils.cpp)
+add_library(tesseract::kinematics_factories ALIAS kinematics_factories)
 set_target_properties(kinematics_factories PROPERTIES OUTPUT_NAME tesseract_kinematics_factories)
 target_link_libraries(kinematics_factories PUBLIC kinematics console_bridge::console_bridge)
 target_compile_options(kinematics_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
