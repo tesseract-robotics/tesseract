@@ -6,6 +6,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/test_suite/collision_clone_unit.hpp>
 #include <tesseract/collision/bullet/bullet_discrete_simple_manager.h>
 #include <tesseract/collision/bullet/bullet_discrete_bvh_manager.h>
+#include <tesseract/collision/bullet/bullet_cast_simple_manager.h>
+#include <tesseract/collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/geometry/impl/box.h>
@@ -40,6 +42,36 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCloneUnit)  // NOLINT
 {
   FCLDiscreteBVHManager checker;
   test_suite::runTest(checker, 0.001, 0.001, 0.001);
+}
+
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCloneOrderUnit)  // NOLINT
+{
+  BulletDiscreteSimpleManager checker;
+  test_suite::runCloneOrderTest(checker);
+}
+
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCloneOrderUnit)  // NOLINT
+{
+  BulletDiscreteBVHManager checker;
+  test_suite::runCloneOrderTest(checker);
+}
+
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCloneOrderUnit)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  test_suite::runCloneOrderTest(checker);
+}
+
+TEST(TesseractCollisionUnit, BulletCastSimpleCollisionCloneOrderUnit)  // NOLINT
+{
+  BulletCastSimpleManager checker;
+  test_suite::runCloneOrderTest(checker);
+}
+
+TEST(TesseractCollisionUnit, BulletCastBVHCollisionCloneOrderUnit)  // NOLINT
+{
+  BulletCastBVHManager checker;
+  test_suite::runCloneOrderTest(checker);
 }
 
 /**

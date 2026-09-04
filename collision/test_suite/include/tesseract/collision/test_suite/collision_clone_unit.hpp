@@ -7,9 +7,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/collision/discrete_contact_manager.h>
+#include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/geometry/geometries.h>
 
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace tesseract::collision::test_suite
 {
@@ -112,6 +115,37 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
     }
   }
 }
+/**
+ * @brief Add @p count unit boxes at the origin, returning the ids in the order they were added
+ */
+template <typename ManagerType>
+inline std::vector<tesseract::common::LinkId> addOrderedBoxes(ManagerType& checker, int count)
+{
+  std::vector<tesseract::common::LinkId> added;
+  added.reserve(static_cast<std::size_t>(count));
+  for (int i = 0; i < count; ++i)
+  {
+    const tesseract::common::LinkId id("link_" + std::to_string(i));
+    CollisionShapePtr box = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
+    const CollisionShapesConst shapes{ box };
+    const tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+    checker.addCollisionObject(id, 0, shapes, poses);
+    added.push_back(id);
+  }
+  return added;
+}
+
+template <typename ManagerType>
+inline void runCloneOrderTest(ManagerType& checker)
+{
+  const std::vector<tesseract::common::LinkId> added = addOrderedBoxes(checker, 16);
+
+  // The source reports the order objects were added in
+  ASSERT_EQ(checker.getCollisionObjects(), added);
+
+  const auto cloned_checker = checker.clone();
+  EXPECT_EQ(cloned_checker->getCollisionObjects(), added);
+}
 }  // namespace detail
 
 inline void
@@ -198,5 +232,18 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   EXPECT_NEAR(result_vector[0].normal[1] * idx[2], cloned_result_vector[0].normal[1] * cloned_idx[2], normal_tol);
   EXPECT_NEAR(result_vector[0].normal[2] * idx[2], cloned_result_vector[0].normal[2] * cloned_idx[2], normal_tol);
 }
+/**
+ * @brief A clone reports its collision objects in the same order as its source
+ *
+ * The order is observable through getCollisionObjects() and is the order the objects are
+ * registered with the broadphase, so it decides the broadphase's tree structure and the tie-break
+ * between otherwise equal contacts. A manager that rebuilds a clone by walking an unordered
+ * container loses that order, and where the container is keyed by a hashed id the result also
+ * varies by standard library. Enough objects are added that such a walk cannot coincide with the
+ * add order by luck.
+ */
+inline void runCloneOrderTest(DiscreteContactManager& checker) { detail::runCloneOrderTest(checker); }
+
+inline void runCloneOrderTest(ContinuousContactManager& checker) { detail::runCloneOrderTest(checker); }
 }  // namespace tesseract::collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_CLONE_UNIT_HPP

@@ -960,16 +960,21 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
   manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
-    for (const auto& link : scene_graph->getLinks())
+    const auto links = scene_graph->getLinks();
+    std::vector<tesseract::collision::CollisionObjectSpec> objects;
+    objects.reserve(links.size());
+    for (const auto& link : links)
     {
       if (!link->collision.empty())
       {
-        tesseract::collision::CollisionShapesConst shapes;
-        tesseract::common::VectorIsometry3d shape_poses;
-        getCollisionObject(shapes, shape_poses, *link);
-        manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
+        tesseract::collision::CollisionObjectSpec spec;
+        spec.id = link->getId();
+        getCollisionObject(spec.shapes, spec.shape_poses, *link);
+        objects.push_back(std::move(spec));
       }
     }
+
+    manager->addCollisionObjects(objects);
 
     manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }
@@ -993,16 +998,21 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
   manager->setContactAllowedValidator(contact_allowed_validator);
   if (scene_graph != nullptr)
   {
-    for (const auto& link : scene_graph->getLinks())
+    const auto links = scene_graph->getLinks();
+    std::vector<tesseract::collision::CollisionObjectSpec> objects;
+    objects.reserve(links.size());
+    for (const auto& link : links)
     {
       if (!link->collision.empty())
       {
-        tesseract::collision::CollisionShapesConst shapes;
-        tesseract::common::VectorIsometry3d shape_poses;
-        getCollisionObject(shapes, shape_poses, *link);
-        manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
+        tesseract::collision::CollisionObjectSpec spec;
+        spec.id = link->getId();
+        getCollisionObject(spec.shapes, spec.shape_poses, *link);
+        objects.push_back(std::move(spec));
       }
     }
+
+    manager->addCollisionObjects(objects);
 
     manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }
@@ -1903,20 +1913,23 @@ bool Environment::Implementation::applyAddSceneGraphCommand(std::shared_ptr<cons
 
   std::unique_lock<std::shared_mutex> discrete_lock(discrete_manager_mutex);
   std::unique_lock<std::shared_mutex> continuous_lock(continuous_manager_mutex);
+  std::vector<tesseract::collision::CollisionObjectSpec> objects;
+  objects.reserve(diff_links.size());
   for (const auto& link : diff_links)
   {
     if (!link->collision.empty())
     {
-      tesseract::collision::CollisionShapesConst shapes;
-      tesseract::common::VectorIsometry3d shape_poses;
-      getCollisionObject(shapes, shape_poses, *link);
-
-      if (discrete_manager != nullptr)
-        discrete_manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
-      if (continuous_manager != nullptr)
-        continuous_manager->addCollisionObject(link->getId(), 0, shapes, shape_poses, true);
+      tesseract::collision::CollisionObjectSpec spec;
+      spec.id = link->getId();
+      getCollisionObject(spec.shapes, spec.shape_poses, *link);
+      objects.push_back(std::move(spec));
     }
   }
+
+  if (discrete_manager != nullptr)
+    discrete_manager->addCollisionObjects(objects);
+  if (continuous_manager != nullptr)
+    continuous_manager->addCollisionObjects(objects);
 
   ++revision;
   commands.push_back(cmd);

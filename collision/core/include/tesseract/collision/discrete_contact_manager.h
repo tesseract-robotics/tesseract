@@ -85,6 +85,20 @@ public:
                                   bool enabled = true) = 0;
 
   /**
+   * @brief Add a batch of collision objects, applying one broadphase update for the batch
+   *
+   * Observably equivalent to calling addCollisionObject once per entry, in order. A false return still leaves
+   * every object that was added registered; only the failing ones are absent. Within one batch a repeated id
+   * behaves as the repeated single calls do: the last entry naming that id decides both the object and its
+   * position in getCollisionObjects(), and if that last entry fails the id is left unregistered even when an
+   * earlier entry for it succeeded.
+   *
+   * @param objects The objects to add
+   * @return False if any object failed to be added
+   */
+  virtual bool addCollisionObjects(const std::vector<CollisionObjectSpec>& objects);
+
+  /**
    * @brief Get a collision objects collision geometries
    * @param id The collision object's LinkId
    * @return A vector of collision geometries. The vector will be empty if the collision object is not found.
@@ -236,6 +250,8 @@ public:
    * @param obj1 The first object id. Order doesn't matter
    * @param obj2 The Second object id. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
+   * @note Each call re-evaluates the margin of every object in the manager. To set many pairs, build a
+   *       CollisionMarginPairData and use setCollisionMarginPairData, which does that sweep once.
    */
   virtual void setCollisionMarginPair(const tesseract::common::LinkId& id1,
                                       const tesseract::common::LinkId& id2,

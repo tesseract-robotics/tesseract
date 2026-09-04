@@ -88,6 +88,8 @@ public:
                           const tesseract::common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override final;
 
+  bool addCollisionObjects(const std::vector<CollisionObjectSpec>& objects) override final;
+
   const CollisionShapesConst& getCollisionObjectGeometries(const tesseract::common::LinkId& id) const override final;
 
   const tesseract::common::VectorIsometry3d&
@@ -148,6 +150,19 @@ public:
   void addCollisionObject(const fcl_internal::COW::Ptr& cow);
 
 private:
+  /**
+   * @brief Backend-side bulk add, applying a single broadphase update for the batch
+   * @param cows Collision objects to add. The manager adopts this order: it is the order the
+   *             objects are registered with the broadphase and the order getCollisionObjects()
+   *             reports, so a caller reproducing another manager's contents must supply them in
+   *             that manager's order.
+   * @pre None of the links in @p cows are already present in the manager. Overwriting an existing
+   *      link destroys its previous wrapper while that wrapper's collision objects may still be
+   *      registered in a broadphase manager, and leaves a stale duplicate in the collision-objects
+   *      list.
+   */
+  void addCollisionObjects(const std::vector<fcl_internal::COW::Ptr>& cows);
+
   std::string name_;
 
   /** @brief Broad-phase Collision Manager for active collision objects */

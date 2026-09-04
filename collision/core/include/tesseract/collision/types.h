@@ -52,6 +52,16 @@ using CollisionMarginData = tesseract::common::CollisionMarginData;
 using CollisionMarginPairData = tesseract::common::CollisionMarginPairData;
 using CollisionMarginPairOverrideType = tesseract::common::CollisionMarginPairOverrideType;
 
+/** @brief A single collision object's definition, for bulk registration */
+struct CollisionObjectSpec
+{
+  tesseract::common::LinkId id;
+  int mask_id{ 0 };
+  CollisionShapesConst shapes;
+  tesseract::common::VectorIsometry3d shape_poses;
+  bool enabled{ true };
+};
+
 class ContactResultValidator;
 
 enum class ContinuousCollisionType : std::uint8_t

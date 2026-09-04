@@ -57,6 +57,15 @@ void gatherPoses(const std::vector<tesseract::common::LinkId>& ids,
 
 namespace tesseract::collision
 {
+bool DiscreteContactManager::addCollisionObjects(const std::vector<CollisionObjectSpec>& objects)
+{
+  bool success{ true };
+  for (const auto& obj : objects)
+    success &= addCollisionObject(obj.id, obj.mask_id, obj.shapes, obj.shape_poses, obj.enabled);
+
+  return success;
+}
+
 void DiscreteContactManager::setCollisionObjectsTransform(const std::vector<tesseract::common::LinkId>& ids,
                                                           const tesseract::common::VectorIsometry3d& poses)
 {

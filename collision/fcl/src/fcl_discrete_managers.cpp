@@ -37,9 +37,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <algorithm>
 #include <cassert>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
+#include <vector>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/common/contact_allowed_validator.h>
 
@@ -63,8 +66,18 @@ DiscreteContactManager::UPtr FCLDiscreteBVHManager::clone() const
 {
   auto manager = std::make_unique<FCLDiscreteBVHManager>();
 
+  std::vector<COW::Ptr> cows;
+  cows.reserve(collision_objects_.size());
   for (const auto& id : collision_objects_)
-    manager->addCollisionObject(link2cow_.at(id)->clone());
+    cows.push_back(link2cow_.at(id)->clone());
+
+  // The refit inside addCollisionObjects must not be deferred to the setActiveCollisionObjects below, which is why
+  // this backend offers no way to defer it. Deferring changes the broadphase tree, so the pair reaches the
+  // narrowphase in the opposite order, and fcl::distance is not order-symmetric: the GJK witness mirrors instead of
+  // negating. The clone then reports the two small off-axis components of the contact normal with the sign opposite
+  // to its source, 1.7e-3 and 3.0e-3 apart against the clone suite's 1e-3 tolerance. The distance, the nearest
+  // points and the dominant normal component still agree, as does the order getCollisionObjects() reports.
+  manager->addCollisionObjects(cows);
 
   manager->setActiveCollisionObjects(active_);
   manager->setCollisionMarginData(collision_margin_data_);
@@ -90,6 +103,56 @@ bool FCLDiscreteBVHManager::addCollisionObject(const tesseract::common::LinkId& 
   }
 
   return false;
+}
+
+bool FCLDiscreteBVHManager::addCollisionObjects(const std::vector<CollisionObjectSpec>& objects)
+{
+  std::vector<COW::Ptr> cows;
+  cows.reserve(objects.size());
+
+  // Reproduce the per-id semantics of adding the specs one at a time: a repeated id displaces its earlier entry,
+  // so the last spec naming an id decides both the wrapper and its position.
+  std::unordered_map<tesseract::common::LinkId, std::size_t> batch_index;
+  batch_index.reserve(objects.size());
+
+  bool success{ true };
+  for (const auto& obj : objects)
+  {
+    // The hole is compacted away below rather than erased here, which would be O(n) per repeat.
+    const auto it = batch_index.find(obj.id);
+    if (it != batch_index.end())
+    {
+      cows[it->second] = nullptr;
+      batch_index.erase(it);
+    }
+
+    const COW::Ptr new_cow = createFCLCollisionObject(obj.id, obj.mask_id, obj.shapes, obj.shape_poses, obj.enabled);
+    if (new_cow == nullptr)
+    {
+      success = false;
+      continue;
+    }
+
+    batch_index[obj.id] = cows.size();
+    cows.push_back(new_cow);
+  }
+
+  cows.erase(std::remove(cows.begin(), cows.end(), nullptr), cows.end());
+
+  // The primitive does not displace an already-registered object, so do here what the single-object entry point
+  // does. Skipping this orphans the old object's broadphase proxy. Every id the batch names is removed, including
+  // one whose spec failed to build: the single-object form removes before it creates, so a failed spec leaves that
+  // id unregistered.
+  for (const auto& obj : objects)
+  {
+    if (link2cow_.find(obj.id) != link2cow_.end())
+      removeCollisionObject(obj.id);
+  }
+
+  if (!cows.empty())
+    addCollisionObjects(cows);
+
+  return success;
 }
 
 const CollisionShapesConst&
@@ -374,29 +437,38 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const Cont
 
 void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
-  std::size_t cnt = cow->getCollisionObjectsRaw().size();
-  fcl_co_count_ += cnt;
+  addCollisionObjects(std::vector<COW::Ptr>{ cow });
+}
+
+void FCLDiscreteBVHManager::addCollisionObjects(const std::vector<COW::Ptr>& cows)
+{
+  for (const auto& cow : cows)
+  {
+    const std::size_t cnt = cow->getCollisionObjectsRaw().size();
+    fcl_co_count_ += cnt;
+    link2cow_[cow->getLinkId()] = cow;
+    collision_objects_.push_back(cow->getLinkId());
+
+    std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
+    if (cow->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+    {
+      // If static add to static manager
+      for (auto& co : objects)
+        static_manager_->registerObject(co.get());
+    }
+    else
+    {
+      for (auto& co : objects)
+        dynamic_manager_->registerObject(co.get());
+    }
+
+    // If active links is not empty update filters to replace the active links list
+    if (!active_.empty())
+      updateCollisionObjectFilters(active_, cow, static_manager_, dynamic_manager_);
+  }
+
   static_update_.reserve(fcl_co_count_);
   dynamic_update_.reserve(fcl_co_count_);
-  link2cow_[cow->getLinkId()] = cow;
-  collision_objects_.push_back(cow->getLinkId());
-
-  std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
-  if (cow->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
-  {
-    // If static add to static manager
-    for (auto& co : objects)
-      static_manager_->registerObject(co.get());
-  }
-  else
-  {
-    for (auto& co : objects)
-      dynamic_manager_->registerObject(co.get());
-  }
-
-  // If active links is not empty update filters to replace the active links list
-  if (!active_.empty())
-    updateCollisionObjectFilters(active_, cow, static_manager_, dynamic_manager_);
 
   // This causes a refit on the bvh tree.
   dynamic_manager_->update();
