@@ -114,8 +114,8 @@
  * - `getLinks()`: All rigid bodies
  * - `isTree()`: Whether structure is a valid kinematic tree
  * - `isAcyclic()`: Whether structure contains no cycles
- * - `getAdjacentLinkNames()`: Links directly connected via a joint
- * - `getLinkChildrenNames()`: All descendant links
+ * - `getAdjacentLinkIds()`: Links directly connected via a joint
+ * - `getLinkChildrenIds()`: All descendant links
  * - `getShortestPath()`: Kinematic path between links
  *
  * @section load_urdf_visualization Visualizing the Structure
