@@ -125,7 +125,7 @@
  * @section box_box_example_interpreting Interpreting Results
  *
  * The `ContactResultVector` returned from queries provides:
- * - `link_names[0]` and `link_names[1]`: Names of the two objects
+ * - `link_ids[0]` and `link_ids[1]`: Ids of the two objects; read the string with `.name()`
  * - `distance`: Separation distance (negative = penetration)
  * - `nearest_points[0]` and `nearest_points[1]`: 3D coordinates of closest points
  * - `normal`: Unit vector pointing from object 1 toward object 2

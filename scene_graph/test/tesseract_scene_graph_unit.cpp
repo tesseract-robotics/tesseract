@@ -99,17 +99,17 @@ void runTest(tesseract::scene_graph::SceneGraph& g)
 {
   using namespace tesseract::scene_graph;
 
-  // Check getAdjacentLinkNames Method
+  // Check getAdjacentLinkIds Method
   std::vector<tesseract::common::LinkId> adjacent_links = g.getAdjacentLinkIds("link_3");
   EXPECT_TRUE(adjacent_links.size() == 1);
   EXPECT_TRUE(adjacent_links[0] == "link_4");
 
-  // Check getInvAdjacentLinkNames Method
+  // Check getInvAdjacentLinkIds Method
   std::vector<tesseract::common::LinkId> inv_adjacent_links = g.getInvAdjacentLinkIds("link_3");
   EXPECT_TRUE(inv_adjacent_links.size() == 1);
   EXPECT_TRUE(inv_adjacent_links[0] == "link_2");
 
-  // Check getLinkChildrenNames
+  // Check getLinkChildrenIds
   std::vector<tesseract::common::LinkId> child_link_ids = g.getLinkChildrenIds("link_5");
   EXPECT_TRUE(child_link_ids.empty());
 
