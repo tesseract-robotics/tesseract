@@ -39,6 +39,7 @@
 
 #include <tesseract/collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract/common/contact_allowed_validator.h>
+#include <tesseract/common/utils.h>
 
 #include <algorithm>
 #include <cassert>
@@ -181,7 +182,8 @@ bool BulletCastBVHManager::removeCollisionObject(const tesseract::common::LinkId
 
 bool BulletCastBVHManager::removeCollisionObjects(const std::vector<tesseract::common::LinkId>& ids)
 {
-  // Two wrappers per link, both registered in the same broadphase, so one pass over the pair array covers both.
+  // Two wrappers per link, but only the one matching the link's active state holds a broadphase proxy;
+  // collectProxies skips the other, so one pass over the pair array covers the whole batch.
   std::vector<COW::Ptr> cows;
   cows.reserve(2 * ids.size());
   std::unordered_set<tesseract::common::LinkId> removed;
@@ -332,6 +334,11 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract::common:
   if (it != link2cow_.end())
   {
     COW::Ptr& cow = it->second;
+
+    // Note: If the transform has not changed do not update to prevent unnecessary broadphase AABB updates
+    if (tesseract::common::almostEqualRelativeAndAbs(convertBtToEigen(cow->getWorldTransform()), pose))
+      return;
+
     btTransform tf = convertEigenToBt(pose);
     cow->setWorldTransform(tf);
     link2castcow_[id]->setWorldTransform(tf);

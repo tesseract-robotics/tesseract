@@ -46,6 +46,7 @@
 #include <vector>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/common/contact_allowed_validator.h>
+#include <tesseract/common/utils.h>
 
 using namespace tesseract::collision::fcl_internal;
 
@@ -314,7 +315,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
   {
     const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
     // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
-    if (!cur_tf.translation().isApprox(pose.translation(), 1e-8) || !cur_tf.rotation().isApprox(pose.rotation(), 1e-8))
+    if (!tesseract::common::almostEqualRelativeAndAbs(cur_tf, pose))
     {
       it->second->setCollisionObjectsTransform(pose);
       if (it->second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
@@ -347,7 +348,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::common
     {
       const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
       // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
-      if (!cur_tf.translation().isApprox(tf.translation(), 1e-8) || !cur_tf.rotation().isApprox(tf.rotation(), 1e-8))
+      if (!tesseract::common::almostEqualRelativeAndAbs(cur_tf, tf))
       {
         it->second->setCollisionObjectsTransform(tf);
         std::vector<CollisionObjectRawPtr>& co = it->second->getCollisionObjectsRaw();
@@ -388,8 +389,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<tesse
 
     const Eigen::Isometry3d& cur_tf = it->second->getCollisionObjectsTransform();
     // Note: If the transform has not changed do not update to prevent unnecessary re-balancing of the BVH tree
-    if (cur_tf.translation().isApprox(poses[i].translation(), 1e-8) &&
-        cur_tf.rotation().isApprox(poses[i].rotation(), 1e-8))
+    if (tesseract::common::almostEqualRelativeAndAbs(cur_tf, poses[i]))
       continue;
 
     it->second->setCollisionObjectsTransform(poses[i]);

@@ -39,6 +39,7 @@
 
 #include <tesseract/collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract/common/contact_allowed_validator.h>
+#include <tesseract/common/utils.h>
 
 #include <algorithm>
 #include <cassert>
@@ -282,6 +283,11 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract::com
   if (it != link2cow_.end())
   {
     COW::Ptr& cow = it->second;
+
+    // Note: If the transform has not changed do not update to prevent unnecessary broadphase AABB updates
+    if (tesseract::common::almostEqualRelativeAndAbs(convertBtToEigen(cow->getWorldTransform()), pose))
+      return;
+
     cow->setWorldTransform(convertEigenToBt(pose));
 
     // Update Collision Object Broadphase AABB
