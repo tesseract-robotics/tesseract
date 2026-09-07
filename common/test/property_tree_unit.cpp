@@ -2290,6 +2290,28 @@ TEST(PropertyTreeOneOf, ValidationCollectsErrorsAfterBranchSelection)  // NOLINT
   EXPECT_TRUE(found_range_error);
 }
 
+TEST(PropertyTreeOneOf, DerivedCustomBranchUsesClassDiscriminator)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerSchema("test::OneOfPluginBase", PropertyTreeBuilder().attribute(TYPE, CONTAINER).build());
+  reg->registerDerivedType("test::OneOfPluginBase", "test::OneOfConcretePlugin");
+  reg->registerSchema("test::OneOfConcretePlugin", PropertyTreeBuilder().attribute(TYPE, CONTAINER).build());
+
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, ONEOF)
+      .customType("by_class", "test::OneOfPluginBase").acceptsDerivedTypes().done()
+      .container("by_reference").string("task").required().done().done()
+      .build();
+  // clang-format on
+
+  YAML::Node config;
+  config["task"] = "registered_task";
+
+  EXPECT_NO_THROW(schema.mergeConfig(config));
+  EXPECT_TRUE(schema.validate().empty());
+}
+
 // ===========================================================================
 //  PropertyTree – Inline OneOf (beginOneOf / endOneOf)
 // ===========================================================================
@@ -2309,7 +2331,7 @@ TEST(PropertyTreeInlineOneOf, SelectFirstBranch)  // NOLINT
           .done()
           .container("by_params")
               .container("params").required()
-                  .doubleNum("d1").required().done()
+                  .float64("d1").required().done()
               .done()
           .done()
       .endOneOf()
@@ -2343,8 +2365,8 @@ TEST(PropertyTreeInlineOneOf, SelectSecondBranch)  // NOLINT
           .done()
           .container("by_params")
               .container("params").required()
-                  .doubleNum("d1").required().done()
-                  .doubleNum("a2").required().done()
+                  .float64("d1").required().done()
+                  .float64("a2").required().done()
               .done()
           .done()
       .endOneOf()
@@ -2377,7 +2399,7 @@ TEST(PropertyTreeInlineOneOf, NoBranchMatchesThrows)  // NOLINT
               .string("field_a").required().done()
           .done()
           .container("option_b")
-              .integer("field_b").required().done()
+              .int32("field_b").required().done()
           .done()
       .endOneOf()
       .build();
@@ -2422,7 +2444,7 @@ TEST(PropertyTreeInlineOneOf, ValidationAppliesToSelectedBranch)  // NOLINT
       .string("name").required().done()
       .beginOneOf()
           .container("int_branch")
-              .integer("value").required().minimum(0).maximum(100).done()
+              .int32("value").required().minimum(0).maximum(100).done()
           .done()
           .container("str_branch")
               .string("text").required().done()
@@ -2454,7 +2476,7 @@ TEST(PropertyTreeInlineOneOf, SharedFieldsValidationStillApplies)  // NOLINT
   auto schema = PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
       .string("name").required().done()
-      .integer("priority").required().minimum(1).done()
+      .int32("priority").required().minimum(1).done()
       .beginOneOf()
           .container("simple")
               .string("mode").required().done()
@@ -2499,7 +2521,7 @@ TEST(PropertyTreeInlineOneOf, EnumValidationInSelectedBranch)  // NOLINT
           .done()
           .container("by_params")
               .container("params").required()
-                  .doubleNum("d1").required().done()
+                  .float64("d1").required().done()
               .done()
           .done()
       .endOneOf()
@@ -2535,7 +2557,7 @@ TEST(PropertyTreeInlineOneOf, CopyPreservesInlineOneOf)  // NOLINT
               .string("x").required().done()
           .done()
           .container("b")
-              .integer("y").required().done()
+              .int32("y").required().done()
           .done()
       .endOneOf()
       .build();
@@ -2562,6 +2584,75 @@ TEST(PropertyTreeInlineOneOf, CopyPreservesInlineOneOf)  // NOLINT
 
   EXPECT_EQ(schema.at("x").as<std::string>(), "hello");
   EXPECT_EQ(schema_copy.at("y").as<int>(), 42);
+}
+
+TEST(PropertyTreeInlineOneOf, MultipleGroupsSelectIndependently)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .beginOneOf()
+          .container("first_a").string("a").required().done().done()
+          .container("first_b").string("b").required().done().done()
+      .endOneOf()
+      .beginOneOf()
+          .container("second_c").string("c").required().done().done()
+          .container("second_d").string("d").required().done().done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  YAML::Node config;
+  config["a"] = "first";
+  config["d"] = "second";
+
+  schema.mergeConfig(config);
+  EXPECT_TRUE(schema.validate().empty());
+  EXPECT_EQ(schema.at("a").as<std::string>(), "first");
+  EXPECT_EQ(schema.at("d").as<std::string>(), "second");
+}
+
+TEST(PropertyTreeInlineOneOf, RejectsParentPropertyConflict)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("value").required().done()
+      .beginOneOf()
+          .container("conflicting").int32("value").required().done().done()
+          .container("other").string("other").required().done().done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  YAML::Node config;
+  config["value"] = 42;
+  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+}
+
+TEST(PropertyTreePluginContainer, PluginsIsRequired)  // NOLINT
+{
+  auto schema = PropertyTreeBuilder().pluginContainer("container", "test::RequiredPluginBase").build();
+
+  YAML::Node config;
+  config["container"]["default"] = "plugin";
+  schema.mergeConfig(config);
+
+  auto errors = schema.validate();
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
+    return error.find("container.plugins") != std::string::npos && error.find("required") != std::string::npos;
+  }));
+}
+
+TEST(PropertyTreePluginContainer, EmptyPluginsMapIsValid)  // NOLINT
+{
+  auto schema = PropertyTreeBuilder().pluginContainer("container", "test::EmptyPluginBase").build();
+
+  YAML::Node config;
+  config["container"]["plugins"] = YAML::Node(YAML::NodeType::Map);
+  schema.mergeConfig(config);
+
+  EXPECT_TRUE(schema.validate().empty());
 }
 
 // ===========================================================================
@@ -3593,6 +3684,45 @@ TEST(ValidateCustomType, MapTypeRejectsInvalidDerivedType)  // NOLINT
   map_schema.mergeConfig(map);
   auto errors = map_schema.validate();
   EXPECT_FALSE(errors.empty());
+}
+
+TEST(ValidateCustomType, SequenceRejectsDerivedTypeWithoutSchema)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerSchema("test::StrictSequenceBase", PropertyTreeBuilder().attribute(TYPE, CONTAINER).build());
+  reg->registerDerivedType("test::StrictSequenceBase", "test::StrictSequenceDerivedWithoutSchema");
+
+  auto schema =
+      PropertyTreeBuilder().attribute(TYPE, createList("test::StrictSequenceBase")).acceptsDerivedTypes().build();
+
+  YAML::Node config(YAML::NodeType::Sequence);
+  YAML::Node element;
+  element["type"] = "test::StrictSequenceDerivedWithoutSchema";
+  config.push_back(element);
+  schema.mergeConfig(config);
+
+  auto errors = schema.validate();
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
+    return error.find("no schema registry entry found for derived type") != std::string::npos;
+  }));
+}
+
+TEST(ValidateCustomType, MapRejectsDerivedTypeWithoutSchema)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerSchema("test::StrictMapBase", PropertyTreeBuilder().attribute(TYPE, CONTAINER).build());
+  reg->registerDerivedType("test::StrictMapBase", "test::StrictMapDerivedWithoutSchema");
+
+  auto schema = PropertyTreeBuilder().attribute(TYPE, createMap("test::StrictMapBase")).acceptsDerivedTypes().build();
+
+  YAML::Node config(YAML::NodeType::Map);
+  config["entry"]["type"] = "test::StrictMapDerivedWithoutSchema";
+  schema.mergeConfig(config);
+
+  auto errors = schema.validate();
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
+    return error.find("no schema registry entry found for derived type") != std::string::npos;
+  }));
 }
 
 TEST(ValidateCustomType, MapTypePluginInfoStructure)  // NOLINT

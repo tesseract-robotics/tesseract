@@ -44,13 +44,13 @@ tesseract::common::PropertyTree repInvKinFactorySchema()
   // clang-format off
   return PropertyTreeBuilder()
     .attribute(property_attribute::TYPE, property_type::CONTAINER)
-    .doubleNum("manipulator_reach").required().done()
+    .float64("manipulator_reach").required().done()
     .customType("positioner_sample_resolution",
           property_type::createList(kItemType)).required().done()
     .customType("positioner", "tesseract::kinematics::FwdKinFactory")
-      .required().acceptsDerivedTypes().validator(validateCustomType).done()
+      .required().acceptsDerivedTypes().done()
     .customType("manipulator", "tesseract::kinematics::InvKinFactory")
-      .required().acceptsDerivedTypes().validator(validateCustomType).done()
+      .required().acceptsDerivedTypes().done()
     .build();
   // clang-format on
 }
@@ -87,8 +87,9 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
       for (const auto& entry : sample_res_node)
       {
         auto psr = entry.as<PositionerSampleResolution>();
+        common::JointId joint_id(psr.name);
 
-        auto jnt = scene_graph.getJoint(psr.name);
+        auto jnt = scene_graph.getJoint(joint_id);
         if (jnt == nullptr)
           throw std::runtime_error("REPInvKinFactory, 'positioner_sample_resolution' failed to find joint '" +
                                    psr.name + "' in scene graph!");
@@ -105,7 +106,7 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::create(const std::string& s
         if (range_min > range_max)
           throw std::runtime_error("REPInvKinFactory, sample range is not valid!");
 
-        sample_res_map[psr.name] = { psr.value, range_min, range_max };
+        sample_res_map[joint_id] = { psr.value, range_min, range_max };
       }
     }
     else

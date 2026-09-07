@@ -24,6 +24,7 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -303,6 +304,31 @@ TEST(ContactManagersSchemaUnit, InvalidPluginsSectionWrongType)  // NOLINT
     }
   }
   EXPECT_TRUE(found_plugins_error) << "Expected an error about 'plugins' having the wrong type";
+}
+
+TEST(ContactManagersSchemaUnit, InvalidMissingPluginsSection)  // NOLINT
+{
+  auto schema = YAML::convert<ContactManagersPluginInfo>::schema();
+
+  YAML::Node config;
+  config["discrete_plugins"]["default"] = "BulletDiscreteBVHManager";
+  schema.mergeConfig(config);
+
+  auto errors = schema.validate();
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
+    return error.find("discrete_plugins.plugins") != std::string::npos && error.find("required") != std::string::npos;
+  }));
+}
+
+TEST(ContactManagersSchemaUnit, ValidEmptyPluginsSection)  // NOLINT
+{
+  auto schema = YAML::convert<ContactManagersPluginInfo>::schema();
+
+  YAML::Node config;
+  config["discrete_plugins"]["plugins"] = YAML::Node(YAML::NodeType::Map);
+  schema.mergeConfig(config);
+
+  EXPECT_TRUE(schema.validate().empty());
 }
 
 TEST(ContactManagersSchemaUnit, ValidFromYamlFile)  // NOLINT

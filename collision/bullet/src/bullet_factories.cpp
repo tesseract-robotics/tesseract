@@ -81,9 +81,9 @@ struct convert<tesseract::collision::TesseractCollisionConfigurationInfo>
     return tesseract::common::PropertyTreeBuilder()
         .attribute(tesseract::common::property_attribute::TYPE, tesseract::common::property_type::CONTAINER)
         .boolean("share_pool_allocators").done()
-        .integer("max_persistent_manifold_pool_size").minimum(0).maximum(4096).done()
-        .integer("max_collision_algorithm_pool_size").minimum(0).maximum(4096).done()
-        .integer("max_custom_collision_algorithm_element_size").minimum(0).maximum(4096).done()
+        .int32("max_persistent_manifold_pool_size").minimum(0).maximum(4096).done()
+        .int32("max_collision_algorithm_pool_size").minimum(0).maximum(4096).done()
+        .int32("max_custom_collision_algorithm_element_size").minimum(0).maximum(4096).done()
         .boolean("use_epa_penetration_algorithm").done()
         .build();
     // clang-format on

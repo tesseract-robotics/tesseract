@@ -33,12 +33,12 @@ PropertyTree YAML::convert<tesseract::kinematics::PositionerSampleResolution>::s
       .string("name")
       .required()
       .done()
-      .doubleNum("value")
+      .float64("value")
       .required()
       .done()
-      .doubleNum("min")
+      .float64("min")
       .done()
-      .doubleNum("max")
+      .float64("max")
       .done()
       .build();
 }

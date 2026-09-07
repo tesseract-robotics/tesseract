@@ -29,6 +29,7 @@
 #include <map>
 #include <vector>
 #include <optional>
+#include <cstdint>
 #include <functional>
 #include <iosfwd>
 #include <yaml-cpp/yaml.h>
@@ -328,6 +329,20 @@ public:
   bool empty() const;
 
 private:
+  /**
+   * @brief Tracks whether and how a configuration node participated in the most recent merge.
+   *
+   * This state distinguishes an unmerged schema node from an omitted configuration node and
+   * an explicitly present node. The distinction allows validation to skip required descendants
+   * of omitted optional containers while still validating explicitly present empty containers.
+   */
+  enum class ConfigPresence : std::uint8_t
+  {
+    UNMERGED, /**< mergeConfig() has not processed this node */
+    ABSENT,   /**< The node was missing or null in the merged configuration */
+    PRESENT   /**< The node was explicitly present in the merged configuration */
+  };
+
   friend void validateCustomType(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors);
 
   /** @brief Rebuild auto-validators from current attributes (type, required, enum). */
@@ -343,6 +358,7 @@ private:
   std::vector<ValidatorFn> auto_validators_; /**< Validators derived from attributes (rebuilt, not user-added) */
   std::vector<ValidatorFn> validators_;      /**< User-added validators to invoke */
   std::unique_ptr<PropertyTree> oneof_;      /**< Store the property content on merge */
+  ConfigPresence merged_config_presence_{ ConfigPresence::UNMERGED }; /**< Configuration merge state */
 };
 
 /**
@@ -370,7 +386,7 @@ private:
  * auto extended = PropertyTreeBuilder()
  *   .attribute(TYPE, CONTAINER)
  *   .compose(base)              // copies name field
- *   .integer("priority").done()
+ *   .int32("priority").done()
  *   .build();
  * @endcode
  *
@@ -383,7 +399,7 @@ private:
  *       .string(\"field_a\").required().done()
  *     .done()
  *     .container(\"option_b\")
- *       .integer(\"field_b\").required().done()
+ *       .int32(\"field_b\").required().done()
  *     .done()
  *   .endOneOf()
  *   .build();
@@ -510,6 +526,7 @@ private:
   PropertyTree& current();
   PropertyTree root_;
   std::vector<PropertyTree*> stack_;
+  std::size_t inline_oneof_counter_{ 0 };
 };
 
 /**

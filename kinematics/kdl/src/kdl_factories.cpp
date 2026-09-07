@@ -59,9 +59,9 @@ tesseract::common::PropertyTree kdlInvKinChainLMAFactorySchema()
       .string("base_link").required().done()
       .string("tip_link").required().done()
       .eigenVectorXd("task_weights").done()
-      .doubleNum("eps").done()
-      .integer("max_iterations").done()
-      .doubleNum("eps_joints").done()
+      .float64("eps").done()
+      .int32("max_iterations").done()
+      .float64("eps_joints").done()
       .build();
   // clang-format on
 }
@@ -74,10 +74,10 @@ tesseract::common::PropertyTree kdlInvKinChainNRFactorySchema()
       .attribute(property_attribute::TYPE, property_type::CONTAINER)
       .string("base_link").required().done()
       .string("tip_link").required().done()
-      .doubleNum("velocity_eps").done()
-      .integer("velocity_iterations").done()
-      .doubleNum("position_eps").done()
-      .integer("position_iterations").done()
+      .float64("velocity_eps").done()
+      .int32("velocity_iterations").done()
+      .float64("position_eps").done()
+      .int32("position_iterations").done()
       .build();
   // clang-format on
 }

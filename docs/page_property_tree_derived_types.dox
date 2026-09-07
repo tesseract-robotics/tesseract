@@ -81,6 +81,22 @@ constraints:
 @par
 That's it! The schema will validate that each element has a valid class name and config values.
 
+@section ptdt_strict_registration Strict Registration Contract
+
+Derived-type validation is intentionally strict. A type is usable only when both its concrete schema and its
+relationship to the declared base type are registered. Registering only the relationship is an error; validation does
+not fall back to an empty schema. This guarantees that a plugin's `config` is checked rather than silently accepted.
+
+Plugin loaders must load the libraries named by `search_libraries` before validating the complete configuration so
+that static schema registrations have executed. Libraries that contribute schemas must remain loaded while registry
+entries can be used because schemas may contain validator callbacks implemented in those libraries.
+
+`PluginInfoContainer` schemas require a `plugins` map. An empty container is represented explicitly as:
+
+@code{.yaml}
+plugins: {}
+@endcode
+
 @subsection ptdt_quick_patterns Common Patterns
 
 @subsubsection ptdt_qp_single Single Entry

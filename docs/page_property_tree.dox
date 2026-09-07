@@ -32,7 +32,7 @@ files with C++ applications. It provides:
 auto schema = PropertyTreeBuilder()
     .container("robot")
         .string("name").required().done()
-        .integer("dof").minimum(1).maximum(20).done()
+        .int32("dof").minimum(1).maximum(20).done()
     .done()
     .build();
 
@@ -119,7 +119,7 @@ auto schema = PropertyTreeBuilder()
             .label("App Name")
             .placeholder("my_app")
         .done()  // Pop back to parent
-        .integer("version")
+        .int32("version")
             .minimum(1)
             .maximum(999)
             .defaultVal(1)
@@ -272,8 +272,8 @@ auto schema = PropertyTreeBuilder()
         .done()
         .container("by_params")
             .container("params").required()
-                .doubleNum("d1").required().done()
-                .doubleNum("a2").required().done()
+                .float64("d1").required().done()
+                .float64("a2").required().done()
             .done()
         .done()
     .endOneOf()
@@ -463,7 +463,7 @@ auto errors = schema.validate();
 // Schema has metadata
 auto schema = PropertyTreeBuilder()
     .string("name").label("User Name").placeholder("Enter name...").done()
-    .integer("age").minimum(0).maximum(150).label("Age").done()
+    .int32("age").minimum(0).maximum(150).label("Age").done()
     .build();
 
 // UI generator extracts metadata for form building
