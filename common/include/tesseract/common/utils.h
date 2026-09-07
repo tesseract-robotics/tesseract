@@ -588,6 +588,44 @@ bool almostEqualRelativeAndAbs(const Eigen::Ref<const Eigen::VectorXd>& v1,
                                const Eigen::Ref<const Eigen::VectorXd>& max_rel_diff);
 
 /**
+ * @brief Test whether two isometries are equal up to numerical noise.
+ *
+ * Translation: ||ta - tb|| <= max(trans_atol, trans_rtol * max(||ta||, ||tb||))
+ * Rotation:    angle(Ra^T Rb) <= rot_tol   (via ||Ra - Rb||_F^2 = 8 sin^2(theta/2) ~ 2 theta^2,
+ *                                           relative error theta^2/12)
+ *
+ * Frame-invariant, symmetric in a/b, well-defined at the origin, sqrt-free.
+ * Any NaN yields false. Requires linear() of both inputs to be a proper rotation
+ * (checked in debug builds; a non-finite linear part is left to the NaN path).
+ * Defaults are tuned for double at robot-cell scale; float callers should pass their own.
+ */
+template <typename Scalar>
+bool almostEqualRelativeAndAbs(const Eigen::Transform<Scalar, 3, Eigen::Isometry>& a,
+                               const Eigen::Transform<Scalar, 3, Eigen::Isometry>& b,
+                               // common_type_t makes these non-deduced so a double literal works for float
+                               std::common_type_t<Scalar> trans_atol = Scalar(1e-10),
+                               std::common_type_t<Scalar> trans_rtol = Eigen::NumTraits<Scalar>::dummy_precision(),
+                               std::common_type_t<Scalar> rot_tol = Scalar(1e-10)) noexcept
+{
+  const auto& ra = a.linear();
+  const auto& rb = b.linear();
+
+  eigen_assert((!ra.allFinite() || (ra.isUnitary() && ra.determinant() > Scalar(0))) && "almostEqualRelativeAndAbs: "
+                                                                                        "a.linear() is not a proper "
+                                                                                        "rotation");
+  eigen_assert((!rb.allFinite() || (rb.isUnitary() && rb.determinant() > Scalar(0))) && "almostEqualRelativeAndAbs: "
+                                                                                        "b.linear() is not a proper "
+                                                                                        "rotation");
+  eigen_assert(trans_atol >= Scalar(0) && trans_rtol >= Scalar(0) && rot_tol >= Scalar(0) &&
+               "almostEqualRelativeAndAbs: tolerances must be non-negative");
+
+  const Scalar s2 = Eigen::numext::maxi(a.translation().squaredNorm(), b.translation().squaredNorm());
+  return (a.translation() - b.translation()).squaredNorm() <=
+             Eigen::numext::maxi(trans_atol * trans_atol, trans_rtol * trans_rtol * s2) &&
+         (ra - rb).squaredNorm() <= Scalar(2) * rot_tol * rot_tol;
+}
+
+/**
  * @brief Convert a string to a numeric value type
  * @param s The string to be converted
  * @param value The value to be loaded with converted string
