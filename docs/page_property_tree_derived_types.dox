@@ -9,10 +9,10 @@
 
 PropertyTree provides comprehensive support for derived types in configuration validation. This feature enables extensible, inheritance-based configuration hierarchies where fields can accept any properly registered derived type of a base type.
 
-### Key Features
+@subsection ptdt_features Key Features
 
 - <b>Heterogeneous Collections</b>: Arrays and maps can contain different derived types
-- <b>Dynamic Registration</b>: New types can be registered at runtime without schema changes
+- <b>Dynamic Registration</b>: Loading a plugin library can register new schemas without changing the host schema
 - <b>Plugin Pattern</b>: Uses the standard Tesseract "class" + "config" plugin info structure
 - <b>Type Safety</b>: Validation ensures types are properly registered and configs are valid
 - <b>Clear Error Messages</b>: Reports invalid types with available options
@@ -36,18 +36,27 @@ Here's the three-step process to use derived types:
 @subsection ptdt_qs_step1 Step 1: Register Types
 
 @code{.cpp}
-// Register schemas
-TESSERACT_SCHEMA_REGISTER(BaseConstraint,
-  PropertyTreeBuilder().container("base_constraint").done().build()
-);
-TESSERACT_SCHEMA_REGISTER(JointPositionConstraint,
-  PropertyTreeBuilder()
-    .container("jp_constraint")
-    .string("joint").required().done()
-    .float64("position").required().done()
-    .done()
-    .build()
-);
+PropertyTree baseConstraintSchema()
+{
+  return PropertyTreeBuilder()
+      .attribute(property_attribute::TYPE, property_type::CONTAINER)
+      .float64("weight").defaultVal(1.0).done()
+      .build();
+}
+
+PropertyTree jointPositionConstraintSchema()
+{
+  return PropertyTreeBuilder()
+      .attribute(property_attribute::TYPE, property_type::CONTAINER)
+      .float64("weight").defaultVal(1.0).done()
+      .string("joint").required().done()
+      .float64("position").required().done()
+      .build();
+}
+
+// Register schema-producing functions. The macro stringizes each key.
+TESSERACT_SCHEMA_REGISTER(BaseConstraint, baseConstraintSchema);
+TESSERACT_SCHEMA_REGISTER(JointPositionConstraint, jointPositionConstraintSchema);
 
 // Register inheritance relationships
 TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(BaseConstraint, JointPositionConstraint);
@@ -91,11 +100,82 @@ Plugin loaders must load the libraries named by `search_libraries` before valida
 that static schema registrations have executed. Libraries that contribute schemas must remain loaded while registry
 entries can be used because schemas may contain validator callbacks implemented in those libraries.
 
+`TESSERACT_SCHEMA_REGISTER(KEY, SCHEMA_SOURCE)` stringizes `KEY` and accepts either a schema-producing function or a
+schema file path as `SCHEMA_SOURCE`. `TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(BASE_TYPE, DERIVED_TYPE)` stringizes both
+type names and records their compatibility. Place both macros at file scope in a `.cpp` file. Their static
+initializers run when the executable or plugin library is loaded. Registration order is not significant provided the
+schema and relationship both exist before validation starts.
+
 `PluginInfoContainer` schemas require a `plugins` map. An empty container is represented explicitly as:
 
 @code{.yaml}
 plugins: {}
 @endcode
+
+@section ptdt_plugin_loading Plugin Discovery and Library Lifetime
+
+Plugin schemas are commonly registered by static initializers inside shared libraries. The complete plugin
+configuration therefore cannot be validated until the libraries named by that same configuration have been loaded.
+Tesseract resolves this bootstrap dependency with two validation stages.
+
+`PluginDiscoveryInfo` contains the optional `search_paths` and `search_libraries` string lists. The complete
+`ProfilesPluginInfo`, `KinematicsPluginInfo`, `ContactManagersPluginInfo`, and `TaskComposerPluginInfo` value types
+derive from it, while their schemas compose the same discovery fields into the existing flat YAML representation.
+
+@subsection ptdt_two_stage_validation Two-Stage Validation
+
+1. <b>Validate discovery metadata</b>: Merge the complete plugin YAML into the `PluginDiscoveryInfo` schema with
+  extra properties allowed. This validates only `search_paths` and `search_libraries`; plugin-specific fields are
+  intentionally ignored during this bootstrap pass.
+2. <b>Load and retain libraries</b>: Configure a candidate `boost_plugin_loader::PluginLoader`, then call
+  `SchemaRegistry::loadAndRetainPluginLibraries()`. Loading executes static schema registrations. The registry keeps
+  independent lifetime tokens, deduplicated by resolved library path.
+3. <b>Validate the complete configuration</b>: Merge a fresh clone into the complete schema with extra properties
+  disallowed, then validate strictly.
+4. <b>Decode and commit</b>: Decode from an unmodified YAML snapshot and commit the candidate loader and plugin data
+  only after complete validation succeeds.
+
+@code{.cpp}
+YAML::Node snapshot = YAML::Clone(plugin_config);
+
+// Stage 1: validate only metadata needed to discover schemas.
+auto discovery_tree = YAML::convert<PluginDiscoveryInfo>::schema();
+discovery_tree.mergeConfig(YAML::Clone(snapshot), true);
+auto errors = discovery_tree.validate(true);
+if (!errors.empty())
+  throw std::runtime_error("Plugin discovery validation failed");
+
+const auto discovery = snapshot.as<PluginDiscoveryInfo>();
+boost_plugin_loader::PluginLoader candidate_loader = current_loader;
+candidate_loader.search_paths.insert(candidate_loader.search_paths.end(),
+                         discovery.search_paths.begin(), discovery.search_paths.end());
+candidate_loader.search_libraries.insert(candidate_loader.search_libraries.end(),
+                            discovery.search_libraries.begin(), discovery.search_libraries.end());
+// Deduplicate candidate_loader search paths and libraries before loading.
+
+SchemaRegistry::instance()->loadAndRetainPluginLibraries(candidate_loader);
+
+// Stage 2: reject unknown keys and validate plugin-specific config schemas.
+auto config_tree = YAML::convert<CompletePluginInfo>::schema();
+config_tree.mergeConfig(YAML::Clone(snapshot), false);
+errors = config_tree.validate(false);
+if (!errors.empty())
+  throw std::runtime_error("Complete plugin configuration validation failed");
+
+auto complete_info = snapshot.as<CompletePluginInfo>();
+current_loader = std::move(candidate_loader);
+@endcode
+
+The candidate loader gives the factory local transaction semantics: failed complete validation does not modify its
+search paths, libraries, or decoded plugin maps. Loading a library can still add process-wide schema registrations;
+those global registrations and retained library handles are intentionally not rolled back.
+
+@subsection ptdt_library_retention Why the Registry Retains Libraries
+
+A `PropertyTree` schema can contain `std::function` validators whose executable code resides in a plugin library.
+Unloading that library while the schema remains registered would leave invalid callbacks. The registry therefore
+destroys registered schemas before releasing its retained library lifetime tokens. Callers do not need to retain the
+candidate loader merely to keep registered schema callbacks valid.
 
 @subsection ptdt_quick_patterns Common Patterns
 
@@ -143,36 +223,36 @@ named_constraints:
     config: { constraint_type: "USE_LIMITS" }
 @endcode
 
-@subsubsection ptdt_qp_nested Nested (Map of Lists)
-@code{.cpp}
-.customType("solver_groups", "Map[String,List[BaseSolver]]")
-.acceptsDerivedTypes()
-@endcode
-
-@code{.yaml}
-solver_groups:
-  planning:
-    - class: TrajOptSolver
-      config: { max_iterations: 100 }
-    - class: OMPLSolver
-      config: { planner_id: "RRTstar" }
-@endcode
-
 @section ptdt_architecture Architecture
 
 @subsection ptdt_components Key Components
 
-1. <b>validatePluginInfo()</b> - New validator function
-   - Validates individual plugin info structures (class + config)
-   - Checks "class" field identifies a valid derived type
-   - Validates "config" against the derived type's schema
-   - Provides clear, hierarchical error messages
-
-2. <b>validateCustomType()</b> - Enhanced existing function
-   - Detects `acceptsDerivedTypes()` attribute
-   - Uses plugin info structure validation when enabled
-   - Supports single entries, sequences, and maps
-   - Maintains backward compatibility
+<ol>
+<li><b>validatePluginInfo()</b>
+  <ul>
+  <li>Validates individual plugin info structures (`class` + `config`).</li>
+  <li>Checks that `class` identifies a compatible derived type.</li>
+  <li>Requires the concrete class schema to be registered.</li>
+  <li>Validates `config` against the derived type's schema.</li>
+  <li>Provides hierarchical error messages.</li>
+  </ul>
+</li>
+<li><b>validateCustomType()</b>
+  <ul>
+  <li>Detects the `acceptsDerivedTypes()` attribute.</li>
+  <li>Uses plugin info structure validation when enabled.</li>
+  <li>Iterates single entries, sequences, and maps while adding element paths.</li>
+  <li>Routes configurations containing the legacy `type` field through legacy validation.</li>
+  </ul>
+</li>
+<li><b>SchemaRegistry</b>
+  <ul>
+  <li>Owns registered schemas and base-to-derived relationships.</li>
+  <li>Loads plugin libraries before taking its registry mutex so static registration cannot deadlock.</li>
+  <li>Retains independent library handles while registered schemas may reference plugin code.</li>
+  </ul>
+</li>
+</ol>
 
 @section ptdt_usage Usage Guide
 
@@ -186,6 +266,27 @@ PropertyTreeBuilder()
   .acceptsDerivedTypes()  // Enable plugin info validation
   .done()
 @endcode
+
+`acceptsDerivedTypes()` applies to the current custom-type field and enables validation of the standard
+`class` + `config` plugin info structure. Call it after `customType()` and before `done()`.
+
+@subsection ptdt_plugin_helpers Plugin Container Helpers
+
+The self-closing `pluginContainer()` and `pluginContainerMap()` helpers build the standard Tesseract plugin
+configuration shapes without manually repeating their schemas:
+
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+    .attribute(property_attribute::TYPE, property_type::CONTAINER)
+    // { default: string, plugins: Map[String, FactoryBaseType] }
+    .pluginContainer("executors", "my::ExecutorFactory")
+    // Map[String, { default: string, plugins: Map[String, FactoryBaseType] }]
+    .pluginContainerMap("kinematics", "my::KinematicsFactory")
+    .build();
+@endcode
+
+Both helpers arrange derived-type validation for plugin entries. They are self-closing, so no matching `done()` call
+is required. The `plugins` map inside a plugin container is required; represent an empty container as `plugins: {}`.
 
 @subsection ptdt_single Single Entry Example
 
@@ -291,41 +392,29 @@ scenario:
 Before using derived types, register the type relationships:
 
 @code{.cpp}
-// 1. Register the base type schema
-TESSERACT_SCHEMA_REGISTER(BaseConstraint,
-  PropertyTreeBuilder()
-    .container("base_constraint")
-    .float64("weight").defaultVal(1.0).done()
-    .done()
-    .build()
-);
+PropertyTree collisionConstraintSchema()
+{
+  return PropertyTreeBuilder()
+      .attribute(property_attribute::TYPE, property_type::CONTAINER)
+      .float64("weight").defaultVal(1.0).done()
+      .string("constraint_type").required().enumValues({"USE_LIMITS", "PENALTY"}).done()
+      .float64("safety_margin").defaultVal(0.05).done()
+      .build();
+}
 
-// 2. Register derived type schemas
-TESSERACT_SCHEMA_REGISTER(JointPositionConstraint,
-  PropertyTreeBuilder()
-    .container("joint_position_constraint")
-    .float64("weight").defaultVal(1.0).done()
-    .string("joint").required().doc("Joint name").done()
-    .float64("position").required().doc("Target position").done()
-    .float64("tolerance").defaultVal(0.01).doc("Position tolerance").done()
-    .done()
-    .build()
-);
+// Register the schema-producing functions defined here and in the quick start.
+TESSERACT_SCHEMA_REGISTER(BaseConstraint, baseConstraintSchema);
+TESSERACT_SCHEMA_REGISTER(JointPositionConstraint, jointPositionConstraintSchema);
+TESSERACT_SCHEMA_REGISTER(CollisionConstraint, collisionConstraintSchema);
 
-TESSERACT_SCHEMA_REGISTER(CollisionConstraint,
-  PropertyTreeBuilder()
-    .container("collision_constraint")
-    .float64("weight").defaultVal(1.0).done()
-    .string("constraint_type").required().enumValues({"USE_LIMITS", "PENALTY"}).done()
-    .float64("safety_margin").defaultVal(0.05).done()
-    .done()
-    .build()
-);
-
-// 3. Register the inheritance relationships
+// Register the compatibility relationships.
 TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(BaseConstraint, JointPositionConstraint);
 TESSERACT_SCHEMA_REGISTER_DERIVED_TYPE(BaseConstraint, CollisionConstraint);
 @endcode
+
+Registration macros belong at file scope. Do not place them in headers included by multiple translation units.
+Applications may instead call `SchemaRegistry::registerSchema()` and `SchemaRegistry::registerDerivedType()`
+directly when explicit runtime registration is preferable.
 
 @section ptdt_validation Validation Process
 
@@ -356,7 +445,7 @@ Error messages are hierarchical and contextual:
 
 @section ptdt_containers Supported Container Types
 
-Derived types work seamlessly with all PropertyTree container types:
+Derived types are directly supported in the following forms:
 
 | Container Type | Type Notation | YAML Pattern |
 |---|---|---|
@@ -365,44 +454,12 @@ Derived types work seamlessly with all PropertyTree container types:
 | <b>Fixed Array</b> | `List[BaseType,N]` | Fixed-size array of plugin infos |
 | <b>Map</b> | `Map[String,BaseType]` | `{ key1: { class: ..., config: ... }, ... }` |
 
-All container combinations support derived types when `acceptsDerivedTypes()` is set.
-
-@section ptdt_nesting Advanced: Nested Containers
-
-Containers can be nested to create complex structures:
-
-@par Schema
-@code{.cpp}
-auto schema = PropertyTreeBuilder()
-  .container("solver_config")
-  .customType("solver_groups", "Map[String,List[BaseSolver]]")
-  .acceptsDerivedTypes()
-  .doc("Map of solver group names to solver lists")
-  .done()
-  .done()
-  .build();
-@endcode
-
-@par YAML
-@code{.yaml}
-solver_config:
-  solver_groups:
-    planning_solvers:
-      - class: TrajOptSolver
-        config:
-          max_iterations: 100
-      - class: OMPLSolver
-        config:
-          planner_id: "RRTstar"
-    control_solvers:
-      - class: MoveItControlSolver
-        config:
-          group: "manipulator"
-@endcode
+Nested type expressions such as `Map[String,List[BaseType]]` are not parsed. Model nested collections with an
+explicit intermediate registered schema instead. `pluginContainerMap()` uses this pattern internally.
 
 @section ptdt_backwards Backward Compatibility
 
-The implementation maintains full backward compatibility with the legacy "type" field approach:
+The legacy "type" field approach remains supported:
 
 @par Legacy Approach (still works)
 @code{.yaml}
@@ -460,21 +517,13 @@ The example demonstrates:
 
 The implementation is located in:
 
-@subsection ptdt_impl_files Modified Files
-
-- `common/include/tesseract/common/property_tree.h` - Added `validatePluginInfo()` declaration
-- `common/src/property_tree.cpp` - Implemented new validator and enhanced `validateCustomType()`
-
-@subsection ptdt_impl_validateplugininfo New Function: validatePluginInfo()
-- Located: `property_tree.cpp` (lines 1066-1154)
-- Validates: Plugin info structure with class + config
-- Handles: Single entries, sequences, and maps
-
-@subsection ptdt_impl_validatecustom Enhanced Function: validateCustomType()
-- Located: `property_tree.cpp` (lines 955-1065)
-- Detects: `acceptsDerivedTypes` attribute
-- Routes: To plugin info validation when enabled
-- Supports: All container types (single, sequence, map)
+- `common/include/tesseract/common/property_tree.h` - PropertyTree and builder APIs
+- `common/src/property_tree.cpp` - Custom-type and plugin-info validation
+- `common/include/tesseract/common/schema_registry.h` - Registry and plugin-lifetime API
+- `common/src/schema_registry.cpp` - Thread-safe schema registration and lifetime retention
+- `common/include/tesseract/common/schema_registration.h` - File-scope registration macros
+- `common/include/tesseract/common/plugin_info.h` - Discovery and complete plugin configuration value types
+- `common/src/yaml_extensions.cpp` - Shared discovery schema and complete plugin schemas
 
 @section ptdt_best_practices Best Practices
 

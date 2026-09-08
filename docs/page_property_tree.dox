@@ -97,6 +97,12 @@ PropertyTree supports the following types:
 - `Map[key,type]`: Map from key type to value type
 - Custom types: Any registered user-defined type
 
+Dynamic and fixed-size lists validate sequence shape, and fixed-size lists also validate length.
+Registered custom element types are validated element-by-element with indexed error paths. For built-in
+element types, add a custom validator when element conversion itself must be enforced. For example,
+the plugin discovery schema validates `List[String]` by converting the complete value to
+`std::vector<std::string>` so mappings and other non-string elements are rejected.
+
 <b>Eigen Types (built-in):</b>
 - `Eigen::Isometry3d`: 4x4 homogeneous transformation
 - `Eigen::VectorXd`: Dynamic vector
@@ -134,6 +140,8 @@ Type methods: `container`, `string`, `character`, `boolean`, `int32`, `uint32`,
 Composition method: `compose` (copy children from an existing PropertyTree into the current scope)
 
 OneOf methods: `beginOneOf` / `endOneOf` (for inline oneOf groups within a container)
+
+Plugin methods: `acceptsDerivedTypes`, `pluginContainer`, `pluginContainerMap`
 
 Attribute setters: `doc`, `required`, `defaultVal`, `enumValues`, `minimum`, `maximum`,
 `label`, `placeholder`, `group`, `readOnly`, `hidden`, `validator`, `attribute`
@@ -205,6 +213,30 @@ if (!errors.empty()) {
         std::cerr << "  - " << error << "\n";
 }
 @endcode
+
+@subsection pt_extra_properties Strict and Permissive Extra Properties
+
+Both `mergeConfig()` and `validate()` accept an `allow_extra_properties` argument. Use the same mode for
+both calls:
+
+@code{.cpp}
+// Strict validation: unknown keys are retained as marked nodes and reported.
+auto strict_tree = schema;
+strict_tree.mergeConfig(config, false);
+auto strict_errors = strict_tree.validate(false);
+// Example: "unknown_field: property does not exist in schema"
+
+// Permissive validation: unknown keys are ignored by the schema traversal.
+auto partial_tree = schema;
+partial_tree.mergeConfig(config, true);
+auto partial_errors = partial_tree.validate(true);
+@endcode
+
+Strict mode is the default and should be used for complete configuration validation. Permissive mode is useful
+for validating a known subset of a larger document, such as plugin discovery metadata before plugin libraries
+have registered their complete schemas. It is not a substitute for a later strict validation pass.
+
+`mergeConfig()` mutates the tree. Start from a fresh schema copy for each independent validation pass.
 
 @section pt_oneof OneOf - Polymorphic Configuration
 
@@ -399,7 +431,7 @@ However, the plugin info structure (class + config) is the recommended approach 
 Register and retrieve schemas globally:
 
 @code
-auto& registry = SchemaRegistry::instance();
+auto registry = SchemaRegistry::instance();
 
 // Register a schema
 auto schema = PropertyTreeBuilder()...build();
@@ -416,6 +448,9 @@ if (registry->contains("my::Config")) {
 
 Built-in schemas are registered for Eigen types and tesseract common types via
 the YAML::convert specializations in yaml_extensions.cpp.
+
+Schemas containing callbacks supplied by plugin libraries require those libraries to remain loaded. See
+@ref ptdt_plugin_loading for the discovery, loading, lifetime-retention, and strict-validation workflow.
 
 @section pt_examples Examples
 
@@ -488,5 +523,7 @@ for (const auto& key : schema.keys()) {
 8. <b>Error Messages</b>: Make error messages actionable and include the error path
 9. <b>Test Schemas</b>: Write unit tests for schema validation with valid and invalid configs
 10. <b>Document Attributes</b>: Use doc attributes to explain what each property does
+11. <b>Validate Strictly Before Decode</b>: Use permissive validation only for an intentional bootstrap subset
+12. <b>Copy Before Merge</b>: Treat registered schemas as templates and merge each config into a fresh copy
 
 */
