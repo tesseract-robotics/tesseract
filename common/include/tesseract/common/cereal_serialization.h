@@ -221,18 +221,23 @@ void serialize(Archive& ar, PluginInfoContainer& obj)
 }
 
 template <class Archive>
-void serialize(Archive& ar, ProfilesPluginInfo& obj)
+void serialize(Archive& ar, PluginDiscoveryInfo& obj)
 {
   ar(cereal::make_nvp("search_paths", obj.search_paths));
   ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+}
+
+template <class Archive>
+void serialize(Archive& ar, ProfilesPluginInfo& obj)
+{
+  serialize(ar, static_cast<PluginDiscoveryInfo&>(obj));
   ar(cereal::make_nvp("plugin_infos", obj.plugin_infos));
 }
 
 template <class Archive>
 void serialize(Archive& ar, KinematicsPluginInfo& obj)
 {
-  ar(cereal::make_nvp("search_paths", obj.search_paths));
-  ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+  serialize(ar, static_cast<PluginDiscoveryInfo&>(obj));
   ar(cereal::make_nvp("fwd_plugin_infos", obj.fwd_plugin_infos));
   ar(cereal::make_nvp("inv_plugin_infos", obj.inv_plugin_infos));
 }
@@ -240,8 +245,7 @@ void serialize(Archive& ar, KinematicsPluginInfo& obj)
 template <class Archive>
 void serialize(Archive& ar, ContactManagersPluginInfo& obj)
 {
-  ar(cereal::make_nvp("search_paths", obj.search_paths));
-  ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+  serialize(ar, static_cast<PluginDiscoveryInfo&>(obj));
   ar(cereal::make_nvp("discrete_plugin_infos", obj.discrete_plugin_infos));
   ar(cereal::make_nvp("continuous_plugin_infos", obj.continuous_plugin_infos));
 }
@@ -249,8 +253,7 @@ void serialize(Archive& ar, ContactManagersPluginInfo& obj)
 template <class Archive>
 void serialize(Archive& ar, TaskComposerPluginInfo& obj)
 {
-  ar(cereal::make_nvp("search_paths", obj.search_paths));
-  ar(cereal::make_nvp("search_libraries", obj.search_libraries));
+  serialize(ar, static_cast<PluginDiscoveryInfo&>(obj));
   ar(cereal::make_nvp("executor_plugin_infos", obj.executor_plugin_infos));
   ar(cereal::make_nvp("task_plugin_infos", obj.task_plugin_infos));
 }

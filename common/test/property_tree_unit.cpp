@@ -18,6 +18,65 @@ using namespace tesseract::common::property_attribute;
 using namespace tesseract::common::property_type;
 
 // ===========================================================================
+//  Plugin discovery schema
+// ===========================================================================
+
+TEST(PluginDiscoverySchema, ValidMetadataAndExtraProperties)  // NOLINT
+{
+  YAML::Node config = YAML::Load(R"(
+search_paths: [/tmp/plugins, /opt/plugins]
+search_libraries: [plugin_a, plugin_b]
+plugins:
+  default: plugin_a
+)");
+
+  auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
+  schema.mergeConfig(config, true);
+  EXPECT_TRUE(schema.validate(true).empty());
+
+  const auto discovery_info = config.as<PluginDiscoveryInfo>();
+  EXPECT_EQ(discovery_info.search_paths, (std::vector<std::string>{ "/tmp/plugins", "/opt/plugins" }));
+  EXPECT_EQ(discovery_info.search_libraries, (std::vector<std::string>{ "plugin_a", "plugin_b" }));
+}
+
+TEST(PluginDiscoverySchema, OmittedMetadataIsValid)  // NOLINT
+{
+  YAML::Node config = YAML::Load("plugins: {}");
+  auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
+  schema.mergeConfig(config, true);
+  EXPECT_TRUE(schema.validate(true).empty());
+
+  const auto discovery_info = config.as<PluginDiscoveryInfo>();
+  EXPECT_TRUE(discovery_info.search_paths.empty());
+  EXPECT_TRUE(discovery_info.search_libraries.empty());
+}
+
+TEST(PluginDiscoverySchema, InvalidMetadataTypes)  // NOLINT
+{
+  {
+    YAML::Node config = YAML::Load("search_paths: /tmp/plugins");
+    auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
+    schema.mergeConfig(config, true);
+    const auto errors = schema.validate(true);
+    EXPECT_FALSE(errors.empty());
+    EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
+      return error.find("search_paths") != std::string::npos;
+    }));
+  }
+
+  {
+    YAML::Node config = YAML::Load("search_libraries: [plugin_a, { invalid: value }]");
+    auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
+    schema.mergeConfig(config, true);
+    const auto errors = schema.validate(true);
+    EXPECT_FALSE(errors.empty());
+    EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
+      return error.find("search_libraries") != std::string::npos;
+    }));
+  }
+}
+
+// ===========================================================================
 //  PropertyTree – Core API
 // ===========================================================================
 

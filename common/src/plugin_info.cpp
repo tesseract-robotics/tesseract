@@ -66,12 +66,36 @@ bool PluginInfoContainer::operator==(const PluginInfoContainer& rhs) const
 bool PluginInfoContainer::operator!=(const PluginInfoContainer& rhs) const { return !operator==(rhs); }
 
 /*********************************************************/
+/******           PluginDiscoveryInfo                *****/
+/*********************************************************/
+
+void PluginDiscoveryInfo::insert(const PluginDiscoveryInfo& other)
+{
+  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
+  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
+}
+
+void PluginDiscoveryInfo::clear()
+{
+  search_paths.clear();
+  search_libraries.clear();
+}
+
+bool PluginDiscoveryInfo::empty() const { return search_paths.empty() && search_libraries.empty(); }
+
+bool PluginDiscoveryInfo::operator==(const PluginDiscoveryInfo& rhs) const
+{
+  return isIdentical<std::string>(search_paths, rhs.search_paths) &&
+         isIdentical<std::string>(search_libraries, rhs.search_libraries);
+}
+bool PluginDiscoveryInfo::operator!=(const PluginDiscoveryInfo& rhs) const { return !operator==(rhs); }
+
+/*********************************************************/
 /**********          ProfilePluginInfo           *********/
 /*********************************************************/
 void ProfilesPluginInfo::insert(const ProfilesPluginInfo& other)
 {
-  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
+  PluginDiscoveryInfo::insert(other);
 
   for (const auto& group_plugins : other.plugin_infos)
   {
@@ -82,21 +106,16 @@ void ProfilesPluginInfo::insert(const ProfilesPluginInfo& other)
 
 void ProfilesPluginInfo::clear()
 {
-  search_paths.clear();
-  search_libraries.clear();
+  PluginDiscoveryInfo::clear();
   plugin_infos.clear();
 }
 
-bool ProfilesPluginInfo::empty() const
-{
-  return (search_paths.empty() && search_libraries.empty() && plugin_infos.empty());
-}
+bool ProfilesPluginInfo::empty() const { return PluginDiscoveryInfo::empty() && plugin_infos.empty(); }
 
 bool ProfilesPluginInfo::operator==(const ProfilesPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
+  equal &= PluginDiscoveryInfo::operator==(rhs);
   equal &= isIdenticalMap<std::map<std::string, PluginInfoMap>, PluginInfoMap>(plugin_infos, rhs.plugin_infos);
   return equal;
 }
@@ -107,8 +126,7 @@ bool ProfilesPluginInfo::operator!=(const ProfilesPluginInfo& rhs) const { retur
 /*********************************************************/
 void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
 {
-  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
+  PluginDiscoveryInfo::insert(other);
 
   for (const auto& group_plugins : other.fwd_plugin_infos)
   {
@@ -131,22 +149,20 @@ void KinematicsPluginInfo::insert(const KinematicsPluginInfo& other)
 
 void KinematicsPluginInfo::clear()
 {
-  search_paths.clear();
-  search_libraries.clear();
+  PluginDiscoveryInfo::clear();
   fwd_plugin_infos.clear();
   inv_plugin_infos.clear();
 }
 
 bool KinematicsPluginInfo::empty() const
 {
-  return (search_paths.empty() && search_libraries.empty() && fwd_plugin_infos.empty() && inv_plugin_infos.empty());
+  return PluginDiscoveryInfo::empty() && fwd_plugin_infos.empty() && inv_plugin_infos.empty();
 }
 
 bool KinematicsPluginInfo::operator==(const KinematicsPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
+  equal &= PluginDiscoveryInfo::operator==(rhs);
   equal &= isIdenticalMap<std::map<std::string, PluginInfoContainer>, PluginInfoContainer>(fwd_plugin_infos,
                                                                                            rhs.fwd_plugin_infos);
   equal &= isIdenticalMap<std::map<std::string, PluginInfoContainer>, PluginInfoContainer>(inv_plugin_infos,
@@ -161,8 +177,7 @@ bool KinematicsPluginInfo::operator!=(const KinematicsPluginInfo& rhs) const { r
 /*********************************************************/
 void ContactManagersPluginInfo::insert(const ContactManagersPluginInfo& other)
 {
-  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
+  PluginDiscoveryInfo::insert(other);
 
   if (!other.discrete_plugin_infos.default_plugin.empty())
     discrete_plugin_infos.default_plugin = other.discrete_plugin_infos.default_plugin;
@@ -185,23 +200,21 @@ void ContactManagersPluginInfo::insert(const ContactManagersPluginInfo& other)
 
 void ContactManagersPluginInfo::clear()
 {
-  search_paths.clear();
-  search_libraries.clear();
+  PluginDiscoveryInfo::clear();
   discrete_plugin_infos.clear();
   continuous_plugin_infos.clear();
 }
 
 bool ContactManagersPluginInfo::empty() const
 {
-  return (search_paths.empty() && search_libraries.empty() && discrete_plugin_infos.plugins.empty() &&
-          continuous_plugin_infos.plugins.empty());
+  return PluginDiscoveryInfo::empty() && discrete_plugin_infos.plugins.empty() &&
+         continuous_plugin_infos.plugins.empty();
 }
 
 bool ContactManagersPluginInfo::operator==(const ContactManagersPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
+  equal &= PluginDiscoveryInfo::operator==(rhs);
   equal &= (discrete_plugin_infos == rhs.discrete_plugin_infos);
   equal &= (continuous_plugin_infos == rhs.continuous_plugin_infos);
   return equal;
@@ -213,8 +226,7 @@ bool ContactManagersPluginInfo::operator!=(const ContactManagersPluginInfo& rhs)
 /*********************************************************/
 void TaskComposerPluginInfo::insert(const TaskComposerPluginInfo& other)
 {
-  search_paths.insert(search_paths.end(), other.search_paths.begin(), other.search_paths.end());
-  search_libraries.insert(search_libraries.end(), other.search_libraries.begin(), other.search_libraries.end());
+  PluginDiscoveryInfo::insert(other);
 
   if (!other.executor_plugin_infos.default_plugin.empty())
     executor_plugin_infos.default_plugin = other.executor_plugin_infos.default_plugin;
@@ -231,23 +243,20 @@ void TaskComposerPluginInfo::insert(const TaskComposerPluginInfo& other)
 
 void TaskComposerPluginInfo::clear()
 {
-  search_paths.clear();
-  search_libraries.clear();
+  PluginDiscoveryInfo::clear();
   executor_plugin_infos.clear();
   task_plugin_infos.clear();
 }
 
 bool TaskComposerPluginInfo::empty() const
 {
-  return (search_paths.empty() && search_libraries.empty() && executor_plugin_infos.plugins.empty() &&
-          task_plugin_infos.plugins.empty());
+  return PluginDiscoveryInfo::empty() && executor_plugin_infos.plugins.empty() && task_plugin_infos.plugins.empty();
 }
 
 bool TaskComposerPluginInfo::operator==(const TaskComposerPluginInfo& rhs) const
 {
   bool equal = true;
-  equal &= isIdentical<std::string>(search_paths, rhs.search_paths);
-  equal &= isIdentical<std::string>(search_libraries, rhs.search_libraries);
+  equal &= PluginDiscoveryInfo::operator==(rhs);
   equal &= (executor_plugin_infos == rhs.executor_plugin_infos);
   equal &= (task_plugin_infos == rhs.task_plugin_infos);
   return equal;

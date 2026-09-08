@@ -220,6 +220,16 @@ TEST(TesseractCommonSerializeUnit, CollisionMarginData)  // NOLINT
   tesseract::common::testSerialization<CollisionMarginData>(*object, "CollisionMarginData");
 }
 
+TEST(TesseractCommonSerializeUnit, PluginDiscoveryInfo)  // NOLINT
+{
+  auto object = std::make_shared<PluginDiscoveryInfo>();
+  object->search_paths.emplace_back("path 1");
+  object->search_paths.emplace_back("path 2");
+  object->search_libraries.emplace_back("library 1");
+  object->search_libraries.emplace_back("library 2");
+  tesseract::common::testSerialization<PluginDiscoveryInfo>(*object, "PluginDiscoveryInfo");
+}
+
 TEST(TesseractCommonSerializeUnit, ContactManagersPluginInfo)  // NOLINT
 {
   auto object = std::make_shared<ContactManagersPluginInfo>();

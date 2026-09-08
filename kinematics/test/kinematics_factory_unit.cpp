@@ -167,6 +167,28 @@ TEST(TesseractKinematicsFactoryUnit, KDL_OPW_UR_ROP_REP_PluginTest)  // NOLINT
   runKinematicsFactoryTest(export_config_path);
 }
 
+TEST(TesseractKinematicsFactoryUnit, InvalidDiscoveryMetadataFailsBeforeLibraryLoad)  // NOLINT
+{
+  const std::string config = R"(
+kinematic_plugins:
+  search_paths: /tmp/plugins
+  search_libraries: [library_that_does_not_exist]
+)";
+
+  tesseract::common::GeneralResourceLocator locator;
+  try
+  {
+    KinematicsPluginFactory factory(config, locator);
+    FAIL() << "Expected plugin discovery validation to fail";
+  }
+  catch (const std::runtime_error& error)
+  {
+    const std::string message = error.what();
+    EXPECT_NE(message.find("Plugin discovery validation failed"), std::string::npos);
+    EXPECT_NE(message.find("search_paths"), std::string::npos);
+  }
+}
+
 TEST(TesseractKinematicsFactoryUnit, RopRepFactoryMissingPositionerJointUnit)  // NOLINT
 {
   // InvKinFactory::create reports failure by returning nullptr. The ROP and REP factories fail with

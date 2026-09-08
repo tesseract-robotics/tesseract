@@ -44,6 +44,7 @@ static const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERAC
 static const std::string TESSERACT_KINEMATICS_PLUGINS_ENV = "TESSERACT_KINEMATICS_PLUGINS";
 
 using tesseract::common::KinematicsPluginInfo;
+using tesseract::common::PluginDiscoveryInfo;
 
 namespace tesseract::kinematics
 {
@@ -79,29 +80,39 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
   {
     YAML::Node plugin_info_for_decode = YAML::Clone(plugin_info);
 
-    // Phase 1: Extract search paths/libraries directly from YAML (minimal parsing)
-    std::vector<std::string> search_paths_local;
-    std::vector<std::string> search_libraries_local;
+    // Stage 1 validates only the metadata required to discover plugin schemas.
+    auto discovery_schema = YAML::convert<PluginDiscoveryInfo>::schema();
+    YAML::Node plugin_info_for_discovery_validation = YAML::Clone(plugin_info_for_decode);
+    discovery_schema.mergeConfig(plugin_info_for_discovery_validation, true);
+    auto discovery_errors = discovery_schema.validate(true);
+    if (!discovery_errors.empty())
+    {
+      std::string error_msg = "KinematicsPluginFactory: Plugin discovery validation failed:\n";
+      for (const auto& error : discovery_errors)
+        error_msg += "  - " + error + "\n";
 
-    if (plugin_info["search_paths"])
-      search_paths_local = plugin_info["search_paths"].as<std::vector<std::string>>();
-    if (plugin_info["search_libraries"])
-      search_libraries_local = plugin_info["search_libraries"].as<std::vector<std::string>>();
+      throw std::runtime_error(error_msg);
+    }
 
-    // Phase 2: Set search paths and load libraries
-    plugin_loader_.search_paths.insert(
-        plugin_loader_.search_paths.end(), search_paths_local.begin(), search_paths_local.end());
-    plugin_loader_.search_libraries.insert(
-        plugin_loader_.search_libraries.end(), search_libraries_local.begin(), search_libraries_local.end());
+    const auto discovery_info = plugin_info_for_decode.as<PluginDiscoveryInfo>();
+    boost_plugin_loader::PluginLoader candidate_loader = plugin_loader_;
+    candidate_loader.search_paths.insert(
+        candidate_loader.search_paths.end(), discovery_info.search_paths.begin(), discovery_info.search_paths.end());
+    candidate_loader.search_libraries.insert(candidate_loader.search_libraries.end(),
+                                             discovery_info.search_libraries.begin(),
+                                             discovery_info.search_libraries.end());
+    tesseract::common::removeDuplicates(candidate_loader.search_paths);
+    tesseract::common::removeDuplicates(candidate_loader.search_libraries);
 
     // Loading the libraries runs their static schema registrations before strict validation.
     // The registry retains their lifetime handles alongside the registered schemas.
-    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(candidate_loader);
 
-    // Phase 3: Now validate full schema (plugins are loaded, so their schemas are available)
+    // Stage 2 strictly validates the complete configuration after plugin schemas are registered.
     auto schema = YAML::convert<tesseract::common::KinematicsPluginInfo>::schema();
     auto config_tree = schema;
-    config_tree.mergeConfig(plugin_info, false);  // false = don't allow extra properties
+    YAML::Node plugin_info_for_validation = YAML::Clone(plugin_info_for_decode);
+    config_tree.mergeConfig(plugin_info_for_validation, false);
 
     auto errors = config_tree.validate(false);
 
@@ -115,13 +126,10 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
       throw std::runtime_error(error_msg);
     }
 
-    // Phase 4: Safe to parse full struct
     auto kin_plugin_info = plugin_info_for_decode.as<tesseract::common::KinematicsPluginInfo>();
-    fwd_plugin_info_ = kin_plugin_info.fwd_plugin_infos;
-    inv_plugin_info_ = kin_plugin_info.inv_plugin_infos;
-
-    tesseract::common::removeDuplicates(plugin_loader_.search_paths);
-    tesseract::common::removeDuplicates(plugin_loader_.search_libraries);
+    fwd_plugin_info_ = std::move(kin_plugin_info.fwd_plugin_infos);
+    inv_plugin_info_ = std::move(kin_plugin_info.inv_plugin_infos);
+    plugin_loader_ = std::move(candidate_loader);
   }
 }
 

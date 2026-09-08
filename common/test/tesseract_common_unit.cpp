@@ -1198,6 +1198,55 @@ TEST(TesseractCommonUnit, almostEqualRelativeAndAbsUnit)  // NOLINT
   EXPECT_TRUE(tesseract::common::almostEqualRelativeAndAbs(Eigen::VectorXd(), Eigen::VectorXd()));
 }
 
+TEST(TesseractCommonUnit, PluginDiscoveryInfoUnit)  // NOLINT
+{
+  using tesseract::common::ContactManagersPluginInfo;
+  using tesseract::common::KinematicsPluginInfo;
+  using tesseract::common::PluginDiscoveryInfo;
+  using tesseract::common::ProfilesPluginInfo;
+  using tesseract::common::TaskComposerPluginInfo;
+
+  static_assert(std::is_base_of_v<PluginDiscoveryInfo, ProfilesPluginInfo>);
+  static_assert(std::is_base_of_v<PluginDiscoveryInfo, KinematicsPluginInfo>);
+  static_assert(std::is_base_of_v<PluginDiscoveryInfo, ContactManagersPluginInfo>);
+  static_assert(std::is_base_of_v<PluginDiscoveryInfo, TaskComposerPluginInfo>);
+
+  PluginDiscoveryInfo info;
+  EXPECT_TRUE(info.empty());
+
+  PluginDiscoveryInfo other;
+  other.search_paths.emplace_back("/usr/local/lib");
+  other.search_libraries.emplace_back("tesseract_plugins");
+  EXPECT_FALSE(other.empty());
+  EXPECT_NE(info, other);
+
+  info.insert(other);
+  EXPECT_EQ(info, other);
+
+  info.clear();
+  EXPECT_TRUE(info.empty());
+
+  const YAML::Node discovery_node = YAML::Load(R"(search_paths: [/new/path]
+search_libraries: [new_library])");
+  info.search_paths.emplace_back("/old/path");
+  info.search_libraries.emplace_back("old_library");
+  EXPECT_TRUE(YAML::convert<PluginDiscoveryInfo>::decode(discovery_node, info));
+  EXPECT_EQ(info.search_paths, (std::vector<std::string>{ "/new/path" }));
+  EXPECT_EQ(info.search_libraries, (std::vector<std::string>{ "new_library" }));
+
+  KinematicsPluginInfo kinematics_info;
+  kinematics_info.search_paths.emplace_back("/existing/path");
+  kinematics_info.search_libraries.emplace_back("existing_library");
+  EXPECT_TRUE(YAML::convert<KinematicsPluginInfo>::decode(discovery_node, kinematics_info));
+  EXPECT_EQ(kinematics_info.search_paths, (std::vector<std::string>{ "/existing/path", "/new/path" }));
+  EXPECT_EQ(kinematics_info.search_libraries, (std::vector<std::string>{ "existing_library", "new_library" }));
+
+  const YAML::Node encoded = YAML::convert<KinematicsPluginInfo>::encode(kinematics_info);
+  EXPECT_TRUE(encoded["search_paths"]);
+  EXPECT_TRUE(encoded["search_libraries"]);
+  EXPECT_FALSE(encoded["discovery"]);
+}
+
 TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
 {
   tesseract::common::KinematicsPluginInfo kpi;

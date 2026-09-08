@@ -203,6 +203,28 @@ TEST(TesseractContactManagersFactoryUnit, LoadStringPluginTest)  // NOLINT
   }
 }
 
+TEST(TesseractContactManagersFactoryUnit, InvalidDiscoveryMetadataFailsBeforeLibraryLoad)  // NOLINT
+{
+  const std::string config = R"(
+contact_manager_plugins:
+  search_paths: /tmp/plugins
+  search_libraries: [library_that_does_not_exist]
+)";
+
+  tesseract::common::GeneralResourceLocator locator;
+  try
+  {
+    ContactManagersPluginFactory factory(config, locator);
+    FAIL() << "Expected plugin discovery validation to fail";
+  }
+  catch (const std::runtime_error& error)
+  {
+    const std::string message = error.what();
+    EXPECT_NE(message.find("Plugin discovery validation failed"), std::string::npos);
+    EXPECT_NE(message.find("search_paths"), std::string::npos);
+  }
+}
+
 TEST(TesseractContactManagersFactoryUnit, PluginFactorAPIUnit)  // NOLINT
 {
   ContactManagersPluginFactory factory;

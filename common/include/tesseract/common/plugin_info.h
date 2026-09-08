@@ -65,15 +65,31 @@ struct PluginInfoContainer
   bool operator!=(const PluginInfoContainer& rhs) const;
 };
 
-/** @brief The profile plugin information structure */
-struct ProfilesPluginInfo
+/** @brief Plugin library discovery information used before loading plugin-specific schemas */
+struct PluginDiscoveryInfo
 {
   /** @brief A list of paths to search for plugins */
   std::vector<std::string> search_paths;
 
-  /** @brief A list of library names without the prefix or suffix that contain plugins*/
+  /** @brief A list of library names without the prefix or suffix that contain plugins */
   std::vector<std::string> search_libraries;
 
+  /** @brief Insert the contents of another PluginDiscoveryInfo */
+  void insert(const PluginDiscoveryInfo& other);
+
+  /** @brief Clear the contents */
+  void clear();
+
+  /** @brief Check if the structure is empty */
+  bool empty() const;
+
+  bool operator==(const PluginDiscoveryInfo& rhs) const;
+  bool operator!=(const PluginDiscoveryInfo& rhs) const;
+};
+
+/** @brief The profile plugin information structure */
+struct ProfilesPluginInfo : public PluginDiscoveryInfo
+{
   /** @brief A map of name to task composer executor plugin information */
   std::map<std::string, PluginInfoMap> plugin_infos;
 
@@ -94,14 +110,8 @@ struct ProfilesPluginInfo
 };
 
 /** @brief The kinematics plugin information structure */
-struct KinematicsPluginInfo
+struct KinematicsPluginInfo : public PluginDiscoveryInfo
 {
-  /** @brief A list of paths to search for plugins */
-  std::vector<std::string> search_paths;
-
-  /** @brief A list of library names without the prefix or suffix that contain plugins*/
-  std::vector<std::string> search_libraries;
-
   /** @brief A map of group name to forward kinematics plugin information */
   std::map<std::string, PluginInfoContainer> fwd_plugin_infos;
 
@@ -125,14 +135,8 @@ struct KinematicsPluginInfo
 };
 
 /** @brief The contact managers plugin information structure */
-struct ContactManagersPluginInfo
+struct ContactManagersPluginInfo : public PluginDiscoveryInfo
 {
-  /** @brief A list of paths to search for plugins */
-  std::vector<std::string> search_paths;
-
-  /** @brief A list of library names without the prefix or suffix that contain plugins*/
-  std::vector<std::string> search_libraries;
-
   /** @brief A map of name to discrete contact manager plugin information */
   PluginInfoContainer discrete_plugin_infos;
 
@@ -156,14 +160,8 @@ struct ContactManagersPluginInfo
 };
 
 /** @brief The task composer plugin information structure */
-struct TaskComposerPluginInfo
+struct TaskComposerPluginInfo : public PluginDiscoveryInfo
 {
-  /** @brief A list of paths to search for plugins */
-  std::vector<std::string> search_paths;
-
-  /** @brief A list of library names without the prefix or suffix that contain plugins*/
-  std::vector<std::string> search_libraries;
-
   /** @brief A map of name to task composer executor plugin information */
   PluginInfoContainer executor_plugin_infos;
 

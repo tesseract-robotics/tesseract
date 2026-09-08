@@ -368,6 +368,35 @@ struct convert<Eigen::Matrix<double, 6, 1>>
 };
 
 template <>
+struct convert<tesseract::common::PluginDiscoveryInfo>
+{
+  static Node encode(const tesseract::common::PluginDiscoveryInfo& rhs)
+  {
+    Node node;
+    if (!rhs.search_paths.empty())
+      node["search_paths"] = rhs.search_paths;
+
+    if (!rhs.search_libraries.empty())
+      node["search_libraries"] = rhs.search_libraries;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract::common::PluginDiscoveryInfo& rhs)
+  {
+    if (const Node& search_paths = node["search_paths"])
+      rhs.search_paths = search_paths.as<std::vector<std::string>>();
+
+    if (const Node& search_libraries = node["search_libraries"])
+      rhs.search_libraries = search_libraries.as<std::vector<std::string>>();
+
+    return true;
+  }
+
+  static tesseract::common::PropertyTree schema();
+};
+
+template <>
 struct convert<tesseract::common::ProfilesPluginInfo>
 {
   inline static const std::string SEARCH_PATHS_KEY{ "search_paths" };
@@ -375,12 +404,7 @@ struct convert<tesseract::common::ProfilesPluginInfo>
   inline static const std::string PROFILE_PLUGINS_KEY{ "profiles" };
   static Node encode(const tesseract::common::ProfilesPluginInfo& rhs)
   {
-    YAML::Node plugins;
-    if (!rhs.search_paths.empty())
-      plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
-
-    if (!rhs.search_libraries.empty())
-      plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+    YAML::Node plugins = convert<tesseract::common::PluginDiscoveryInfo>::encode(rhs);
 
     if (!rhs.plugin_infos.empty())
       plugins[PROFILE_PLUGINS_KEY] = rhs.plugin_infos;
@@ -390,39 +414,9 @@ struct convert<tesseract::common::ProfilesPluginInfo>
 
   static bool decode(const Node& node, tesseract::common::ProfilesPluginInfo& rhs)
   {
-    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
-    {
-      std::vector<std::string> sp;
-      try
-      {
-        sp = search_paths.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("ProfilePluginInfo: Constructor failed to cast '" + SEARCH_PATHS_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
-    }
-
-    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
-    {
-      std::vector<std::string> sl;
-      try
-      {
-        sl = search_libraries.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("ProfilePluginInfo: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
-    }
+    tesseract::common::PluginDiscoveryInfo discovery_info;
+    convert<tesseract::common::PluginDiscoveryInfo>::decode(node, discovery_info);
+    static_cast<tesseract::common::PluginDiscoveryInfo&>(rhs).insert(discovery_info);
 
     if (const YAML::Node& profile_plugins = node[PROFILE_PLUGINS_KEY])
     {
@@ -451,17 +445,10 @@ struct convert<tesseract::common::KinematicsPluginInfo>
 {
   static Node encode(const tesseract::common::KinematicsPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string FWD_KIN_PLUGINS_KEY{ "fwd_kin_plugins" };
     const std::string INV_KIN_PLUGINS_KEY{ "inv_kin_plugins" };
 
-    YAML::Node kinematic_plugins;
-    if (!rhs.search_paths.empty())
-      kinematic_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
-
-    if (!rhs.search_libraries.empty())
-      kinematic_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+    YAML::Node kinematic_plugins = convert<tesseract::common::PluginDiscoveryInfo>::encode(rhs);
 
     if (!rhs.fwd_plugin_infos.empty())
       kinematic_plugins[FWD_KIN_PLUGINS_KEY] = rhs.fwd_plugin_infos;
@@ -474,44 +461,12 @@ struct convert<tesseract::common::KinematicsPluginInfo>
 
   static bool decode(const Node& node, tesseract::common::KinematicsPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string FWD_KIN_PLUGINS_KEY{ "fwd_kin_plugins" };
     const std::string INV_KIN_PLUGINS_KEY{ "inv_kin_plugins" };
 
-    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
-    {
-      std::vector<std::string> sp;
-      try
-      {
-        sp = search_paths.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + SEARCH_PATHS_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
-    }
-
-    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
-    {
-      std::vector<std::string> sl;
-      try
-      {
-        sl = search_libraries.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("KinematicsPluginFactory: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
-    }
+    tesseract::common::PluginDiscoveryInfo discovery_info;
+    convert<tesseract::common::PluginDiscoveryInfo>::decode(node, discovery_info);
+    static_cast<tesseract::common::PluginDiscoveryInfo&>(rhs).insert(discovery_info);
 
     if (const YAML::Node& fwd_kin_plugins = node[FWD_KIN_PLUGINS_KEY])
     {
@@ -560,17 +515,10 @@ struct convert<tesseract::common::ContactManagersPluginInfo>
 {
   static Node encode(const tesseract::common::ContactManagersPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
     const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
 
-    YAML::Node contact_manager_plugins;
-    if (!rhs.search_paths.empty())
-      contact_manager_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
-
-    if (!rhs.search_libraries.empty())
-      contact_manager_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+    YAML::Node contact_manager_plugins = convert<tesseract::common::PluginDiscoveryInfo>::encode(rhs);
 
     if (!rhs.discrete_plugin_infos.plugins.empty())
       contact_manager_plugins[DISCRETE_PLUGINS_KEY] = rhs.discrete_plugin_infos;
@@ -583,44 +531,12 @@ struct convert<tesseract::common::ContactManagersPluginInfo>
 
   static bool decode(const Node& node, tesseract::common::ContactManagersPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string DISCRETE_PLUGINS_KEY{ "discrete_plugins" };
     const std::string CONTINUOUS_PLUGINS_KEY{ "continuous_plugins" };
 
-    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
-    {
-      std::vector<std::string> sp;
-      try
-      {
-        sp = search_paths.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + SEARCH_PATHS_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
-    }
-
-    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
-    {
-      std::vector<std::string> sl;
-      try
-      {
-        sl = search_libraries.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
-    }
+    tesseract::common::PluginDiscoveryInfo discovery_info;
+    convert<tesseract::common::PluginDiscoveryInfo>::decode(node, discovery_info);
+    static_cast<tesseract::common::PluginDiscoveryInfo&>(rhs).insert(discovery_info);
 
     if (const YAML::Node& discrete_plugins = node[DISCRETE_PLUGINS_KEY])
     {
@@ -665,17 +581,10 @@ struct convert<tesseract::common::TaskComposerPluginInfo>
 {
   static Node encode(const tesseract::common::TaskComposerPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
     const std::string NODE_PLUGINS_KEY{ "tasks" };
 
-    YAML::Node task_composer_plugins;
-    if (!rhs.search_paths.empty())
-      task_composer_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
-
-    if (!rhs.search_libraries.empty())
-      task_composer_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+    YAML::Node task_composer_plugins = convert<tesseract::common::PluginDiscoveryInfo>::encode(rhs);
 
     if (!rhs.executor_plugin_infos.plugins.empty())
       task_composer_plugins[EXECUTOR_PLUGINS_KEY] = rhs.executor_plugin_infos;
@@ -688,44 +597,12 @@ struct convert<tesseract::common::TaskComposerPluginInfo>
 
   static bool decode(const Node& node, tesseract::common::TaskComposerPluginInfo& rhs)
   {
-    const std::string SEARCH_PATHS_KEY{ "search_paths" };
-    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
     const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
     const std::string NODE_PLUGINS_KEY{ "tasks" };
 
-    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
-    {
-      std::vector<std::string> sp;
-      try
-      {
-        sp = search_paths.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + SEARCH_PATHS_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_paths.insert(rhs.search_paths.end(), sp.begin(), sp.end());
-    }
-
-    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
-    {
-      std::vector<std::string> sl;
-      try
-      {
-        sl = search_libraries.as<std::vector<std::string>>();
-      }
-      catch (const std::exception& e)
-      {
-        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
-                                 "' to std::set<std::string>! "
-                                 "Details: " +
-                                 e.what());
-      }
-      rhs.search_libraries.insert(rhs.search_libraries.end(), sl.begin(), sl.end());
-    }
+    tesseract::common::PluginDiscoveryInfo discovery_info;
+    convert<tesseract::common::PluginDiscoveryInfo>::decode(node, discovery_info);
+    static_cast<tesseract::common::PluginDiscoveryInfo&>(rhs).insert(discovery_info);
 
     if (const YAML::Node& executor_plugins = node[EXECUTOR_PLUGINS_KEY])
     {

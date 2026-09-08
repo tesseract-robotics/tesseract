@@ -32,6 +32,35 @@ using namespace tesseract::common;
 using namespace tesseract::common::property_attribute;
 using namespace tesseract::common::property_type;
 
+namespace
+{
+void validateStringList(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors)
+{
+  if (node.getValue().IsNull())
+    return;
+
+  try
+  {
+    static_cast<void>(node.getValue().as<std::vector<std::string>>());
+  }
+  catch (const std::exception& exception)
+  {
+    errors.push_back(path + ": value must be a list of strings: " + exception.what());
+  }
+}
+
+PropertyTree pluginDiscoverySchema()
+{
+  // clang-format off
+  return PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .customType("search_paths", createList(STRING)).validator(validateStringList).done()
+      .customType("search_libraries", createList(STRING)).validator(validateStringList).done()
+      .build();
+  // clang-format on
+}
+}  // namespace
+
 // ================================ Eigen::Isometry3d ================================
 PropertyTree YAML::convert<Eigen::Isometry3d>::schema()
 {
@@ -73,14 +102,16 @@ PropertyTree YAML::convert<Eigen::Vector3d>::schema()
   return PropertyTreeBuilder().attribute(TYPE, EIGEN_VECTOR_3D).build();
 }
 
+// ================================ PluginDiscoveryInfo ================================
+PropertyTree YAML::convert<tesseract::common::PluginDiscoveryInfo>::schema() { return pluginDiscoverySchema(); }
+
 // ================================ KinematicsPluginInfo ================================
 PropertyTree YAML::convert<tesseract::common::KinematicsPluginInfo>::schema()
 {
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
-      .customType("search_paths", createList(STRING)).done()
-      .customType("search_libraries", createList(STRING)).done()
+      .compose(pluginDiscoverySchema())
       .pluginContainerMap("fwd_kin_plugins", "tesseract::kinematics::FwdKinFactory")
       .pluginContainerMap("inv_kin_plugins", "tesseract::kinematics::InvKinFactory")
       .build();
@@ -93,8 +124,7 @@ PropertyTree YAML::convert<tesseract::common::ContactManagersPluginInfo>::schema
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
-      .customType("search_paths", createList(STRING)).done()
-      .customType("search_libraries", createList(STRING)).done()
+      .compose(pluginDiscoverySchema())
       .pluginContainer("discrete_plugins", "tesseract::collision::DiscreteContactManagerFactory")
       .pluginContainer("continuous_plugins", "tesseract::collision::ContinuousContactManagerFactory")
       .build();
@@ -107,8 +137,7 @@ PropertyTree YAML::convert<tesseract::common::TaskComposerPluginInfo>::schema()
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
-      .customType("search_paths", createList(STRING)).done()
-      .customType("search_libraries", createList(STRING)).done()
+      .compose(pluginDiscoverySchema())
       .pluginContainer("executors", "tesseract::task_composer::TaskComposerExecutorFactory")
       .pluginContainer("tasks", "tesseract::task_composer::TaskComposerNodeFactory")
       .build();
