@@ -30,6 +30,8 @@
 #include <memory>
 #include <vector>
 
+#include <boost_plugin_loader/fwd.h>
+
 namespace tesseract::common
 {
 class PropertyTree;
@@ -42,7 +44,7 @@ class PropertyTree;
 class SchemaRegistry
 {
 public:
-  ~SchemaRegistry() = default;
+  ~SchemaRegistry();
   SchemaRegistry(const SchemaRegistry&) = delete;
   SchemaRegistry& operator=(const SchemaRegistry&) = delete;
   SchemaRegistry(const SchemaRegistry&&) = delete;
@@ -89,6 +91,15 @@ public:
   static PropertyTree loadFile(const std::string& path);
 
   /**
+   * @brief Load plugin libraries and retain ownership for the lifetime of their registered schemas.
+   * @details Libraries are loaded before the registry mutex is acquired so their static schema registration may
+   * safely call back into this registry. Loaded libraries are deduplicated by their resolved path.
+   * @param loader Configured plugin loader defining the libraries and search paths to use.
+   * @throws boost_plugin_loader::PluginLoaderException if no plugin libraries were provided.
+   */
+  void loadAndRetainPluginLibraries(const boost_plugin_loader::PluginLoader& loader);
+
+  /**
    * @brief Register that a derived type can be used where a base type is expected.
    * @param base_type_name    The base type name (e.g., "MyBaseClass")
    * @param derived_type_name The derived type name (e.g., "MyDerivedClass")
@@ -114,6 +125,7 @@ private:
   SchemaRegistry() = default;
 
   mutable std::mutex mutex_;
+  std::map<std::string, std::shared_ptr<const void>> retained_library_lifetimes_;
   mutable std::map<std::string, PropertyTree> schemas_;
   mutable std::map<std::string, std::string> paths_;
   mutable std::map<std::string, std::vector<std::string>> derived_types_;  // base_type -> [derived_type1,

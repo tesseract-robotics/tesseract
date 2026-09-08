@@ -26,11 +26,23 @@
 #include <tesseract/common/property_tree.h>
 
 #include <filesystem>
+#include <utility>
 
 #include <yaml-cpp/yaml.h>
+#include <boost_plugin_loader/plugin_loader.hpp>
 
 namespace tesseract::common
 {
+SchemaRegistry::~SchemaRegistry()
+{
+  // PropertyTree schemas may contain std::function validators implemented in
+  // plugin libraries. Destroy those callbacks before releasing the libraries.
+  schemas_.clear();
+  paths_.clear();
+  derived_types_.clear();
+  retained_library_lifetimes_.clear();
+}
+
 std::shared_ptr<SchemaRegistry> SchemaRegistry::instance()
 {
   // local statics, not global variables
@@ -91,6 +103,17 @@ PropertyTree SchemaRegistry::loadFile(const std::string& path)
   }
   YAML::Node node = YAML::LoadFile(p.string());
   return PropertyTree::fromYAML(node);
+}
+
+void SchemaRegistry::loadAndRetainPluginLibraries(const boost_plugin_loader::PluginLoader& loader)
+{
+  // Loading may execute plugin static initializers that register schemas, so it
+  // must happen before acquiring mutex_.
+  auto tokens = loader.acquireLibraryLifetimeTokens();
+
+  std::lock_guard lock(mutex_);
+  for (auto& token : tokens)
+    retained_library_lifetimes_.try_emplace(std::move(token.library_path), std::move(token.lifetime));
 }
 
 void SchemaRegistry::registerDerivedType(const std::string& base_type_name, const std::string& derived_type_name)

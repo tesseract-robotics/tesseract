@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/kinematics/inverse_kinematics.h>
 #include <tesseract/kinematics/forward_kinematics.h>
 #include <tesseract/common/property_tree.h>
+#include <tesseract/common/schema_registry.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/common/resource_locator.h>
@@ -38,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <boost_plugin_loader/plugin_loader.hpp>
 #include <console_bridge/console.h>
 #include <fstream>
-#include <mutex>
 
 static const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES";
 static const std::string TESSERACT_KINEMATICS_PLUGINS_ENV = "TESSERACT_KINEMATICS_PLUGINS";
@@ -47,31 +47,6 @@ using tesseract::common::KinematicsPluginInfo;
 
 namespace tesseract::kinematics
 {
-namespace
-{
-void loadSchemaPlugins(const boost_plugin_loader::PluginLoader& source,
-                       const std::string& fwd_section,
-                       const std::string& inv_section)
-{
-  static std::mutex mutex;
-  std::lock_guard<std::mutex> lock(mutex);
-
-  // SchemaRegistry retains validator callbacks implemented in plugin DSOs. Keep
-  // a loader alive for the process lifetime so those callbacks remain valid.
-  // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-  static auto* loader = new boost_plugin_loader::PluginLoader();
-  loader->search_paths_env = source.search_paths_env;
-  loader->search_libraries_env = source.search_libraries_env;
-  loader->search_paths.insert(loader->search_paths.end(), source.search_paths.begin(), source.search_paths.end());
-  loader->search_libraries.insert(
-      loader->search_libraries.end(), source.search_libraries.begin(), source.search_libraries.end());
-  tesseract::common::removeDuplicates(loader->search_paths);
-  tesseract::common::removeDuplicates(loader->search_libraries);
-  loader->getAvailablePlugins(fwd_section);
-  loader->getAvailablePlugins(inv_section);
-}
-}  // namespace
-
 std::string InvKinFactory::getSection() { return "InvKin"; }
 
 tesseract::common::PropertyTree InvKinFactory::schema() const
@@ -119,8 +94,9 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
     plugin_loader_.search_libraries.insert(
         plugin_loader_.search_libraries.end(), search_libraries_local.begin(), search_libraries_local.end());
 
-    // Trigger library loading by discovering available plugins
-    loadSchemaPlugins(plugin_loader_, FwdKinFactory::getSection(), InvKinFactory::getSection());
+    // Loading the libraries runs their static schema registrations before strict validation.
+    // The registry retains their lifetime handles alongside the registered schemas.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
 
     // Phase 3: Now validate full schema (plugins are loaded, so their schemas are available)
     auto schema = YAML::convert<tesseract::common::KinematicsPluginInfo>::schema();
