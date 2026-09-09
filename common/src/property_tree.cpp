@@ -1135,7 +1135,7 @@ void validateStringLength(const PropertyTree& node, const std::string& path, std
   const auto minimum = node.getAttribute(property_attribute::MINIMUM_LENGTH);
   if (minimum.has_value())
   {
-    const std::size_t minimum_length = minimum->as<std::size_t>();
+    const auto minimum_length = minimum->as<std::size_t>();
     if (length < minimum_length)
     {
       errors.push_back(path + ": string length " + std::to_string(length) + " is less than minimum " +
@@ -1146,7 +1146,7 @@ void validateStringLength(const PropertyTree& node, const std::string& path, std
   const auto maximum = node.getAttribute(property_attribute::MAXIMUM_LENGTH);
   if (maximum.has_value())
   {
-    const std::size_t maximum_length = maximum->as<std::size_t>();
+    const auto maximum_length = maximum->as<std::size_t>();
     if (length > maximum_length)
     {
       errors.push_back(path + ": string length " + std::to_string(length) + " is greater than maximum " +
