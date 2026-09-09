@@ -29,7 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/treejnttojacsolver.hpp>
-#include <mutex>
 #include <shared_mutex>
 #include <thread>
 #include <unordered_set>
@@ -39,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/kdl_parser.h>
 #include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/common/kinematic_limits.h>
+#include <tesseract/common/eigen_types.h>
 
 namespace tesseract::scene_graph
 {
@@ -149,16 +149,24 @@ private:
   std::vector<int> joint_qnr_;                /**< The kdl segment number corresponding to joint in joint names */
   KDL::JntArray kdl_jnt_array_;               /**< The kdl joint array */
   tesseract::common::KinematicLimits limits_; /**< The kinematic limits */
-  mutable std::mutex mutex_; /**< @brief KDL is not thread safe due to mutable variables in Joint Class */
 
-  /** @brief Cached LinkId/JointId per KDL segment, avoiding per-FK constructor calls.
-   *  Keyed by pointer to KDL TreeElement (pointer-stable in std::map). */
+  /** @brief Cached LinkId/JointId and joint geometry per KDL segment, avoiding per-FK constructor
+   *  calls and calls back into KDL. Keyed by pointer to KDL TreeElement (pointer-stable in
+   *  std::map). */
   struct SegmentIdCache
   {
     tesseract::common::LinkId link_id;
     tesseract::common::JointId joint_id;
+
+    /** @brief The segment's joint geometry, captured once so the traversal never calls back into
+     * KDL. KDL's joint pose memoises into mutable members and cannot be evaluated concurrently. */
+    KDL::Joint::JointType joint_type{ KDL::Joint::None };
+    Eigen::Vector3d joint_axis{ Eigen::Vector3d::Zero() };
+    Eigen::Vector3d joint_origin{ Eigen::Vector3d::Zero() };
+    Eigen::Isometry3d tip_transform{ Eigen::Isometry3d::Identity() };
+    unsigned q_nr{ 0 };
   };
-  std::unordered_map<const KDL::TreeElementType*, SegmentIdCache> segment_id_cache_;
+  tesseract::common::AlignedUnorderedMap<const KDL::TreeElementType*, SegmentIdCache> segment_id_cache_;
   const KDL::TreeElementType* root_element_{ nullptr }; /**< Cached root element pointer for fast comparison */
 
   /** @brief O(1) mirror of data_.active_link_ids, populated in processKDLData and copied in op=. */
@@ -174,22 +182,11 @@ private:
                            const KDL::SegmentMap::const_iterator& it,
                            const Eigen::Isometry3d& parent_frame) const;
 
-  void calculateTransformsHelper(tesseract::common::LinkIdTransformMap& link_transforms,
-                                 const KDL::JntArray& q_in,
-                                 const KDL::SegmentMap::const_iterator& it,
-                                 const Eigen::Isometry3d& parent_frame) const;
-
   void calculateTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
                            tesseract::common::JointIdTransformMap& joint_transforms,
                            const KDL::JntArray& q_in,
                            const KDL::SegmentMap::const_iterator& it,
                            const Eigen::Isometry3d& parent_frame) const;
-
-  void calculateTransformsHelper(tesseract::common::LinkIdTransformMap& link_transforms,
-                                 tesseract::common::JointIdTransformMap& joint_transforms,
-                                 const KDL::JntArray& q_in,
-                                 const KDL::SegmentMap::const_iterator& it,
-                                 const Eigen::Isometry3d& parent_frame) const;
 
   bool setJointValuesHelper(KDL::JntArray& q,
                             const tesseract::common::JointId& joint_id,
@@ -201,6 +198,14 @@ private:
 
   /** @brief Get this thread's jacobian solver, constructing it on first use */
   KDL::TreeJntToJacSolver& getJacobianSolver() const;
+
+  /** @brief The transform from a segment's parent to its tip, using the joint value @p q_in holds
+   * at this segment's q_nr */
+  static Eigen::Isometry3d segmentTransform(const SegmentIdCache& segment, const KDL::JntArray& q_in);
+
+  /** @brief Rebuild the per-segment cache and the root pointer from this object's own tree, and
+   * clear the per-thread jacobian solvers, which hold a copy of the tree being replaced */
+  void rebuildSegmentCache();
 
   /** @brief Get an updated kdl joint array */
   void getKDLJntArray(KDL::JntArray& kdl_joints,

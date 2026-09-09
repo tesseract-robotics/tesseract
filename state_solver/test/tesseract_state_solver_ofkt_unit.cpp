@@ -4,10 +4,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_set>
 #include <thread>
 #include <atomic>
+#include <kdl/segment.hpp>
+#include <unordered_map>
+#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/state_solver/ofkt/ofkt_nodes.h>
 #include <tesseract/state_solver/ofkt/ofkt_state_solver.h>
+#include <tesseract/scene_graph/kdl_parser.h>
 #include "state_solver_test_suite.h"
 
 using namespace tesseract::scene_graph;
@@ -406,6 +410,75 @@ TEST(TesseractStateSolverUnit, KDLJacobianIsThreadSafeUnit)  // NOLINT
     worker.join();
 
   EXPECT_EQ(mismatches.load(), 0);
+}
+
+namespace
+{
+/** @brief Walk a KDL tree the way KDL itself does, as an independent oracle for link transforms */
+void poseTraversal(const KDL::Tree& tree,
+                   const KDL::JntArray& q,
+                   const KDL::SegmentMap::const_iterator& it,
+                   const Eigen::Isometry3d& parent,
+                   tesseract::common::LinkIdTransformMap& transforms)
+{
+  if (it == tree.getSegments().end())
+    return;
+
+  const KDL::TreeElementType& element = it->second;
+  const KDL::Segment& segment = GetTreeElementSegment(element);
+  const Eigen::Isometry3d global =
+      parent * tesseract::scene_graph::convert(segment.pose(q(GetTreeElementQNr(element))));
+  transforms[tesseract::common::LinkId(it->first)] = global;
+
+  for (const auto& child : element.children)
+    poseTraversal(tree, q, child, global, transforms);
+}
+}  // namespace
+
+// The link transforms must match what KDL's own segment pose produces, for every link and every
+// configuration - the solver computes the joint frame itself rather than asking KDL for it.
+TEST(TesseractStateSolverUnit, KDLLinkTransformsMatchSegmentPoseUnit)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  SceneGraph::UPtr scene_graph = test_suite::getSceneGraph(locator);
+  const KDLStateSolver solver(*scene_graph);
+  tesseract::scene_graph::KDLTreeData data = tesseract::scene_graph::parseSceneGraph(*scene_graph);
+
+  const std::vector<tesseract::common::JointId> joint_ids = solver.getActiveJointIds();
+  const auto dof = static_cast<Eigen::Index>(joint_ids.size());
+  ASSERT_GT(dof, 0);
+
+  // KDL assigns each joint a q index by tree construction order, which is not the order joint ids
+  // come back in. Map by name, or the oracle evaluates a different configuration than the solver.
+  std::unordered_map<std::string, unsigned> name_to_qnr;
+  for (const auto& seg : data.tree.getSegments())
+  {
+    const KDL::Joint& joint = seg.second.segment.getJoint();
+    if (joint.getType() != KDL::Joint::None)
+      name_to_qnr[joint.getName()] = seg.second.q_nr;
+  }
+  ASSERT_EQ(name_to_qnr.size(), joint_ids.size());
+
+  for (int i = 0; i < 64; ++i)
+  {
+    Eigen::VectorXd q(dof);
+    for (Eigen::Index j = 0; j < dof; ++j)
+      q[j] = -2.5 + (0.41 * static_cast<double>((static_cast<Eigen::Index>(i) * 5 + j * 7) % 13));
+
+    KDL::JntArray kdl_q(data.tree.getNrOfJoints());
+    for (Eigen::Index j = 0; j < dof; ++j)
+      kdl_q(name_to_qnr.at(joint_ids[static_cast<std::size_t>(j)].name())) = q[j];
+
+    tesseract::common::LinkIdTransformMap expected;
+    poseTraversal(data.tree, kdl_q, data.tree.getRootSegment(), Eigen::Isometry3d::Identity(), expected);
+
+    tesseract::common::LinkIdTransformMap actual;
+    solver.getLinkTransforms(actual, joint_ids, q);
+
+    ASSERT_FALSE(expected.empty());
+    for (const auto& pair : expected)
+      EXPECT_TRUE(actual.at(pair.first).isApprox(pair.second, 1e-12)) << "link " << pair.first.name();
+  }
 }
 
 int main(int argc, char** argv)

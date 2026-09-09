@@ -24,6 +24,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/utils.h>
@@ -79,19 +80,9 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   limits_ = other.limits_;
   active_link_ids_set_ = other.active_link_ids_set_;
   link_ids_set_ = other.link_ids_set_;
-  // The cached solvers hold a copy of the previous tree.
-  jac_solvers_.clear();
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
-  segment_id_cache_.clear();
-  for (const auto& seg : data_.tree.getSegments())
-  {
-    SegmentIdCache entry;
-    entry.link_id = LinkId(seg.first);
-    entry.joint_id = JointId(seg.second.segment.getJoint().getName());
-    segment_id_cache_[&seg.second] = entry;
-  }
-  root_element_ = &data_.tree.getRootSegment()->second;
+  rebuildSegmentCache();
   return *this;
 }
 
@@ -376,20 +367,7 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
     j++;
   }
 
-  // The cached solvers hold a copy of the previous tree.
-  jac_solvers_.clear();
-
-  // Cache LinkId/JointId per segment to avoid per-FK constructor calls.
-  // Keyed by pointer to KDL TreeElement (pointer-stable in std::map).
-  segment_id_cache_.clear();
-  for (const auto& seg : data_.tree.getSegments())
-  {
-    SegmentIdCache entry;
-    entry.link_id = LinkId(seg.first);
-    entry.joint_id = JointId(seg.second.segment.getJoint().getName());
-    segment_id_cache_[&seg.second] = entry;
-  }
-  root_element_ = &data_.tree.getRootSegment()->second;
+  rebuildSegmentCache();
 
   calculateTransforms(current_state_.link_transforms,
                       current_state_.joint_transforms,
@@ -422,58 +400,71 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
   return false;
 }
 
-void KDLStateSolver::calculateTransformsHelper(tesseract::common::LinkIdTransformMap& link_transforms,
-                                               tesseract::common::JointIdTransformMap& joint_transforms,
-                                               const KDL::JntArray& q_in,
-                                               const KDL::SegmentMap::const_iterator& it,
-                                               const Eigen::Isometry3d& parent_frame) const
+Eigen::Isometry3d KDLStateSolver::segmentTransform(const SegmentIdCache& segment, const KDL::JntArray& q_in)
 {
-  if (it != data_.tree.getSegments().end())
+  const double q = (q_in.data.size() > 0) ? q_in(segment.q_nr) : 0.0;
+
+  switch (segment.joint_type)
   {
-    const KDL::TreeElementType& current_element = it->second;
-    KDL::Frame current_frame;
-    if (q_in.data.size() > 0)
-      current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
-    else
-      current_frame = GetTreeElementSegment(current_element).pose(0);
-
-    Eigen::Isometry3d local_frame = convert(current_frame);
-    Eigen::Isometry3d global_frame{ parent_frame * local_frame };
-    const auto& cached = segment_id_cache_.at(&current_element);
-    link_transforms[cached.link_id] = global_frame;
-    if (&current_element != root_element_)
-      joint_transforms[cached.joint_id] = global_frame;
-
-    for (const auto& child : current_element.children)
+    case KDL::Joint::RotAxis:
+    case KDL::Joint::RotX:
+    case KDL::Joint::RotY:
+    case KDL::Joint::RotZ:
     {
-      calculateTransformsHelper(link_transforms, joint_transforms, q_in, child, global_frame);  // NOLINT
+      const Eigen::Matrix3d rotation(Eigen::AngleAxisd(q, segment.joint_axis));
+      Eigen::Isometry3d joint_transform = Eigen::Isometry3d::Identity();
+      joint_transform.linear() = rotation;
+      joint_transform.translation() = segment.joint_origin - (rotation * segment.joint_origin);
+      return joint_transform * segment.tip_transform;
     }
+    case KDL::Joint::TransAxis:
+    case KDL::Joint::TransX:
+    case KDL::Joint::TransY:
+    case KDL::Joint::TransZ:
+    {
+      Eigen::Isometry3d joint_transform = Eigen::Isometry3d::Identity();
+      joint_transform.translation() = segment.joint_axis * q;
+      return joint_transform * segment.tip_transform;
+    }
+    // KDL::Joint::Fixed and KDL::Joint::None share one enumerator value, so this also covers None:
+    // a jointless segment contributes only its fixed tip transform.
+    default:
+      return segment.tip_transform;
   }
 }
 
-void KDLStateSolver::calculateTransformsHelper(tesseract::common::LinkIdTransformMap& link_transforms,
-                                               const KDL::JntArray& q_in,
-                                               const KDL::SegmentMap::const_iterator& it,
-                                               const Eigen::Isometry3d& parent_frame) const
+void KDLStateSolver::rebuildSegmentCache()
 {
-  if (it != data_.tree.getSegments().end())
+  // Keyed by pointer to KDL TreeElement, which is stable in std::map. Pointers from another
+  // object's tree are not ours, so this must be rebuilt rather than copied.
+  segment_id_cache_.clear();
+  for (const auto& seg : data_.tree.getSegments())
   {
-    const KDL::TreeElementType& current_element = it->second;
-    KDL::Frame current_frame;
-    if (q_in.data.size() > 0)
-      current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
-    else
-      current_frame = GetTreeElementSegment(current_element).pose(0);
+    const KDL::Segment& segment = seg.second.segment;
+    const KDL::Vector axis = segment.getJoint().JointAxis();
+    const KDL::Vector origin = segment.getJoint().JointOrigin();
 
-    Eigen::Isometry3d local_frame = convert(current_frame);
-    Eigen::Isometry3d global_frame{ parent_frame * local_frame };
-    const auto& cached = segment_id_cache_.at(&current_element);
-    link_transforms[cached.link_id] = global_frame;
-    for (const auto& child : current_element.children)
-    {
-      calculateTransformsHelper(link_transforms, q_in, child, global_frame);  // NOLINT
-    }
+    SegmentIdCache entry;
+    entry.link_id = LinkId(seg.first);
+    entry.joint_id = JointId(segment.getJoint().getName());
+    entry.joint_type = segment.getJoint().getType();
+    entry.joint_axis = Eigen::Vector3d(axis[0], axis[1], axis[2]);
+    entry.joint_origin = Eigen::Vector3d(origin[0], origin[1], origin[2]);
+    // getFrameToTip evaluates the joint at zero, which touches KDL's memoised pose. Safe here and
+    // only here: this runs once, before the object is shared.
+    //
+    // This captured geometry reproduces KDL's segment pose only for a joint built with KDL's
+    // default scale of 1 (the offset and origin are absorbed exactly regardless); that is what
+    // kdl_parser produces.
+    entry.tip_transform = convert(segment.getFrameToTip());
+    entry.q_nr = seg.second.q_nr;
+    segment_id_cache_[&seg.second] = entry;
   }
+
+  root_element_ = &data_.tree.getRootSegment()->second;
+
+  // The cached jacobian solvers hold a copy of the previous tree.
+  jac_solvers_.clear();
 }
 
 void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
@@ -482,8 +473,20 @@ void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& 
                                          const KDL::SegmentMap::const_iterator& it,
                                          const Eigen::Isometry3d& parent_frame) const
 {
-  std::lock_guard<std::mutex> guard(mutex_);
-  calculateTransformsHelper(link_transforms, joint_transforms, q_in, it, parent_frame);  // NOLINT
+  if (it != data_.tree.getSegments().end())
+  {
+    const KDL::TreeElementType& current_element = it->second;
+    const auto& cached = segment_id_cache_.at(&current_element);
+    const Eigen::Isometry3d global_frame{ parent_frame * segmentTransform(cached, q_in) };
+    link_transforms[cached.link_id] = global_frame;
+    if (&current_element != root_element_)
+      joint_transforms[cached.joint_id] = global_frame;
+
+    for (const auto& child : current_element.children)
+    {
+      calculateTransforms(link_transforms, joint_transforms, q_in, child, global_frame);  // NOLINT
+    }
+  }
 }
 
 void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& link_transforms,
@@ -491,8 +494,17 @@ void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& 
                                          const KDL::SegmentMap::const_iterator& it,
                                          const Eigen::Isometry3d& parent_frame) const
 {
-  std::lock_guard<std::mutex> guard(mutex_);
-  calculateTransformsHelper(link_transforms, q_in, it, parent_frame);  // NOLINT
+  if (it != data_.tree.getSegments().end())
+  {
+    const KDL::TreeElementType& current_element = it->second;
+    const auto& cached = segment_id_cache_.at(&current_element);
+    const Eigen::Isometry3d global_frame{ parent_frame * segmentTransform(cached, q_in) };
+    link_transforms[cached.link_id] = global_frame;
+    for (const auto& child : current_element.children)
+    {
+      calculateTransforms(link_transforms, q_in, child, global_frame);  // NOLINT
+    }
+  }
 }
 
 KDL::TreeJntToJacSolver& KDLStateSolver::getJacobianSolver() const
@@ -512,14 +524,7 @@ KDL::TreeJntToJacSolver& KDLStateSolver::getJacobianSolver() const
   {
     // Construct before inserting, so a construction that throws leaves no entry behind for the
     // lock-free lookup above to dereference.
-    //
-    // Copying the tree reads the joint poses KDL memoises, which the forward kinematics traversal
-    // writes under this lock.
-    std::unique_ptr<KDL::TreeJntToJacSolver> solver;
-    {
-      const std::lock_guard<std::mutex> tree_lock(mutex_);
-      solver = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
-    }
+    auto solver = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
     it = jac_solvers_.emplace(id, std::move(solver)).first;
   }
 
