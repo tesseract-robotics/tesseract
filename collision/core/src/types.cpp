@@ -147,7 +147,7 @@ void ContactResultMap::addInterpolatedCollisionResults(
     long sub_segment_last_index,
     const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
     double segment_dt,
-    bool discrete,
+    bool point_in_time,
     const tesseract::collision::ContactResultMap::FilterFn& filter)
 {
   for (auto& pair : sub_segment_results.data_)
@@ -160,21 +160,24 @@ void ContactResultMap::addInterpolatedCollisionResults(
       {
         if (active_link_ids.find(r.link_ids[j]) != active_link_ids.end())
         {
-          r.cc_time[j] = (r.cc_time[j] < 0) ?
+          // A point in time is not a sweep, so any cc_time the checker wrote describes nothing and is
+          // discarded. A continuous checker given one state twice reports the midpoint of a zero length
+          // cast, which would otherwise push the sum past 1.
+          r.cc_time[j] = (point_in_time || r.cc_time[j] < 0) ?
                              (static_cast<double>(sub_segment_index) * segment_dt) :
                              (static_cast<double>(sub_segment_index) * segment_dt) + (r.cc_time[j] * segment_dt);
           assert(r.cc_time[j] >= 0.0 && r.cc_time[j] <= 1.0);
           if (sub_segment_index == 0 &&
-              (r.cc_type[j] == tesseract::collision::ContinuousCollisionType::CCType_Time0 || discrete))
+              (r.cc_type[j] == tesseract::collision::ContinuousCollisionType::CCType_Time0 || point_in_time))
             r.cc_type[j] = tesseract::collision::ContinuousCollisionType::CCType_Time0;
           else if (sub_segment_index == sub_segment_last_index &&
-                   (r.cc_type[j] == tesseract::collision::ContinuousCollisionType::CCType_Time1 || discrete))
+                   (r.cc_type[j] == tesseract::collision::ContinuousCollisionType::CCType_Time1 || point_in_time))
             r.cc_type[j] = tesseract::collision::ContinuousCollisionType::CCType_Time1;
           else
             r.cc_type[j] = tesseract::collision::ContinuousCollisionType::CCType_Between;
 
-          // If discrete set cc_transform for discrete continuous
-          if (discrete)
+          // A point in time has a single transform, so the cast transform is that transform
+          if (point_in_time)
             r.cc_transform = r.transform;
         }
       }

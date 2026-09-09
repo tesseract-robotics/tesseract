@@ -200,10 +200,14 @@ public:
    * @details This is copied from the trajopt utility processInterpolatedCollisionResults
    * @param sub_segment_results The interpolated results to process
    * @param sub_segment_index The current sub segment index
-   * @param sub_segment_last_index The last sub segment index
+   * @param sub_segment_last_index The value of @p sub_segment_index that marks the end of the segment, where a
+   * contact is typed CCType_Time1. It depends on what the caller walks: a walk over n sub-states ends at n - 1,
+   * while a walk over the n - 1 casts between them ends at n - 2.
    * @param active_link_ids The set of active link IDs
    * @param segment_dt The segment dt
-   * @param discrete If discrete contact checker was used
+   * @param point_in_time The results are a point in time rather than a swept interval, so the endpoint type is
+   * forced from the index and any cc_time the checker wrote is discarded. True for a discrete checker, and
+   * for a continuous checker asked to test a single state as a zero length cast.
    * @param filter An option filter to exclude results
    */
   void addInterpolatedCollisionResults(ContactResultMap& sub_segment_results,
@@ -211,7 +215,7 @@ public:
                                        long sub_segment_last_index,
                                        const std::unordered_set<tesseract::common::LinkId>& active_link_ids,
                                        double segment_dt,
-                                       bool discrete,
+                                       bool point_in_time,
                                        const ContactResultMap::FilterFn& filter = nullptr);
 
   // Flatten functions
