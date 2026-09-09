@@ -33,6 +33,18 @@ TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionSphereSphereConvexHullU
   test_suite::runTest(checker, true);
 }
 
+TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionSphereSphereZeroLengthCastUnit)  // NOLINT
+{
+  BulletCastSimpleManager checker;
+  test_suite::runZeroLengthCastTest(checker);
+}
+
+TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionSphereSphereZeroLengthCastUnit)  // NOLINT
+{
+  BulletCastBVHManager checker;
+  test_suite::runZeroLengthCastTest(checker);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

@@ -476,5 +476,46 @@ inline void runTest(ContinuousContactManager& checker, bool use_convex_mesh)
     detail::runTestPrimitive(checker);
 }
 
+/**
+ * @brief Cast an object from a pose to that same pose
+ *
+ * This is what a single-state check against a continuous manager produces. The contact sits in the
+ * same place at both ends of the sweep, so no time along it is any more correct than another and
+ * the midpoint is reported.
+ */
+inline void runZeroLengthCastTest(ContinuousContactManager& checker)
+{
+  const CollisionShapePtr sphere = std::make_shared<tesseract::geometry::Sphere>(0.25);
+  const CollisionShapesConst shapes{ sphere };
+  const tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+
+  const tesseract::common::LinkId active_link("active_sphere");
+  const tesseract::common::LinkId static_link("static_sphere");
+
+  checker.addCollisionObject(active_link, 0, shapes, poses);
+  checker.addCollisionObject(static_link, 0, shapes, poses);
+  checker.setActiveCollisionObjects({ active_link });
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+
+  // Centres 0.4 apart with radii of 0.25 leaves the pair overlapping by 0.1.
+  Eigen::Isometry3d active_pose = Eigen::Isometry3d::Identity();
+  active_pose.translation().x() = 0.4;
+  checker.setCollisionObjectsTransform(static_link, Eigen::Isometry3d::Identity());
+  checker.setCollisionObjectsTransform(active_link, active_pose, active_pose);
+
+  ContactResultMap result;
+  checker.contactTest(result, ContactRequest(ContactTestType::ALL));
+
+  ContactResultVector result_vector;
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_EQ(result_vector.size(), 1);
+  EXPECT_NEAR(result_vector[0].distance, -0.1, 1e-5);
+
+  const std::size_t idx = (result_vector[0].link_ids[0] == active_link) ? 0 : 1;
+  EXPECT_NEAR(result_vector[0].cc_time[idx], 0.5, 1e-5);
+  EXPECT_EQ(result_vector[0].cc_type[idx], ContinuousCollisionType::CCType_Between);
+}
+
 }  // namespace tesseract::collision::test_suite
 #endif  // TESSERACT_COLLISION_COLLISION_SPHERE_SPHERE_CAST_UNIT_HPP

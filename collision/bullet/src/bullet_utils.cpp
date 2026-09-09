@@ -795,6 +795,7 @@ void CastHullShape::calculateLocalInertia(btScalar, btVector3&) const
                            "a debugger and inspect the call stack to find the function in Bullet calling this "
                            "function, then review commit history to determine what change.");
 }
+// LCOV_EXCL_STOP
 
 void GetAverageSupport(const btConvexShape* shape, const btVector3& localNormal, btScalar& outsupport, btVector3& outpt)
 {
@@ -985,17 +986,13 @@ void calculateContinuousData(ContactResult* col,
   // TODO: this section is potentially problematic. think hard about the math
   if (shape_sup0 - shape_sup1 > BULLET_SUPPORT_FUNC_TOLERANCE)
   {
-    // LCOV_EXCL_START
     col->cc_time[link_index] = 0;
     col->cc_type[link_index] = ContinuousCollisionType::CCType_Time0;
-    // LCOV_EXCL_STOP
   }
   else if (shape_sup1 - shape_sup0 > BULLET_SUPPORT_FUNC_TOLERANCE)
   {
-    // LCOV_EXCL_START
     col->cc_time[link_index] = 1;
     col->cc_type[link_index] = ContinuousCollisionType::CCType_Time1;
-    // LCOV_EXCL_STOP
   }
   else
   {
@@ -1010,7 +1007,7 @@ void calculateContinuousData(ContactResult* col,
 
     if (l0c + l1c < BULLET_LENGTH_TOLERANCE)
     {
-      col->cc_time[link_index] = .5;  // LCOV_EXCL_LINE
+      col->cc_time[link_index] = .5;
     }
     else
     {
