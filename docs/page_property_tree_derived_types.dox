@@ -279,14 +279,43 @@ configuration shapes without manually repeating their schemas:
 auto schema = PropertyTreeBuilder()
     .attribute(property_attribute::TYPE, property_type::CONTAINER)
     // { default: string, plugins: Map[String, FactoryBaseType] }
-    .pluginContainer("executors", "my::ExecutorFactory")
+    .pluginContainer("executors", "my::ExecutorFactory", "Executor")
     // Map[String, { default: string, plugins: Map[String, FactoryBaseType] }]
-    .pluginContainerMap("kinematics", "my::KinematicsFactory")
+    .pluginContainerMap("kinematics", "my::KinematicsFactory", "Kinematics")
     .build();
 @endcode
 
 Both helpers arrange derived-type validation for plugin entries. They are self-closing, so no matching `done()` call
 is required. The `plugins` map inside a plugin container is required; represent an empty container as `plugins: {}`.
+
+`pluginContainer()` and `pluginContainerMap()` record the `boost_plugin_loader` section used to discover
+implementations. This allows generic configuration tools to discover compatible aliases and retrieve their schemas
+without depending on the concrete plugin factory. The section is mandatory because every plugin must belong to an
+export section:
+
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+  .attribute(property_attribute::TYPE, property_type::CONTAINER)
+  .attribute(property_attribute::CONFIG_KEY, "kinematic_plugins")
+  .pluginContainerMap("fwd_kin_plugins", "tesseract::kinematics::FwdKinFactory", "FwdKin")
+  .pluginContainerMap("inv_kin_plugins", "tesseract::kinematics::InvKinFactory", "InvKin")
+  .build();
+@endcode
+
+For a direct `PluginInfoContainer`, such as a contact-manager configuration, use the corresponding overload:
+
+@code{.cpp}
+auto schema = PropertyTreeBuilder()
+  .attribute(property_attribute::TYPE, property_type::CONTAINER)
+  .attribute(property_attribute::CONFIG_KEY, "contact_manager_plugins")
+  .pluginContainer("discrete_plugins", "tesseract::collision::DiscreteContactManagerFactory", "DiscColl")
+  .pluginContainer("continuous_plugins", "tesseract::collision::ContinuousContactManagerFactory", "ContColl")
+  .build();
+@endcode
+
+These helpers attach `plugin_base_type` and `plugin_section` attributes to the container node. `config_key` identifies
+an optional outer YAML document key. Discovery input fields can be identified with
+`plugin_discovery_role`, whose standard values are `search_paths` and `search_libraries`.
 
 @subsection ptdt_single Single Entry Example
 

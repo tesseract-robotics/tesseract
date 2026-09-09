@@ -14,6 +14,7 @@ files with C++ applications. It provides:
 - <b>Custom Validation</b>: Attach domain-specific validator functions to properties
 - <b>Type Safety</b>: Enforce type constraints (int, string, double, enums, sequences, maps, etc.)
 - <b>Range Constraints</b>: Enforce minimum/maximum values for numeric properties
+- <b>String Constraints</b>: Enforce minimum/maximum lengths for string properties
 - <b>UI Generation</b>: Use metadata to auto-generate configuration UI
 
 @section pt_architecture Architecture
@@ -66,6 +67,8 @@ PropertyTree supports metadata attributes that control behavior and appearance:
 - `enum`: List of allowed string values
 - `minimum`: Minimum value for numeric types
 - `maximum`: Maximum value for numeric types
+- `minimum_length`: Minimum string length
+- `maximum_length`: Maximum string length
 
 <b>GUI Metadata:</b>
 - `label`: Display name (e.g., "Robot Name")
@@ -121,6 +124,8 @@ auto schema = PropertyTreeBuilder()
         .doc("Main configuration")
         .string("name")
             .required()
+            .minimumLength(1)
+            .maximumLength(64)
             .doc("Application name")
             .label("App Name")
             .placeholder("my_app")
@@ -144,6 +149,7 @@ OneOf methods: `beginOneOf` / `endOneOf` (for inline oneOf groups within a conta
 Plugin methods: `acceptsDerivedTypes`, `pluginContainer`, `pluginContainerMap`
 
 Attribute setters: `doc`, `required`, `defaultVal`, `enumValues`, `minimum`, `maximum`,
+`minimumLength`, `maximumLength`,
 `label`, `placeholder`, `group`, `readOnly`, `hidden`, `validator`, `attribute`
 
 @subsection pt_compose Schema Composition

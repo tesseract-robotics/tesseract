@@ -54,8 +54,20 @@ PropertyTree pluginDiscoverySchema()
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
-      .customType("search_paths", createList(STRING)).validator(validateStringList).done()
-      .customType("search_libraries", createList(STRING)).validator(validateStringList).done()
+      .customType("search_paths", createList(STRING))
+        .label("Search Paths")
+        .group("Plugin Discovery")
+        .doc("Directories searched for plugin libraries. Environment and package defaults are also used.")
+        .attribute(PLUGIN_DISCOVERY_ROLE, plugin_discovery_role::SEARCH_PATHS)
+        .validator(validateStringList)
+        .done()
+      .customType("search_libraries", createList(STRING))
+        .label("Search Libraries")
+        .group("Plugin Discovery")
+        .doc("Plugin libraries to load in addition to the libraries provided by the installed package.")
+        .attribute(PLUGIN_DISCOVERY_ROLE, plugin_discovery_role::SEARCH_LIBRARIES)
+        .validator(validateStringList)
+        .done()
       .build();
   // clang-format on
 }
@@ -109,39 +121,65 @@ PropertyTree YAML::convert<tesseract::common::PluginDiscoveryInfo>::schema() { r
 PropertyTree YAML::convert<tesseract::common::KinematicsPluginInfo>::schema()
 {
   // clang-format off
-  return PropertyTreeBuilder()
+  auto schema = PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
+      .attribute(CONFIG_KEY, tesseract::common::KinematicsPluginInfo::CONFIG_KEY)
       .compose(pluginDiscoverySchema())
-      .pluginContainerMap("fwd_kin_plugins", "tesseract::kinematics::FwdKinFactory")
-      .pluginContainerMap("inv_kin_plugins", "tesseract::kinematics::InvKinFactory")
+      .pluginContainerMap("fwd_kin_plugins", "tesseract::kinematics::FwdKinFactory", "FwdKin")
+      .pluginContainerMap("inv_kin_plugins", "tesseract::kinematics::InvKinFactory", "InvKin")
       .build();
   // clang-format on
+  schema.at("fwd_kin_plugins").setAttribute(LABEL, "Forward Kinematics Plugins");
+  schema.at("fwd_kin_plugins").setAttribute(GROUP, "Kinematics Plugins");
+  schema.at("fwd_kin_plugins").setAttribute(DOC, "Forward-kinematics plugin sets organized by manipulator.");
+  schema.at("inv_kin_plugins").setAttribute(LABEL, "Inverse Kinematics Plugins");
+  schema.at("inv_kin_plugins").setAttribute(GROUP, "Kinematics Plugins");
+  schema.at("inv_kin_plugins").setAttribute(DOC, "Inverse-kinematics plugin sets organized by manipulator.");
+  return schema;
 }
 
 // ================================ ContactManagersPluginInfo ================================
 PropertyTree YAML::convert<tesseract::common::ContactManagersPluginInfo>::schema()
 {
   // clang-format off
-  return PropertyTreeBuilder()
+  auto schema = PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
+      .attribute(CONFIG_KEY, tesseract::common::ContactManagersPluginInfo::CONFIG_KEY)
       .compose(pluginDiscoverySchema())
-      .pluginContainer("discrete_plugins", "tesseract::collision::DiscreteContactManagerFactory")
-      .pluginContainer("continuous_plugins", "tesseract::collision::ContinuousContactManagerFactory")
+      .pluginContainer("discrete_plugins", "tesseract::collision::DiscreteContactManagerFactory", "DiscColl")
+      .pluginContainer("continuous_plugins", "tesseract::collision::ContinuousContactManagerFactory", "ContColl")
       .build();
   // clang-format on
+  schema.at("discrete_plugins").setAttribute(LABEL, "Discrete Contact Managers");
+  schema.at("discrete_plugins").setAttribute(GROUP, "Collision Plugins");
+  schema.at("discrete_plugins")
+      .setAttribute(DOC, "Available discrete collision-checking plugins and the default selection.");
+  schema.at("continuous_plugins").setAttribute(LABEL, "Continuous Contact Managers");
+  schema.at("continuous_plugins").setAttribute(GROUP, "Collision Plugins");
+  schema.at("continuous_plugins")
+      .setAttribute(DOC, "Available continuous collision-checking plugins and the default selection.");
+  return schema;
 }
 
 // ================================ TaskComposerPluginInfo ================================
 PropertyTree YAML::convert<tesseract::common::TaskComposerPluginInfo>::schema()
 {
   // clang-format off
-  return PropertyTreeBuilder()
+  auto schema = PropertyTreeBuilder()
       .attribute(TYPE, CONTAINER)
+      .attribute(CONFIG_KEY, tesseract::common::TaskComposerPluginInfo::CONFIG_KEY)
       .compose(pluginDiscoverySchema())
-      .pluginContainer("executors", "tesseract::task_composer::TaskComposerExecutorFactory")
-      .pluginContainer("tasks", "tesseract::task_composer::TaskComposerNodeFactory")
+      .pluginContainer("executors", "tesseract::task_composer::TaskComposerExecutorFactory", "TaskExec")
+      .pluginContainer("tasks", "tesseract::task_composer::TaskComposerNodeFactory", "TaskNode")
       .build();
   // clang-format on
+  schema.at("executors").setAttribute(LABEL, "Task Executors");
+  schema.at("executors").setAttribute(GROUP, "Task Composer Plugins");
+  schema.at("executors").setAttribute(DOC, "Task-composer executor plugins and the default executor.");
+  schema.at("tasks").setAttribute(LABEL, "Task Nodes");
+  schema.at("tasks").setAttribute(GROUP, "Task Composer Plugins");
+  schema.at("tasks").setAttribute(DOC, "Task-composer node plugins available to task graphs.");
+  return schema;
 }
 
 // ================================ JointIdTransformMap ================================

@@ -94,8 +94,16 @@ constexpr std::string_view DEFAULT{ "default" };
 constexpr std::string_view ENUM{ "enum" };
 constexpr std::string_view MINIMUM{ "minimum" };
 constexpr std::string_view MAXIMUM{ "maximum" };
+constexpr std::string_view MINIMUM_LENGTH{ "minimum_length" };
+constexpr std::string_view MAXIMUM_LENGTH{ "maximum_length" };
 constexpr std::string_view ACCEPTS_DERIVED_TYPES{ "accepts_derived_types" }; /**< Allow derived types for custom type
                                                                                   validation */
+
+// Plugin discovery metadata attributes
+constexpr std::string_view CONFIG_KEY{ "config_key" }; /**< YAML document key containing this schema */
+constexpr std::string_view PLUGIN_DISCOVERY_ROLE{ "plugin_discovery_role" }; /**< Role of a loader input property */
+constexpr std::string_view PLUGIN_SECTION{ "plugin_section" };               /**< boost_plugin_loader export section */
+constexpr std::string_view PLUGIN_BASE_TYPE{ "plugin_base_type" };           /**< Registered plugin factory base type */
 
 // GUI metadata attributes
 constexpr std::string_view LABEL{ "label" };             /**< Display name for the property (e.g. "Format Result") */
@@ -104,6 +112,12 @@ constexpr std::string_view GROUP{ "group" };             /**< Category/section f
 constexpr std::string_view READ_ONLY{ "read_only" };     /**< If true, the property is not user-editable */
 constexpr std::string_view HIDDEN{ "hidden" };           /**< If true, the property is hidden from the GUI */
 }  // namespace property_attribute
+
+namespace plugin_discovery_role
+{
+constexpr std::string_view SEARCH_PATHS{ "search_paths" };
+constexpr std::string_view SEARCH_LIBRARIES{ "search_libraries" };
+}  // namespace plugin_discovery_role
 
 /**
  * @file property_tree.h
@@ -463,6 +477,8 @@ public:
   PropertyTreeBuilder& minimum(double val);
   PropertyTreeBuilder& maximum(int val);
   PropertyTreeBuilder& maximum(double val);
+  PropertyTreeBuilder& minimumLength(std::size_t length);
+  PropertyTreeBuilder& maximumLength(std::size_t length);
   PropertyTreeBuilder& label(std::string_view text);
   PropertyTreeBuilder& placeholder(std::string_view text);
   PropertyTreeBuilder& group(std::string_view text);
@@ -483,24 +499,24 @@ public:
   /** @name Plugin helpers -- self-closing convenience methods for PluginInfoContainer schemas. */
   ///@{
   /**
-   * @brief Create a PluginInfoContainer child: { default (string), plugins (Map of derived types) }.
-   * Self-closing — does not push a scope; no done() call needed.
-   * @param name                Child property name (e.g. "discrete_plugins").
-   * @param factory_base_type   Fully-qualified factory base class (e.g.
-   *                            "tesseract::collision::DiscreteContactManagerFactory").
+   * @brief Create a PluginInfoContainer child with plugin discovery metadata.
+   * @param name Child property name.
+   * @param factory_base_type Fully-qualified factory base class.
+   * @param plugin_section boost_plugin_loader export section containing compatible plugins.
    */
-  PropertyTreeBuilder& pluginContainer(std::string_view name, std::string_view factory_base_type);
+  PropertyTreeBuilder& pluginContainer(std::string_view name,
+                                       std::string_view factory_base_type,
+                                       std::string_view plugin_section);
 
   /**
-   * @brief Create a Map[string, PluginInfoContainer] child.
-   *
-   * Registers an intermediate PluginInfoContainer schema under the key
-   * "<factory_base_type>::PluginInfoContainer" (idempotent) and creates a map
-   * type that references it.  Self-closing — no done() call needed.
-   * @param name                Child property name (e.g. "fwd_kin_plugins").
-   * @param factory_base_type   Fully-qualified factory base class.
+   * @brief Create a Map[string, PluginInfoContainer] child with plugin discovery metadata.
+   * @param name Child property name.
+   * @param factory_base_type Fully-qualified factory base class.
+   * @param plugin_section boost_plugin_loader export section containing compatible plugins.
    */
-  PropertyTreeBuilder& pluginContainerMap(std::string_view name, std::string_view factory_base_type);
+  PropertyTreeBuilder& pluginContainerMap(std::string_view name,
+                                          std::string_view factory_base_type,
+                                          std::string_view plugin_section);
   ///@}
 
   /**
@@ -565,6 +581,14 @@ void validateRequired(const PropertyTree& node, const std::string& path, std::ve
  * @param errors Output vector to append errors to.
  */
 void validateEnum(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors);
+
+/**
+ * @brief Validator: enforce minimum_length and maximum_length constraints on strings.
+ * @param node   Node to validate.
+ * @param path   Dot-separated path for error messages.
+ * @param errors Output vector to append errors to.
+ */
+void validateStringLength(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors);
 
 /**
  * @brief Validator: ensure node value is of type YAML::NodeType::Map

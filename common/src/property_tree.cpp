@@ -401,6 +401,7 @@ void PropertyTree::setAttribute(std::string_view name, const YAML::Node& attr)
 
   // Rebuild auto-validators whenever a relevant attribute changes
   if (name == property_attribute::REQUIRED || name == property_attribute::ENUM || name == property_attribute::TYPE ||
+      name == property_attribute::MINIMUM_LENGTH || name == property_attribute::MAXIMUM_LENGTH ||
       name == property_attribute::ACCEPTS_DERIVED_TYPES)
     rebuildAutoValidators();
 }
@@ -462,7 +463,11 @@ void PropertyTree::rebuildAutoValidators()
       if (str_type == property_type::CONTAINER)
         auto_validators_.emplace_back(validateContainer);
       else if (str_type == property_type::STRING)
+      {
         auto_validators_.emplace_back(validateTypeCast<std::string>);
+        if (hasAttribute(property_attribute::MINIMUM_LENGTH) || hasAttribute(property_attribute::MAXIMUM_LENGTH))
+          auto_validators_.emplace_back(validateStringLength);
+      }
       else if (str_type == property_type::BOOL)
         auto_validators_.emplace_back(validateTypeCast<bool>);
       else if (str_type == property_type::CHAR)
@@ -895,6 +900,18 @@ PropertyTreeBuilder& PropertyTreeBuilder::maximum(double val)
   return *this;
 }
 
+PropertyTreeBuilder& PropertyTreeBuilder::minimumLength(std::size_t length)
+{
+  current().setAttribute(property_attribute::MINIMUM_LENGTH, YAML::Node(length));
+  return *this;
+}
+
+PropertyTreeBuilder& PropertyTreeBuilder::maximumLength(std::size_t length)
+{
+  current().setAttribute(property_attribute::MAXIMUM_LENGTH, YAML::Node(length));
+  return *this;
+}
+
 PropertyTreeBuilder& PropertyTreeBuilder::label(std::string_view text)
 {
   current().setAttribute(property_attribute::LABEL, text);
@@ -960,7 +977,9 @@ PropertyTreeBuilder& PropertyTreeBuilder::beginOneOf()
 
 PropertyTreeBuilder& PropertyTreeBuilder::endOneOf() { return done(); }
 
-PropertyTreeBuilder& PropertyTreeBuilder::pluginContainer(std::string_view name, std::string_view factory_base_type)
+PropertyTreeBuilder& PropertyTreeBuilder::pluginContainer(std::string_view name,
+                                                          std::string_view factory_base_type,
+                                                          std::string_view plugin_section)
 {
   // clang-format off
   container(name);
@@ -971,10 +990,14 @@ PropertyTreeBuilder& PropertyTreeBuilder::pluginContainer(std::string_view name,
     .done();
   done();
   // clang-format on
+  current().at(name).setAttribute(property_attribute::PLUGIN_BASE_TYPE, factory_base_type);
+  current().at(name).setAttribute(property_attribute::PLUGIN_SECTION, plugin_section);
   return *this;
 }
 
-PropertyTreeBuilder& PropertyTreeBuilder::pluginContainerMap(std::string_view name, std::string_view factory_base_type)
+PropertyTreeBuilder& PropertyTreeBuilder::pluginContainerMap(std::string_view name,
+                                                             std::string_view factory_base_type,
+                                                             std::string_view plugin_section)
 {
   // Register the inner PluginInfoContainer schema idempotently
   std::string registry_key = std::string(factory_base_type) + "::PluginInfoContainer";
@@ -984,6 +1007,8 @@ PropertyTreeBuilder& PropertyTreeBuilder::pluginContainerMap(std::string_view na
 
   // Create a Map[string, <registry_key>] child with custom type validation
   customType(name, property_type::createMap(registry_key)).done();
+  current().at(name).setAttribute(property_attribute::PLUGIN_BASE_TYPE, factory_base_type);
+  current().at(name).setAttribute(property_attribute::PLUGIN_SECTION, plugin_section);
   return *this;
 }
 
@@ -1097,6 +1122,35 @@ void validateEnum(const PropertyTree& node, const std::string& path, std::vector
       msg += val;
       msg += "' not in enum list";
       errors.push_back(msg);
+    }
+  }
+}
+
+void validateStringLength(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors)
+{
+  if (!node.getValue().IsScalar())
+    return;
+
+  const std::size_t length = node.getValue().as<std::string>().size();
+  const auto minimum = node.getAttribute(property_attribute::MINIMUM_LENGTH);
+  if (minimum.has_value())
+  {
+    const std::size_t minimum_length = minimum->as<std::size_t>();
+    if (length < minimum_length)
+    {
+      errors.push_back(path + ": string length " + std::to_string(length) + " is less than minimum " +
+                       std::to_string(minimum_length));
+    }
+  }
+
+  const auto maximum = node.getAttribute(property_attribute::MAXIMUM_LENGTH);
+  if (maximum.has_value())
+  {
+    const std::size_t maximum_length = maximum->as<std::size_t>();
+    if (length > maximum_length)
+    {
+      errors.push_back(path + ": string length " + std::to_string(length) + " is greater than maximum " +
+                       std::to_string(maximum_length));
     }
   }
 }

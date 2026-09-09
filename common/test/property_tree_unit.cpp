@@ -76,6 +76,74 @@ TEST(PluginDiscoverySchema, InvalidMetadataTypes)  // NOLINT
   }
 }
 
+TEST(PluginDiscoverySchema, DeclaresDiscoveryRoles)  // NOLINT
+{
+  const auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
+
+  const auto search_paths_role = schema.at("search_paths").getAttribute(PLUGIN_DISCOVERY_ROLE);
+  ASSERT_TRUE(search_paths_role.has_value());
+  EXPECT_EQ(search_paths_role->as<std::string>(), plugin_discovery_role::SEARCH_PATHS);
+
+  const auto search_libraries_role = schema.at("search_libraries").getAttribute(PLUGIN_DISCOVERY_ROLE);
+  ASSERT_TRUE(search_libraries_role.has_value());
+  EXPECT_EQ(search_libraries_role->as<std::string>(), plugin_discovery_role::SEARCH_LIBRARIES);
+}
+
+TEST(PluginDiscoverySchema, KinematicsDeclaresPluginSections)  // NOLINT
+{
+  const auto schema = YAML::convert<KinematicsPluginInfo>::schema();
+
+  const auto config_key = schema.getAttribute(CONFIG_KEY);
+  ASSERT_TRUE(config_key.has_value());
+  EXPECT_EQ(config_key->as<std::string>(), KinematicsPluginInfo::CONFIG_KEY);
+
+  const auto& fwd_plugins = schema.at("fwd_kin_plugins");
+  EXPECT_EQ(fwd_plugins.getAttribute(PLUGIN_SECTION)->as<std::string>(), "FwdKin");
+  EXPECT_EQ(fwd_plugins.getAttribute(PLUGIN_BASE_TYPE)->as<std::string>(), "tesseract::kinematics::FwdKinFactory");
+
+  const auto& inv_plugins = schema.at("inv_kin_plugins");
+  EXPECT_EQ(inv_plugins.getAttribute(PLUGIN_SECTION)->as<std::string>(), "InvKin");
+  EXPECT_EQ(inv_plugins.getAttribute(PLUGIN_BASE_TYPE)->as<std::string>(), "tesseract::kinematics::InvKinFactory");
+}
+
+TEST(PluginDiscoverySchema, ContactManagersDeclarePluginSections)  // NOLINT
+{
+  const auto schema = YAML::convert<ContactManagersPluginInfo>::schema();
+
+  const auto config_key = schema.getAttribute(CONFIG_KEY);
+  ASSERT_TRUE(config_key.has_value());
+  EXPECT_EQ(config_key->as<std::string>(), ContactManagersPluginInfo::CONFIG_KEY);
+
+  const auto& discrete_plugins = schema.at("discrete_plugins");
+  EXPECT_EQ(discrete_plugins.getAttribute(PLUGIN_SECTION)->as<std::string>(), "DiscColl");
+  EXPECT_EQ(discrete_plugins.getAttribute(PLUGIN_BASE_TYPE)->as<std::string>(),
+            "tesseract::collision::DiscreteContactManagerFactory");
+
+  const auto& continuous_plugins = schema.at("continuous_plugins");
+  EXPECT_EQ(continuous_plugins.getAttribute(PLUGIN_SECTION)->as<std::string>(), "ContColl");
+  EXPECT_EQ(continuous_plugins.getAttribute(PLUGIN_BASE_TYPE)->as<std::string>(),
+            "tesseract::collision::ContinuousContactManagerFactory");
+}
+
+TEST(PluginDiscoverySchema, TaskComposerDeclaresPluginSections)  // NOLINT
+{
+  const auto schema = YAML::convert<TaskComposerPluginInfo>::schema();
+
+  const auto config_key = schema.getAttribute(CONFIG_KEY);
+  ASSERT_TRUE(config_key.has_value());
+  EXPECT_EQ(config_key->as<std::string>(), TaskComposerPluginInfo::CONFIG_KEY);
+
+  const auto& executors = schema.at("executors");
+  EXPECT_EQ(executors.getAttribute(PLUGIN_SECTION)->as<std::string>(), "TaskExec");
+  EXPECT_EQ(executors.getAttribute(PLUGIN_BASE_TYPE)->as<std::string>(),
+            "tesseract::task_composer::TaskComposerExecutorFactory");
+
+  const auto& tasks = schema.at("tasks");
+  EXPECT_EQ(tasks.getAttribute(PLUGIN_SECTION)->as<std::string>(), "TaskNode");
+  EXPECT_EQ(tasks.getAttribute(PLUGIN_BASE_TYPE)->as<std::string>(),
+            "tesseract::task_composer::TaskComposerNodeFactory");
+}
+
 // ===========================================================================
 //  PropertyTree – Core API
 // ===========================================================================
@@ -657,6 +725,24 @@ TEST(PropertyTreeValidate, EnumValidationFails)  // NOLINT
   EXPECT_FALSE(errors.empty());
 }
 
+TEST(PropertyTreeValidate, StringLengthConstraints)  // NOLINT
+{
+  auto schema = PropertyTreeBuilder().string("name").minimumLength(2).maximumLength(5).done().build();
+
+  schema.mergeConfig(YAML::Load("name: a"));
+  auto errors = schema.validate();
+  ASSERT_EQ(errors.size(), 1U);
+  EXPECT_NE(errors.front().find("string length 1 is less than minimum 2"), std::string::npos);
+
+  schema.mergeConfig(YAML::Load("name: valid"));
+  EXPECT_TRUE(schema.validate().empty());
+
+  schema.mergeConfig(YAML::Load("name: too_long"));
+  errors = schema.validate();
+  ASSERT_EQ(errors.size(), 1U);
+  EXPECT_NE(errors.front().find("string length 8 is greater than maximum 5"), std::string::npos);
+}
+
 TEST(PropertyTreeValidate, IntRangePass)  // NOLINT
 {
   PropertyTree schema;
@@ -1021,6 +1107,18 @@ TEST(PropertyTreeBuilder, EnumAndRange)  // NOLINT
   auto enum_attr = child.getAttribute(ENUM);
   ASSERT_TRUE(enum_attr.has_value());
   EXPECT_EQ(enum_attr->size(), 3U);  // NOLINT
+}
+
+TEST(PropertyTreeBuilder, StringLength)  // NOLINT
+{
+  auto tree = PropertyTreeBuilder().string("name").minimumLength(1).maximumLength(64).done().build();
+
+  const auto minimum_length = tree.at("name").getAttribute(MINIMUM_LENGTH);
+  ASSERT_TRUE(minimum_length.has_value());
+  EXPECT_EQ(minimum_length->as<std::size_t>(), 1U);
+  const auto maximum_length = tree.at("name").getAttribute(MAXIMUM_LENGTH);
+  ASSERT_TRUE(maximum_length.has_value());
+  EXPECT_EQ(maximum_length->as<std::size_t>(), 64U);
 }
 
 TEST(PropertyTreeBuilder, DefaultValues)  // NOLINT
@@ -2691,7 +2789,8 @@ TEST(PropertyTreeInlineOneOf, RejectsParentPropertyConflict)  // NOLINT
 
 TEST(PropertyTreePluginContainer, PluginsIsRequired)  // NOLINT
 {
-  auto schema = PropertyTreeBuilder().pluginContainer("container", "test::RequiredPluginBase").build();
+  auto schema =
+      PropertyTreeBuilder().pluginContainer("container", "test::RequiredPluginBase", "RequiredPlugin").build();
 
   YAML::Node config;
   config["container"]["default"] = "plugin";
@@ -2705,7 +2804,7 @@ TEST(PropertyTreePluginContainer, PluginsIsRequired)  // NOLINT
 
 TEST(PropertyTreePluginContainer, EmptyPluginsMapIsValid)  // NOLINT
 {
-  auto schema = PropertyTreeBuilder().pluginContainer("container", "test::EmptyPluginBase").build();
+  auto schema = PropertyTreeBuilder().pluginContainer("container", "test::EmptyPluginBase", "EmptyPlugin").build();
 
   YAML::Node config;
   config["container"]["plugins"] = YAML::Node(YAML::NodeType::Map);

@@ -44,8 +44,8 @@ tesseract::common::PropertyTree kdlFwdKinChainFactorySchema()
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(property_attribute::TYPE, property_type::CONTAINER)
-      .string("base_link").required().done()
-      .string("tip_link").required().done()
+      .string("base_link").required().minimumLength(1).done()
+      .string("tip_link").required().minimumLength(1).done()
       .build();
   // clang-format on
 }
@@ -56,8 +56,8 @@ tesseract::common::PropertyTree kdlInvKinChainLMAFactorySchema()
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(property_attribute::TYPE, property_type::CONTAINER)
-      .string("base_link").required().done()
-      .string("tip_link").required().done()
+      .string("base_link").required().minimumLength(1).done()
+      .string("tip_link").required().minimumLength(1).done()
       .eigenVectorXd("task_weights").done()
       .float64("eps").done()
       .int32("max_iterations").done()
@@ -72,8 +72,8 @@ tesseract::common::PropertyTree kdlInvKinChainNRFactorySchema()
   // clang-format off
   return PropertyTreeBuilder()
       .attribute(property_attribute::TYPE, property_type::CONTAINER)
-      .string("base_link").required().done()
-      .string("tip_link").required().done()
+      .string("base_link").required().minimumLength(1).done()
+      .string("tip_link").required().minimumLength(1).done()
       .float64("velocity_eps").done()
       .int32("velocity_iterations").done()
       .float64("position_eps").done()
