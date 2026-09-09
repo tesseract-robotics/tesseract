@@ -3042,6 +3042,10 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
   traj5.row(0) = joint_start_pos;
   traj5.row(1) = joint_pos_collision;
 
+  // A single state, so it is both the start and the end of the trajectory
+  tesseract::common::TrajArray traj6(1, joint_start_pos.size());
+  traj6.row(0) = joint_pos_collision;
+
   // Use Bullet explicitly — expected contact counts are calibrated for Bullet.
   env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
   env->setActiveContinuousContactManager("BulletCastBVHManager");
@@ -3092,7 +3096,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3203,7 +3207,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_TRUE(traj2_one_per_step_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(traj2_one_per_step_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3292,7 +3296,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.at(2).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(4));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3359,7 +3363,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3392,6 +3396,23 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
+  }
+
+  {  // CollisionEvaluatorType::DISCRETE && a single-state trajectory
+    // The one state is both the trajectory's start and its end. The start wins the tie, so the
+    // contact is typed Time0 at cc_time 0 rather than Time1.
+    tesseract::collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::DISCRETE;
+    config.check_program_mode = CollisionCheckProgramType::ALL;
+    config.exit_condition = CollisionCheckExitType::ALL;
+    std::vector<tesseract::collision::ContactResultMap> contacts;
+    EXPECT_TRUE(checkTrajectory(contacts, *discrete_manager, *state_solver, joint_ids, traj6, config));
+    EXPECT_EQ(contacts.size(), 1);
+    EXPECT_EQ(contacts.at(0).size(), 2);
+    EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
+    checkProcessInterpolatedResultsNoTime1(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
   }
 
@@ -3568,7 +3589,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_TRUE(traj2_step1.state0.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(traj2_step1.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3624,7 +3645,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj5_step1.numContacts(), static_cast<int>(2));
     EXPECT_TRUE(traj5_step1.state0.isApprox(traj5.row(1).transpose(), 1e-6));
     EXPECT_TRUE(traj5_step1.state1.isApprox(traj5.row(1).transpose(), 1e-6));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
 
@@ -3709,7 +3730,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj5_first_step1.numContacts(), static_cast<int>(2));
     EXPECT_TRUE(traj5_first_step1.state0.isApprox(traj5.row(1).transpose(), 1e-6));
     EXPECT_TRUE(traj5_first_step1.state1.isApprox(traj5.row(1).transpose(), 1e-6));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
 
@@ -3808,7 +3829,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(traj5_one_per_step_step1.numContacts(), static_cast<int>(2));
     EXPECT_TRUE(traj5_one_per_step_step1.state0.isApprox(traj5.row(1).transpose(), 1e-6));
     EXPECT_TRUE(traj5_one_per_step_step1.state1.isApprox(traj5.row(1).transpose(), 1e-6));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
   }
@@ -3900,7 +3921,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.at(2).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(4));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -3927,7 +3948,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.at(0).size(), 0);
     EXPECT_EQ(contacts.at(1).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(1)));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
   }
@@ -3998,8 +4019,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
-    checkProcessInterpolatedResultsNoTime1(contacts.at(0));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -4215,7 +4236,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_TRUE(traj2_substep0.state1.isApprox(traj2.row(1).transpose(), 1e-6));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -4487,7 +4508,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(125));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -4562,8 +4583,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
-    checkProcessInterpolatedResultsNoTime1(contacts.at(0));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
@@ -4621,7 +4642,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.at(1).size(), 2);
     EXPECT_EQ(contacts.at(2).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(4));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResultsNoTime1(contacts.at(1));
     checkProcessInterpolatedResults(contacts);
   }
@@ -4684,7 +4705,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.at(2).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(4));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
   }
 
@@ -4780,7 +4801,7 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(125));
     checkProcessInterpolatedResultsNoTime0(contacts.at(0));
     EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(1)));
-    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(2)));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(2)));
     checkProcessInterpolatedResults(contacts);
   }
 
@@ -5018,6 +5039,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
     EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
@@ -5048,6 +5071,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
   }
 
   {
@@ -5375,6 +5400,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
     EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
@@ -5406,6 +5433,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
   }
 
   {
@@ -5813,6 +5842,8 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
 
     contacts.clear();
     EXPECT_FALSE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj3, config));
@@ -5843,6 +5874,29 @@ TEST(TesseractEnvironmentUnit, checkTrajectoryUnit)  // NOLINT
     EXPECT_EQ(contacts.size(), 1);
     EXPECT_EQ(contacts.at(0).size(), 2);
     EXPECT_EQ(getContactCount(contacts), static_cast<int>(2));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime0(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
+  }
+
+  {  // CollisionEvaluatorType::LVS_CONTINUOUS, sub-segments long enough to resolve the segment end
+    // traj2's first step travels into collision and ends there, so the contact in its final
+    // sub-segment lies at the end of the segment and must be typed Time1 with a cc_time of 1, the
+    // same as when the segment is not subdivided at all. The sub-segments have to be long enough for
+    // the continuous checker to place the contact decisively at the sub-segment end; the default
+    // length interpolates finely enough that every contact is genuinely between its two sub-states.
+    tesseract::collision::CollisionCheckConfig config;
+    config.type = CollisionEvaluatorType::LVS_CONTINUOUS;
+    config.longest_valid_segment_length = 0.1;
+    config.check_program_mode = CollisionCheckProgramType::ALL;
+    config.exit_condition = CollisionCheckExitType::ALL;
+    std::vector<tesseract::collision::ContactResultMap> contacts;
+    EXPECT_TRUE(checkTrajectory(contacts, *continuous_manager, *state_solver, joint_ids, traj2, config));
+    EXPECT_EQ(contacts.size(), 2);
+    EXPECT_EQ(contacts.at(0).size(), 2);
+    EXPECT_EQ(contacts.at(1).size(), 2);
+    EXPECT_EQ(getContactCount(contacts), static_cast<int>(7));
+    EXPECT_TRUE(hasProcessInterpolatedResultsTime1(contacts.at(0)));
+    checkProcessInterpolatedResults(contacts);
   }
 
   {

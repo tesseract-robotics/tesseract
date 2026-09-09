@@ -196,9 +196,11 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
     if (!sub_state_results.empty())
     {
       traj_contacts.addContact(0, 0, 1, traj.row(0), traj.row(0), traj.row(0), traj.row(0), sub_state_results);
-      // Always use addInterpolatedCollisionResults so cc_type is defined correctly
+      // Always use addInterpolatedCollisionResults so cc_type is defined correctly.
+      // The manager tests this one state as a zero length cast, so the contact is a point in time
+      // rather than a sweep, and the state is the trajectory's start by definition of START_ONLY.
       state_results.addInterpolatedCollisionResults(
-          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, false);
+          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
       if (debug_logging)
         printContinuousDebugInfo(joint_names, traj.row(0), traj.row(0), 0, traj.rows() - 1);
     }
@@ -223,9 +225,11 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                traj.row(traj.rows() - 1),
                                traj.row(traj.rows() - 1),
                                sub_state_results);
-      // Always use addInterpolatedCollisionResults so cc_type is defined correctly
+      // Always use addInterpolatedCollisionResults so cc_type is defined correctly.
+      // The manager tests this one state as a zero length cast, so the contact is a point in time
+      // rather than a sweep, and the state is the trajectory's end by definition of END_ONLY.
       state_results.addInterpolatedCollisionResults(
-          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, false);
+          sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1.0, true);
       if (debug_logging)
         printContinuousDebugInfo(joint_names, traj.row(traj.rows() - 1), traj.row(traj.rows() - 1), 0, traj.rows() - 1);
     }
@@ -252,7 +256,12 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
             std::make_unique<tesseract::collision::ContactTrajectoryStepResults>(
                 static_cast<int>(iStep + 1), traj.row(iStep), traj.row(iStep + 1), static_cast<int>(subtraj.rows()));
 
-        auto sub_segment_last_index = static_cast<int>(subtraj.rows() - 1);
+        // n sub-states give n - 1 casts, so the cast marking the segment end is one below the
+        // count. The count keeps the time normalisation: cast i spans [i * dt, (i + 1) * dt].
+        // The index stays independent of end_idx: when a check_program_mode trims end_idx, the
+        // last cast visited is not the segment end and a contact there is genuinely between.
+        const auto sub_segment_count = static_cast<int>(subtraj.rows() - 1);
+        const int sub_segment_last_index = sub_segment_count - 1;
 
         // Update start index based on collision check program mode
         tesseract::common::TrajArray::Index start_idx{ 0 };
@@ -288,7 +297,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                      subtraj.row(iSubStep + 1),
                                      sub_state_results);
 
-            double segment_dt = (sub_segment_last_index > 0) ? 1.0 / static_cast<double>(sub_segment_last_index) : 0.0;
+            double segment_dt = (sub_segment_count > 0) ? 1.0 / static_cast<double>(sub_segment_count) : 0.0;
             // Always use addInterpolatedCollisionResults so cc_type is defined correctly
             state_results.addInterpolatedCollisionResults(sub_state_results,
                                                           iSubStep,
@@ -500,9 +509,10 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                traj.row(traj.rows() - 1),
                                traj.row(traj.rows() - 1),
                                sub_state_results);
-      // Always use addInterpolatedCollisionResults so cc_type is defined correctly
+      // Always use addInterpolatedCollisionResults so cc_type is defined correctly.
+      // This check is the trajectory's true final state by definition of END_ONLY: tag it Time1.
       state_results.addInterpolatedCollisionResults(
-          sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+          sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1.0, true);
       if (debug_logging)
         printDiscreteDebugInfo(joint_names, traj.row(traj.rows() - 1), 0, traj.rows() - 1);
     }
@@ -551,6 +561,10 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
         for (tesseract::common::TrajArray::Index iVar = 0; iVar < traj.cols(); ++iVar)
           subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, traj.row(iStep)(iVar), traj.row(iStep + 1)(iVar));
 
+        // The loop below stops one sub-state short of this index, so the Time1 arm never fires
+        // from here. The sub-state it skips is the segment's end waypoint, which is checked
+        // either as the next segment's first state or, on the last segment, by the end-state
+        // block after the loop.
         auto sub_segment_last_index = static_cast<int>(subtraj.rows() - 1);
 
         // Update start index based on collision check program mode
@@ -649,8 +663,9 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                        traj.row(iStep + 1),
                                        traj.row(iStep + 1),
                                        sub_state_results);
+              // The two-row trajectory's second and last row is its true final state: tag it Time1.
               state_results.addInterpolatedCollisionResults(
-                  sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+                  sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1.0, true);
               if (config.exit_condition == tesseract::collision::CollisionCheckExitType::FIRST)
               {
                 contacts.push_back(state_results);
@@ -715,8 +730,9 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                    traj.row(iStep + 1),
                                    traj.row(iStep + 1),
                                    sub_state_results);
+          // This is the trajectory's true final state, not a subdivided sub-segment start: tag it Time1.
           state_results.addInterpolatedCollisionResults(
-              sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+              sub_state_results, 1, 1, manager.getActiveCollisionObjects(), 1.0, true);
         }
         contacts.push_back(state_results);
       }
@@ -755,8 +771,15 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
                                  traj.row(iStep),
                                  traj.row(iStep),
                                  sub_state_results);
-        state_results.addInterpolatedCollisionResults(
-            sub_state_results, 0, 0, manager.getActiveCollisionObjects(), 0, true);
+        // Only the trajectory's true final row is tagged Time1; a row visited last because
+        // ALL_EXCEPT_END/INTERMEDIATE_ONLY stopped the walk early is not the trajectory's end.
+        const bool is_final_state = (iStep == traj.rows() - 1);
+        state_results.addInterpolatedCollisionResults(sub_state_results,
+                                                      is_final_state ? 1 : 0,
+                                                      1,
+                                                      manager.getActiveCollisionObjects(),
+                                                      is_final_state ? 1.0 : 0.0,
+                                                      true);
       }
       contacts.push_back(state_results);
 
