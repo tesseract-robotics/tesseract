@@ -30,6 +30,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/jntarray.hpp>
 #include <kdl/treejnttojacsolver.hpp>
 #include <mutex>
+#include <shared_mutex>
+#include <thread>
 #include <unordered_set>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -134,9 +136,14 @@ public:
   tesseract::common::KinematicLimits getLimits() const override final;
 
 private:
-  SceneState current_state_;                                                  /**< Current state of the environment */
-  KDLTreeData data_;                                                          /**< KDL tree data */
-  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;                       /**< KDL Jacobian Solver */
+  SceneState current_state_; /**< Current state of the environment */
+  KDLTreeData data_;         /**< KDL tree data */
+  /** @brief One jacobian solver per thread. KDL memoises joint poses into mutable members of the
+   * solver's own copy of the tree, so a single solver cannot serve concurrent callers. Each entry
+   * holds a copy of the tree and lives as long as this object, so a caller that creates unboundedly
+   * many short-lived threads accumulates one per thread that ever asked for a jacobian. */
+  mutable std::unordered_map<std::thread::id, std::unique_ptr<KDL::TreeJntToJacSolver>> jac_solvers_;
+  mutable std::shared_mutex jac_solvers_mutex_;
   std::unordered_map<tesseract::common::JointId, unsigned int> joint_to_qnr_; /**< Map between joint ID and kdl q index
                                                                                */
   std::vector<int> joint_qnr_;                /**< The kdl segment number corresponding to joint in joint names */
@@ -191,6 +198,9 @@ private:
   bool calcJacobianHelper(KDL::Jacobian& jacobian,
                           const KDL::JntArray& kdl_joints,
                           const tesseract::common::LinkId& link_id) const;
+
+  /** @brief Get this thread's jacobian solver, constructing it on first use */
+  KDL::TreeJntToJacSolver& getJacobianSolver() const;
 
   /** @brief Get an updated kdl joint array */
   void getKDLJntArray(KDL::JntArray& kdl_joints,

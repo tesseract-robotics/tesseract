@@ -79,7 +79,8 @@ KDLStateSolver& KDLStateSolver::operator=(const KDLStateSolver& other)
   limits_ = other.limits_;
   active_link_ids_set_ = other.active_link_ids_set_;
   link_ids_set_ = other.link_ids_set_;
-  jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
+  // The cached solvers hold a copy of the previous tree.
+  jac_solvers_.clear();
 
   // Rebuild pointer-keyed cache using our own tree (pointers from other's tree are invalid)
   segment_id_cache_.clear();
@@ -375,7 +376,8 @@ bool KDLStateSolver::processKDLData(const tesseract::scene_graph::SceneGraph& sc
     j++;
   }
 
-  jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
+  // The cached solvers hold a copy of the previous tree.
+  jac_solvers_.clear();
 
   // Cache LinkId/JointId per segment to avoid per-FK constructor calls.
   // Keyed by pointer to KDL TreeElement (pointer-stable in std::map).
@@ -493,12 +495,43 @@ void KDLStateSolver::calculateTransforms(tesseract::common::LinkIdTransformMap& 
   calculateTransformsHelper(link_transforms, q_in, it, parent_frame);  // NOLINT
 }
 
+KDL::TreeJntToJacSolver& KDLStateSolver::getJacobianSolver() const
+{
+  const std::thread::id id = std::this_thread::get_id();
+
+  {
+    const std::shared_lock<std::shared_mutex> lock(jac_solvers_mutex_);
+    auto it = jac_solvers_.find(id);
+    if (it != jac_solvers_.end())
+      return *(it->second);
+  }
+
+  const std::unique_lock<std::shared_mutex> lock(jac_solvers_mutex_);
+  auto it = jac_solvers_.find(id);
+  if (it == jac_solvers_.end())
+  {
+    // Construct before inserting, so a construction that throws leaves no entry behind for the
+    // lock-free lookup above to dereference.
+    //
+    // Copying the tree reads the joint poses KDL memoises, which the forward kinematics traversal
+    // writes under this lock.
+    std::unique_ptr<KDL::TreeJntToJacSolver> solver;
+    {
+      const std::lock_guard<std::mutex> tree_lock(mutex_);
+      solver = std::make_unique<KDL::TreeJntToJacSolver>(data_.tree);
+    }
+    it = jac_solvers_.emplace(id, std::move(solver)).first;
+  }
+
+  return *(it->second);
+}
+
 bool KDLStateSolver::calcJacobianHelper(KDL::Jacobian& jacobian,
                                         const KDL::JntArray& kdl_joints,
                                         const tesseract::common::LinkId& link_id) const
 {
   jacobian.resize(static_cast<unsigned>(kdl_joints.data.size()));
-  if (jac_solver_->JntToJac(kdl_joints, jacobian, link_id.name()) < 0)
+  if (getJacobianSolver().JntToJac(kdl_joints, jacobian, link_id.name()) < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to calculate jacobian");
     return false;

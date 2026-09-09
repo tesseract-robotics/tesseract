@@ -2,6 +2,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <unordered_set>
+#include <thread>
+#include <atomic>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/state_solver/ofkt/ofkt_nodes.h>
@@ -348,6 +350,62 @@ TEST(TesseractStateSolverUnit, OFKTIsActiveLinkIdMatchesActiveSetUnit)  // NOLIN
   ASSERT_FALSE(active.empty());
   EXPECT_TRUE(solver.isActiveLinkId(active.front()));
   EXPECT_FALSE(solver.isActiveLinkId(solver.getBaseLinkId()));
+}
+
+// Concurrent callers must each get the jacobian for the configuration they asked about. KDL caches
+// joint poses inside the solver, so a solver shared between threads returns another thread's answer.
+TEST(TesseractStateSolverUnit, KDLJacobianIsThreadSafeUnit)  // NOLINT
+{
+  if (std::thread::hardware_concurrency() < 2)
+    GTEST_SKIP() << "needs more than one core to exercise concurrent access";
+
+  tesseract::common::GeneralResourceLocator locator;
+  SceneGraph::UPtr scene_graph = test_suite::getSceneGraph(locator);
+  const KDLStateSolver solver(*scene_graph);
+
+  const std::vector<tesseract::common::JointId> joint_ids = solver.getActiveJointIds();
+  const tesseract::common::LinkId link_id("tool0");
+  ASSERT_TRUE(solver.isActiveLinkId(link_id));
+  const auto dof = static_cast<Eigen::Index>(joint_ids.size());
+  ASSERT_GT(dof, 0);
+
+  std::vector<Eigen::VectorXd> configs;
+  std::vector<Eigen::MatrixXd> expected;
+  for (int i = 0; i < 32; ++i)
+  {
+    Eigen::VectorXd q(dof);
+    for (Eigen::Index j = 0; j < dof; ++j)
+      q[j] = -1.2 + (0.37 * static_cast<double>((static_cast<Eigen::Index>(i) * 7 + j * 3) % 11));
+
+    configs.push_back(q);
+    expected.push_back(solver.getJacobian(joint_ids, q, link_id));
+    // A jacobian of zeros would satisfy the comparison below whatever the solver returned.
+    ASSERT_GT(expected.back().norm(), 1e-3);
+  }
+
+  constexpr int kThreads = 8;
+  constexpr int kIterations = 500;
+  std::atomic<int> mismatches{ 0 };
+  std::vector<std::thread> workers;
+  workers.reserve(kThreads);
+  for (int t = 0; t < kThreads; ++t)
+  {
+    workers.emplace_back([&, t] {
+      for (int i = 0; i < kIterations; ++i)
+      {
+        const auto k = static_cast<std::size_t>((i * 13 + t * 5) % static_cast<int>(configs.size()));
+        const Eigen::MatrixXd jacobian = solver.getJacobian(joint_ids, configs[k], link_id);
+        // Same inputs through the same code path, so the answer is bit-identical or it is a race.
+        if (jacobian != expected[k])
+          ++mismatches;
+      }
+    });
+  }
+
+  for (auto& worker : workers)
+    worker.join();
+
+  EXPECT_EQ(mismatches.load(), 0);
 }
 
 int main(int argc, char** argv)

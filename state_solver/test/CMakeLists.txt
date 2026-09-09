@@ -1,4 +1,5 @@
 find_gtest()
+find_package(Threads REQUIRED)
 
 add_executable(tesseract_state_solver_unit tesseract_state_solver_ofkt_unit.cpp)
 target_link_libraries(
@@ -7,7 +8,8 @@ target_link_libraries(
           GTest::Main
           tesseract::state_solver_kdl
           tesseract::state_solver_ofkt
-          tesseract::urdf)
+          tesseract::urdf
+          Threads::Threads)
 target_compile_options(tesseract_state_solver_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                            ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(tesseract_state_solver_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
