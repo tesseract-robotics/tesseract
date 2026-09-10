@@ -966,6 +966,12 @@ PropertyTreeBuilder& PropertyTreeBuilder::acceptsDerivedTypes()
   return *this;
 }
 
+PropertyTreeBuilder& PropertyTreeBuilder::oneOf()
+{
+  current().setAttribute(property_attribute::TYPE, property_type::ONEOF);
+  return *this;
+}
+
 PropertyTreeBuilder& PropertyTreeBuilder::beginOneOf()
 {
   std::string name = "__oneOf_" + std::to_string(inline_oneof_counter_++) + "__";

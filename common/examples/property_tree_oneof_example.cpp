@@ -39,8 +39,8 @@
  *
  * @snippet property_tree_oneof_example.cpp oneof_schema_start
  *
- * The @link tesseract::common::property_attribute::ONEOF ONEOF @endlink type defines
- * a schema where exactly one child must be selected. Child nodes are branches.
+ * The @link tesseract::common::PropertyTreeBuilder::oneOf oneOf() @endlink method
+ * defines a schema where exactly one child must be selected. Child nodes are branches.
  *
  * @snippet property_tree_oneof_example.cpp oneof_merge_start
  *
@@ -82,7 +82,7 @@ int main(int /*argc*/, char** /*argv*/)
   //! [oneof_schema_start]
   // clang-format off
   auto shape_schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("circle")
         .float64("radius").required()
           .doc("Circle radius").minimum(0.0).label("Radius").done()
@@ -165,7 +165,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   // clang-format off
   auto plugin_schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("usb_plugin")
         .string("port").required()
           .doc("Serial port").placeholder("/dev/ttyUSB0").label("Port").done()
@@ -302,7 +302,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   // clang-format off
   auto sensor_schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("camera")
         .string("device").required().label("Device Path").placeholder("/dev/video0").done()
         .int32("fps").required().minimum(1).maximum(120).label("FPS").done()

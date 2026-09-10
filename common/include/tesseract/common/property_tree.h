@@ -431,6 +431,14 @@ class PropertyTreeBuilder
 public:
   PropertyTreeBuilder();
 
+  /**
+   * @brief Mark the current node as a standalone oneOf schema.
+   *
+   * Define each mutually exclusive branch as a child of the current node. During
+   * mergeConfig() exactly one branch is selected and replaces the current node.
+   */
+  PropertyTreeBuilder& oneOf();
+
   /** @name Type-creating methods -- create a typed child and descend into it. */
   ///@{
   PropertyTreeBuilder& container(std::string_view name);

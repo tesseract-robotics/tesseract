@@ -377,7 +377,7 @@ TEST(PropertyTreeCopy, DeepCopyWithOneOfPreservesState)  // NOLINT
   // Test that the oneof_ member is properly deep-copied by verifying behavior
   // Build a oneOf schema with two branches
   auto schema = PropertyTreeBuilder()
-                    .attribute(TYPE, ONEOF)
+                    .oneOf()
                     .container("circle")
                     .float64("radius")
                     .required()
@@ -421,7 +421,7 @@ TEST(PropertyTreeCopy, DeepCopyAssignmentWithOneOfPreservesState)  // NOLINT
 {
   // Test that assignment operator also deep-copies oneof_ by verifying behavior
   auto schema = PropertyTreeBuilder()
-                    .attribute(TYPE, ONEOF)
+                    .oneOf()
                     .container("option_a")
                     .string("name")
                     .required()
@@ -2288,14 +2288,14 @@ TEST(PropertyTreeOneOf, SelectSingleBranchExact)  // NOLINT
   // Build a oneOf schema with two branches: radius-only or width-height
   // clang-format off
   auto schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
-      .container("circle")
-        .float64("radius").required().done()
-        .done()
-      .container("rectangle")
-        .float64("width").required().done()
-        .float64("height").required().done()
-        .done()
+      .oneOf()
+        .container("circle")
+          .float64("radius").required().done()
+          .done()
+        .container("rectangle")
+          .float64("width").required().done()
+          .float64("height").required().done()
+          .done()
       .build();
   // clang-format on
 
@@ -2314,7 +2314,7 @@ TEST(PropertyTreeOneOf, SelectOtherBranch)  // NOLINT
 {
   // clang-format off
   auto schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("circle")
         .float64("radius").required().done()
         .done()
@@ -2341,7 +2341,7 @@ TEST(PropertyTreeOneOf, MultipleBranchesMatchThrows)  // NOLINT
 {
   // Create a pathological case where branch detection could match multiple
   // This is hard to trigger, so we test the error message instead
-  auto schema = PropertyTreeBuilder().attribute(TYPE, ONEOF).container("a").done().container("b").done().build();
+  auto schema = PropertyTreeBuilder().oneOf().container("a").done().container("b").done().build();
 
   YAML::Node config;
   // Empty config: both branches match (both have zero required fields)
@@ -2353,7 +2353,7 @@ TEST(PropertyTreeOneOf, NoBranchMatchesThrows)  // NOLINT
 {
   // clang-format off
   auto schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("circle")
         .float64("radius").required().done()
         .done()
@@ -2374,7 +2374,7 @@ TEST(PropertyTreeOneOf, PartialBranchMissingRequired)  // NOLINT
 {
   // clang-format off
   auto schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("option_a")
         .string("name").required().done()
         .done()
@@ -2396,7 +2396,7 @@ TEST(PropertyTreeOneOf, StoresBranchSchema)  // NOLINT
 {
   // clang-format off
   auto schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("simple")
         .string("value").required().done()
         .done()
@@ -2421,7 +2421,7 @@ TEST(PropertyTreeOneOf, ValidationCollectsErrorsAfterBranchSelection)  // NOLINT
 {
   // clang-format off
   auto schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .container("typed_int")
         .int32("value").required().minimum(0).maximum(100).done()
         .done()
@@ -2456,7 +2456,7 @@ TEST(PropertyTreeOneOf, DerivedCustomBranchUsesClassDiscriminator)  // NOLINT
 
   // clang-format off
   auto schema = PropertyTreeBuilder()
-      .attribute(TYPE, ONEOF)
+      .oneOf()
       .customType("by_class", "test::OneOfPluginBase").acceptsDerivedTypes().done()
       .container("by_reference").string("task").required().done().done()
       .build();

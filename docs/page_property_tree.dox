@@ -144,7 +144,8 @@ Type methods: `container`, `string`, `character`, `boolean`, `int32`, `uint32`,
 
 Composition method: `compose` (copy children from an existing PropertyTree into the current scope)
 
-OneOf methods: `beginOneOf` / `endOneOf` (for inline oneOf groups within a container)
+OneOf methods: `oneOf` (for a standalone oneOf schema) and `beginOneOf` / `endOneOf`
+(for inline oneOf groups within a container)
 
 Plugin methods: `acceptsDerivedTypes`, `pluginContainer`, `pluginContainerMap`
 
@@ -270,7 +271,7 @@ no shared fields:
 
 @code
 auto shape_schema = PropertyTreeBuilder()
-    .attribute(TYPE, ONEOF)
+    .oneOf()
     .container("circle")
         .float64("radius").required().minimum(0.0).done()
         .done()
