@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/yaml_extensions.h>
 #include <tesseract/common/property_tree.h>
 #include <tesseract/collision/bullet/bullet_factories.h>
+#include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/fcl/fcl_factories.h>
 #include <boost_plugin_loader/utils.h>
 
@@ -40,6 +41,26 @@ using namespace tesseract::common;
 // Force-link the factory libraries so their TESSERACT_SCHEMA_REGISTER macros run
 static const auto& bullet_anchor = tesseract::collision::BulletFactoriesAnchor();
 static const auto& fcl_anchor = tesseract::collision::FCLFactoriesAnchor();
+
+TEST(ContactManagersSchemaUnit, FactoryCreateAggregatesSchemaValidationErrors)  // NOLINT
+{
+  const tesseract::collision::BulletDiscreteBVHManagerFactory factory;
+  const YAML::Node config = YAML::Load(R"(max_persistent_manifold_pool_size: -1
+unknown: true)");
+
+  try
+  {
+    static_cast<void>(factory.create("invalid", config));
+    FAIL() << "Expected schema validation to fail";
+  }
+  catch (const PropertyTreeValidationError& exception)
+  {
+    EXPECT_GE(exception.errors().size(), 2);
+    const std::string message = exception.what();
+    EXPECT_NE(message.find("max_persistent_manifold_pool_size"), std::string::npos);
+    EXPECT_NE(message.find("unknown"), std::string::npos);
+  }
+}
 
 TEST(ContactManagersSchemaUnit, ValidFullConfig)  // NOLINT
 {
@@ -70,8 +91,7 @@ TEST(ContactManagersSchemaUnit, ValidFullConfig)  // NOLINT
           class: BulletCastSimpleManagerFactory
   )");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << [&] {
     std::string msg;
     for (const auto& e : errors)
@@ -97,8 +117,7 @@ TEST(ContactManagersSchemaUnit, ValidBulletWithConfig)  // NOLINT
             use_epa_penetration_algorithm: false
   )");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << [&] {
     std::string msg;
     for (const auto& e : errors)
@@ -119,8 +138,7 @@ TEST(ContactManagersSchemaUnit, ValidFCLNoConfig)  // NOLINT
           class: FCLDiscreteBVHManagerFactory
   )");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << [&] {
     std::string msg;
     for (const auto& e : errors)
@@ -134,8 +152,7 @@ TEST(ContactManagersSchemaUnit, ValidEmptyConfig)  // NOLINT
   auto schema = YAML::convert<ContactManagersPluginInfo>::schema();
 
   YAML::Node config;  // null/empty
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << [&] {
     std::string msg;
     for (const auto& e : errors)
@@ -157,8 +174,7 @@ TEST(ContactManagersSchemaUnit, InvalidDerivedType)  // NOLINT
           class: NonExistentFactory
   )");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 
   // Should mention that the type doesn't derive from the base
@@ -188,8 +204,7 @@ TEST(ContactManagersSchemaUnit, InvalidDiscretePluginInContinuous)  // NOLINT
           class: BulletDiscreteBVHManagerFactory
   )");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 
   bool found_derive_error = false;
@@ -218,8 +233,7 @@ TEST(ContactManagersSchemaUnit, InvalidMissingClassField)  // NOLINT
             share_pool_allocators: true
   )");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 
   bool found_class_error = false;
@@ -249,8 +263,7 @@ TEST(ContactManagersSchemaUnit, InvalidBulletConfigValue)  // NOLINT
             max_persistent_manifold_pool_size: not_a_number
   )");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 }
 
@@ -270,8 +283,7 @@ TEST(ContactManagersSchemaUnit, ValidMinimalDiscretePluginConfig)  // NOLINT
   discrete_plugins["plugins"] = plugins;
   config["discrete_plugins"] = discrete_plugins;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << [&] {
     std::string msg;
     for (const auto& e : errors)
@@ -290,8 +302,7 @@ TEST(ContactManagersSchemaUnit, InvalidPluginsSectionWrongType)  // NOLINT
   discrete_plugins["plugins"] = "not_a_map";
   config["discrete_plugins"] = discrete_plugins;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 
   bool found_plugins_error = false;
@@ -312,9 +323,7 @@ TEST(ContactManagersSchemaUnit, InvalidMissingPluginsSection)  // NOLINT
 
   YAML::Node config;
   config["discrete_plugins"]["default"] = "BulletDiscreteBVHManager";
-  schema.mergeConfig(config);
-
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
     return error.find("discrete_plugins.plugins") != std::string::npos && error.find("required") != std::string::npos;
   }));
@@ -326,9 +335,7 @@ TEST(ContactManagersSchemaUnit, ValidEmptyPluginsSection)  // NOLINT
 
   YAML::Node config;
   config["discrete_plugins"]["plugins"] = YAML::Node(YAML::NodeType::Map);
-  schema.mergeConfig(config);
-
-  EXPECT_TRUE(schema.validate().empty());
+  EXPECT_TRUE(schema.applyConfig(config).empty());
 }
 
 TEST(ContactManagersSchemaUnit, ValidFromYamlFile)  // NOLINT
@@ -342,8 +349,7 @@ TEST(ContactManagersSchemaUnit, ValidFromYamlFile)  // NOLINT
   YAML::Node full_config = YAML::LoadFile(config_path.string());
   YAML::Node config = full_config["contact_manager_plugins"];
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << [&] {
     std::string msg;
     for (const auto& e : errors)

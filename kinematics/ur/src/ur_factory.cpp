@@ -74,99 +74,46 @@ namespace tesseract::kinematics
 {
 tesseract::common::PropertyTree URInvKinFactory::schema() const { return urInvKinFactorySchema(); }
 
-std::unique_ptr<InverseKinematics> URInvKinFactory::create(const std::string& solver_name,
-                                                           const tesseract::scene_graph::SceneGraph& scene_graph,
-                                                           const tesseract::scene_graph::SceneState& /*scene_state*/,
-                                                           const KinematicsPluginFactory& /*plugin_factory*/,
-                                                           const YAML::Node& config) const
+std::unique_ptr<InverseKinematics>
+URInvKinFactory::createImpl(const std::string& solver_name,
+                            const tesseract::scene_graph::SceneGraph& scene_graph,
+                            const tesseract::scene_graph::SceneState& /*scene_state*/,
+                            const KinematicsPluginFactory& /*plugin_factory*/,
+                            const tesseract::common::PropertyTree& config) const
 {
-  common::LinkId base_link;
-  common::LinkId tip_link;
+  const common::LinkId base_link(config.at("base_link").as<std::string>());
+  const common::LinkId tip_link(config.at("tip_link").as<std::string>());
   tesseract::kinematics::URParameters params;
-  tesseract::scene_graph::ShortestPath path;
 
-  try
+  if (const auto* model = config.find("model"); model != nullptr && !model->isNull())
   {
-    if (YAML::Node n = config["base_link"])
-      base_link = common::LinkId(n.as<std::string>());
+    const auto model_name = model->as<std::string>();
+    if (model_name == "UR3")
+      params = UR3Parameters;
+    else if (model_name == "UR5")
+      params = UR5Parameters;
+    else if (model_name == "UR10")
+      params = UR10Parameters;
+    else if (model_name == "UR3e")
+      params = UR3eParameters;
+    else if (model_name == "UR5e")
+      params = UR5eParameters;
     else
-      throw std::runtime_error("URInvKinFactory, missing 'base_link' entry");
-
-    if (YAML::Node n = config["tip_link"])
-      tip_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("URInvKinFactory, missing 'tip_link' entry");
-
-    if (YAML::Node model = config["model"])
-    {
-      auto model_str = model.as<std::string>();
-      if (model_str == "UR3")
-        params = UR3Parameters;
-      else if (model_str == "UR5")
-        params = UR5Parameters;
-      else if (model_str == "UR10")
-        params = UR10Parameters;
-      else if (model_str == "UR3e")
-        params = UR3eParameters;
-      else if (model_str == "UR5e")
-        params = UR5eParameters;
-      else if (model_str == "UR10e")
-        params = UR10eParameters;
-      else
-      {
-        CONSOLE_BRIDGE_logError("URInvKinFactory: Invalid model!");
-        return nullptr;
-      }
-    }
-    else
-    {
-      if (YAML::Node ur_params = config["params"])
-      {
-        if (YAML::Node n = ur_params["d1"])
-          params.d1 = n.as<double>();
-        else
-          throw std::runtime_error("URInvKinFactory, 'params' missing 'd1' entry");
-
-        if (YAML::Node n = ur_params["a2"])
-          params.a2 = n.as<double>();
-        else
-          throw std::runtime_error("URInvKinFactory, 'params' missing 'a2' entry");
-
-        if (YAML::Node n = ur_params["a3"])
-          params.a3 = n.as<double>();
-        else
-          throw std::runtime_error("URInvKinFactory, 'params' missing 'a3' entry");
-
-        if (YAML::Node n = ur_params["d4"])
-          params.d4 = n.as<double>();
-        else
-          throw std::runtime_error("URInvKinFactory, 'params' missing 'd4' entry");
-
-        if (YAML::Node n = ur_params["d5"])
-          params.d5 = n.as<double>();
-        else
-          throw std::runtime_error("URInvKinFactory, 'params' missing 'd5' entry");
-
-        if (YAML::Node n = ur_params["d6"])
-          params.d6 = n.as<double>();
-        else
-          throw std::runtime_error("URInvKinFactory, 'params' missing 'd6' entry");
-      }
-      else
-      {
-        throw std::runtime_error("URInvKinFactory, missing 'params' or 'model' entry");
-      }
-    }
-
-    path = scene_graph.getShortestPath(base_link, tip_link);
-
-    return std::make_unique<URInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
+      params = UR10eParameters;
   }
-  catch (const std::exception& e)
+  else
   {
-    CONSOLE_BRIDGE_logError("URInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
-    return nullptr;
+    const auto& ur_params = config.at("params");
+    params.d1 = ur_params.at("d1").as<double>();
+    params.a2 = ur_params.at("a2").as<double>();
+    params.a3 = ur_params.at("a3").as<double>();
+    params.d4 = ur_params.at("d4").as<double>();
+    params.d5 = ur_params.at("d5").as<double>();
+    params.d6 = ur_params.at("d6").as<double>();
   }
+
+  const auto path = scene_graph.getShortestPath(base_link, tip_link);
+  return std::make_unique<URInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(URFactoriesAnchor)

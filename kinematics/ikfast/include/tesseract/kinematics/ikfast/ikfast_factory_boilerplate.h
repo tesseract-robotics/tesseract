@@ -24,6 +24,7 @@
 #ifndef TESSERACT_KINEMATICS_IKFAST_FACTORY_BOILERPLATE_H
 #define TESSERACT_KINEMATICS_IKFAST_FACTORY_BOILERPLATE_H
 
+#include <tesseract/common/property_tree.h>
 #include <tesseract/kinematics/kinematics_plugin_factory.h>
 #include <tesseract/kinematics/ikfast/impl/ikfast_inv_kin.hpp>
 #include <tesseract/scene_graph/graph.h>
@@ -33,81 +34,68 @@ namespace tesseract::kinematics
 class IKFastInvKinFactory : public InvKinFactory
 {
 public:
-  InverseKinematics::UPtr create(const std::string& solver_name,
-                                 const tesseract::scene_graph::SceneGraph& scene_graph,
-                                 const tesseract::scene_graph::SceneState& /*scene_state*/,
-                                 const KinematicsPluginFactory& /*plugin_factory*/,
-                                 const YAML::Node& config) const override
+  tesseract::common::PropertyTree schema() const override
   {
-    common::LinkId base_link;
-    common::LinkId tip_link;
-    std::size_t n_joints = 0;
-    std::vector<common::JointId> active_joints;
+    using namespace tesseract::common;
+    return PropertyTreeBuilder()
+        .attribute(property_attribute::TYPE, property_type::CONTAINER)
+        .string("base_link")
+        .required()
+        .minimumLength(1)
+        .done()
+        .string("tip_link")
+        .required()
+        .minimumLength(1)
+        .done()
+        .uint64("n_joints")
+        .required()
+        .minimum(1)
+        .done()
+        .customType("free_joint_states", property_type::createList(property_type::createList(property_type::FLOAT64)))
+        .done()
+        .build();
+  }
+
+protected:
+  InverseKinematics::UPtr createImpl(const std::string& solver_name,
+                                     const tesseract::scene_graph::SceneGraph& scene_graph,
+                                     const tesseract::scene_graph::SceneState& /*scene_state*/,
+                                     const KinematicsPluginFactory& /*plugin_factory*/,
+                                     const tesseract::common::PropertyTree& config) const override
+  {
+    const common::LinkId base_link(config.at("base_link").as<std::string>());
+    const common::LinkId tip_link(config.at("tip_link").as<std::string>());
+    const std::size_t n_joints = config.at("n_joints").as<std::size_t>();
+    const auto active_joints = scene_graph.getShortestPath(base_link, tip_link).active_joints;
+    if (active_joints.size() < n_joints)
+      throw std::runtime_error("IKFastInvKinFactory, nominal joint count exceeds the active joint count");
+
+    const std::size_t free_joints_required = active_joints.size() - n_joints;
     std::vector<std::vector<double>> free_joint_states;
-    try
+    if (const auto* value = config.find("free_joint_states"); value != nullptr && !value->isNull())
     {
-      if (YAML::Node n = config["base_link"])
-        base_link = common::LinkId(n.as<std::string>());
-      else
-        throw std::runtime_error("IKFastInvKinFactory, missing 'base_link' entry");
+      if (free_joints_required == 0)
+        throw std::runtime_error("IKFastInvKinFactory, entry 'free_joint_states' exists but no free joints exist");
 
-      if (YAML::Node n = config["tip_link"])
-        tip_link = common::LinkId(n.as<std::string>());
-      else
-        throw std::runtime_error("IKFastInvKinFactory, missing 'tip_link' entry");
-
-      if (YAML::Node n = config["n_joints"])
-        n_joints = n.as<std::size_t>();
-      else
-        throw std::runtime_error("IKFastInvKinFactory, missing 'n_joints' entry");
-
-      // Get the active joints in between the base link and tip link
-      active_joints = scene_graph.getShortestPath(base_link, tip_link).active_joints;
-
-      std::size_t free_joints_required = active_joints.size() - n_joints;
-      std::map<std::size_t, std::vector<double>> free_joint_states_map;
-      // Get the free joint states
-      if (YAML::Node free_joint_states_node = config["free_joint_states"])
+      free_joint_states = value->as<std::vector<std::vector<double>>>();
+      for (const auto& state : free_joint_states)
       {
-        if (free_joints_required == 0)
-          throw std::runtime_error("IKFastInvKinFactory, entry 'free_joint_states' exists but no free joints exist");
-
-        for (std::size_t idx = 0; idx < free_joint_states_node.size(); ++idx)
-        {
-          // Check the joints specification
-          if (free_joint_states_node[idx].size() != free_joints_required)
-          {
-            std::stringstream ss;
-            ss << "IKFastInvKinFactory, Number of active joints (" << active_joints.size()
-               << ") must equal the sum of the number of nominal joints (" << n_joints
-               << ") and the number of free joints (" << free_joint_states_map.size() << ")";
-            throw std::runtime_error(ss.str());
-          }
-          free_joint_states_map[idx] = free_joint_states_node[idx].as<std::vector<double>>();
-        }
-      }
-      else
-      {
-        if (free_joints_required > 0)
+        if (state.size() != free_joints_required)
         {
           std::stringstream ss;
-          ss << "IKFastInvKinFactory, missing 'free_joint_states' entry, but states for " << free_joints_required
-             << " free joints required";
+          ss << "IKFastInvKinFactory, Number of active joints (" << active_joints.size()
+             << ") must equal the sum of the number of nominal joints (" << n_joints
+             << ") and the number of free joints (" << state.size() << ")";
           throw std::runtime_error(ss.str());
         }
-        CONSOLE_BRIDGE_logDebug("IKFastInvKinFactory: No 'free_joint_states' entry found, none required");
       }
-
-      free_joint_states.reserve(free_joint_states_map.size());
-      std::transform(free_joint_states_map.begin(),
-                     free_joint_states_map.end(),
-                     std::back_inserter(free_joint_states),
-                     [](const std::pair<const std::size_t, std::vector<double>>& pair) { return pair.second; });
     }
-    catch (const std::exception& e)
+    else if (free_joints_required > 0)
     {
-      CONSOLE_BRIDGE_logError("IKFastInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
-      return nullptr;
+      std::stringstream ss;
+      ss << "IKFastInvKinFactory, missing 'free_joint_states' entry, but states for " << free_joints_required
+         << " free joints required";
+      throw std::runtime_error(ss.str());
     }
 
     return std::make_unique<IKFastInvKin>(base_link, tip_link, active_joints, solver_name, free_joint_states);

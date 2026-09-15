@@ -2,6 +2,12 @@
 Changelog for package tesseract
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Unreleased
+----------
+* Replace ``PropertyTree::mergeConfig()`` with aggregate, ``[[nodiscard]]`` ``applyConfig()`` validation
+* Enforce PropertyTree schemas at kinematics and contact-manager factory boundaries
+* Add ``PropertyTreeValidationError`` for preserving all configuration diagnostics
+
 0.35.0 (2026-05-28)
 -------------------
 * Add yaml node and string parsing to srdf configs (`#1302 <https://github.com/tesseract-robotics/tesseract/issues/1302>`_)

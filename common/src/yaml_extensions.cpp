@@ -34,21 +34,6 @@ using namespace tesseract::common::property_type;
 
 namespace
 {
-void validateStringList(const PropertyTree& node, const std::string& path, std::vector<std::string>& errors)
-{
-  if (node.getValue().IsNull())
-    return;
-
-  try
-  {
-    static_cast<void>(node.getValue().as<std::vector<std::string>>());
-  }
-  catch (const std::exception& exception)
-  {
-    errors.push_back(path + ": value must be a list of strings: " + exception.what());
-  }
-}
-
 PropertyTree pluginDiscoverySchema()
 {
   // clang-format off
@@ -59,14 +44,12 @@ PropertyTree pluginDiscoverySchema()
         .group("Plugin Discovery")
         .doc("Directories searched for plugin libraries. Environment and package defaults are also used.")
         .attribute(PLUGIN_DISCOVERY_ROLE, plugin_discovery_role::SEARCH_PATHS)
-        .validator(validateStringList)
         .done()
       .customType("search_libraries", createList(STRING))
         .label("Search Libraries")
         .group("Plugin Discovery")
         .doc("Plugin libraries to load in addition to the libraries provided by the installed package.")
         .attribute(PLUGIN_DISCOVERY_ROLE, plugin_discovery_role::SEARCH_LIBRARIES)
-        .validator(validateStringList)
         .done()
       .build();
   // clang-format on

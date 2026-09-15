@@ -26,6 +26,7 @@
 #include <tesseract/common/schema_registry.h>
 #include <tesseract/common/yaml_extensions.h>
 #include <Eigen/Geometry>
+#include <iterator>
 #include <memory>
 #include <mutex>
 #include <ostream>
@@ -35,7 +36,6 @@
 const static std::string ATTRIBUTES_KEY{ "_attributes" };
 const static std::string VALUE_KEY{ "_value" };
 const static std::string EXTRA_KEY{ "_extra" };
-const static std::string ONEOF_KEY{ "_oneof" };
 const static std::string FOLLOW_KEY{ "follow" };
 
 namespace tesseract::common
@@ -57,17 +57,103 @@ std::string createMap(std::string_view key, std::string_view type)
 std::string createMap(std::string_view type) { return createMap(STRING, type); }
 }  // namespace property_type
 
+namespace
+{
+bool schemaMatchesConfigShape(const PropertyTree& schema,
+                              const YAML::Node& config,
+                              std::set<std::string>& visited_types)
+{
+  if (!config || config.IsNull())
+    return true;
+
+  const auto type = schema.getAttribute(property_attribute::TYPE);
+  if (!type.has_value())
+    return schema.empty() || config.IsMap();
+
+  const auto type_name = type->as<std::string>();
+  if (type_name == property_type::ONEOF)
+  {
+    for (const auto& branch_name : schema.keys())
+    {
+      if (schemaMatchesConfigShape(schema.at(branch_name), config, visited_types))
+        return true;
+    }
+    return false;
+  }
+
+  if (isSequenceType(type_name).has_value())
+    return config.IsSequence();
+  if (type_name == property_type::CONTAINER || isMapType(type_name).has_value())
+    return config.IsMap();
+  const auto accepts_derived = schema.getAttribute(property_attribute::ACCEPTS_DERIVED_TYPES);
+  if (accepts_derived.has_value() && accepts_derived->as<bool>())
+    return config.IsMap();
+
+  auto registry = SchemaRegistry::instance();
+  if (registry->contains(type_name) && visited_types.insert(type_name).second)
+  {
+    const bool matches = schemaMatchesConfigShape(registry->get(type_name), config, visited_types);
+    visited_types.erase(type_name);
+    return matches;
+  }
+
+  return config.IsScalar();
+}
+
+bool schemaMatchesConfigShape(const PropertyTree& schema, const YAML::Node& config)
+{
+  std::set<std::string> visited_types;
+  return schemaMatchesConfigShape(schema, config, visited_types);
+}
+
+std::string formatValidationErrors(const std::vector<std::string>& errors)
+{
+  std::string message = "PropertyTree configuration validation failed:";
+  for (const auto& error : errors)
+    message += "\n  - " + error;
+  return message;
+}
+
+std::string childPath(const std::string& path, std::string_view child)
+{
+  if (path.empty())
+    return std::string(child);
+  return path + "." + std::string(child);
+}
+
+std::string errorPath(const std::string& path) { return path.empty() ? "(root)" : path; }
+
+void prependErrorPath(std::vector<std::string>& errors, const std::string& path)
+{
+  for (auto& error : errors)
+  {
+    if (error.rfind("(root)", 0) == 0)
+      error.replace(0, 6, path);
+    else
+    {
+      std::string prefixed = path;
+      prefixed += ": ";
+      prefixed += error;
+      error = std::move(prefixed);
+    }
+  }
+}
+}  // namespace
+
+PropertyTreeValidationError::PropertyTreeValidationError(std::vector<std::string> errors)
+  : std::runtime_error(formatValidationErrors(errors)), errors_(std::move(errors))
+{
+}
+
+const std::vector<std::string>& PropertyTreeValidationError::errors() const noexcept { return errors_; }
+
 PropertyTree::PropertyTree(const PropertyTree& other)
   : value_(YAML::Clone(other.value_))
-  , follow_(YAML::Clone(other.follow_))
   , children_(other.children_)
   , auto_validators_(other.auto_validators_)
   , validators_(other.validators_)
   , merged_config_presence_(other.merged_config_presence_)
 {
-  if (other.oneof_ != nullptr)
-    oneof_ = std::make_unique<PropertyTree>(*other.oneof_);
-
   // Deep-clone all attributes
   for (auto const& [k, node] : other.attributes_)
     attributes_[k] = YAML::Clone(node);
@@ -80,7 +166,6 @@ PropertyTree& PropertyTree::operator=(const PropertyTree& other)
 
   // Clone the YAML values
   value_ = YAML::Clone(other.value_);
-  follow_ = YAML::Clone(other.follow_);
 
   // Copy and clone attributes
   attributes_.clear();
@@ -93,16 +178,24 @@ PropertyTree& PropertyTree::operator=(const PropertyTree& other)
   validators_ = other.validators_;
   merged_config_presence_ = other.merged_config_presence_;
 
-  // Copy oneOf
-  if (other.oneof_ != nullptr)
-    oneof_ = std::make_unique<PropertyTree>(*other.oneof_);
-  else
-    oneof_ = nullptr;
-
   return *this;
 }
 
-void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_properties)
+std::vector<std::string> PropertyTree::applyConfig(const YAML::Node& config, bool allow_extra_properties)
+{
+  std::vector<std::string> errors;
+  applyConfigImpl(config, allow_extra_properties, "", errors);
+  auto validation_errors = validate(allow_extra_properties);
+  errors.insert(errors.end(),
+                std::make_move_iterator(validation_errors.begin()),
+                std::make_move_iterator(validation_errors.end()));
+  return errors;
+}
+
+void PropertyTree::applyConfigImpl(const YAML::Node& config,
+                                   bool allow_extra_properties,
+                                   const std::string& path,
+                                   std::vector<std::string>& errors)
 {
   merged_config_presence_ = (config && !config.IsNull()) ? ConfigPresence::PRESENT : ConfigPresence::ABSENT;
 
@@ -110,55 +203,111 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
   auto t = getAttribute(property_attribute::TYPE);
   if (t.has_value() && t->as<std::string>() == property_type::ONEOF)
   {
-    if (!config || !config.IsMap())
-      throw std::runtime_error("oneOf schema expects a YAML map");
+    if (children_.empty())
+      throw std::runtime_error("oneOf schema does not define any branches");
 
-    // Find exactly one branch whose schema-keys all appear in config
+    // Required/default handling is applied after an absent value resolves to
+    // the first branch.
     std::string chosen;
-    for (const auto& [branch_name, branch_schema] : children_)
+    if (!config || config.IsNull())
     {
-      bool matches = true;
-      auto accepts_derived = branch_schema.getAttribute(property_attribute::ACCEPTS_DERIVED_TYPES);
-      if (branch_schema.empty() && accepts_derived.has_value() && accepts_derived->as<bool>())
-        matches = static_cast<bool>(config["class"]);
-
-      for (const auto& key : branch_schema.keys())
+      chosen = children_.front().first;
+    }
+    else
+    {
+      // Find exactly one branch matching the YAML node shape. Map branches retain
+      // the existing required-key discriminator used by structural oneOf schemas.
+      std::vector<std::string> candidates;
+      for (const auto& [branch_name, branch_schema] : children_)
       {
-        if (branch_schema.at(key).isRequired() && !config[key])
+        if (!schemaMatchesConfigShape(branch_schema, config))
+          continue;
+
+        bool matches = true;
+        if (config.IsMap())
         {
-          matches = false;
-          break;
+          const auto accepts_derived = branch_schema.getAttribute(property_attribute::ACCEPTS_DERIVED_TYPES);
+          if (branch_schema.empty() && accepts_derived.has_value() && accepts_derived->as<bool>())
+            matches = static_cast<bool>(config["class"]);
+
+          for (const auto& key : branch_schema.keys())
+          {
+            if (branch_schema.at(key).isRequired() && !config[key])
+            {
+              matches = false;
+              break;
+            }
+          }
         }
+
+        if (matches)
+          candidates.push_back(branch_name);
       }
 
-      if (matches)
+      if (candidates.size() == 1)
       {
-        if (!chosen.empty())
-          throw std::runtime_error("oneOf: multiple branches match");
+        chosen = candidates.front();
+      }
+      else if (candidates.size() > 1)
+      {
+        // Shape alone cannot distinguish alternatives such as two sequence
+        // types. In that case, retain only branches whose complete schema
+        // validates the provided value.
+        std::vector<std::string> valid_candidates;
+        for (const auto& candidate : candidates)
+        {
+          try
+          {
+            PropertyTree candidate_schema = at(candidate);
+            if (candidate_schema.applyConfig(config, allow_extra_properties).empty())
+              valid_candidates.push_back(candidate);
+          }
+          catch (const std::exception& exception)
+          {
+            // A branch that cannot merge the value is not a match.
+            static_cast<void>(exception);
+          }
+        }
 
-        chosen = branch_name;
+        if (valid_candidates.size() > 1)
+        {
+          errors.push_back(errorPath(path) + ": oneOf: multiple branches match");
+          return;
+        }
+        if (valid_candidates.size() == 1)
+          chosen = valid_candidates.front();
       }
     }
 
     if (chosen.empty())
-      throw std::runtime_error("oneOf: no branch matches the provided keys");
+    {
+      errors.push_back(errorPath(path) + ": oneOf: no branch matches the provided value");
+      return;
+    }
 
-    // Store schema
-    oneof_ = std::make_unique<PropertyTree>(*this);
+    PropertyTree selected_schema = at(chosen);
 
-    // Flatten: replace this node's children with the chosen branch's children
-    PropertyTree schema_copy = at(chosen);
-    *this = schema_copy;
+    // Attributes and validators declared on the oneOf apply to every branch.
+    // The selected branch's concrete type replaces the oneOf type.
+    for (const auto& [name, attribute] : attributes_)
+    {
+      if (name != property_attribute::TYPE)
+        selected_schema.setAttribute(name, YAML::Clone(attribute));
+    }
+    selected_schema.validators_.insert(selected_schema.validators_.end(), validators_.begin(), validators_.end());
+    *this = std::move(selected_schema);
 
-    // Now call merge again
-    mergeConfig(config, allow_extra_properties);
+    applyConfigImpl(config, allow_extra_properties, path, errors);
     return;
   }
 
   // Leaf-schema override for both maps and sequences:
   // If this schema node has no children, but the user provided
   // either a map or a sequence, just store it wholesale.
-  if (children_.empty() && config && (config.IsMap() || config.IsSequence()))
+  const auto configured_type = getAttribute(property_attribute::TYPE);
+  const bool is_container =
+      configured_type.has_value() && configured_type->as<std::string>() == property_type::CONTAINER;
+  if (!is_container && children_.empty() && config && (config.IsMap() || config.IsSequence()))
   {
     value_ = config;
     return;
@@ -197,7 +346,10 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
       {
         // Run oneOf branch selection using parent's full config
         PropertyTree oneof_copy = child_schema;
-        oneof_copy.mergeConfig(config, allow_extra_properties);
+        const std::size_t error_count = errors.size();
+        oneof_copy.applyConfigImpl(config, true, path, errors);
+        if (errors.size() != error_count)
+          continue;
 
         // Hoist only the chosen branch's declared children into this node.
         // Parent-level shared fields appear as extras inside the temporary oneOf merge
@@ -228,7 +380,7 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
       if (hoisted_keys.count(key) > 0)
         continue;
       auto sub = config[key];
-      child_schema.mergeConfig(sub, allow_extra_properties);
+      child_schema.applyConfigImpl(sub, allow_extra_properties, childPath(path, key), errors);
     }
 
     // Handle extras
@@ -236,12 +388,21 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
     {
       for (auto it = config.begin(); it != config.end(); ++it)
       {
-        const auto& key = it->first.as<std::string>();
+        std::string key;
+        try
+        {
+          key = it->first.as<std::string>();
+        }
+        catch (const std::exception& e)
+        {
+          errors.push_back(errorPath(path) + ": map key must be a string: " + e.what());
+          continue;
+        }
         if (find(key) == nullptr)
         {
           auto& extra_node = (*this)[key];
           extra_node.setAttribute(EXTRA_KEY, YAML::Node(true));
-          extra_node.mergeConfig(it->second, allow_extra_properties);
+          extra_node.applyConfigImpl(it->second, allow_extra_properties, childPath(path, key), errors);
         }
       }
     }
@@ -261,7 +422,8 @@ void PropertyTree::mergeConfig(const YAML::Node& config, bool allow_extra_proper
     {
       std::string key = std::to_string(idx++);
       children_.emplace_back(std::move(key), elem_schema);
-      children_.back().second.mergeConfig(elt, allow_extra_properties);
+      children_.back().second.applyConfigImpl(
+          elt, allow_extra_properties, childPath(path, children_.back().first), errors);
     }
   }
   // Otherwise leave value_ (possibly set by default) as-is.
@@ -278,6 +440,13 @@ void PropertyTree::collectErrors(std::vector<std::string>& errors,
                                  const std::string& path,
                                  bool allow_extra_properties) const
 {
+  const auto type = getAttribute(property_attribute::TYPE);
+  if (type.has_value() && type->as<std::string>() == property_type::ONEOF &&
+      merged_config_presence_ != ConfigPresence::UNMERGED)
+  {
+    return;
+  }
+
   // An optional container omitted from the merged config does not activate
   // required fields declared inside that container. An explicitly present
   // container, including an empty map, still validates all descendants.
@@ -307,8 +476,9 @@ void PropertyTree::collectErrors(std::vector<std::string>& errors,
     child.collectErrors(errors, child_path, allow_extra_properties);
   }
 
-  // if not required and null skip validators
-  if (!isRequired() && isNull())
+  // Optional absent values have nothing to validate. Present containers
+  // intentionally store null values, so their validators must still run.
+  if (!isRequired() && isNull() && merged_config_presence_ != ConfigPresence::PRESENT)
     return;
 
   std::string my_path = path.empty() ? "(root)" : path;
@@ -380,7 +550,11 @@ const YAML::Node& PropertyTree::getValue() const { return value_; }
 
 bool PropertyTree::isNull() const { return value_.IsNull(); }
 
-bool PropertyTree::isContainer() const { return !children_.empty(); }
+bool PropertyTree::isContainer() const
+{
+  const auto type = getAttribute(property_attribute::TYPE);
+  return !children_.empty() || (type.has_value() && type->as<std::string>() == property_type::CONTAINER);
+}
 
 std::size_t PropertyTree::size() const { return children_.size(); }
 
@@ -439,6 +613,26 @@ void PropertyTree::rebuildAutoValidators()
       if (has_derived_types || registry->contains(element_type))
       {
         auto_validators_.emplace_back(validateCustomType);
+      }
+      else
+      {
+        auto_validators_.emplace_back(
+            [element_type](const PropertyTree& node, const std::string& path, std::vector<std::string>& errors) {
+              if (!node.getValue().IsSequence())
+                return;
+
+              std::size_t index{ 0 };
+              for (const auto& value : node.getValue())
+              {
+                PropertyTree element_schema;
+                element_schema.setAttribute(property_attribute::TYPE, element_type);
+                auto element_errors = element_schema.applyConfig(value);
+                prependErrorPath(element_errors, path + "[" + std::to_string(index++) + "]");
+                errors.insert(errors.end(),
+                              std::make_move_iterator(element_errors.begin()),
+                              std::make_move_iterator(element_errors.end()));
+              }
+            });
       }
     }
 
@@ -618,10 +812,6 @@ PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
       }
     }
 
-    // extract oneof if it exist
-    if (node[std::string(ONEOF_KEY)] && node[std::string(ONEOF_KEY)].IsMap())
-      tree.oneof_ = std::make_unique<PropertyTree>(fromYAML(node[std::string(ONEOF_KEY)]));
-
     // extract the value if it exists (for leaves with attributes)
     if (node[std::string(VALUE_KEY)])
       tree.value_ = node[std::string(VALUE_KEY)];
@@ -630,7 +820,7 @@ PropertyTree PropertyTree::fromYAML(const YAML::Node& node)
     for (const auto& it : node)
     {
       const auto key = it.first.as<std::string>();
-      if (key == std::string(ATTRIBUTES_KEY) || key == std::string(ONEOF_KEY) || key == std::string(VALUE_KEY))
+      if (key == std::string(ATTRIBUTES_KEY) || key == std::string(VALUE_KEY))
         continue;
 
       tree.children_.emplace_back(key, fromYAML(it.second));
@@ -682,10 +872,6 @@ YAML::Node PropertyTree::toYAML(bool exclude_attributes) const
 
     node[key] = child.toYAML(exclude_attributes);
   }
-
-  // emit oneof
-  if (!exclude_attributes && oneof_ != nullptr)
-    node[std::string(ONEOF_KEY)] = oneof_->toYAML(exclude_attributes);
 
   // if leaf (no children) but value present, emit under 'value'
   if (children_.empty() && value_)
@@ -1224,6 +1410,13 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
   }
 
   const auto type_str = type_attr.value().as<std::string>();
+
+  // Missing values are handled by validateRequired when applicable. Attempting
+  // to merge a null value into a nested oneOf schema would otherwise throw
+  // instead of returning the required-field diagnostic.
+  if (node.isNull())
+    return;
+
   std::optional<std::pair<std::string, std::size_t>> is_sequence = isSequenceType(type_str);
   std::optional<std::pair<std::string, std::string>> is_map = isMapType(type_str);
 
@@ -1277,8 +1470,8 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
     }
 
     PropertyTree schema = registry->get(actual_type);
-    schema.mergeConfig(node.getValue());
-    auto sub_errors = schema.validate();
+    auto sub_errors = schema.applyConfig(node.getValue());
+    prependErrorPath(sub_errors, path);
     errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
   }
   else if (is_sequence.has_value())
@@ -1350,19 +1543,12 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
       // Get the appropriate schema (actual or base)
       PropertyTree schema = registry->get(actual_element_type);
 
-      PropertyTree copy_schema(schema);
-      copy_schema.mergeConfig(*it);
       std::stringstream ss;
       ss << path << "[" << idx << "]";
       std::string elem_path = ss.str();
-      // Collect errors with element path context
-      auto sub_errors = copy_schema.validate(false);
-      // Prepend elem_path to each error message
-      for (auto& err : sub_errors)
-      {
-        err.insert(0, ": ");
-        err.insert(0, elem_path);
-      }
+      PropertyTree copy_schema(schema);
+      auto sub_errors = copy_schema.applyConfig(*it);
+      prependErrorPath(sub_errors, elem_path);
       errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
     }
   }
@@ -1397,8 +1583,17 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
       return;
     }
 
-    for (auto it = map_node.begin(); it != map_node.end(); ++it)
+    std::size_t map_index = 0;
+    for (auto it = map_node.begin(); it != map_node.end(); ++it, ++map_index)
     {
+      if (!it->first.IsScalar())
+      {
+        std::stringstream ss;
+        ss << path << ": map key at index " << map_index << " is not a string";
+        errors.push_back(ss.str());
+        continue;
+      }
+
       auto key = it->first.as<std::string>();
       YAML::Node value_node = it->second;
 
@@ -1453,19 +1648,12 @@ void validateCustomType(const PropertyTree& node, const std::string& path, std::
       // Get the appropriate schema (actual or base)
       PropertyTree schema = registry->get(actual_value_type);
 
-      PropertyTree copy_schema(schema);
-      copy_schema.mergeConfig(value_node);
       std::stringstream ss;
       ss << path << "[" << key << "]";
       std::string elem_path = ss.str();
-      // Collect errors with element path context
-      auto sub_errors = copy_schema.validate(false);
-      // Prepend elem_path to each error message
-      for (auto& err : sub_errors)
-      {
-        err.insert(0, ": ");
-        err.insert(0, elem_path);
-      }
+      PropertyTree copy_schema(schema);
+      auto sub_errors = copy_schema.applyConfig(value_node);
+      prependErrorPath(sub_errors, elem_path);
       errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
     }
   }
@@ -1546,44 +1734,18 @@ void validatePluginInfo(const PropertyTree& node,
   // Validate the config field against the schema
   if (value["config"])
   {
-    try
-    {
-      PropertyTree config_copy = schema;
-      config_copy.mergeConfig(value["config"]);
-      std::string config_path = path;
-      config_path += ".config";
-      auto sub_errors = config_copy.validate(false);
-      // Prepend config_path to each error message
-      for (auto& err : sub_errors)
-      {
-        err.insert(0, ": ");
-        err.insert(0, config_path);
-      }
-      errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
-    }
-    catch (const std::exception& e)
-    {
-      std::string msg(path);
-      msg += ".config: ";
-      msg += e.what();
-      errors.push_back(msg);
-    }
+    PropertyTree config_copy = schema;
+    auto sub_errors = config_copy.applyConfig(value["config"]);
+    prependErrorPath(sub_errors, path + ".config");
+    errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
   }
   else
   {
     // config field is optional but recommended - only warn if empty config is unusual
     PropertyTree config_copy = schema;
     YAML::Node empty_config;
-    config_copy.mergeConfig(empty_config);
-    std::string config_path = path;
-    config_path += ".config";
-    auto sub_errors = config_copy.validate(false);
-    // Prepend config_path to each error message
-    for (auto& err : sub_errors)
-    {
-      err.insert(0, ": ");
-      err.insert(0, config_path);
-    }
+    auto sub_errors = config_copy.applyConfig(empty_config);
+    prependErrorPath(sub_errors, path + ".config");
     errors.insert(errors.end(), sub_errors.begin(), sub_errors.end());
   }
 }

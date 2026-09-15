@@ -46,7 +46,8 @@ tesseract::common::PropertyTree FCLDiscreteBVHManagerFactory::schema() const
 }
 
 std::unique_ptr<tesseract::collision::DiscreteContactManager>
-FCLDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& /*config*/) const
+FCLDiscreteBVHManagerFactory::createImpl(const std::string& name,
+                                         const tesseract::common::PropertyTree& /*config*/) const
 {
   return std::make_unique<FCLDiscreteBVHManager>(name);
 }

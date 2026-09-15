@@ -4,6 +4,28 @@ This guide covers the single-package CMake restructure (include paths, targets, 
 The API migration from string link/joint names to `LinkId`/`JointId` is covered in
 `IDENTITY_MIGRATION.md`.
 
+## PropertyTree Configuration and Plugin Factories
+
+`PropertyTree::mergeConfig()` has been replaced by `PropertyTree::applyConfig()`. The new operation applies the
+configuration and defaults, resolves unions, validates the resulting tree, and returns every diagnostic found.
+
+```cpp
+auto configured = schema;
+const auto errors = configured.applyConfig(config);
+if (!errors.empty())
+  throw tesseract::common::PropertyTreeValidationError(errors);
+```
+
+The return value is `[[nodiscard]]`. Callers that intentionally apply an incomplete configuration, such as an editor
+maintaining a draft, must explicitly discard it with `static_cast<void>(tree.applyConfig(config))`. Use `validate()`
+only after subsequent programmatic mutations; calling it immediately after `applyConfig()` is redundant.
+
+Kinematics and contact-manager plugin factories now enforce their schemas in the public non-virtual `create()` method.
+Plugin implementations must provide `schema()` and override the protected `createImpl()` method, which receives the
+validated `PropertyTree`, instead of overriding `create()` with a raw `YAML::Node`. Calls to the public `create()` API
+remain source-compatible. Invalid configurations throw `PropertyTreeValidationError`, whose `errors()` member contains
+all diagnostics.
+
 ## Single Package with Components
 
 Previously, tesseract was split into many separate CMake packages (`tesseract_common`, `tesseract_collision`, `tesseract_kinematics`, etc.). Now it is a **single CMake package** called `tesseract` with components.

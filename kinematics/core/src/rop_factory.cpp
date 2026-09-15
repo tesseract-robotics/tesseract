@@ -32,6 +32,7 @@
 
 #include <tesseract/common/schema_registration.h>
 #include <tesseract/common/property_tree.h>
+#include <tesseract/common/yaml_extensions.h>
 
 #include <console_bridge/console.h>
 
@@ -62,11 +63,11 @@ namespace tesseract::kinematics
 {
 tesseract::common::PropertyTree ROPInvKinFactory::schema() const { return ropInvKinFactorySchema(); }
 
-std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& solver_name,
-                                                            const tesseract::scene_graph::SceneGraph& scene_graph,
-                                                            const tesseract::scene_graph::SceneState& scene_state,
-                                                            const KinematicsPluginFactory& plugin_factory,
-                                                            const YAML::Node& config) const
+std::unique_ptr<InverseKinematics> ROPInvKinFactory::createImpl(const std::string& solver_name,
+                                                                const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                                const tesseract::scene_graph::SceneState& scene_state,
+                                                                const KinematicsPluginFactory& plugin_factory,
+                                                                const tesseract::common::PropertyTree& config) const
 {
   ForwardKinematics::UPtr fwd_kin;
   InverseKinematics::UPtr inv_kin;
@@ -76,69 +77,41 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
 
   try
   {
-    // Get Reach
-    if (YAML::Node n = config["manipulator_reach"])
-      m_reach = n.as<double>();
-    else
-      throw std::runtime_error("ROPInvKinFactory, missing 'manipulator_reach' entry!");
+    m_reach = config.at("manipulator_reach").as<double>();
 
     // Get positioner sample resolution
     std::unordered_map<common::JointId, std::array<double, 3>> sample_res_map;
-    if (YAML::Node sample_res_node = config["positioner_sample_resolution"])
+    const YAML::Node& sample_res_node = config.at("positioner_sample_resolution").getValue();
+    for (const auto& entry : sample_res_node)
     {
-      for (const auto& entry : sample_res_node)
-      {
-        auto psr = entry.as<PositionerSampleResolution>();
-        common::JointId joint_id(psr.name);
+      auto psr = entry.as<PositionerSampleResolution>();
+      common::JointId joint_id(psr.name);
 
-        auto jnt = scene_graph.getJoint(joint_id);
-        if (jnt == nullptr)
-          throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' failed to find joint '" +
-                                   psr.name + "' in scene graph!");
+      auto jnt = scene_graph.getJoint(joint_id);
+      if (jnt == nullptr)
+        throw std::runtime_error("ROPInvKinFactory, 'positioner_sample_resolution' failed to find joint '" + psr.name +
+                                 "' in scene graph!");
 
-        double range_min = psr.min.value_or(jnt->limits->lower);
-        double range_max = psr.max.value_or(jnt->limits->upper);
+      double range_min = psr.min.value_or(jnt->limits->lower);
+      double range_max = psr.max.value_or(jnt->limits->upper);
 
-        if (range_min < jnt->limits->lower)
-          throw std::runtime_error("ROPInvKinFactory, sample range minimum is less than joint minimum!");
+      if (range_min < jnt->limits->lower)
+        throw std::runtime_error("ROPInvKinFactory, sample range minimum is less than joint minimum!");
+      if (range_max > jnt->limits->upper)
+        throw std::runtime_error("ROPInvKinFactory, sample range maximum is greater than joint maximum!");
+      if (range_min > range_max)
+        throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
 
-        if (range_max > jnt->limits->upper)
-          throw std::runtime_error("ROPInvKinFactory, sample range maximum is greater than joint maximum!");
-
-        if (range_min > range_max)
-          throw std::runtime_error("ROPInvKinFactory, sample range is not valid!");
-
-        sample_res_map[joint_id] = { psr.value, range_min, range_max };
-      }
-    }
-    else
-    {
-      throw std::runtime_error("ROPInvKinFactory, missing 'positioner_sample_resolution' entry!");
+      sample_res_map[joint_id] = { psr.value, range_min, range_max };
     }
 
     // Get Positioner
-    if (YAML::Node positioner = config["positioner"])
-    {
-      tesseract::common::PluginInfo p_info;
-      if (YAML::Node n = positioner["class"])
-        p_info.class_name = n.as<std::string>();
-      else
-        throw std::runtime_error("ROPInvKinFactory, 'positioner' missing 'class' entry!");
-
-      if (YAML::Node n = positioner["config"])
-        p_info.config = n;
-
-      fwd_kin = plugin_factory.createFwdKin(p_info.class_name, p_info, scene_graph, scene_state);
-      if (fwd_kin == nullptr)
-        throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
-
-      if (sample_res_map.size() != static_cast<std::size_t>(fwd_kin->numJoints()))
-        throw std::runtime_error("ROPInvKinFactory, positioner sample resolution has incorrect number of joints!");
-    }
-    else
-    {
-      throw std::runtime_error("ROPInvKinFactory, missing 'positioner' entry!");
-    }
+    const auto p_info = config.at("positioner").as<tesseract::common::PluginInfo>();
+    fwd_kin = plugin_factory.createFwdKin(p_info.class_name, p_info, scene_graph, scene_state);
+    if (fwd_kin == nullptr)
+      throw std::runtime_error("ROPInvKinFactory, failed to create positioner forward kinematics!");
+    if (sample_res_map.size() != static_cast<std::size_t>(fwd_kin->numJoints()))
+      throw std::runtime_error("ROPInvKinFactory, positioner sample resolution has incorrect number of joints!");
 
     // Load Positioner Resolution and Range
     sample_range.resize(fwd_kin->numJoints(), 2);
@@ -157,25 +130,10 @@ std::unique_ptr<InverseKinematics> ROPInvKinFactory::create(const std::string& s
     }
 
     // Get Manipulator
-    if (YAML::Node manipulator = config["manipulator"])
-    {
-      tesseract::common::PluginInfo m_info;
-      if (YAML::Node n = manipulator["class"])
-        m_info.class_name = n.as<std::string>();
-      else
-        throw std::runtime_error("ROPInvKinFactory, 'manipulator' missing 'class' entry!");
-
-      if (YAML::Node n = manipulator["config"])
-        m_info.config = n;
-
-      inv_kin = plugin_factory.createInvKin(m_info.class_name, m_info, scene_graph, scene_state);
-      if (inv_kin == nullptr)
-        throw std::runtime_error("ROPInvKinFactory, failed to create positioner inverse kinematics!");
-    }
-    else
-    {
-      throw std::runtime_error("ROPInvKinFactory, missing 'manipulator' entry!");
-    }
+    const auto m_info = config.at("manipulator").as<tesseract::common::PluginInfo>();
+    inv_kin = plugin_factory.createInvKin(m_info.class_name, m_info, scene_graph, scene_state);
+    if (inv_kin == nullptr)
+      throw std::runtime_error("ROPInvKinFactory, failed to create manipulator inverse kinematics!");
 
     return std::make_unique<ROPInvKin>(scene_graph,
                                        scene_state,

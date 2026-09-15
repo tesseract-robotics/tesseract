@@ -44,7 +44,7 @@
  *
  * @snippet property_tree_oneof_example.cpp oneof_merge_start
  *
- * During mergeConfig(), PropertyTree examines the config and selects the branch
+ * During applyConfig(), PropertyTree examines the config and selects the branch
  * whose required fields match the provided keys. If multiple branches match or none
  * match, an exception is thrown.
  *
@@ -108,8 +108,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = shape_schema;
     try
     {
-      schema_copy.mergeConfig(circle_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(circle_config);
 
       if (errors.empty())
       {
@@ -141,8 +140,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = shape_schema;
     try
     {
-      schema_copy.mergeConfig(rect_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(rect_config);
 
       if (errors.empty())
       {
@@ -194,8 +192,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = plugin_schema;
     try
     {
-      schema_copy.mergeConfig(usb_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(usb_config);
 
       if (errors.empty())
       {
@@ -221,8 +218,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = plugin_schema;
     try
     {
-      schema_copy.mergeConfig(eth_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(eth_config);
 
       if (errors.empty())
       {
@@ -249,15 +245,12 @@ int main(int /*argc*/, char** /*argv*/)
     bad_config["unknown_field"] = "value";
 
     auto schema_copy = shape_schema;
-    try
+    const auto errors = schema_copy.applyConfig(bad_config);
+    if (!errors.empty())
     {
-      schema_copy.mergeConfig(bad_config);
-      std::cout << "  This shouldn't print\n";
-    }
-    catch (const std::exception& ex)
-    {
-      std::cout << "  ✓ Correctly caught error:\n";
-      std::cout << "    " << ex.what() << "\n";
+      std::cout << "  ✓ Correctly reported errors:\n";
+      for (const auto& error : errors)
+        std::cout << "    " << error << "\n";
     }
   }
 
@@ -277,8 +270,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = shape_schema;
     try
     {
-      schema_copy.mergeConfig(bad_rect);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(bad_rect);
 
       std::cout << "    ✓ Selected rectangle branch\n";
       if (!errors.empty())
@@ -330,8 +322,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = sensor_schema;
     try
     {
-      schema_copy.mergeConfig(camera_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(camera_config);
 
       if (errors.empty())
       {
@@ -358,8 +349,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = sensor_schema;
     try
     {
-      schema_copy.mergeConfig(lidar_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(lidar_config);
 
       if (errors.empty())
       {
@@ -421,8 +411,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = robot_schema;
     try
     {
-      schema_copy.mergeConfig(model_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(model_config);
 
       if (errors.empty())
       {
@@ -461,8 +450,7 @@ int main(int /*argc*/, char** /*argv*/)
     auto schema_copy = robot_schema;
     try
     {
-      schema_copy.mergeConfig(params_config);
-      auto errors = schema_copy.validate();
+      auto errors = schema_copy.applyConfig(params_config);
 
       if (errors.empty())
       {
@@ -493,15 +481,12 @@ int main(int /*argc*/, char** /*argv*/)
     bad_config["tip_link"] = "tool0";
 
     auto schema_copy = robot_schema;
-    try
+    const auto errors = schema_copy.applyConfig(bad_config);
+    if (!errors.empty())
     {
-      schema_copy.mergeConfig(bad_config);
-      std::cout << "    This should not print\n";
-    }
-    catch (const std::exception& ex)
-    {
-      std::cout << "    OK: correctly caught error\n";
-      std::cout << "      " << ex.what() << "\n";
+      std::cout << "    OK: correctly reported errors\n";
+      for (const auto& error : errors)
+        std::cout << "      " << error << "\n";
     }
   }
   std::cout << "\n========================================\n";

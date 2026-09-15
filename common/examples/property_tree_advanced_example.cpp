@@ -104,8 +104,7 @@ int main(int /*argc*/, char** /*argv*/)
     valid_file["filepath"] = "/etc/robots/ur10.yaml";
 
     auto schema_copy = file_schema;
-    schema_copy.mergeConfig(valid_file);
-    auto errors = schema_copy.validate();
+    auto errors = schema_copy.applyConfig(valid_file);
 
     std::cout << "  Valid filepath:\n";
     std::cout << "    " << valid_file["filepath"].as<std::string>() << "\n";
@@ -124,8 +123,7 @@ int main(int /*argc*/, char** /*argv*/)
     invalid_file["filepath"] = "/etc/config.json";  // wrong extension
 
     auto schema_copy = file_schema;
-    schema_copy.mergeConfig(invalid_file);
-    auto errors = schema_copy.validate();
+    auto errors = schema_copy.applyConfig(invalid_file);
 
     std::cout << "\n  Invalid filepath:\n";
     std::cout << "    " << invalid_file["filepath"].as<std::string>() << "\n";
@@ -158,8 +156,7 @@ int main(int /*argc*/, char** /*argv*/)
     valid_mode["mode"] = "velocity";
 
     auto schema_copy = control_mode_schema;
-    schema_copy.mergeConfig(valid_mode);
-    auto errors = schema_copy.validate();
+    auto errors = schema_copy.applyConfig(valid_mode);
 
     std::cout << "  Mode: " << valid_mode["mode"].as<std::string>() << "\n";
     std::cout << "  " << (errors.empty() ? "✓ Valid enum value" : "✗ Invalid enum value") << "\n";
@@ -170,8 +167,7 @@ int main(int /*argc*/, char** /*argv*/)
     invalid_mode["mode"] = "impedance";  // not in enum list
 
     auto schema_copy = control_mode_schema;
-    schema_copy.mergeConfig(invalid_mode);
-    auto errors = schema_copy.validate();
+    auto errors = schema_copy.applyConfig(invalid_mode);
 
     std::cout << "\n  Mode: " << invalid_mode["mode"].as<std::string>() << "\n";
     if (!errors.empty())
@@ -212,8 +208,7 @@ int main(int /*argc*/, char** /*argv*/)
   task_config["parameters"]["verbose"] = true;
 
   auto schema_copy = task_schema;
-  schema_copy.mergeConfig(task_config);
-  auto errors = schema_copy.validate();
+  auto errors = schema_copy.applyConfig(task_config);
 
   std::cout << "  Task configuration:\n";
   std::cout << "    Name: " << schema_copy.at("name").as<std::string>() << "\n";
@@ -299,8 +294,7 @@ int main(int /*argc*/, char** /*argv*/)
   sensor_config["config"]["fov"] = 70.0;
 
   schema_copy = sensor_schema;
-  schema_copy.mergeConfig(sensor_config);
-  errors = schema_copy.validate();
+  errors = schema_copy.applyConfig(sensor_config);
 
   std::cout << "  Sensor configuration:\n";
   std::cout << "    Type: " << schema_copy.at("type").as<std::string>() << "\n";
@@ -361,8 +355,7 @@ int main(int /*argc*/, char** /*argv*/)
   remap_config["conditional"] = true;
   remap_config["copy"] = true;
 
-  remap_schema.mergeConfig(remap_config);
-  errors = remap_schema.validate();
+  errors = remap_schema.applyConfig(remap_config);
 
   std::cout << "  Remap task schema (composed from base):\n";
   std::cout << "    Fields: ";

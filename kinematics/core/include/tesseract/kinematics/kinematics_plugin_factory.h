@@ -72,16 +72,22 @@ public:
    * @param plugin_factory Provide access to the plugin factory so plugins and load plugins
    * @return If failed to create, nullptr is returned.
    */
-  virtual std::unique_ptr<InverseKinematics> create(const std::string& solver_name,
-                                                    const tesseract::scene_graph::SceneGraph& scene_graph,
-                                                    const tesseract::scene_graph::SceneState& scene_state,
-                                                    const KinematicsPluginFactory& plugin_factory,
-                                                    const YAML::Node& config) const = 0;
+  std::unique_ptr<InverseKinematics> create(const std::string& solver_name,
+                                            const tesseract::scene_graph::SceneGraph& scene_graph,
+                                            const tesseract::scene_graph::SceneState& scene_state,
+                                            const KinematicsPluginFactory& plugin_factory,
+                                            const YAML::Node& config) const;
 
   /** @brief Return the PropertyTree schema describing the config this factory accepts */
   virtual tesseract::common::PropertyTree schema() const;
 
 protected:
+  virtual std::unique_ptr<InverseKinematics> createImpl(const std::string& solver_name,
+                                                        const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                        const tesseract::scene_graph::SceneState& scene_state,
+                                                        const KinematicsPluginFactory& plugin_factory,
+                                                        const tesseract::common::PropertyTree& config) const = 0;
+
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
   friend class KinematicsPluginFactory;
@@ -104,16 +110,22 @@ public:
    * @param plugin_factory Provide access to the plugin factory so plugins and load plugins
    * @return If failed to create, nullptr is returned.
    */
-  virtual std::unique_ptr<ForwardKinematics> create(const std::string& solver_name,
-                                                    const tesseract::scene_graph::SceneGraph& scene_graph,
-                                                    const tesseract::scene_graph::SceneState& scene_state,
-                                                    const KinematicsPluginFactory& plugin_factory,
-                                                    const YAML::Node& config) const = 0;
+  std::unique_ptr<ForwardKinematics> create(const std::string& solver_name,
+                                            const tesseract::scene_graph::SceneGraph& scene_graph,
+                                            const tesseract::scene_graph::SceneState& scene_state,
+                                            const KinematicsPluginFactory& plugin_factory,
+                                            const YAML::Node& config) const;
 
   /** @brief Return the PropertyTree schema describing the config this factory accepts */
   virtual tesseract::common::PropertyTree schema() const;
 
 protected:
+  virtual std::unique_ptr<ForwardKinematics> createImpl(const std::string& solver_name,
+                                                        const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                        const tesseract::scene_graph::SceneState& scene_state,
+                                                        const KinematicsPluginFactory& plugin_factory,
+                                                        const tesseract::common::PropertyTree& config) const = 0;
+
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
   friend class KinematicsPluginFactory;

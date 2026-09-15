@@ -117,11 +117,8 @@ constraint_config:
       position: 0.785
 )");
 
-  PropertyTree pt = PropertyTree::fromYAML(config);
-  pt.mergeConfig(config);
-
-  // Validate
-  std::vector<std::string> errors = pt.validate();
+  PropertyTree pt = schema;
+  std::vector<std::string> errors = pt.applyConfig(config);
   if (errors.empty())
   {
     std::cout << "✓ Validation passed for single constraint entry\n";
@@ -171,11 +168,8 @@ planning_problem:
         safety_margin: 0.1
 )");
 
-  PropertyTree pt = PropertyTree::fromYAML(config);
-  pt.mergeConfig(config);
-
-  // Validate
-  std::vector<std::string> errors = pt.validate();
+  PropertyTree pt = schema;
+  std::vector<std::string> errors = pt.applyConfig(config);
   if (errors.empty())
   {
     std::cout << "✓ Validation passed for constraint array\n";
@@ -229,11 +223,8 @@ scenario:
         max_velocity: 2.0
 )");
 
-  PropertyTree pt = PropertyTree::fromYAML(config);
-  pt.mergeConfig(config);
-
-  // Validate
-  std::vector<std::string> errors = pt.validate();
+  PropertyTree pt = schema;
+  std::vector<std::string> errors = pt.applyConfig(config);
   if (errors.empty())
   {
     std::cout << "✓ Validation passed for constraint map\n";
@@ -277,9 +268,8 @@ problem:
       joint: joint_1
 )");  // Missing "class" field
 
-    PropertyTree pt = PropertyTree::fromYAML(config);
-    pt.mergeConfig(config);
-    std::vector<std::string> errors = pt.validate();
+    PropertyTree pt = schema;
+    std::vector<std::string> errors = pt.applyConfig(config);
 
     if (!errors.empty())
     {
@@ -300,9 +290,8 @@ problem:
       param: value
 )");
 
-    PropertyTree pt = PropertyTree::fromYAML(config);
-    pt.mergeConfig(config);
-    std::vector<std::string> errors = pt.validate();
+    PropertyTree pt = schema;
+    std::vector<std::string> errors = pt.applyConfig(config);
 
     if (!errors.empty())
     {
@@ -323,9 +312,8 @@ problem:
       joint: joint_1
 )");  // Missing required "position" field
 
-    PropertyTree pt = PropertyTree::fromYAML(config);
-    pt.mergeConfig(config);
-    std::vector<std::string> errors = pt.validate();
+    PropertyTree pt = schema;
+    std::vector<std::string> errors = pt.applyConfig(config);
 
     if (!errors.empty())
     {
