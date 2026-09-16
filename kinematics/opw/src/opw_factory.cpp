@@ -35,56 +35,6 @@
 
 namespace
 {
-double parseNumericScalar(const YAML::Node& value)
-{
-  if (!value.IsScalar())
-    throw std::runtime_error("value must be numeric");
-
-  const std::string text = value.Scalar();
-  std::size_t parsed_characters{ 0 };
-  double result;
-  try
-  {
-    result = std::stod(text, &parsed_characters);
-  }
-  catch (const std::exception&)
-  {
-    throw std::runtime_error("value '" + text + "' must be numeric");
-  }
-  if (parsed_characters != text.size())
-    throw std::runtime_error("value must be numeric");
-  return result;
-}
-
-void validateNumericSequence(const tesseract::common::PropertyTree& node,
-                             const std::string& path,
-                             std::vector<std::string>& errors)
-{
-  if (!node.getValue().IsSequence())
-    return;
-
-  for (std::size_t index = 0; index < node.getValue().size(); ++index)
-  {
-    try
-    {
-      static_cast<void>(parseNumericScalar(node.getValue()[index]));
-    }
-    catch (const std::exception& e)
-    {
-      errors.push_back(path + "[" + std::to_string(index) + "]: " + e.what());
-    }
-  }
-}
-
-std::vector<double> asNumericSequence(const tesseract::common::PropertyTree& node)
-{
-  std::vector<double> values;
-  values.reserve(node.getValue().size());
-  for (const auto& value : node.getValue())
-    values.push_back(parseNumericScalar(value));
-  return values;
-}
-
 void validateSignCorrections(const tesseract::common::PropertyTree& node,
                              const std::string& path,
                              std::vector<std::string>& errors)
@@ -123,7 +73,7 @@ tesseract::common::PropertyTree opwInvKinFactorySchema()
           .float64("c2").required().done()
           .float64("c3").required().done()
           .float64("c4").required().done()
-          .customType("offsets", property_type::createList("number", 6)).validator(validateNumericSequence).done()
+          .customType("offsets", property_type::createList(property_type::FLOAT64, 6)).done()
           .customType("sign_corrections", property_type::createList(property_type::INT32, 6))
             .validator(validateSignCorrections).done()
       .done()
@@ -157,7 +107,7 @@ OPWInvKinFactory::createImpl(const std::string& solver_name,
 
   if (const auto* value = opw_params.find("offsets"); value != nullptr && !value->isNull())
   {
-    const auto offsets = asNumericSequence(*value);
+    const auto offsets = value->as<std::vector<double>>();
     std::copy(offsets.begin(), offsets.end(), params.offsets.begin());
   }
   if (const auto* value = opw_params.find("sign_corrections"); value != nullptr && !value->isNull())

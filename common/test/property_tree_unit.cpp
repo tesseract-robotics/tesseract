@@ -371,22 +371,18 @@ TEST(PropertyTreeCopy, MoveConstruct)  // NOLINT
 TEST(PropertyTreeCopy, DeepCopyOfResolvedOneOf)  // NOLINT
 {
   // Build a oneOf schema with two branches
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .oneOf()
-                    .container("circle")
-                    .float64("radius")
-                    .required()
-                    .done()
-                    .done()
-                    .container("rectangle")
-                    .float64("width")
-                    .required()
-                    .done()
-                    .float64("height")
-                    .required()
-                    .done()
-                    .done()
-                    .build();
+      .oneOf()
+      .container("circle")
+        .float64("radius").required().done()
+      .done()
+      .container("rectangle")
+        .float64("width").required().done()
+        .float64("height").required().done()
+      .done()
+      .build();
+  // clang-format on
 
   // Merge config to select the circle branch
   YAML::Node config;
@@ -415,22 +411,18 @@ TEST(PropertyTreeCopy, DeepCopyOfResolvedOneOf)  // NOLINT
 TEST(PropertyTreeCopy, DeepCopyAssignmentOfResolvedOneOf)  // NOLINT
 {
   // Test that assignment also deep-copies the resolved branch.
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .oneOf()
-                    .container("option_a")
-                    .string("name")
-                    .required()
-                    .done()
-                    .done()
-                    .container("option_b")
-                    .int32("id")
-                    .required()
-                    .done()
-                    .string("label")
-                    .required()
-                    .done()
-                    .done()
-                    .build();
+      .oneOf()
+      .container("option_a")
+        .string("name").required().done()
+      .done()
+      .container("option_b")
+        .int32("id").required().done()
+        .string("label").required().done()
+      .done()
+      .build();
+  // clang-format on
 
   YAML::Node config;
   config["id"] = 42;
@@ -2959,21 +2951,16 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionComplex)  // NOLINT
   // Register a complex schema using function
   {
     auto schema_fn = []() {
+      // clang-format off
       return PropertyTreeBuilder()
           .attribute(TYPE, CONTAINER)
-          .string("name")
-          .required()
-          .done()
-          .int32("count")
-          .minimum(1)
-          .maximum(100)
-          .done()
+          .string("name").required().done()
+          .int32("count").minimum(1).maximum(100).done()
           .container("config")
-          .float64("threshold")
-          .defaultVal(0.5)
-          .done()
+            .float64("threshold").defaultVal(0.5).done()
           .done()
           .build();
+      // clang-format on
     };
 
     registerSchema("SchemaRegistrar_Test_Complex", schema_fn);
@@ -3019,17 +3006,17 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionPreservesValidators)  // NOLINT
 
   {
     auto schema_fn = []() {
-      auto schema =
-          PropertyTreeBuilder()
-              .string("path")
-              .required()
-              .validator([](const PropertyTree& node, const std::string& path, std::vector<std::string>& errors) {
-                auto val = node.getValue().as<std::string>();
-                if (val.empty())
-                  errors.push_back(path + ": path must not be empty");
-              })
-              .done()
-              .build();
+      // clang-format off
+      auto schema = PropertyTreeBuilder()
+          .string("path").required()
+            .validator([](const PropertyTree& node, const std::string& path, std::vector<std::string>& errors) {
+              auto val = node.getValue().as<std::string>();
+              if (val.empty())
+                errors.push_back(path + ": path must not be empty");
+            })
+          .done()
+          .build();
+      // clang-format on
 
       return schema;
     };
@@ -3461,29 +3448,26 @@ TEST(ValidateCustomType, MissingTypeAttribute)  // NOLINT
 TEST(ValidateCustomType, MissingRequiredOneOfReturnsValidationError)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
+  // clang-format off
   auto oneof_schema = PropertyTreeBuilder()
-                          .oneOf()
-                          .container("first")
-                          .string("first_value")
-                          .required()
-                          .done()
-                          .done()
-                          .container("second")
-                          .string("second_value")
-                          .required()
-                          .done()
-                          .done()
-                          .build();
+      .oneOf()
+      .container("first")
+        .string("first_value").required().done()
+      .done()
+      .container("second")
+        .string("second_value").required().done()
+      .done()
+      .build();
+  // clang-format on
   reg->registerSchema("test::RequiredOneOf", oneof_schema);
 
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .container("root")
-                    .customType("choice", "test::RequiredOneOf")
-                    .required()
-                    .validator(validateCustomType)
-                    .done()
-                    .done()
-                    .build();
+      .container("root")
+        .customType("choice", "test::RequiredOneOf").required().validator(validateCustomType).done()
+      .done()
+      .build();
+  // clang-format on
   static_cast<void>(schema.applyConfig(YAML::Load("root: {}")));
 
   std::vector<std::string> errors;
@@ -3496,14 +3480,15 @@ TEST(ValidateCustomType, MissingRequiredOneOfReturnsValidationError)  // NOLINT
 TEST(PropertyTreeValidation, PresentContainerRunsValidator)  // NOLINT
 {
   bool validator_called = false;
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .attribute(TYPE, CONTAINER)
-                    .validator([&validator_called](const PropertyTree& /*node*/,
-                                                   const std::string& /*path*/,
-                                                   std::vector<std::string>& /*errors*/) { validator_called = true; })
-                    .string("field")
-                    .done()
-                    .build();
+      .attribute(TYPE, CONTAINER)
+      .validator([&validator_called](const PropertyTree& /*node*/,
+                                     const std::string& /*path*/,
+                                     std::vector<std::string>& /*errors*/) { validator_called = true; })
+      .string("field").done()
+      .build();
+  // clang-format on
   static_cast<void>(schema.applyConfig(YAML::Load("field: value")));
 
   EXPECT_TRUE(schema.validate().empty());
@@ -3876,32 +3861,21 @@ TEST(PropertyTreeOperatorBool, BoolConversionEmpty)  // NOLINT
 
 TEST(PropertyTreeBuilder, AllBuilderTypes)  // NOLINT
 {
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .container("root")
-                    .string("name")
-                    .doc("A string")
-                    .done()
-                    .character("ch")
-                    .done()
-                    .boolean("flag")
-                    .defaultVal(true)
-                    .done()
-                    .int32("count")
-                    .minimum(-10)
-                    .maximum(100)
-                    .done()
-                    .uint32("size")
-                    .done()
-                    .int64("big")
-                    .done()
-                    .uint64("huge")
-                    .done()
-                    .float32("fval")
-                    .done()
-                    .float64("dval")
-                    .done()
-                    .done()
-                    .build();
+      .container("root")
+        .string("name").doc("A string").done()
+        .character("ch").done()
+        .boolean("flag").defaultVal(true).done()
+        .int32("count").minimum(-10).maximum(100).done()
+        .uint32("size").done()
+        .int64("big").done()
+        .uint64("huge").done()
+        .float32("fval").done()
+        .float64("dval").done()
+      .done()
+      .build();
+  // clang-format on
 
   EXPECT_FALSE(schema.empty());
   EXPECT_EQ(schema.size(), 1U);
@@ -4197,13 +4171,16 @@ TEST(TypeCoverage, ListOfDouble)  // NOLINT
 {
   PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(FLOAT64)).build();
 
-  YAML::Node config(YAML::NodeType::Sequence);
-  config.push_back(YAML::Node(1.1));
-  config.push_back(YAML::Node(2.2));
+  YAML::Node config = YAML::Load("[0, 1.1, 2.2]");
 
-  static_cast<void>(schema.applyConfig(config));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty());
+
+  const auto values = schema.as<std::vector<double>>();
+  ASSERT_EQ(values.size(), 3);
+  EXPECT_DOUBLE_EQ(values[0], 0.0);
+  EXPECT_DOUBLE_EQ(values[1], 1.1);
+  EXPECT_DOUBLE_EQ(values[2], 2.2);
 }
 
 TEST(TypeCoverage, ListOfUnsignedInt)  // NOLINT
@@ -4619,15 +4596,14 @@ TEST(ValidatePluginInfo, ValidDerivedTypeWithConfigValidation)  // NOLINT
   reg->registerSchema("test::BaseWithConfig", base_schema);
 
   reg->registerDerivedType("test::BaseWithConfig", "test::ConcreteWithConfig");
+  // clang-format off
   PropertyTree concrete_schema = PropertyTreeBuilder()
-                                     .attribute(TYPE, "test::ConcreteWithConfig")
-                                     .container("params")
-                                     .int32("value")
-                                     .minimum(0)
-                                     .maximum(100)
-                                     .done()
-                                     .done()
-                                     .build();
+      .attribute(TYPE, "test::ConcreteWithConfig")
+      .container("params")
+        .int32("value").minimum(0).maximum(100).done()
+      .done()
+      .build();
+  // clang-format on
   reg->registerSchema("test::ConcreteWithConfig", concrete_schema);
 
   // Create plugin info with valid config
@@ -4652,15 +4628,14 @@ TEST(ValidatePluginInfo, ValidDerivedTypeWithInvalidConfig)  // NOLINT
   reg->registerSchema("test::BaseWithInvalidConfig", base_schema);
 
   reg->registerDerivedType("test::BaseWithInvalidConfig", "test::ConcreteWithInvalidConfig");
+  // clang-format off
   PropertyTree concrete_schema = PropertyTreeBuilder()
-                                     .attribute(TYPE, "test::ConcreteWithInvalidConfig")
-                                     .container("params")
-                                     .int32("value")
-                                     .minimum(0)
-                                     .maximum(100)
-                                     .done()
-                                     .done()
-                                     .build();
+      .attribute(TYPE, "test::ConcreteWithInvalidConfig")
+      .container("params")
+        .int32("value").minimum(0).maximum(100).done()
+      .done()
+      .build();
+  // clang-format on
   reg->registerSchema("test::ConcreteWithInvalidConfig", concrete_schema);
 
   // Create plugin info with invalid config

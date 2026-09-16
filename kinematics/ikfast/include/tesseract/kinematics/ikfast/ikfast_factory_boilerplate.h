@@ -37,23 +37,16 @@ public:
   tesseract::common::PropertyTree schema() const override
   {
     using namespace tesseract::common;
+    // clang-format off
     return PropertyTreeBuilder()
         .attribute(property_attribute::TYPE, property_type::CONTAINER)
-        .string("base_link")
-        .required()
-        .minimumLength(1)
-        .done()
-        .string("tip_link")
-        .required()
-        .minimumLength(1)
-        .done()
-        .uint64("n_joints")
-        .required()
-        .minimum(1)
-        .done()
-        .customType("free_joint_states", property_type::createList(property_type::createList(property_type::FLOAT64)))
-        .done()
+        .string("base_link").required().minimumLength(1).done()
+        .string("tip_link").required().minimumLength(1).done()
+        .uint64("n_joints").required().minimum(1).done()
+        .customType("free_joint_states",
+                    property_type::createList(property_type::createList(property_type::FLOAT64))).done()
         .build();
+    // clang-format on
   }
 
 protected:
@@ -65,7 +58,7 @@ protected:
   {
     const common::LinkId base_link(config.at("base_link").as<std::string>());
     const common::LinkId tip_link(config.at("tip_link").as<std::string>());
-    const std::size_t n_joints = config.at("n_joints").as<std::size_t>();
+    const auto n_joints = config.at("n_joints").as<std::size_t>();
     const auto active_joints = scene_graph.getShortestPath(base_link, tip_link).active_joints;
     if (active_joints.size() < n_joints)
       throw std::runtime_error("IKFastInvKinFactory, nominal joint count exceeds the active joint count");

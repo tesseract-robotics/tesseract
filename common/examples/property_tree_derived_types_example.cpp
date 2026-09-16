@@ -35,57 +35,41 @@ PropertyTree createBaseConstraintSchema()
 // Derived Type 1: JointPositionConstraint
 PropertyTree createJointPositionConstraintSchema()
 {
+  // clang-format off
   return PropertyTreeBuilder()
-      .container("joint_position_constraint")
-      .doc("Constrains a joint to a specific position")
-      .string("joint")
-      .doc("Name of the joint")
-      .required()
-      .done()
-      .float64("position")
-      .doc("Target position value")
-      .required()
-      .done()
+      .container("joint_position_constraint").doc("Constrains a joint to a specific position")
+        .string("joint").doc("Name of the joint").required().done()
+        .float64("position").doc("Target position value").required().done()
       .done()
       .build();
+  // clang-format on
 }
 
 // Derived Type 2: CartesianVelocityConstraint
 PropertyTree createCartesianVelocityConstraintSchema()
 {
+  // clang-format off
   return PropertyTreeBuilder()
-      .container("cartesian_velocity_constraint")
-      .doc("Limits the Cartesian velocity of the end-effector")
-      .string("frame")
-      .doc("Reference frame")
-      .required()
-      .done()
-      .float64("max_velocity")
-      .doc("Maximum allowed velocity")
-      .required()
-      .minimum(0.0)
-      .done()
+      .container("cartesian_velocity_constraint").doc("Limits the Cartesian velocity of the end-effector")
+        .string("frame").doc("Reference frame").required().done()
+        .float64("max_velocity").doc("Maximum allowed velocity").required().minimum(0.0).done()
       .done()
       .build();
+  // clang-format on
 }
 
 // Derived Type 3: CollisionConstraint
 PropertyTree createCollisionConstraintSchema()
 {
+  // clang-format off
   return PropertyTreeBuilder()
-      .container("collision_constraint")
-      .doc("Enforces collision avoidance")
-      .string("constraint_type")
-      .doc("Type of constraint: USE_LIMITS or PENALTY")
-      .required()
-      .enumValues({ "USE_LIMITS", "PENALTY" })
-      .done()
-      .float64("safety_margin")
-      .doc("Minimum distance to maintain")
-      .defaultVal(0.05)
-      .done()
+      .container("collision_constraint").doc("Enforces collision avoidance")
+        .string("constraint_type").doc("Type of constraint: USE_LIMITS or PENALTY")
+          .required().enumValues({ "USE_LIMITS", "PENALTY" }).done()
+        .float64("safety_margin").doc("Minimum distance to maintain").defaultVal(0.05).done()
       .done()
       .build();
+  // clang-format on
 }
 
 // ============================================================================
@@ -97,15 +81,15 @@ void example_single_entry()
   std::cout << "\n=== Example 1: Single Constraint Entry ===\n";
 
   // Create schema that accepts derived constraint types
+  // clang-format off
   PropertyTree schema = PropertyTreeBuilder()
-                            .container("constraint_config")
-                            .doc("Constraint configuration accepting derived types")
-                            .customType("constraint", "BaseConstraint")
-                            .doc("A constraint (can be any registered BaseConstraint derived type)")
-                            .acceptsDerivedTypes()
-                            .done()
-                            .done()
-                            .build();
+      .container("constraint_config").doc("Constraint configuration accepting derived types")
+        .customType("constraint", "BaseConstraint")
+          .doc("A constraint (can be any registered BaseConstraint derived type)")
+          .acceptsDerivedTypes().done()
+      .done()
+      .build();
+  // clang-format on
 
   // Valid YAML configuration using plugin info structure
   YAML::Node config = YAML::Load(R"(
@@ -140,15 +124,15 @@ void example_constraint_array()
   std::cout << "\n=== Example 2: Array of Constraints ===\n";
 
   // Create schema that accepts an array of derived constraint types
+  // clang-format off
   PropertyTree schema = PropertyTreeBuilder()
-                            .container("planning_problem")
-                            .doc("Planning problem with multiple constraints")
-                            .customType("constraints", "List[BaseConstraint]")
-                            .doc("Array of constraints (each can be any derived BaseConstraint type)")
-                            .acceptsDerivedTypes()
-                            .done()
-                            .done()
-                            .build();
+      .container("planning_problem").doc("Planning problem with multiple constraints")
+        .customType("constraints", "List[BaseConstraint]")
+          .doc("Array of constraints (each can be any derived BaseConstraint type)")
+          .acceptsDerivedTypes().done()
+      .done()
+      .build();
+  // clang-format on
 
   // Valid YAML with multiple different constraint types
   YAML::Node config = YAML::Load(R"(
@@ -192,15 +176,15 @@ void example_constraint_map()
   std::cout << "\n=== Example 3: Map of Named Constraints ===\n";
 
   // Create schema that accepts a map of named derived constraint types
+  // clang-format off
   PropertyTree schema = PropertyTreeBuilder()
-                            .container("scenario")
-                            .doc("Scenario with named constraints")
-                            .customType("constraints", "Map[String,BaseConstraint]")
-                            .doc("Map of constraint names to constraint definitions")
-                            .acceptsDerivedTypes()
-                            .done()
-                            .done()
-                            .build();
+      .container("scenario").doc("Scenario with named constraints")
+        .customType("constraints", "Map[String,BaseConstraint]")
+          .doc("Map of constraint names to constraint definitions")
+          .acceptsDerivedTypes().done()
+      .done()
+      .build();
+  // clang-format on
 
   // Valid YAML with named constraints
   YAML::Node config = YAML::Load(R"(
@@ -250,13 +234,13 @@ void example_error_handling()
 {
   std::cout << "\n=== Example 4: Error Handling ===\n";
 
+  // clang-format off
   PropertyTree schema = PropertyTreeBuilder()
-                            .container("problem")
-                            .customType("constraint", "BaseConstraint")
-                            .acceptsDerivedTypes()
-                            .done()
-                            .done()
-                            .build();
+      .container("problem")
+        .customType("constraint", "BaseConstraint").acceptsDerivedTypes().done()
+      .done()
+      .build();
+  // clang-format on
 
   // Example 4a: Missing 'class' field
   {

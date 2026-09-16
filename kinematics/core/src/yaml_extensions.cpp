@@ -29,18 +29,14 @@ using namespace tesseract::common;
 
 PropertyTree YAML::convert<tesseract::kinematics::PositionerSampleResolution>::schema()
 {
+  // clang-format off
   return PropertyTreeBuilder()
-      .string("name")
-      .required()
-      .done()
-      .float64("value")
-      .required()
-      .done()
-      .float64("min")
-      .done()
-      .float64("max")
-      .done()
+      .string("name").required().done()
+      .float64("value").required().done()
+      .float64("min").done()
+      .float64("max").done()
       .build();
+  // clang-format on
 }
 
 TESSERACT_SCHEMA_REGISTER(tesseract::kinematics::PositionerSampleResolution,

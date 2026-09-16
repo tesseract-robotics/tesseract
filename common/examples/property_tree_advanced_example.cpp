@@ -80,23 +80,23 @@ int main(int /*argc*/, char** /*argv*/)
 
   //! [custom_validator_start]
   // Define a schema for a file path with custom validation
-  auto file_schema =
-      PropertyTreeBuilder()
-          .string("filepath")
-          .required()
-          .doc("Path to configuration file")
-          .placeholder("/path/to/config.yaml")
-          .validator([](const PropertyTree& node, const std::string& path, std::vector<std::string>& errors) {
-            auto val = node.getValue().as<std::string>();
-            // Custom rule: path must not be empty
-            if (val.empty())
-              errors.push_back(path + ": filepath must not be empty");
-            // Custom rule: must end with .yaml or .yml
-            if (val.find(".yaml") == std::string::npos && val.find(".yml") == std::string::npos)
-              errors.push_back(path + ": filepath must end with .yaml or .yml");
-          })
-          .done()
-          .build();
+  // clang-format off
+  auto file_schema = PropertyTreeBuilder()
+      .string("filepath").required()
+        .doc("Path to configuration file")
+        .placeholder("/path/to/config.yaml")
+        .validator([](const PropertyTree& node, const std::string& path, std::vector<std::string>& errors) {
+          auto val = node.getValue().as<std::string>();
+          // Custom rule: path must not be empty
+          if (val.empty())
+            errors.push_back(path + ": filepath must not be empty");
+          // Custom rule: must end with .yaml or .yml
+          if (val.find(".yaml") == std::string::npos && val.find(".yml") == std::string::npos)
+            errors.push_back(path + ": filepath must end with .yaml or .yml");
+        })
+      .done()
+      .build();
+  // clang-format on
   //! [custom_validator_start]
 
   {
@@ -142,13 +142,14 @@ int main(int /*argc*/, char** /*argv*/)
   std::cout << "--------------------------\n";
 
   //! [enum_validation_start]
+  // clang-format off
   auto control_mode_schema = PropertyTreeBuilder()
-                                 .string("mode")
-                                 .required()
-                                 .doc("Control mode")
-                                 .enumValues({ "position", "velocity", "torque" })
-                                 .done()
-                                 .build();
+      .string("mode").required()
+        .doc("Control mode")
+        .enumValues({ "position", "velocity", "torque" })
+      .done()
+      .build();
+  // clang-format on
   //! [enum_validation_start]
 
   {
@@ -321,33 +322,29 @@ int main(int /*argc*/, char** /*argv*/)
   std::cout << "========================================\n";
 
   // Define a base schema with common fields
+  // clang-format off
   auto base_node_schema = PropertyTreeBuilder()
-                              .attribute(property_attribute::TYPE, property_type::CONTAINER)
-                              .string("namespace")
-                              .done()
-                              .boolean("conditional")
-                              .done()
-                              .container("inputs")
-                              .done()
-                              .container("outputs")
-                              .done()
-                              .build();
+      .attribute(property_attribute::TYPE, property_type::CONTAINER)
+      .string("namespace").done()
+      .boolean("conditional").done()
+      .container("inputs").done()
+      .container("outputs").done()
+      .build();
 
   // Extend the base schema by composing it into a new builder and adding fields
   auto composed_task_schema = PropertyTreeBuilder()
-                                  .attribute(property_attribute::TYPE, property_type::CONTAINER)
-                                  .compose(base_node_schema)  // pulls in namespace, conditional, inputs, outputs
-                                  .boolean("trigger_abort")
-                                  .done()
-                                  .build();
+      .attribute(property_attribute::TYPE, property_type::CONTAINER)
+      .compose(base_node_schema)  // pulls in namespace, conditional, inputs, outputs
+      .boolean("trigger_abort").done()
+      .build();
 
   // Further extend for a concrete task type
   auto remap_schema = PropertyTreeBuilder()
-                          .attribute(property_attribute::TYPE, property_type::CONTAINER)
-                          .compose(composed_task_schema)  // pulls in all task fields
-                          .boolean("copy")
-                          .done()
-                          .build();
+      .attribute(property_attribute::TYPE, property_type::CONTAINER)
+      .compose(composed_task_schema)  // pulls in all task fields
+      .boolean("copy").done()
+      .build();
+  // clang-format on
 
   // Merge config and validate
   YAML::Node remap_config;
