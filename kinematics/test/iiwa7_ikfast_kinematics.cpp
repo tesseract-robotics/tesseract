@@ -30,20 +30,13 @@ TESSERACT_ADD_INV_KIN_PLUGIN(tesseract::kinematics::IKFastInvKinFactory, iiwa7Ki
 
 static tesseract::common::PropertyTree ikFastInvKinSchema()
 {
+  // clang-format off
   return tesseract::common::PropertyTreeBuilder()
-      .string("base_link")
-      .required()
-      .minimumLength(1)
-      .done()
-      .string("tip_link")
-      .required()
-      .minimumLength(1)
-      .done()
-      .uint64("n_joints")
-      .required()
-      .minimum(1)
-      .done()
+      .string("base_link").required().minimumLength(1).done()
+      .string("tip_link").required().minimumLength(1).done()
+      .uint64("n_joints").required().minimum(1).done()
       .build();
+  // clang-format on
 }
 
 TESSERACT_SCHEMA_REGISTER(iiwa7Kinematics, ikFastInvKinSchema);

@@ -140,8 +140,7 @@ YAML::Node snapshot = YAML::Clone(plugin_config);
 
 // Stage 1: validate only metadata needed to discover schemas.
 auto discovery_tree = YAML::convert<PluginDiscoveryInfo>::schema();
-discovery_tree.mergeConfig(YAML::Clone(snapshot), true);
-auto errors = discovery_tree.validate(true);
+auto errors = discovery_tree.applyConfig(YAML::Clone(snapshot), true);
 if (!errors.empty())
   throw std::runtime_error("Plugin discovery validation failed");
 
@@ -157,8 +156,7 @@ SchemaRegistry::instance()->loadAndRetainPluginLibraries(candidate_loader);
 
 // Stage 2: reject unknown keys and validate plugin-specific config schemas.
 auto config_tree = YAML::convert<CompletePluginInfo>::schema();
-config_tree.mergeConfig(YAML::Clone(snapshot), false);
-errors = config_tree.validate(false);
+errors = config_tree.applyConfig(YAML::Clone(snapshot), false);
 if (!errors.empty())
   throw std::runtime_error("Complete plugin configuration validation failed");
 

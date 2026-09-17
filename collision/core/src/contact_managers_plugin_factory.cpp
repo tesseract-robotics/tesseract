@@ -55,11 +55,33 @@ tesseract::common::PropertyTree DiscreteContactManagerFactory::schema() const
   return tesseract::common::PropertyTreeBuilder().build();
 }
 
+std::unique_ptr<DiscreteContactManager> DiscreteContactManagerFactory::create(const std::string& name,
+                                                                              const YAML::Node& config) const
+{
+  auto validated_config = schema();
+  auto errors = validated_config.applyConfig(config);
+  if (!errors.empty())
+    throw tesseract::common::PropertyTreeValidationError(std::move(errors));
+
+  return createImpl(name, validated_config);
+}
+
 std::string ContinuousContactManagerFactory::getSection() { return "ContColl"; }
 
 tesseract::common::PropertyTree ContinuousContactManagerFactory::schema() const
 {
   return tesseract::common::PropertyTreeBuilder().build();
+}
+
+std::unique_ptr<ContinuousContactManager> ContinuousContactManagerFactory::create(const std::string& name,
+                                                                                  const YAML::Node& config) const
+{
+  auto validated_config = schema();
+  auto errors = validated_config.applyConfig(config);
+  if (!errors.empty())
+    throw tesseract::common::PropertyTreeValidationError(std::move(errors));
+
+  return createImpl(name, validated_config);
 }
 
 ContactManagersPluginFactory::ContactManagersPluginFactory()
@@ -85,8 +107,7 @@ void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
     // Stage 1 validates only the metadata required to discover plugin schemas.
     auto discovery_schema = YAML::convert<PluginDiscoveryInfo>::schema();
     YAML::Node plugin_info_for_discovery_validation = YAML::Clone(plugin_info_for_decode);
-    discovery_schema.mergeConfig(plugin_info_for_discovery_validation, true);
-    auto discovery_errors = discovery_schema.validate(true);
+    auto discovery_errors = discovery_schema.applyConfig(plugin_info_for_discovery_validation, true);
     if (!discovery_errors.empty())
     {
       std::string error_msg = "ContactManagersPluginFactory: Plugin discovery validation failed:\n";
@@ -114,9 +135,7 @@ void ContactManagersPluginFactory::loadConfig(const YAML::Node& config)
     auto schema = YAML::convert<tesseract::common::ContactManagersPluginInfo>::schema();
     auto config_tree = schema;
     YAML::Node plugin_info_for_validation = YAML::Clone(plugin_info_for_decode);
-    config_tree.mergeConfig(plugin_info_for_validation, false);
-
-    auto errors = config_tree.validate(false);
+    auto errors = config_tree.applyConfig(plugin_info_for_validation, false);
 
     if (!errors.empty())
     {
@@ -313,6 +332,9 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
     if (it != discrete_factories_.end())
       return it->second->create(name, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<DiscreteContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
@@ -359,6 +381,9 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
     if (it != continuous_factories_.end())
       return it->second->create(name, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<ContinuousContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {

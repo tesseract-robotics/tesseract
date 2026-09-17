@@ -93,6 +93,30 @@ struct convert<tesseract::collision::TesseractCollisionConfigurationInfo>
 
 namespace tesseract::collision
 {
+namespace
+{
+TesseractCollisionConfigurationInfo createCollisionConfiguration(const tesseract::common::PropertyTree& config)
+{
+  bool share_pool_allocators{ false };
+  if (const auto* value = config.find("share_pool_allocators"); value != nullptr && !value->isNull())
+    share_pool_allocators = value->as<bool>();
+
+  TesseractCollisionConfigurationInfo result(false, share_pool_allocators);
+  if (const auto* value = config.find("max_persistent_manifold_pool_size"); value != nullptr && !value->isNull())
+    result.m_defaultMaxPersistentManifoldPoolSize = value->as<int>();
+  if (const auto* value = config.find("max_collision_algorithm_pool_size"); value != nullptr && !value->isNull())
+    result.m_defaultMaxCollisionAlgorithmPoolSize = value->as<int>();
+  if (const auto* value = config.find("max_custom_collision_algorithm_element_size");
+      value != nullptr && !value->isNull())
+    result.m_customCollisionAlgorithmMaxElementSize = value->as<int>();
+  if (const auto* value = config.find("use_epa_penetration_algorithm"); value != nullptr && !value->isNull())
+    result.m_useEpaPenetrationAlgorithm = static_cast<int>(value->as<bool>());
+
+  result.createPoolAllocators();
+  return result;
+}
+}  // namespace
+
 tesseract::common::PropertyTree BulletDiscreteBVHManagerFactory::schema() const
 {
   return YAML::convert<TesseractCollisionConfigurationInfo>::schema();
@@ -114,27 +138,29 @@ tesseract::common::PropertyTree BulletCastSimpleManagerFactory::schema() const
 }
 
 std::unique_ptr<tesseract::collision::DiscreteContactManager>
-BulletDiscreteBVHManagerFactory::create(const std::string& name, const YAML::Node& config) const
+BulletDiscreteBVHManagerFactory::createImpl(const std::string& name,
+                                            const tesseract::common::PropertyTree& config) const
 {
-  return std::make_unique<BulletDiscreteBVHManager>(name, config.as<TesseractCollisionConfigurationInfo>());
+  return std::make_unique<BulletDiscreteBVHManager>(name, createCollisionConfiguration(config));
 }
 
-std::unique_ptr<DiscreteContactManager> BulletDiscreteSimpleManagerFactory::create(const std::string& name,
-                                                                                   const YAML::Node& config) const
+std::unique_ptr<DiscreteContactManager>
+BulletDiscreteSimpleManagerFactory::createImpl(const std::string& name,
+                                               const tesseract::common::PropertyTree& config) const
 {
-  return std::make_unique<BulletDiscreteSimpleManager>(name, config.as<TesseractCollisionConfigurationInfo>());
+  return std::make_unique<BulletDiscreteSimpleManager>(name, createCollisionConfiguration(config));
 }
 
-std::unique_ptr<ContinuousContactManager> BulletCastBVHManagerFactory::create(const std::string& name,
-                                                                              const YAML::Node& config) const
+std::unique_ptr<ContinuousContactManager>
+BulletCastBVHManagerFactory::createImpl(const std::string& name, const tesseract::common::PropertyTree& config) const
 {
-  return std::make_unique<BulletCastBVHManager>(name, config.as<TesseractCollisionConfigurationInfo>());
+  return std::make_unique<BulletCastBVHManager>(name, createCollisionConfiguration(config));
 }
 
-std::unique_ptr<ContinuousContactManager> BulletCastSimpleManagerFactory::create(const std::string& name,
-                                                                                 const YAML::Node& config) const
+std::unique_ptr<ContinuousContactManager>
+BulletCastSimpleManagerFactory::createImpl(const std::string& name, const tesseract::common::PropertyTree& config) const
 {
-  return std::make_unique<BulletCastSimpleManager>(name, config.as<TesseractCollisionConfigurationInfo>());
+  return std::make_unique<BulletCastSimpleManager>(name, createCollisionConfiguration(config));
 }
 
 PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)

@@ -32,6 +32,7 @@
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <stdexcept>
 #include <yaml-cpp/yaml.h>
 
 namespace tesseract::common
@@ -119,6 +120,23 @@ constexpr std::string_view SEARCH_PATHS{ "search_paths" };
 constexpr std::string_view SEARCH_LIBRARIES{ "search_libraries" };
 }  // namespace plugin_discovery_role
 
+/** @brief Exception containing all configuration validation diagnostics. */
+class PropertyTreeValidationError : public std::runtime_error
+{
+public:
+  /**
+   * @brief Construct an exception from validation diagnostics.
+   * @param errors All configuration validation diagnostics.
+   */
+  explicit PropertyTreeValidationError(std::vector<std::string> errors);
+
+  /** @brief Return all configuration validation diagnostics. */
+  const std::vector<std::string>& errors() const noexcept;
+
+private:
+  std::vector<std::string> errors_;
+};
+
 /**
  * @file property_tree.h
  * @brief Defines PropertyTree, a hierarchical structure for YAML-based
@@ -163,12 +181,13 @@ public:
   PropertyTree& operator=(PropertyTree&&) noexcept = default;
 
   /**
-   * @brief Given that *this* is purely a schema tree, merge in the
-   *        user's YAML config to populate all values (and apply defaults).
-   * @param config  The user-supplied YAML::Node (possibly null).
-   * @param allow_extra_properties  If false, "extra" keys in config will be flagged.
+   * @brief Apply a YAML configuration to this schema, populate defaults, and validate the result.
+   * @param config The user-supplied YAML::Node (possibly null).
+   * @param allow_extra_properties If false, undeclared keys are reported.
+   * @return All independently discoverable configuration diagnostics.
+   * @warning Do not consume typed values from this tree unless the returned vector is empty.
    */
-  void mergeConfig(const YAML::Node& config, bool allow_extra_properties = false);
+  [[nodiscard]] std::vector<std::string> applyConfig(const YAML::Node& config, bool allow_extra_properties = false);
 
   /**
    * @brief Validate the tree, collecting all errors.
@@ -343,6 +362,12 @@ public:
   bool empty() const;
 
 private:
+  /** @brief Recursive implementation used by applyConfig(). */
+  void applyConfigImpl(const YAML::Node& config,
+                       bool allow_extra_properties,
+                       const std::string& path,
+                       std::vector<std::string>& errors);
+
   /**
    * @brief Tracks whether and how a configuration node participated in the most recent merge.
    *
@@ -352,7 +377,7 @@ private:
    */
   enum class ConfigPresence : std::uint8_t
   {
-    UNMERGED, /**< mergeConfig() has not processed this node */
+    UNMERGED, /**< applyConfig() has not processed this node */
     ABSENT,   /**< The node was missing or null in the merged configuration */
     PRESENT   /**< The node was explicitly present in the merged configuration */
   };
@@ -366,12 +391,10 @@ private:
   void collectErrors(std::vector<std::string>& errors, const std::string& path, bool allow_extra_properties) const;
 
   YAML::Node value_;                                           /**< Value stored at this node */
-  YAML::Node follow_;                                          /**< Follow stored at this node */
   std::map<std::string, YAML::Node> attributes_;               /**< Metadata attributes */
   std::vector<std::pair<std::string, PropertyTree>> children_; /**< Nested child nodes (insertion-ordered) */
   std::vector<ValidatorFn> auto_validators_; /**< Validators derived from attributes (rebuilt, not user-added) */
   std::vector<ValidatorFn> validators_;      /**< User-added validators to invoke */
-  std::unique_ptr<PropertyTree> oneof_;      /**< Store the property content on merge */
   ConfigPresence merged_config_presence_{ ConfigPresence::UNMERGED }; /**< Configuration merge state */
 };
 
@@ -434,8 +457,9 @@ public:
   /**
    * @brief Mark the current node as a standalone oneOf schema.
    *
-   * Define each mutually exclusive branch as a child of the current node. During
-   * mergeConfig() exactly one branch is selected and replaces the current node.
+   * Define each mutually exclusive branch as a child of the current node. Branches
+   * may describe scalar, sequence, or map values. During applyConfig() exactly one
+   * branch is selected based on the configuration shape and replaces the current node.
    */
   PropertyTreeBuilder& oneOf();
 
@@ -461,7 +485,7 @@ public:
    * @brief Begin an inline oneOf group inside a container.
    *
    * Define mutually exclusive branches as container children within this group.
-   * During mergeConfig the parent's full config is used for branch selection, and
+   * During applyConfig() the parent's full config is used for branch selection, and
    * the chosen branch's children are hoisted into the parent.  Close with endOneOf().
    */
   PropertyTreeBuilder& beginOneOf();

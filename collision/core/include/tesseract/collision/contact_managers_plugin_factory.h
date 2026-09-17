@@ -67,12 +67,15 @@ public:
    * @param name The name of the contact manager object
    * @return If failed to create, nullptr is returned.
    */
-  virtual std::unique_ptr<DiscreteContactManager> create(const std::string& name, const YAML::Node& config) const = 0;
+  std::unique_ptr<DiscreteContactManager> create(const std::string& name, const YAML::Node& config) const;
 
   /** @brief Return the PropertyTree schema describing the config this factory accepts */
   virtual tesseract::common::PropertyTree schema() const;
 
 protected:
+  virtual std::unique_ptr<DiscreteContactManager> createImpl(const std::string& name,
+                                                             const tesseract::common::PropertyTree& config) const = 0;
+
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
   friend class ContactManagersPluginFactory;
@@ -92,13 +95,15 @@ public:
    * @param name The name of the contact manager object
    * @return If failed to create, nullptr is returned.
    */
-  virtual std::unique_ptr<ContinuousContactManager> create(const std::string& solver_name,
-                                                           const YAML::Node& config) const = 0;
+  std::unique_ptr<ContinuousContactManager> create(const std::string& solver_name, const YAML::Node& config) const;
 
   /** @brief Return the PropertyTree schema describing the config this factory accepts */
   virtual tesseract::common::PropertyTree schema() const;
 
 protected:
+  virtual std::unique_ptr<ContinuousContactManager> createImpl(const std::string& name,
+                                                               const tesseract::common::PropertyTree& config) const = 0;
+
   static std::string getSection();
   friend class boost_plugin_loader::PluginLoader;
   friend class ContactManagersPluginFactory;

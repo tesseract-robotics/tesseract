@@ -40,11 +40,8 @@ auto schema = PropertyTreeBuilder()
 // 2. Load user configuration from YAML
 YAML::Node user_config = YAML::LoadFile("config.yaml");
 
-// 3. Merge configuration into schema
-schema.mergeConfig(user_config);
-
-// 4. Validate and collect all errors
-auto errors = schema.validate();
+// 3. Apply configuration, defaults, and collect all validation errors
+auto errors = schema.applyConfig(user_config);
 if (!errors.empty()) {
     for (const auto& error : errors)
         std::cerr << error << "\n";
@@ -223,27 +220,24 @@ if (!errors.empty()) {
 
 @subsection pt_extra_properties Strict and Permissive Extra Properties
 
-Both `mergeConfig()` and `validate()` accept an `allow_extra_properties` argument. Use the same mode for
-both calls:
+`applyConfig()` accepts an `allow_extra_properties` argument and performs application and validation in one call:
 
 @code{.cpp}
 // Strict validation: unknown keys are retained as marked nodes and reported.
 auto strict_tree = schema;
-strict_tree.mergeConfig(config, false);
-auto strict_errors = strict_tree.validate(false);
+auto strict_errors = strict_tree.applyConfig(config, false);
 // Example: "unknown_field: property does not exist in schema"
 
 // Permissive validation: unknown keys are ignored by the schema traversal.
 auto partial_tree = schema;
-partial_tree.mergeConfig(config, true);
-auto partial_errors = partial_tree.validate(true);
+auto partial_errors = partial_tree.applyConfig(config, true);
 @endcode
 
 Strict mode is the default and should be used for complete configuration validation. Permissive mode is useful
 for validating a known subset of a larger document, such as plugin discovery metadata before plugin libraries
 have registered their complete schemas. It is not a substitute for a later strict validation pass.
 
-`mergeConfig()` mutates the tree. Start from a fresh schema copy for each independent validation pass.
+`applyConfig()` mutates the tree. Start from a fresh schema copy for each independent validation pass.
 
 @section pt_oneof OneOf - Polymorphic Configuration
 
@@ -258,11 +252,12 @@ multiple branches. This is useful for:
 <b>How OneOf Works:</b>
 When merging config into a oneOf schema, PropertyTree:
 
-1. Examines the user config to find required fields
-2. Identifies which branch schema has all its required fields satisfied
-3. Fails if zero branches match (no branch applicable to config)
-4. Fails if multiple branches match (ambiguous - could be either)
-5. Selects the matching branch and flattens the schema to that branch's structure
+1. Filters branches by YAML value shape (scalar, sequence, or map)
+2. Uses required fields to distinguish map-shaped branches
+3. Validates remaining same-shape candidates when shape alone is ambiguous
+4. Fails if zero branches match (no branch applicable to config)
+5. Fails if multiple branches match (ambiguous - could be either)
+6. Selects the matching branch and flattens the schema to that branch's structure
 
 @subsection pt_oneof_standalone Standalone OneOf
 
@@ -284,9 +279,26 @@ auto shape_schema = PropertyTreeBuilder()
 // Configuration specifies circle
 YAML::Node config1;
 config1["radius"] = 5.0;
-shape_schema.mergeConfig(config1);  // Selects "circle" branch
-auto error1 = shape_schema.validate();  // Validates against circle schema
+auto error1 = shape_schema.applyConfig(config1);  // Selects and validates the "circle" branch
 @endcode
+
+A standalone oneOf may also select between different YAML value shapes. This is
+useful for compact configuration syntax that accepts either one value or several:
+
+@code
+auto string_or_list_schema = PropertyTreeBuilder()
+        .oneOf()
+            .string("single").done()
+            .customType("multiple", createList(STRING)).done()
+        .build();
+
+auto errors = string_or_list_schema.applyConfig(YAML::Load("[first, second]"));
+// The resolved schema type is now List[string].
+@endcode
+
+Branch names are schema identifiers and do not appear in the configuration. For
+an absent value, the first branch supplies the concrete representation used by
+schema consumers such as editors.
 
 @subsection pt_oneof_inline Inline OneOf (within a container)
 
@@ -323,8 +335,7 @@ YAML::Node config;
 config["base_link"] = "base";
 config["tip_link"] = "tool0";
 config["model"] = "UR5";
-schema.mergeConfig(config);  // Selects "by_model", hoists "model" into parent
-auto errors = schema.validate();  // Validates base_link, tip_link, AND model
+auto errors = schema.applyConfig(config);  // Selects "by_model" and validates all fields
 @endcode
 
 Note: `base_link` and `tip_link` are defined once and shared across all branches, avoiding
@@ -332,9 +343,11 @@ duplication. The branch names ("by_model", "by_params") are for selection only -
 appear in the YAML config.
 
 <b>Branch Selection Rules:</b>
-- A branch is "applicable" if all its required fields are present in the config
-- If zero branches are applicable, throws `std::runtime_error("oneOf: no branch matches")`
-- If multiple branches are applicable, throws `std::runtime_error("oneOf: multiple branches match")`
+- Scalar, sequence, and map branches must match the corresponding YAML value shape
+- A map branch is "applicable" if all its required fields are present in the config
+- Same-shape candidates are validated when structural matching cannot select one
+- If zero branches are applicable, reports `oneOf: no branch matches`
+- If multiple branches are applicable, reports `oneOf: multiple branches match`
   (This can happen if branches have no required fields or overlapping required fields)
 
 See @ref oneof_property_tree_example for a detailed working example.
@@ -478,9 +491,8 @@ auto schema = PropertyTreeBuilder()...build();
 // Load user config
 YAML::Node user_config = YAML::LoadFile("app.yaml");
 
-// Merge and validate
-schema.mergeConfig(user_config);
-auto errors = schema.validate();
+// Apply and validate
+auto errors = schema.applyConfig(user_config);
 if (!errors.empty()) return false;
 
 // Extract values
@@ -496,8 +508,7 @@ SchemaRegistry::instance()->registerSchema("AppSettings", builder.build());
 
 // Use many times
 auto schema = SchemaRegistry::instance()->get("AppSettings");
-schema.mergeConfig(user_config);
-auto errors = schema.validate();
+auto errors = schema.applyConfig(user_config);
 @endcode
 
 <b>Pattern 3: UI Generation</b>

@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/kinematics/ur/ur_factory.h>
 #include <tesseract/state_solver/kdl/kdl_state_solver.h>
 #include <tesseract/common/resource_locator.h>
+#include <tesseract/common/property_tree.h>
 #include <tesseract/common/yaml_utils.h>
 
 using namespace tesseract::kinematics::test_suite;
@@ -352,9 +353,9 @@ manipulator:)") + manipulator_config;
   }
 }
 
-TEST(TesseractKinematicsFactoryUnit, KdlFactoryCreateReturnsNullOnConstructionFailureUnit)  // NOLINT
+TEST(TesseractKinematicsFactoryUnit, KdlFactoryCreatePropagatesConstructionFailureUnit)  // NOLINT
 {
-  // FwdKinFactory::create and InvKinFactory::create report failure by returning nullptr. The KDL
+  // FwdKinFactory::create and InvKinFactory::create propagate implementation failures. The KDL
   // solvers require a scene graph that is a tree, and an unparented link makes the iiwa graph fail
   // that check while base_link and tool0 stay valid links -- so the config parses and the solver
   // constructor is what fails. The KDL factories ignore the scene state, so a default one is passed.
@@ -371,31 +372,59 @@ tip_link: tool0)");
   {
     const KDLFwdKinChainFactory kdl_factory;
     const FwdKinFactory& factory = kdl_factory;
-    EXPECT_EQ(factory.create("KDLFwdKinChain", *scene_graph, scene_state, plugin_factory, config), nullptr);
+    EXPECT_ANY_THROW(factory.create("KDLFwdKinChain", *scene_graph, scene_state, plugin_factory, config));  // NOLINT
   }
 
   {
     const KDLInvKinChainLMAFactory kdl_factory;
     const InvKinFactory& factory = kdl_factory;
-    EXPECT_EQ(factory.create("KDLInvKinChainLMA", *scene_graph, scene_state, plugin_factory, config), nullptr);
+    EXPECT_ANY_THROW(factory.create("KDLInvKinChainLMA", *scene_graph, scene_state, plugin_factory, config));  // NOLINT
   }
 
   {
     const KDLInvKinChainNRFactory kdl_factory;
     const InvKinFactory& factory = kdl_factory;
-    EXPECT_EQ(factory.create("KDLInvKinChainNR", *scene_graph, scene_state, plugin_factory, config), nullptr);
+    EXPECT_ANY_THROW(factory.create("KDLInvKinChainNR", *scene_graph, scene_state, plugin_factory, config));  // NOLINT
   }
 
   {
     const KDLInvKinChainNR_JLFactory kdl_factory;
     const InvKinFactory& factory = kdl_factory;
-    EXPECT_EQ(factory.create("KDLInvKinChainNR_JL", *scene_graph, scene_state, plugin_factory, config), nullptr);
+    EXPECT_ANY_THROW(
+        factory.create("KDLInvKinChainNR_JL", *scene_graph, scene_state, plugin_factory, config));  // NOLINT
   }
 }
 
-TEST(TesseractKinematicsFactoryUnit, OpwUrFactoryCreateReturnsNullOnConstructionFailureUnit)  // NOLINT
+TEST(TesseractKinematicsFactoryUnit, FactoryCreateAggregatesSchemaValidationErrors)  // NOLINT
 {
-  // InvKinFactory::create reports failure by returning nullptr. Both solvers only support six
+  tesseract::common::GeneralResourceLocator locator;
+  const auto scene_graph = getSceneGraphIIWA(locator);
+  const tesseract::scene_graph::SceneState scene_state;
+  const KinematicsPluginFactory plugin_factory;
+  const KDLInvKinChainLMAFactory factory;
+  const YAML::Node config = YAML::Load(R"(base_link: ""
+task_weights: [1, 2]
+unknown: true)");
+
+  try
+  {
+    static_cast<void>(factory.create("KDLInvKinChainLMA", *scene_graph, scene_state, plugin_factory, config));
+    FAIL() << "Expected schema validation to fail";
+  }
+  catch (const tesseract::common::PropertyTreeValidationError& exception)
+  {
+    EXPECT_GE(exception.errors().size(), 4);
+    const std::string message = exception.what();
+    EXPECT_NE(message.find("base_link"), std::string::npos);
+    EXPECT_NE(message.find("tip_link"), std::string::npos);
+    EXPECT_NE(message.find("task_weights"), std::string::npos);
+    EXPECT_NE(message.find("unknown"), std::string::npos);
+  }
+}
+
+TEST(TesseractKinematicsFactoryUnit, OpwUrFactoryCreatePropagatesConstructionFailureUnit)  // NOLINT
+{
+  // InvKinFactory::create propagates implementation failures. Both solvers only support six
   // joints, and the iiwa base_link -> tool0 path has seven, so getShortestPath succeeds and the
   // solver constructor is what fails. Both factories ignore the scene state, so a default one is
   // passed.
@@ -420,7 +449,7 @@ params:
 
     const OPWInvKinFactory opw_factory;
     const InvKinFactory& factory = opw_factory;
-    EXPECT_EQ(factory.create("OPWInvKin", *scene_graph, scene_state, plugin_factory, config), nullptr);
+    EXPECT_ANY_THROW(factory.create("OPWInvKin", *scene_graph, scene_state, plugin_factory, config));  // NOLINT
   }
 
   {
@@ -430,7 +459,7 @@ model: UR10)");
 
     const URInvKinFactory ur_factory;
     const InvKinFactory& factory = ur_factory;
-    EXPECT_EQ(factory.create("URInvKin", *scene_graph, scene_state, plugin_factory, config), nullptr);
+    EXPECT_ANY_THROW(factory.create("URInvKin", *scene_graph, scene_state, plugin_factory, config));  // NOLINT
   }
 }
 
@@ -874,9 +903,7 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["offsets"][0] = "abcd";
 
-    KinematicsPluginFactory factory(config, locator);
-    auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
-    EXPECT_TRUE(inv_kin == nullptr);
+    EXPECT_THROW(KinematicsPluginFactory factory(config, locator), std::runtime_error);  // NOLINT
   }
   {  // invalid offset size
     YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
@@ -890,18 +917,14 @@ TEST(TesseractKinematicsFactoryUnit, LoadOPWKinematicsUnit)  // NOLINT
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["sign_corrections"][0] = "a";
 
-    KinematicsPluginFactory factory(config, locator);
-    auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
-    EXPECT_TRUE(inv_kin == nullptr);
+    EXPECT_THROW(KinematicsPluginFactory factory(config, locator), std::runtime_error);  // NOLINT
   }
   {  // invalid sign_corrections
     YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);
     auto plugin = config["kinematic_plugins"]["inv_kin_plugins"]["manipulator"]["plugins"]["OPWInvKin"];
     plugin["config"]["params"]["sign_corrections"][0] = 5;
 
-    KinematicsPluginFactory factory(config, locator);
-    auto inv_kin = factory.createInvKin("manipulator", "OPWInvKin", *scene_graph, scene_state);
-    EXPECT_TRUE(inv_kin == nullptr);
+    EXPECT_THROW(KinematicsPluginFactory factory(config, locator), std::runtime_error);  // NOLINT
   }
   {  // invalid sign_corrections size
     YAML::Node config = tesseract::common::loadYamlString(yaml_string, locator);

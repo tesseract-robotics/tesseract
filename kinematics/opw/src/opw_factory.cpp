@@ -35,6 +35,28 @@
 
 namespace
 {
+void validateSignCorrections(const tesseract::common::PropertyTree& node,
+                             const std::string& path,
+                             std::vector<std::string>& errors)
+{
+  if (!node.getValue().IsSequence())
+    return;
+
+  for (std::size_t index = 0; index < node.getValue().size(); ++index)
+  {
+    try
+    {
+      const int value = node.getValue()[index].as<int>();
+      if (value != -1 && value != 1)
+        errors.push_back(path + "[" + std::to_string(index) + "]: value must be -1 or 1");
+    }
+    catch (const std::exception& e)
+    {
+      errors.push_back(path + "[" + std::to_string(index) + "]: " + e.what());
+    }
+  }
+}
+
 tesseract::common::PropertyTree opwInvKinFactorySchema()
 {
   using namespace tesseract::common;
@@ -52,7 +74,8 @@ tesseract::common::PropertyTree opwInvKinFactorySchema()
           .float64("c3").required().done()
           .float64("c4").required().done()
           .customType("offsets", property_type::createList(property_type::FLOAT64, 6)).done()
-          .customType("sign_corrections", property_type::createList(property_type::INT32, 6)).done()
+          .customType("sign_corrections", property_type::createList(property_type::INT32, 6))
+            .validator(validateSignCorrections).done()
       .done()
       .build();
   // clang-format on
@@ -63,106 +86,38 @@ namespace tesseract::kinematics
 {
 tesseract::common::PropertyTree OPWInvKinFactory::schema() const { return opwInvKinFactorySchema(); }
 
-std::unique_ptr<InverseKinematics> OPWInvKinFactory::create(const std::string& solver_name,
-                                                            const tesseract::scene_graph::SceneGraph& scene_graph,
-                                                            const tesseract::scene_graph::SceneState& /*scene_state*/,
-                                                            const KinematicsPluginFactory& /*plugin_factory*/,
-                                                            const YAML::Node& config) const
+std::unique_ptr<InverseKinematics>
+OPWInvKinFactory::createImpl(const std::string& solver_name,
+                             const tesseract::scene_graph::SceneGraph& scene_graph,
+                             const tesseract::scene_graph::SceneState& /*scene_state*/,
+                             const KinematicsPluginFactory& /*plugin_factory*/,
+                             const tesseract::common::PropertyTree& config) const
 {
-  common::LinkId base_link;
-  common::LinkId tip_link;
+  const common::LinkId base_link(config.at("base_link").as<std::string>());
+  const common::LinkId tip_link(config.at("tip_link").as<std::string>());
   opw_kinematics::Parameters<double> params;
-  tesseract::scene_graph::ShortestPath path;
+  const auto& opw_params = config.at("params");
+  params.a1 = opw_params.at("a1").as<double>();
+  params.a2 = opw_params.at("a2").as<double>();
+  params.b = opw_params.at("b").as<double>();
+  params.c1 = opw_params.at("c1").as<double>();
+  params.c2 = opw_params.at("c2").as<double>();
+  params.c3 = opw_params.at("c3").as<double>();
+  params.c4 = opw_params.at("c4").as<double>();
 
-  try
+  if (const auto* value = opw_params.find("offsets"); value != nullptr && !value->isNull())
   {
-    if (YAML::Node n = config["base_link"])
-      base_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("OPWInvKinFactory, missing 'base_link' entry");
-
-    if (YAML::Node n = config["tip_link"])
-      tip_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("OPWInvKinFactory, missing 'tip_link' entry");
-
-    if (YAML::Node opw_params = config["params"])
-    {
-      if (YAML::Node n = opw_params["a1"])
-        params.a1 = n.as<double>();
-      else
-        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'a1' entry");
-
-      if (YAML::Node n = opw_params["a2"])
-        params.a2 = n.as<double>();
-      else
-        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'a2' entry");
-
-      if (YAML::Node n = opw_params["b"])
-        params.b = n.as<double>();
-      else
-        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'b' entry");
-
-      if (YAML::Node n = opw_params["c1"])
-        params.c1 = n.as<double>();
-      else
-        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c1' entry");
-
-      if (YAML::Node n = opw_params["c2"])
-        params.c2 = n.as<double>();
-      else
-        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c2' entry");
-
-      if (YAML::Node n = opw_params["c3"])
-        params.c3 = n.as<double>();
-      else
-        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c3' entry");
-
-      if (YAML::Node n = opw_params["c4"])
-        params.c4 = n.as<double>();
-      else
-        throw std::runtime_error("OPWInvKinFactory, 'params' missing 'c4' entry");
-
-      if (YAML::Node offsets = opw_params["offsets"])
-      {
-        auto o = offsets.as<std::vector<double>>();
-        if (o.size() != 6)
-          throw std::runtime_error("OPWInvKinFactory, offsets should have six elements!");
-
-        std::copy(o.begin(), o.end(), params.offsets.begin());
-      }
-
-      if (YAML::Node sign_corrections = opw_params["sign_corrections"])
-      {
-        auto sc = sign_corrections.as<std::vector<int>>();
-        if (sc.size() != 6)
-          throw std::runtime_error("OPWInvKinFactory, sign_corrections should have six elements!");
-
-        for (std::size_t i = 0; i < sc.size(); ++i)
-        {
-          if (sc[i] == 1)
-            params.sign_corrections[i] = 1;
-          else if (sc[i] == -1)
-            params.sign_corrections[i] = -1;
-          else
-            throw std::runtime_error("OPWInvKinFactory, sign_corrections can only contain 1 or -1");
-        }
-      }
-    }
-    else
-    {
-      throw std::runtime_error("OPWInvKinFactory, missing 'params' entry");
-    }
-
-    path = scene_graph.getShortestPath(base_link, tip_link);
-
-    return std::make_unique<OPWInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
+    const auto offsets = value->as<std::vector<double>>();
+    std::copy(offsets.begin(), offsets.end(), params.offsets.begin());
   }
-  catch (const std::exception& e)
+  if (const auto* value = opw_params.find("sign_corrections"); value != nullptr && !value->isNull())
   {
-    CONSOLE_BRIDGE_logError("OPWInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
-    return nullptr;
+    const auto sign_corrections = value->as<std::vector<int>>();
+    std::copy(sign_corrections.begin(), sign_corrections.end(), params.sign_corrections.begin());
   }
+
+  const auto path = scene_graph.getShortestPath(base_link, tip_link);
+  return std::make_unique<OPWInvKin>(params, base_link, tip_link, path.active_joints, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(OPWFactoriesAnchor)

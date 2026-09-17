@@ -32,12 +32,14 @@ namespace tesseract::kinematics
 class ROPInvKinFactory : public InvKinFactory
 {
 public:
-  std::unique_ptr<InverseKinematics> create(const std::string& solver_name,
-                                            const tesseract::scene_graph::SceneGraph& scene_graph,
-                                            const tesseract::scene_graph::SceneState& scene_state,
-                                            const KinematicsPluginFactory& plugin_factory,
-                                            const YAML::Node& config) const override final;
   tesseract::common::PropertyTree schema() const override;
+
+protected:
+  std::unique_ptr<InverseKinematics> createImpl(const std::string& solver_name,
+                                                const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                const tesseract::scene_graph::SceneState& scene_state,
+                                                const KinematicsPluginFactory& plugin_factory,
+                                                const tesseract::common::PropertyTree& config) const override final;
 };
 
 PLUGIN_ANCHOR_DECL(ROPInvKinFactoriesAnchor)

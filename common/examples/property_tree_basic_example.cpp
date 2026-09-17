@@ -44,8 +44,8 @@
  *
  * 1. **Build a Schema** using PropertyTreeBuilder with types and constraints
  * 2. **Load Configuration** from a YAML node
- * 3. **Merge Config into Schema** to populate values and apply defaults
- * 4. **Validate** to check all constraints, collecting all errors
+ * 3. **Apply Config to Schema** to populate values, apply defaults, and collect all errors
+ * 4. **Validate Programmatic Changes** separately when values are changed after applying configuration
  * 5. **Access Results** from the merged, validated schema tree
  *
  * @section basic_property_tree_code Example Code
@@ -58,9 +58,9 @@
  *
  * @snippet property_tree_basic_example.cpp merge_validate_start
  *
- * After defining a schema, merge a user config into it. The mergeConfig() call
- * populates values and applies defaults. Then validate() checks all constraints
- * and returns a vector of error strings (empty on success).
+ * After defining a schema, apply a user config to it. The applyConfig() call
+ * populates values, applies defaults, validates all constraints, and returns a
+ * vector of error strings (empty on success).
  *
  * @section basic_property_tree_run Running the Example
  *
@@ -125,8 +125,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Make a copy of schema for each test
   auto schema_copy = schema;
-  schema_copy.mergeConfig(valid_config);
-  auto errors = schema_copy.validate();
+  auto errors = schema_copy.applyConfig(valid_config);
   //! [merge_validate_start]
 
   if (errors.empty())
@@ -160,8 +159,7 @@ int main(int /*argc*/, char** /*argv*/)
   missing_required["workspace"]["y_max"] = 1.0;
 
   schema_copy = schema;
-  schema_copy.mergeConfig(missing_required);
-  errors = schema_copy.validate();
+  errors = schema_copy.applyConfig(missing_required);
 
   if (!errors.empty())
   {
@@ -185,8 +183,7 @@ int main(int /*argc*/, char** /*argv*/)
   out_of_range["workspace"]["y_max"] = 1.0;
 
   schema_copy = schema;
-  schema_copy.mergeConfig(out_of_range);
-  errors = schema_copy.validate();
+  errors = schema_copy.applyConfig(out_of_range);
 
   if (!errors.empty())
   {
@@ -208,8 +205,7 @@ int main(int /*argc*/, char** /*argv*/)
   // missing 'workspace' (required subfields)
 
   schema_copy = schema;
-  schema_copy.mergeConfig(multiple_errors);
-  errors = schema_copy.validate();
+  errors = schema_copy.applyConfig(multiple_errors);
 
   std::cout << "✗ Validation found " << errors.size() << " error(s):\n";
   for (const auto& err : errors)

@@ -58,7 +58,7 @@ tesseract::common::PropertyTree kdlInvKinChainLMAFactorySchema()
       .attribute(property_attribute::TYPE, property_type::CONTAINER)
       .string("base_link").required().minimumLength(1).done()
       .string("tip_link").required().minimumLength(1).done()
-      .eigenVectorXd("task_weights").done()
+      .customType("task_weights", property_type::createList(property_type::FLOAT64, 6)).done()
       .float64("eps").done()
       .int32("max_iterations").done()
       .float64("eps_joints").done()
@@ -94,174 +94,84 @@ tesseract::common::PropertyTree KDLInvKinChainNRFactory::schema() const { return
 tesseract::common::PropertyTree KDLInvKinChainNR_JLFactory::schema() const { return kdlInvKinChainNRFactorySchema(); }
 
 std::unique_ptr<ForwardKinematics>
-KDLFwdKinChainFactory::create(const std::string& solver_name,
-                              const tesseract::scene_graph::SceneGraph& scene_graph,
-                              const tesseract::scene_graph::SceneState& /*scene_state*/,
-                              const KinematicsPluginFactory& /*plugin_factory*/,
-                              const YAML::Node& config) const
+KDLFwdKinChainFactory::createImpl(const std::string& solver_name,
+                                  const tesseract::scene_graph::SceneGraph& scene_graph,
+                                  const tesseract::scene_graph::SceneState& /*scene_state*/,
+                                  const KinematicsPluginFactory& /*plugin_factory*/,
+                                  const tesseract::common::PropertyTree& config) const
 {
-  common::LinkId base_link;
-  common::LinkId tip_link;
-
-  try
-  {
-    if (YAML::Node n = config["base_link"])
-      base_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLFwdKinChainFactory, missing 'base_link' entry");
-
-    if (YAML::Node n = config["tip_link"])
-      tip_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLFwdKinChainFactory, missing 'tip_link' entry");
-
-    return std::make_unique<KDLFwdKinChain>(scene_graph, base_link, tip_link, solver_name);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("KDLFwdKinChainFactory: Failed to parse yaml config data! Details: %s", e.what());
-    return nullptr;
-  }
+  const common::LinkId base_link(config.at("base_link").as<std::string>());
+  const common::LinkId tip_link(config.at("tip_link").as<std::string>());
+  return std::make_unique<KDLFwdKinChain>(scene_graph, base_link, tip_link, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>
-KDLInvKinChainLMAFactory::create(const std::string& solver_name,
-                                 const tesseract::scene_graph::SceneGraph& scene_graph,
-                                 const tesseract::scene_graph::SceneState& /*scene_state*/,
-                                 const KinematicsPluginFactory& /*plugin_factory*/,
-                                 const YAML::Node& config) const
+KDLInvKinChainLMAFactory::createImpl(const std::string& solver_name,
+                                     const tesseract::scene_graph::SceneGraph& scene_graph,
+                                     const tesseract::scene_graph::SceneState& /*scene_state*/,
+                                     const KinematicsPluginFactory& /*plugin_factory*/,
+                                     const tesseract::common::PropertyTree& config) const
 {
-  common::LinkId base_link;
-  common::LinkId tip_link;
+  const common::LinkId base_link(config.at("base_link").as<std::string>());
+  const common::LinkId tip_link(config.at("tip_link").as<std::string>());
   KDLInvKinChainLMA::Config kdl_config;
 
-  try
-  {
-    if (YAML::Node n = config["base_link"])
-      base_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLInvKinChainLMAFactory, missing 'base_link' entry");
+  if (const auto* value = config.find("task_weights"); value != nullptr && !value->isNull())
+    kdl_config.task_weights = value->as<std::array<double, 6>>();
+  if (const auto* value = config.find("eps"); value != nullptr && !value->isNull())
+    kdl_config.eps = value->as<double>();
+  if (const auto* value = config.find("max_iterations"); value != nullptr && !value->isNull())
+    kdl_config.max_iterations = value->as<int>();
+  if (const auto* value = config.find("eps_joints"); value != nullptr && !value->isNull())
+    kdl_config.eps_joints = value->as<double>();
 
-    if (YAML::Node n = config["tip_link"])
-      tip_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLInvKinChainLMAFactory, missing 'tip_link' entry");
-
-    // Optional configuration parameters
-    if (YAML::Node n = config["task_weights"])
-    {
-      // Make sure the length matches the constructor interface
-      if (n.size() != 6)
-        throw std::runtime_error("KDLInvKinChainLMAFactory, size of task_weights needs to be 6");
-
-      kdl_config.task_weights = n.as<std::array<double, 6>>();
-    }
-
-    if (YAML::Node n = config["eps"])
-      kdl_config.eps = n.as<double>();
-
-    if (YAML::Node n = config["max_iterations"])
-      kdl_config.max_iterations = n.as<int>();
-
-    if (YAML::Node n = config["eps_joints"])
-      kdl_config.eps_joints = n.as<double>();
-
-    return std::make_unique<KDLInvKinChainLMA>(scene_graph, base_link, tip_link, kdl_config, solver_name);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("KDLInvKinChainLMAFactory: Failed to parse yaml config data! Details: %s", e.what());
-    return nullptr;
-  }
+  return std::make_unique<KDLInvKinChainLMA>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>
-KDLInvKinChainNRFactory::create(const std::string& solver_name,
-                                const tesseract::scene_graph::SceneGraph& scene_graph,
-                                const tesseract::scene_graph::SceneState& /*scene_state*/,
-                                const KinematicsPluginFactory& /*plugin_factory*/,
-                                const YAML::Node& config) const
+KDLInvKinChainNRFactory::createImpl(const std::string& solver_name,
+                                    const tesseract::scene_graph::SceneGraph& scene_graph,
+                                    const tesseract::scene_graph::SceneState& /*scene_state*/,
+                                    const KinematicsPluginFactory& /*plugin_factory*/,
+                                    const tesseract::common::PropertyTree& config) const
 {
-  common::LinkId base_link;
-  common::LinkId tip_link;
+  const common::LinkId base_link(config.at("base_link").as<std::string>());
+  const common::LinkId tip_link(config.at("tip_link").as<std::string>());
   KDLInvKinChainNR::Config kdl_config;
 
-  try
-  {
-    if (YAML::Node n = config["base_link"])
-      base_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLInvKinChainNRFactory, missing 'base_link' entry");
+  if (const auto* value = config.find("velocity_eps"); value != nullptr && !value->isNull())
+    kdl_config.vel_eps = value->as<double>();
+  if (const auto* value = config.find("velocity_iterations"); value != nullptr && !value->isNull())
+    kdl_config.vel_iterations = value->as<int>();
+  if (const auto* value = config.find("position_eps"); value != nullptr && !value->isNull())
+    kdl_config.pos_eps = value->as<double>();
+  if (const auto* value = config.find("position_iterations"); value != nullptr && !value->isNull())
+    kdl_config.pos_iterations = value->as<int>();
 
-    if (YAML::Node n = config["tip_link"])
-      tip_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLInvKinChainNRFactory, missing 'tip_link' entry");
-
-    // Optional configuration parameters
-    if (YAML::Node n = config["velocity_eps"])
-      kdl_config.vel_eps = n.as<double>();
-
-    if (YAML::Node n = config["velocity_iterations"])
-      kdl_config.vel_iterations = n.as<int>();
-
-    if (YAML::Node n = config["position_eps"])
-      kdl_config.pos_eps = n.as<double>();
-
-    if (YAML::Node n = config["position_iterations"])
-      kdl_config.pos_iterations = n.as<int>();
-
-    return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, kdl_config, solver_name);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("KDLInvKinChainNRFactory: Failed to parse yaml config data! Details: %s", e.what());
-    return nullptr;
-  }
+  return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 std::unique_ptr<InverseKinematics>
-KDLInvKinChainNR_JLFactory::create(const std::string& solver_name,
-                                   const tesseract::scene_graph::SceneGraph& scene_graph,
-                                   const tesseract::scene_graph::SceneState& /*scene_state*/,
-                                   const KinematicsPluginFactory& /*plugin_factory*/,
-                                   const YAML::Node& config) const
+KDLInvKinChainNR_JLFactory::createImpl(const std::string& solver_name,
+                                       const tesseract::scene_graph::SceneGraph& scene_graph,
+                                       const tesseract::scene_graph::SceneState& /*scene_state*/,
+                                       const KinematicsPluginFactory& /*plugin_factory*/,
+                                       const tesseract::common::PropertyTree& config) const
 {
-  common::LinkId base_link;
-  common::LinkId tip_link;
+  const common::LinkId base_link(config.at("base_link").as<std::string>());
+  const common::LinkId tip_link(config.at("tip_link").as<std::string>());
   KDLInvKinChainNR_JL::Config kdl_config;
 
-  try
-  {
-    if (YAML::Node n = config["base_link"])
-      base_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLInvKinChainNR_JLFactory, missing 'base_link' entry");
+  if (const auto* value = config.find("velocity_eps"); value != nullptr && !value->isNull())
+    kdl_config.vel_eps = value->as<double>();
+  if (const auto* value = config.find("velocity_iterations"); value != nullptr && !value->isNull())
+    kdl_config.vel_iterations = value->as<int>();
+  if (const auto* value = config.find("position_eps"); value != nullptr && !value->isNull())
+    kdl_config.pos_eps = value->as<double>();
+  if (const auto* value = config.find("position_iterations"); value != nullptr && !value->isNull())
+    kdl_config.pos_iterations = value->as<int>();
 
-    if (YAML::Node n = config["tip_link"])
-      tip_link = common::LinkId(n.as<std::string>());
-    else
-      throw std::runtime_error("KDLInvKinChainNR_JLFactory, missing 'tip_link' entry");
-    // Optional configuration parameters
-    if (YAML::Node n = config["velocity_eps"])
-      kdl_config.vel_eps = n.as<double>();
-
-    if (YAML::Node n = config["velocity_iterations"])
-      kdl_config.vel_iterations = n.as<int>();
-
-    if (YAML::Node n = config["position_eps"])
-      kdl_config.pos_eps = n.as<double>();
-
-    if (YAML::Node n = config["position_iterations"])
-      kdl_config.pos_iterations = n.as<int>();
-
-    return std::make_unique<KDLInvKinChainNR_JL>(scene_graph, base_link, tip_link, kdl_config, solver_name);
-  }
-  catch (const std::exception& e)
-  {
-    CONSOLE_BRIDGE_logError("KDLInvKinChainNR_JLFactory: Failed to parse yaml config data! Details: %s", e.what());
-    return nullptr;
-  }
+  return std::make_unique<KDLInvKinChainNR_JL>(scene_graph, base_link, tip_link, kdl_config, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(KDLFactoriesAnchor)

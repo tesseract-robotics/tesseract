@@ -31,8 +31,7 @@ plugins:
 )");
 
   auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
-  schema.mergeConfig(config, true);
-  EXPECT_TRUE(schema.validate(true).empty());
+  EXPECT_TRUE(schema.applyConfig(config, true).empty());
 
   const auto discovery_info = config.as<PluginDiscoveryInfo>();
   EXPECT_EQ(discovery_info.search_paths, (std::vector<std::string>{ "/tmp/plugins", "/opt/plugins" }));
@@ -43,8 +42,7 @@ TEST(PluginDiscoverySchema, OmittedMetadataIsValid)  // NOLINT
 {
   YAML::Node config = YAML::Load("plugins: {}");
   auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
-  schema.mergeConfig(config, true);
-  EXPECT_TRUE(schema.validate(true).empty());
+  EXPECT_TRUE(schema.applyConfig(config, true).empty());
 
   const auto discovery_info = config.as<PluginDiscoveryInfo>();
   EXPECT_TRUE(discovery_info.search_paths.empty());
@@ -56,8 +54,7 @@ TEST(PluginDiscoverySchema, InvalidMetadataTypes)  // NOLINT
   {
     YAML::Node config = YAML::Load("search_paths: /tmp/plugins");
     auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
-    schema.mergeConfig(config, true);
-    const auto errors = schema.validate(true);
+    const auto errors = schema.applyConfig(config, true);
     EXPECT_FALSE(errors.empty());
     EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
       return error.find("search_paths") != std::string::npos;
@@ -67,8 +64,7 @@ TEST(PluginDiscoverySchema, InvalidMetadataTypes)  // NOLINT
   {
     YAML::Node config = YAML::Load("search_libraries: [plugin_a, { invalid: value }]");
     auto schema = YAML::convert<PluginDiscoveryInfo>::schema();
-    schema.mergeConfig(config, true);
-    const auto errors = schema.validate(true);
+    const auto errors = schema.applyConfig(config, true);
     EXPECT_FALSE(errors.empty());
     EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
       return error.find("search_libraries") != std::string::npos;
@@ -372,31 +368,26 @@ TEST(PropertyTreeCopy, MoveConstruct)  // NOLINT
   EXPECT_EQ(moved.at("a").as<int32_t>(), 1);
 }
 
-TEST(PropertyTreeCopy, DeepCopyWithOneOfPreservesState)  // NOLINT
+TEST(PropertyTreeCopy, DeepCopyOfResolvedOneOf)  // NOLINT
 {
-  // Test that the oneof_ member is properly deep-copied by verifying behavior
   // Build a oneOf schema with two branches
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .oneOf()
-                    .container("circle")
-                    .float64("radius")
-                    .required()
-                    .done()
-                    .done()
-                    .container("rectangle")
-                    .float64("width")
-                    .required()
-                    .done()
-                    .float64("height")
-                    .required()
-                    .done()
-                    .done()
-                    .build();
+      .oneOf()
+      .container("circle")
+        .float64("radius").required().done()
+      .done()
+      .container("rectangle")
+        .float64("width").required().done()
+        .float64("height").required().done()
+      .done()
+      .build();
+  // clang-format on
 
   // Merge config to select the circle branch
   YAML::Node config;
   config["radius"] = 5.0;
-  schema.mergeConfig(config);
+  ASSERT_TRUE(schema.applyConfig(config).empty());
 
   // Copy the schema after branch selection
   PropertyTree schema_copy(schema);
@@ -417,30 +408,26 @@ TEST(PropertyTreeCopy, DeepCopyWithOneOfPreservesState)  // NOLINT
   EXPECT_EQ(schema_copy.at("radius").as<double>(), 10.0);
 }
 
-TEST(PropertyTreeCopy, DeepCopyAssignmentWithOneOfPreservesState)  // NOLINT
+TEST(PropertyTreeCopy, DeepCopyAssignmentOfResolvedOneOf)  // NOLINT
 {
-  // Test that assignment operator also deep-copies oneof_ by verifying behavior
+  // Test that assignment also deep-copies the resolved branch.
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .oneOf()
-                    .container("option_a")
-                    .string("name")
-                    .required()
-                    .done()
-                    .done()
-                    .container("option_b")
-                    .int32("id")
-                    .required()
-                    .done()
-                    .string("label")
-                    .required()
-                    .done()
-                    .done()
-                    .build();
+      .oneOf()
+      .container("option_a")
+        .string("name").required().done()
+      .done()
+      .container("option_b")
+        .int32("id").required().done()
+        .string("label").required().done()
+      .done()
+      .build();
+  // clang-format on
 
   YAML::Node config;
   config["id"] = 42;
   config["label"] = "test";
-  schema.mergeConfig(config);
+  ASSERT_TRUE(schema.applyConfig(config).empty());
 
   PropertyTree schema_copy;
   schema_copy = schema;
@@ -506,7 +493,7 @@ TEST(PropertyTreeSerialization, OperatorStream)  // NOLINT
 }
 
 // ===========================================================================
-//  PropertyTree – MergeConfig
+//  PropertyTree – ApplyConfig
 // ===========================================================================
 
 TEST(PropertyTreeMerge, ScalarMerge)  // NOLINT
@@ -514,7 +501,7 @@ TEST(PropertyTreeMerge, ScalarMerge)  // NOLINT
   PropertyTree schema;
   schema.setAttribute(TYPE, STRING);
 
-  schema.mergeConfig(YAML::Node("hello"));
+  EXPECT_TRUE(schema.applyConfig(YAML::Node("hello")).empty());
   EXPECT_EQ(schema.as<std::string>(), "hello");
 }
 
@@ -524,7 +511,7 @@ TEST(PropertyTreeMerge, DefaultApplied)  // NOLINT
   schema.setAttribute(TYPE, STRING);
   schema.setAttribute(DEFAULT, "fallback");
 
-  schema.mergeConfig(YAML::Node());
+  EXPECT_TRUE(schema.applyConfig(YAML::Node()).empty());
   EXPECT_EQ(schema.as<std::string>(), "fallback");
 }
 
@@ -540,7 +527,7 @@ TEST(PropertyTreeMerge, MapMerge)  // NOLINT
   YAML::Node config;
   config["name"] = "Bob";
 
-  schema.mergeConfig(config);
+  EXPECT_TRUE(schema.applyConfig(config).empty());
   EXPECT_EQ(schema.at("name").as<std::string>(), "Bob");
   EXPECT_EQ(schema.at("age").as<int32_t>(), 25);
 }
@@ -555,8 +542,7 @@ TEST(PropertyTreeMerge, ExtraPropertyTracked)  // NOLINT
   config["known"] = "value";
   config["extra"] = "surprise";
 
-  schema.mergeConfig(config, /*allow_extra_properties=*/false);
-  auto errors = schema.validate(/*allow_extra_properties=*/false);
+  auto errors = schema.applyConfig(config, /*allow_extra_properties=*/false);
   EXPECT_FALSE(errors.empty());
 
   bool found_extra = false;
@@ -581,14 +567,14 @@ TEST(PropertyTreeMerge, SequenceMerge)  // NOLINT
   config.push_back("b");
   config.push_back("c");
 
-  schema.mergeConfig(config);
+  EXPECT_TRUE(schema.applyConfig(config).empty());
   // After merge a sequence is stored as value
   EXPECT_EQ(schema.getValue().size(), 3U);
 }
 
 TEST(PropertyTreeMerge, SequenceWithWildcardElementSchema)  // NOLINT
 {
-  // Test the wildcard element schema expansion path in mergeConfig
+  // Test the wildcard element schema expansion path in applyConfig
   PropertyTree schema;
   schema.setAttribute(TYPE, CONTAINER);
 
@@ -602,7 +588,7 @@ TEST(PropertyTreeMerge, SequenceWithWildcardElementSchema)  // NOLINT
   config.push_back("bob");
   config.push_back("charlie");
 
-  schema.mergeConfig(config);
+  EXPECT_TRUE(schema.applyConfig(config).empty());
 
   // Verify children were created with numeric keys
   EXPECT_EQ(schema.size(), 3U);
@@ -646,7 +632,7 @@ TEST(PropertyTreeMerge, SequenceWithComplexWildcardSchema)  // NOLINT
   obj2["age"] = 25;
   config.push_back(obj2);
 
-  schema.mergeConfig(config);
+  EXPECT_TRUE(schema.applyConfig(config).empty());
 
   // Verify structure
   EXPECT_EQ(schema.size(), 2U);
@@ -672,8 +658,7 @@ TEST(PropertyTreeValidate, RequiredFieldMissing)  // NOLINT
   schema["name"].setAttribute(REQUIRED, true);
 
   // merge with no config, so "name" is never populated
-  schema.mergeConfig(YAML::Node());
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node());
   EXPECT_FALSE(errors.empty());
 
   bool found = false;
@@ -697,8 +682,7 @@ TEST(PropertyTreeValidate, RequiredFieldPresent)  // NOLINT
 
   YAML::Node config;
   config["name"] = "Alice";
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -708,8 +692,7 @@ TEST(PropertyTreeValidate, EnumValidation)  // NOLINT
   schema.setAttribute(TYPE, STRING);
   schema.setAttribute(ENUM, std::vector<std::string>{ "RED", "GREEN", "BLUE" });
 
-  schema.mergeConfig(YAML::Node("RED"));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node("RED"));
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -720,8 +703,7 @@ TEST(PropertyTreeValidate, EnumValidationFails)  // NOLINT
   schema.setAttribute(REQUIRED, true);
   schema.setAttribute(ENUM, std::vector<std::string>{ "RED", "GREEN", "BLUE" });
 
-  schema.mergeConfig(YAML::Node("YELLOW"));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node("YELLOW"));
   EXPECT_FALSE(errors.empty());
 }
 
@@ -729,16 +711,13 @@ TEST(PropertyTreeValidate, StringLengthConstraints)  // NOLINT
 {
   auto schema = PropertyTreeBuilder().string("name").minimumLength(2).maximumLength(5).done().build();
 
-  schema.mergeConfig(YAML::Load("name: a"));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Load("name: a"));
   ASSERT_EQ(errors.size(), 1U);
   EXPECT_NE(errors.front().find("string length 1 is less than minimum 2"), std::string::npos);
 
-  schema.mergeConfig(YAML::Load("name: valid"));
-  EXPECT_TRUE(schema.validate().empty());
+  EXPECT_TRUE(schema.applyConfig(YAML::Load("name: valid")).empty());
 
-  schema.mergeConfig(YAML::Load("name: too_long"));
-  errors = schema.validate();
+  errors = schema.applyConfig(YAML::Load("name: too_long"));
   ASSERT_EQ(errors.size(), 1U);
   EXPECT_NE(errors.front().find("string length 8 is greater than maximum 5"), std::string::npos);
 }
@@ -751,8 +730,7 @@ TEST(PropertyTreeValidate, IntRangePass)  // NOLINT
   schema.setAttribute(MAXIMUM, 100);
   schema.setAttribute(REQUIRED, true);
 
-  schema.mergeConfig(YAML::Node(50));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node(50));
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -764,8 +742,7 @@ TEST(PropertyTreeValidate, IntRangeFail)  // NOLINT
   schema.setAttribute(MAXIMUM, 100);
   schema.setAttribute(REQUIRED, true);
 
-  schema.mergeConfig(YAML::Node(200));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node(200));
   EXPECT_FALSE(errors.empty());
   EXPECT_NE(errors[0].find("greater than maximum"), std::string::npos);
 }
@@ -778,8 +755,7 @@ TEST(PropertyTreeValidate, DoubleRangeFail)  // NOLINT
   schema.setAttribute(MAXIMUM, 1.0);
   schema.setAttribute(REQUIRED, true);
 
-  schema.mergeConfig(YAML::Node(-0.5));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node(-0.5));
   EXPECT_FALSE(errors.empty());
   EXPECT_NE(errors[0].find("less than minimum"), std::string::npos);
 }
@@ -790,8 +766,7 @@ TEST(PropertyTreeValidate, TypeCastFail)  // NOLINT
   schema.setAttribute(TYPE, INT32);
   schema.setAttribute(REQUIRED, true);
 
-  schema.mergeConfig(YAML::Node("not_an_int"));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node("not_an_int"));
   EXPECT_FALSE(errors.empty());
 }
 
@@ -804,8 +779,7 @@ TEST(PropertyTreeValidate, SequenceValidation)  // NOLINT
   YAML::Node config(YAML::NodeType::Sequence);
   config.push_back("a");
   config.push_back("b");
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -818,8 +792,7 @@ TEST(PropertyTreeValidate, MapValidation)  // NOLINT
   YAML::Node config(YAML::NodeType::Map);
   config["a"] = 1;
   config["b"] = 2;
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -832,8 +805,7 @@ TEST(PropertyTreeValidate, ContainerValidation)  // NOLINT
 
   YAML::Node config;
   config["x"] = "hello";
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -848,8 +820,7 @@ TEST(PropertyTreeValidate, CustomValidatorCalled)  // NOLINT
       errors.push_back(path + ": value must not be empty");
   });
 
-  schema.mergeConfig(YAML::Node(""));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node(""));
   EXPECT_FALSE(errors.empty());
   EXPECT_NE(errors[0].find("must not be empty"), std::string::npos);
 }
@@ -864,8 +835,7 @@ TEST(PropertyTreeValidate, ValidateCollectsMultipleErrors)  // NOLINT
   schema["b"].setAttribute(REQUIRED, true);
 
   // merge empty config -> both "a" and "b" are missing
-  schema.mergeConfig(YAML::Node());
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node());
   EXPECT_GE(errors.size(), 2U);
 }
 
@@ -875,8 +845,7 @@ TEST(PropertyTreeValidate, NonRequiredNullSkipsValidators)  // NOLINT
   schema.setAttribute(TYPE, INT32);
   schema.setAttribute(MINIMUM, 0);
   // NOT required, and no config provided
-  schema.mergeConfig(YAML::Node());
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node());
   EXPECT_TRUE(errors.empty());
 }
 
@@ -890,7 +859,7 @@ TEST(PropertyTreeValidate, AllowExtraProperties)  // NOLINT
   config["known"] = "value";
   config["extra"] = "surprise";
 
-  schema.mergeConfig(config, /*allow_extra_properties=*/false);
+  static_cast<void>(schema.applyConfig(config, /*allow_extra_properties=*/false));
   auto errors = schema.validate(/*allow_extra_properties=*/true);
   EXPECT_TRUE(errors.empty());
 }
@@ -1162,8 +1131,7 @@ TEST(PropertyTreeBuilder, ValidatorAttachment)  // NOLINT
   // Merge and validate to trigger the validator
   YAML::Node config;
   config["val"] = "test";
-  tree.mergeConfig(config);
-  auto errors = tree.validate();
+  auto errors = tree.applyConfig(config);
   EXPECT_TRUE(called);
   EXPECT_TRUE(errors.empty());
 }
@@ -1198,8 +1166,7 @@ TEST(PropertyTreeBuilder, BuildAndMergeValidate)  // NOLINT
   config["name"] = "test";
   config["count"] = 50;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 
   EXPECT_EQ(schema.at("name").as<std::string>(), "test");
@@ -1429,8 +1396,7 @@ TEST(SchemaRegistry, RegisterSchemaFromFileComplexMergeAndValidate)  // NOLINT
     config["name"] = "Bob";
     config["age"] = 45;
 
-    schema.mergeConfig(config);
-    auto errors = schema.validate();
+    auto errors = schema.applyConfig(config);
 
     EXPECT_TRUE(errors.empty()) << errors[0];
     EXPECT_EQ(schema.at("name").as<std::string>(), "Bob");
@@ -1638,8 +1604,7 @@ TEST(YamlSchemas, Isometry3dSchemaValidConfig)  // NOLINT
   config["orientation"]["z"] = 0.0;
   config["orientation"]["w"] = 1.0;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -1654,8 +1619,7 @@ TEST(YamlSchemas, Isometry3dSchemaMissingPosition)  // NOLINT
   config["orientation"]["w"] = 1.0;
   // position is missing
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 
   bool found = false;
@@ -1786,8 +1750,7 @@ TEST(YamlSchemas, CollisionMarginPairOverrideValidEnum)  // NOLINT
   auto schema = YAML::convert<tesseract::common::CollisionMarginPairOverrideType>::schema();
   schema.setAttribute(REQUIRED, true);
 
-  schema.mergeConfig(YAML::Node("MODIFY"));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node("MODIFY"));
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -1796,8 +1759,7 @@ TEST(YamlSchemas, CollisionMarginPairOverrideInvalidEnum)  // NOLINT
   auto schema = YAML::convert<tesseract::common::CollisionMarginPairOverrideType>::schema();
   schema.setAttribute(REQUIRED, true);
 
-  schema.mergeConfig(YAML::Node("INVALID"));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node("INVALID"));
   EXPECT_FALSE(errors.empty());
 }
 
@@ -1825,8 +1787,7 @@ TEST(YamlSchemas, PairsCollisionMarginDataValidatorValidData)  // NOLINT
   key2.push_back("link4");
   config[key2] = 0.75;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -1839,8 +1800,7 @@ TEST(YamlSchemas, PairsCollisionMarginDataValidatorNotMap)  // NOLINT
   config.push_back(0.5);
   config.push_back(0.75);
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
   bool found = false;
   for (const auto& e : errors)
@@ -1866,8 +1826,7 @@ TEST(YamlSchemas, PairsCollisionMarginDataValidatorInvalidKeySize)  // NOLINT
   bad_key.push_back("link3");  // Wrong size
   config[bad_key] = 0.5;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
   bool found = false;
   for (const auto& e : errors)
@@ -1889,8 +1848,7 @@ TEST(YamlSchemas, PairsCollisionMarginDataValidatorKeyNotSequence)  // NOLINT
   YAML::Node config(YAML::NodeType::Map);
   config["scalar_key"] = 0.5;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
   bool found = false;
   for (const auto& e : errors)
@@ -1915,8 +1873,7 @@ TEST(YamlSchemas, PairsCollisionMarginDataValidatorInvalidValueCast)  // NOLINT
   key.push_back("link2");
   config[key] = "not_a_number";
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 }
 
@@ -1936,8 +1893,7 @@ TEST(YamlSchemas, AllowedCollisionEntriesValidatorValidData)  // NOLINT
   key2.push_back("link4");
   config[key2] = "reason2";
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 }
 
@@ -1946,8 +1902,7 @@ TEST(YamlSchemas, AllowedCollisionEntriesValidatorNotMap)  // NOLINT
   auto schema = YAML::convert<tesseract::common::AllowedCollisionEntries>::schema();
 
   // Invalid: config is a scalar
-  schema.mergeConfig(YAML::Node("not_a_map"));
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(YAML::Node("not_a_map"));
   EXPECT_FALSE(errors.empty());
   bool found = false;
   for (const auto& e : errors)
@@ -1971,8 +1926,7 @@ TEST(YamlSchemas, AllowedCollisionEntriesValidatorInvalidKeySize)  // NOLINT
   bad_key.push_back("link1");  // Only one element
   config[bad_key] = "reason";
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
 }
 
@@ -1984,8 +1938,7 @@ TEST(YamlSchemas, AllowedCollisionEntriesValidatorScalarKey)  // NOLINT
   YAML::Node config(YAML::NodeType::Map);
   config["pair_link1_link2"] = "collision";
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
   bool found = false;
   for (const auto& e : errors)
@@ -2011,8 +1964,7 @@ TEST(YamlSchemas, AllowedCollisionEntriesValidatorInvalidValueCast)  // NOLINT
   key.push_back("link2");
   config[key] = 12345;  // Number instead of string
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   // Numeric values can typically be cast to string, so this may pass
   // The test verifies the code path works
   EXPECT_TRUE(errors.empty() || !errors.empty());  // Accept either result
@@ -2025,8 +1977,7 @@ TEST(YamlSchemas, AllowedCollisionEntriesValidatorEmptyMap)  // NOLINT
   // Valid: empty map (no entries to validate)
   YAML::Node config(YAML::NodeType::Map);
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty());
 }
 
@@ -2048,8 +1999,7 @@ TEST(YamlSchemas, AllowedCollisionEntriesValidatorMixed)  // NOLINT
   invalid_key.push_back("link3");
   config[invalid_key] = "invalid_reason";
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_FALSE(errors.empty());
   bool found_size_error = false;
   for (const auto& e : errors)
@@ -2072,7 +2022,7 @@ TEST(YamlSchemas, AllowedCollisionMatrixSchema)  // NOLINT
 }
 
 // ===========================================================================
-//  End-to-end: Builder → MergeConfig → Validate
+//  End-to-end: Builder → ApplyConfig
 // ===========================================================================
 
 TEST(EndToEnd, ComplexSchemaPassesValidation)  // NOLINT
@@ -2096,8 +2046,7 @@ TEST(EndToEnd, ComplexSchemaPassesValidation)  // NOLINT
   config["limits"]["lower"] = -3.14;
   config["limits"]["upper"] = 3.14;
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty()) << errors[0];
 
   EXPECT_EQ(schema.at("name").as<std::string>(), "robot_arm");
@@ -2120,8 +2069,7 @@ TEST(EndToEnd, ComplexSchemaFailsValidation)  // NOLINT
   // name missing (required)
   config["dof"] = 50;  // exceeds maximum
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_GE(errors.size(), 2U);
 
   bool found_required = false;
@@ -2228,16 +2176,15 @@ TEST(PropertyTreeFromYAML, PreservesAttributesNestedChild)  // NOLINT
   EXPECT_EQ(child_type->as<std::string>(), "container");  // NOLINT
 }
 
-TEST(PropertyTreeFromYAML, IgnoresAttributesAndOneofKeys)  // NOLINT
+TEST(PropertyTreeFromYAML, IgnoresAttributesKey)  // NOLINT
 {
   YAML::Node yaml;
   yaml["_attributes"]["type"] = "container";
-  yaml["_oneof"]["branch"]["x"] = 1;
   yaml["actual_child"] = "value";
 
   auto pt = PropertyTree::fromYAML(yaml);
 
-  // Should have only one child: actual_child (not _attributes, not _oneof)
+  // Should have only one child: actual_child (not _attributes)
   EXPECT_EQ(pt.size(), 1U);
   EXPECT_NE(pt.find("actual_child"), nullptr);
   EXPECT_EQ(pt.find("actual_child")->as<std::string>(), "value");
@@ -2302,7 +2249,7 @@ TEST(PropertyTreeOneOf, SelectSingleBranchExact)  // NOLINT
   YAML::Node config;
   config["radius"] = 5.0;
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_TRUE(errors.empty());
@@ -2329,7 +2276,7 @@ TEST(PropertyTreeOneOf, SelectOtherBranch)  // NOLINT
   config["width"] = 10.0;
   config["height"] = 20.0;
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_TRUE(errors.empty());
@@ -2337,19 +2284,131 @@ TEST(PropertyTreeOneOf, SelectOtherBranch)  // NOLINT
   EXPECT_EQ(schema.at("height").as<double>(), 20.0);
 }
 
-TEST(PropertyTreeOneOf, MultipleBranchesMatchThrows)  // NOLINT
+TEST(PropertyTreeOneOf, SelectsScalarOrSequenceBranchByValueShape)  // NOLINT
+{
+  // clang-format off
+  const auto make_schema = []() {
+    return PropertyTreeBuilder()
+        .oneOf()
+          .string("single").done()
+          .customType("multiple", property_type::createList(property_type::STRING)).done()
+        .build();
+  };
+  // clang-format on
+
+  auto scalar_schema = make_schema();
+  EXPECT_TRUE(scalar_schema.applyConfig(YAML::Load("input_program")).empty());
+  EXPECT_EQ(scalar_schema.getAttribute(property_attribute::TYPE)->as<std::string>(), property_type::STRING);
+  EXPECT_EQ(scalar_schema.as<std::string>(), "input_program");
+  EXPECT_TRUE(scalar_schema.validate().empty());
+
+  auto sequence_schema = make_schema();
+  EXPECT_TRUE(sequence_schema.applyConfig(YAML::Load("[first, second]")).empty());
+  EXPECT_EQ(sequence_schema.getAttribute(property_attribute::TYPE)->as<std::string>(),
+            property_type::createList(property_type::STRING));
+  EXPECT_EQ(sequence_schema.as<std::vector<std::string>>(), (std::vector<std::string>{ "first", "second" }));
+  EXPECT_TRUE(sequence_schema.validate().empty());
+
+  auto invalid_schema = make_schema();
+  const auto invalid_errors = invalid_schema.applyConfig(YAML::Load("{unexpected: value}"));
+  ASSERT_EQ(invalid_errors.size(), 1);
+  EXPECT_NE(invalid_errors.front().find("no branch matches"), std::string::npos);
+}
+
+TEST(PropertyTreeOneOf, SelectedValueBranchPreservesCommonMetadata)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .oneOf()
+        .required()
+        .doc("Scalar or sequence")
+        .string("single").done()
+        .customType("multiple", property_type::createList(property_type::STRING)).done()
+      .build();
+  // clang-format on
+
+  static_cast<void>(schema.applyConfig(YAML::Node()));
+  EXPECT_EQ(schema.getAttribute(property_attribute::TYPE)->as<std::string>(), property_type::STRING);
+  EXPECT_EQ(schema.getAttribute(property_attribute::DOC)->as<std::string>(), "Scalar or sequence");
+  EXPECT_TRUE(schema.isRequired());
+  const auto errors = schema.validate();
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("required"), std::string::npos);
+}
+
+TEST(PropertyTreeOneOf, UsesFirstAlternativeForAbsentValue)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .oneOf()
+        .customType("multiple", property_type::createList(property_type::STRING)).done()
+        .string("single").done()
+      .build();
+  // clang-format on
+
+  static_cast<void>(schema.applyConfig(YAML::Node()));
+  EXPECT_EQ(schema.getAttribute(property_attribute::TYPE)->as<std::string>(),
+            property_type::createList(property_type::STRING));
+}
+
+TEST(PropertyTreeOneOf, ValidatesSameShapeAlternativesToSelectBranch)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .oneOf()
+        .int32("integer").done()
+        .boolean("boolean").done()
+      .build();
+  // clang-format on
+
+  static_cast<void>(schema.applyConfig(YAML::Load("true")));
+  EXPECT_EQ(schema.getAttribute(property_attribute::TYPE)->as<std::string>(), property_type::BOOL);
+  EXPECT_TRUE(schema.as<bool>());
+  EXPECT_TRUE(schema.validate().empty());
+}
+
+TEST(PropertyTreeOneOf, ValidatesScalarOrSequenceAsRegisteredMapValue)  // NOLINT
+{
+  constexpr std::string_view union_type{ "test::StringOrStringListOneOf" };
+  // clang-format off
+  auto union_schema = PropertyTreeBuilder()
+      .oneOf()
+        .string("single").done()
+        .customType("multiple", property_type::createList(property_type::STRING)).done()
+      .build();
+  auto schema = PropertyTreeBuilder()
+      .customType("values", property_type::createMap(union_type)).done()
+      .build();
+  // clang-format on
+  SchemaRegistry::instance()->registerSchema(std::string(union_type), union_schema);
+
+  static_cast<void>(schema.applyConfig(YAML::Load("values: {single: input, multiple: [first, second]}")));
+  EXPECT_TRUE(schema.validate().empty());
+
+  auto invalid_schema = PropertyTreeBuilder().customType("values", property_type::createMap(union_type)).done().build();
+  static_cast<void>(invalid_schema.applyConfig(YAML::Load("values: {invalid: {unexpected: value}}")));
+  std::vector<std::string> errors;
+  EXPECT_NO_THROW(errors = invalid_schema.validate());
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("values[invalid]"), std::string::npos);
+  EXPECT_NE(errors.front().find("no branch matches"), std::string::npos);
+}
+
+TEST(PropertyTreeOneOf, MultipleBranchesMatchReturnsError)  // NOLINT
 {
   // Create a pathological case where branch detection could match multiple
   // This is hard to trigger, so we test the error message instead
   auto schema = PropertyTreeBuilder().oneOf().container("a").done().container("b").done().build();
 
-  YAML::Node config;
+  YAML::Node config(YAML::NodeType::Map);
   // Empty config: both branches match (both have zero required fields)
 
-  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+  const auto errors = schema.applyConfig(config);
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("multiple branches match"), std::string::npos) << errors.front();
 }
 
-TEST(PropertyTreeOneOf, NoBranchMatchesThrows)  // NOLINT
+TEST(PropertyTreeOneOf, NoBranchMatchesReturnsError)  // NOLINT
 {
   // clang-format off
   auto schema = PropertyTreeBuilder()
@@ -2367,7 +2426,9 @@ TEST(PropertyTreeOneOf, NoBranchMatchesThrows)  // NOLINT
   YAML::Node config;
   config["unknown_field"] = 42;
 
-  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+  const auto errors = schema.applyConfig(config);
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("no branch matches"), std::string::npos);
 }
 
 TEST(PropertyTreeOneOf, PartialBranchMissingRequired)  // NOLINT
@@ -2389,7 +2450,9 @@ TEST(PropertyTreeOneOf, PartialBranchMissingRequired)  // NOLINT
   config["id"] = 123;
   // Missing 'label' from option_b
 
-  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+  const auto errors = schema.applyConfig(config);
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("no branch matches"), std::string::npos);
 }
 
 TEST(PropertyTreeOneOf, StoresBranchSchema)  // NOLINT
@@ -2410,7 +2473,7 @@ TEST(PropertyTreeOneOf, StoresBranchSchema)  // NOLINT
   YAML::Node config;
   config["value"] = "test";
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
 
   // After merge, schema should contain the selected branch's fields
   EXPECT_EQ(schema.size(), 1U);  // Should have flattened to the selected branch
@@ -2434,7 +2497,7 @@ TEST(PropertyTreeOneOf, ValidationCollectsErrorsAfterBranchSelection)  // NOLINT
   YAML::Node config;
   config["value"] = 150;  // exceeds maximum
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_FALSE(errors.empty());
@@ -2465,7 +2528,7 @@ TEST(PropertyTreeOneOf, DerivedCustomBranchUsesClassDiscriminator)  // NOLINT
   YAML::Node config;
   config["task"] = "registered_task";
 
-  EXPECT_NO_THROW(schema.mergeConfig(config));
+  EXPECT_NO_THROW(static_cast<void>(schema.applyConfig(config)));
   EXPECT_TRUE(schema.validate().empty());
 }
 
@@ -2500,7 +2563,7 @@ TEST(PropertyTreeInlineOneOf, SelectFirstBranch)  // NOLINT
   config["tip_link"] = "tool0";
   config["model"] = "UR5";
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_TRUE(errors.empty()) << errors.front();
@@ -2536,7 +2599,7 @@ TEST(PropertyTreeInlineOneOf, SelectSecondBranch)  // NOLINT
   config["params"]["d1"] = 0.089;
   config["params"]["a2"] = -0.425;
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_TRUE(errors.empty()) << errors.front();
@@ -2545,7 +2608,7 @@ TEST(PropertyTreeInlineOneOf, SelectSecondBranch)  // NOLINT
   EXPECT_EQ(schema.at("params").at("a2").as<double>(), -0.425);
 }
 
-TEST(PropertyTreeInlineOneOf, NoBranchMatchesThrows)  // NOLINT
+TEST(PropertyTreeInlineOneOf, NoBranchMatchesReturnsError)  // NOLINT
 {
   // clang-format off
   auto schema = PropertyTreeBuilder()
@@ -2566,10 +2629,12 @@ TEST(PropertyTreeInlineOneOf, NoBranchMatchesThrows)  // NOLINT
   YAML::Node config;
   config["name"] = "test";
 
-  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+  const auto errors = schema.applyConfig(config);
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("no branch matches"), std::string::npos);
 }
 
-TEST(PropertyTreeInlineOneOf, MultipleBranchesMatchThrows)  // NOLINT
+TEST(PropertyTreeInlineOneOf, MultipleBranchesMatchReturnsError)  // NOLINT
 {
   // Both branches have no required fields — both match
   // clang-format off
@@ -2590,7 +2655,50 @@ TEST(PropertyTreeInlineOneOf, MultipleBranchesMatchThrows)  // NOLINT
   YAML::Node config;
   config["name"] = "test";
 
-  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+  const auto errors = schema.applyConfig(config);
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("multiple branches match"), std::string::npos) << errors.front();
+}
+
+TEST(PropertyTreeApplyConfig, CollectsIndependentErrors)  // NOLINT
+{
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .string("name").required().minimumLength(1).done()
+      .int32("count").minimum(1).done()
+      .beginOneOf()
+        .container("by_first").string("first").required().done().done()
+        .container("by_second").string("second").required().done().done()
+      .endOneOf()
+      .build();
+  // clang-format on
+
+  const auto errors = schema.applyConfig(YAML::Load("count: 0\nunknown: true"));
+  EXPECT_GE(errors.size(), 4);
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
+    return error.find("name") != std::string::npos && error.find("required") != std::string::npos;
+  }));
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
+    return error.find("count") != std::string::npos && error.find("minimum") != std::string::npos;
+  }));
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
+    return error.find("no branch matches") != std::string::npos;
+  }));
+  EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const std::string& error) {
+    return error.find("unknown") != std::string::npos && error.find("does not exist") != std::string::npos;
+  }));
+}
+
+TEST(PropertyTreeValidationError, OwnsAllDiagnostics)  // NOLINT
+{
+  std::vector<std::string> errors{ "first error", "second error" };
+  const PropertyTreeValidationError exception(errors);
+
+  EXPECT_EQ(exception.errors(), errors);
+  const std::string message = exception.what();
+  EXPECT_NE(message.find("first error"), std::string::npos);
+  EXPECT_NE(message.find("second error"), std::string::npos);
 }
 
 TEST(PropertyTreeInlineOneOf, ValidationAppliesToSelectedBranch)  // NOLINT
@@ -2614,7 +2722,7 @@ TEST(PropertyTreeInlineOneOf, ValidationAppliesToSelectedBranch)  // NOLINT
   config["name"] = "test";
   config["value"] = 150;  // exceeds maximum(100)
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_FALSE(errors.empty());
@@ -2652,7 +2760,7 @@ TEST(PropertyTreeInlineOneOf, SharedFieldsValidationStillApplies)  // NOLINT
   config["priority"] = 5;
   config["mode"] = "fast";
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_FALSE(errors.empty());
@@ -2690,7 +2798,7 @@ TEST(PropertyTreeInlineOneOf, EnumValidationInSelectedBranch)  // NOLINT
   config["base_link"] = "base";
   config["model"] = "INVALID_MODEL";
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
 
   EXPECT_FALSE(errors.empty());
@@ -2726,12 +2834,12 @@ TEST(PropertyTreeInlineOneOf, CopyPreservesInlineOneOf)  // NOLINT
   YAML::Node config_a;
   config_a["name"] = "alpha";
   config_a["x"] = "hello";
-  schema.mergeConfig(config_a);
+  static_cast<void>(schema.applyConfig(config_a));
 
   YAML::Node config_b;
   config_b["name"] = "beta";
   config_b["y"] = 42;
-  schema_copy.mergeConfig(config_b);
+  static_cast<void>(schema_copy.applyConfig(config_b));
 
   auto errors_a = schema.validate();
   auto errors_b = schema_copy.validate();
@@ -2763,7 +2871,7 @@ TEST(PropertyTreeInlineOneOf, MultipleGroupsSelectIndependently)  // NOLINT
   config["a"] = "first";
   config["d"] = "second";
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   EXPECT_TRUE(schema.validate().empty());
   EXPECT_EQ(schema.at("a").as<std::string>(), "first");
   EXPECT_EQ(schema.at("d").as<std::string>(), "second");
@@ -2784,7 +2892,7 @@ TEST(PropertyTreeInlineOneOf, RejectsParentPropertyConflict)  // NOLINT
 
   YAML::Node config;
   config["value"] = 42;
-  EXPECT_THROW(schema.mergeConfig(config), std::runtime_error);
+  EXPECT_THROW(static_cast<void>(schema.applyConfig(config)), std::runtime_error);
 }
 
 TEST(PropertyTreePluginContainer, PluginsIsRequired)  // NOLINT
@@ -2794,7 +2902,7 @@ TEST(PropertyTreePluginContainer, PluginsIsRequired)  // NOLINT
 
   YAML::Node config;
   config["container"]["default"] = "plugin";
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
 
   auto errors = schema.validate();
   EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
@@ -2808,7 +2916,7 @@ TEST(PropertyTreePluginContainer, EmptyPluginsMapIsValid)  // NOLINT
 
   YAML::Node config;
   config["container"]["plugins"] = YAML::Node(YAML::NodeType::Map);
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
 
   EXPECT_TRUE(schema.validate().empty());
 }
@@ -2843,21 +2951,16 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionComplex)  // NOLINT
   // Register a complex schema using function
   {
     auto schema_fn = []() {
+      // clang-format off
       return PropertyTreeBuilder()
           .attribute(TYPE, CONTAINER)
-          .string("name")
-          .required()
-          .done()
-          .int32("count")
-          .minimum(1)
-          .maximum(100)
-          .done()
+          .string("name").required().done()
+          .int32("count").minimum(1).maximum(100).done()
           .container("config")
-          .float64("threshold")
-          .defaultVal(0.5)
-          .done()
+            .float64("threshold").defaultVal(0.5).done()
           .done()
           .build();
+      // clang-format on
     };
 
     registerSchema("SchemaRegistrar_Test_Complex", schema_fn);
@@ -2903,17 +3006,17 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionPreservesValidators)  // NOLINT
 
   {
     auto schema_fn = []() {
-      auto schema =
-          PropertyTreeBuilder()
-              .string("path")
-              .required()
-              .validator([](const PropertyTree& node, const std::string& path, std::vector<std::string>& errors) {
-                auto val = node.getValue().as<std::string>();
-                if (val.empty())
-                  errors.push_back(path + ": path must not be empty");
-              })
-              .done()
-              .build();
+      // clang-format off
+      auto schema = PropertyTreeBuilder()
+          .string("path").required()
+            .validator([](const PropertyTree& node, const std::string& path, std::vector<std::string>& errors) {
+              auto val = node.getValue().as<std::string>();
+              if (val.empty())
+                errors.push_back(path + ": path must not be empty");
+            })
+          .done()
+          .build();
+      // clang-format on
 
       return schema;
     };
@@ -2927,7 +3030,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionPreservesValidators)  // NOLINT
   YAML::Node config;
   config["path"] = "test_value";  // Non-empty value should pass
 
-  retrieved.mergeConfig(config);
+  static_cast<void>(retrieved.applyConfig(config));
   auto errors = retrieved.validate();
 
   // Should have no error with non-empty value
@@ -2938,7 +3041,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFunctionPreservesValidators)  // NOLINT
   config.reset();
   config["path"] = "";  // Empty value should trigger validator
 
-  retrieved.mergeConfig(config);
+  static_cast<void>(retrieved.applyConfig(config));
   errors = retrieved.validate();
 
   // Should have error from custom validator
@@ -3147,7 +3250,7 @@ TEST(SchemaRegistrar, RegisterSchemaFromFileMergeAndValidate)  // NOLINT
     config["name"] = "Alice";
     config["age"] = 30;
 
-    schema.mergeConfig(config);
+    static_cast<void>(schema.applyConfig(config));
     auto errors = schema.validate();
 
     EXPECT_TRUE(errors.empty()) << errors[0];
@@ -3199,6 +3302,7 @@ TEST(ValidateCustomType, NonSequenceTypeInvalidData)  // NOLINT
   validateCustomType(node, "test_node", errors);
 
   EXPECT_FALSE(errors.empty());
+  EXPECT_NE(errors.front().find("test_node"), std::string::npos);
   bool found_range = false;
   for (const auto& e : errors)
   {
@@ -3341,6 +3445,56 @@ TEST(ValidateCustomType, MissingTypeAttribute)  // NOLINT
   EXPECT_TRUE(found_type_error);
 }
 
+TEST(ValidateCustomType, MissingRequiredOneOfReturnsValidationError)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  // clang-format off
+  auto oneof_schema = PropertyTreeBuilder()
+      .oneOf()
+      .container("first")
+        .string("first_value").required().done()
+      .done()
+      .container("second")
+        .string("second_value").required().done()
+      .done()
+      .build();
+  // clang-format on
+  reg->registerSchema("test::RequiredOneOf", oneof_schema);
+
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .container("root")
+        .customType("choice", "test::RequiredOneOf").required().validator(validateCustomType).done()
+      .done()
+      .build();
+  // clang-format on
+  static_cast<void>(schema.applyConfig(YAML::Load("root: {}")));
+
+  std::vector<std::string> errors;
+  EXPECT_NO_THROW(errors = schema.validate());
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("root.choice"), std::string::npos);
+  EXPECT_NE(errors.front().find("required"), std::string::npos);
+}
+
+TEST(PropertyTreeValidation, PresentContainerRunsValidator)  // NOLINT
+{
+  bool validator_called = false;
+  // clang-format off
+  auto schema = PropertyTreeBuilder()
+      .attribute(TYPE, CONTAINER)
+      .validator([&validator_called](const PropertyTree& /*node*/,
+                                     const std::string& /*path*/,
+                                     std::vector<std::string>& /*errors*/) { validator_called = true; })
+      .string("field").done()
+      .build();
+  // clang-format on
+  static_cast<void>(schema.applyConfig(YAML::Load("field: value")));
+
+  EXPECT_TRUE(schema.validate().empty());
+  EXPECT_TRUE(validator_called);
+}
+
 TEST(ValidateCustomType, SequenceMultipleElementErrors)  // NOLINT
 {
   auto reg = SchemaRegistry::instance();
@@ -3475,7 +3629,7 @@ TEST(AcceptsDerivedTypes, ValidateAcceptsBaseType)  // NOLINT
   // Merge with data that has the base type
   YAML::Node config(YAML::NodeType::Map);
   config[std::string("type")] = "test::BaseBuild";
-  field_schema.mergeConfig(config);
+  static_cast<void>(field_schema.applyConfig(config));
 
   auto errors = field_schema.validate();
   // Should not error because base type is valid
@@ -3503,7 +3657,7 @@ TEST(AcceptsDerivedTypes, ValidateAcceptsDerivedType)  // NOLINT
   // Merge with data that has the derived type
   YAML::Node config(YAML::NodeType::Map);
   config[std::string("type")] = "test::ActualDerived";
-  field_schema.mergeConfig(config);
+  static_cast<void>(field_schema.applyConfig(config));
 
   auto errors = field_schema.validate();
   // Should not error because derived type is valid
@@ -3525,7 +3679,7 @@ TEST(AcceptsDerivedTypes, ValidateRejectsUnregisteredDerivedType)  // NOLINT
   // Merge with data that has a type not registered as derived
   YAML::Node config(YAML::NodeType::Map);
   config[std::string("type")] = "test::UnregisteredDerived";
-  field_schema.mergeConfig(config);
+  static_cast<void>(field_schema.applyConfig(config));
 
   auto errors = field_schema.validate();
   // Should have error because type is not registered as derived
@@ -3566,7 +3720,7 @@ TEST(AcceptsDerivedTypes, SequenceWithMixedDerivedTypes)  // NOLINT
   elem2[std::string("type")] = "test::DerivedSeqB";
   sequence.push_back(elem2);
 
-  sequence_schema.mergeConfig(sequence);
+  static_cast<void>(sequence_schema.applyConfig(sequence));
 
   auto errors = sequence_schema.validate();
   // Should not error because both elements have valid derived types
@@ -3600,7 +3754,7 @@ TEST(AcceptsDerivedTypes, SequenceRejectsMixedInvalidType)  // NOLINT
   elem2[std::string("type")] = "test::InvalidDerivedMixed";  // Not registered as derived
   sequence.push_back(elem2);
 
-  sequence_schema.mergeConfig(sequence);
+  static_cast<void>(sequence_schema.applyConfig(sequence));
 
   auto errors = sequence_schema.validate();
   // Should have error for element [1]
@@ -3707,32 +3861,21 @@ TEST(PropertyTreeOperatorBool, BoolConversionEmpty)  // NOLINT
 
 TEST(PropertyTreeBuilder, AllBuilderTypes)  // NOLINT
 {
+  // clang-format off
   auto schema = PropertyTreeBuilder()
-                    .container("root")
-                    .string("name")
-                    .doc("A string")
-                    .done()
-                    .character("ch")
-                    .done()
-                    .boolean("flag")
-                    .defaultVal(true)
-                    .done()
-                    .int32("count")
-                    .minimum(-10)
-                    .maximum(100)
-                    .done()
-                    .uint32("size")
-                    .done()
-                    .int64("big")
-                    .done()
-                    .uint64("huge")
-                    .done()
-                    .float32("fval")
-                    .done()
-                    .float64("dval")
-                    .done()
-                    .done()
-                    .build();
+      .container("root")
+        .string("name").doc("A string").done()
+        .character("ch").done()
+        .boolean("flag").defaultVal(true).done()
+        .int32("count").minimum(-10).maximum(100).done()
+        .uint32("size").done()
+        .int64("big").done()
+        .uint64("huge").done()
+        .float32("fval").done()
+        .float64("dval").done()
+      .done()
+      .build();
+  // clang-format on
 
   EXPECT_FALSE(schema.empty());
   EXPECT_EQ(schema.size(), 1U);
@@ -3819,7 +3962,7 @@ TEST(ValidateCustomType, MapTypeValidWithDerivedValues)  // NOLINT
   value1[std::string("type")] = "test::DerivedMapValueA";
   map[std::string("key1")] = value1;
 
-  map_schema.mergeConfig(map);
+  static_cast<void>(map_schema.applyConfig(map));
   auto errors = map_schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -3839,7 +3982,7 @@ TEST(ValidateCustomType, MapTypeRejectsInvalidDerivedType)  // NOLINT
   value[std::string("type")] = "test::NonExistentType";
   map[std::string("key")] = value;
 
-  map_schema.mergeConfig(map);
+  static_cast<void>(map_schema.applyConfig(map));
   auto errors = map_schema.validate();
   EXPECT_FALSE(errors.empty());
 }
@@ -3857,7 +4000,7 @@ TEST(ValidateCustomType, SequenceRejectsDerivedTypeWithoutSchema)  // NOLINT
   YAML::Node element;
   element["type"] = "test::StrictSequenceDerivedWithoutSchema";
   config.push_back(element);
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
 
   auto errors = schema.validate();
   EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
@@ -3875,7 +4018,7 @@ TEST(ValidateCustomType, MapRejectsDerivedTypeWithoutSchema)  // NOLINT
 
   YAML::Node config(YAML::NodeType::Map);
   config["entry"]["type"] = "test::StrictMapDerivedWithoutSchema";
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
 
   auto errors = schema.validate();
   EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& error) {
@@ -3903,7 +4046,7 @@ TEST(ValidateCustomType, MapTypePluginInfoStructure)  // NOLINT
   plugin_info[std::string("class")] = "test::ConcretePlugin";
   map[std::string("plugin1")] = plugin_info;
 
-  map_schema.mergeConfig(map);
+  static_cast<void>(map_schema.applyConfig(map));
   auto errors = map_schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -3919,6 +4062,21 @@ TEST(ValidateCustomType, MapTypeNotAMap)  // NOLINT
   EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
     return e.find("not of type YAML::NodeType::Map") != std::string::npos;
   }));
+}
+
+TEST(ValidateCustomType, MapTypeRejectsNonScalarKeyWithoutThrowing)  // NOLINT
+{
+  auto reg = SchemaRegistry::instance();
+  reg->registerSchema("test::MapValue", PropertyTreeBuilder().attribute(TYPE, STRING).build());
+
+  PropertyTree node;
+  node.setAttribute(TYPE, createMap("test::MapValue"));
+  node.setValue(YAML::Load("? [first, second]\n: value"));
+
+  std::vector<std::string> errors;
+  EXPECT_NO_THROW(validateCustomType(node, "test_node", errors));
+  ASSERT_EQ(errors.size(), 1);
+  EXPECT_NE(errors.front().find("map key at index 0 is not a string"), std::string::npos);
 }
 
 // ===========================================================================
@@ -3971,7 +4129,7 @@ TEST(TypeCoverage, ListOfBool)  // NOLINT
   config.push_back(YAML::Node(true));
   config.push_back(YAML::Node(false));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -3984,9 +4142,15 @@ TEST(TypeCoverage, ListOfString)  // NOLINT
   config.push_back(YAML::Node("first"));
   config.push_back(YAML::Node("second"));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
+
+  PropertyTree invalid_schema = PropertyTreeBuilder().attribute(TYPE, createList(STRING)).build();
+  static_cast<void>(invalid_schema.applyConfig(YAML::Load("[valid, {invalid: value}]")));
+  const auto invalid_errors = invalid_schema.validate();
+  ASSERT_EQ(invalid_errors.size(), 1);
+  EXPECT_NE(invalid_errors.front().find("(root)[1]"), std::string::npos);
 }
 
 TEST(TypeCoverage, ListOfInt)  // NOLINT
@@ -3998,7 +4162,7 @@ TEST(TypeCoverage, ListOfInt)  // NOLINT
   config.push_back(YAML::Node(2));
   config.push_back(YAML::Node(3));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4007,13 +4171,16 @@ TEST(TypeCoverage, ListOfDouble)  // NOLINT
 {
   PropertyTree schema = PropertyTreeBuilder().attribute(TYPE, createList(FLOAT64)).build();
 
-  YAML::Node config(YAML::NodeType::Sequence);
-  config.push_back(YAML::Node(1.1));
-  config.push_back(YAML::Node(2.2));
+  YAML::Node config = YAML::Load("[0, 1.1, 2.2]");
 
-  schema.mergeConfig(config);
-  auto errors = schema.validate();
+  auto errors = schema.applyConfig(config);
   EXPECT_TRUE(errors.empty());
+
+  const auto values = schema.as<std::vector<double>>();
+  ASSERT_EQ(values.size(), 3);
+  EXPECT_DOUBLE_EQ(values[0], 0.0);
+  EXPECT_DOUBLE_EQ(values[1], 1.1);
+  EXPECT_DOUBLE_EQ(values[2], 2.2);
 }
 
 TEST(TypeCoverage, ListOfUnsignedInt)  // NOLINT
@@ -4024,7 +4191,7 @@ TEST(TypeCoverage, ListOfUnsignedInt)  // NOLINT
   config.push_back(YAML::Node(100U));
   config.push_back(YAML::Node(200U));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4037,7 +4204,7 @@ TEST(TypeCoverage, ListOfLongInt)  // NOLINT
   config.push_back(YAML::Node(1000000000L));
   config.push_back(YAML::Node(2000000000L));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4050,7 +4217,7 @@ TEST(TypeCoverage, ListOfFloat)  // NOLINT
   config.push_back(YAML::Node(1.5F));
   config.push_back(YAML::Node(2.5F));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4063,7 +4230,7 @@ TEST(TypeCoverage, ListOfChar)  // NOLINT
   config.push_back(YAML::Node("a"));
   config.push_back(YAML::Node("b"));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4076,7 +4243,7 @@ TEST(TypeCoverage, ListOfLongUnsignedInt)  // NOLINT
   config.push_back(YAML::Node(5000000000UL));
   config.push_back(YAML::Node(9999999999UL));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4090,7 +4257,7 @@ TEST(TypeCoverage, ListOfFixedSize)  // NOLINT
   config.push_back(YAML::Node(2));
   config.push_back(YAML::Node(3));
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 
@@ -4101,7 +4268,7 @@ TEST(TypeCoverage, ListOfFixedSize)  // NOLINT
   config2.push_back(YAML::Node(1));
   config2.push_back(YAML::Node(2));
 
-  schema2.mergeConfig(config2);
+  static_cast<void>(schema2.applyConfig(config2));
   auto errors2 = schema2.validate();
   EXPECT_FALSE(errors2.empty());
 }
@@ -4118,7 +4285,7 @@ TEST(TypeCoverage, MapOfBool)  // NOLINT
   config[std::string("key1")] = YAML::Node(true);
   config[std::string("key2")] = YAML::Node(false);
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4135,7 +4302,7 @@ TEST(TypeCoverage, MapOfString)  // NOLINT
   config[std::string("key1")] = YAML::Node("value1");
   config[std::string("key2")] = YAML::Node("value2");
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4152,7 +4319,7 @@ TEST(TypeCoverage, MapOfInt)  // NOLINT
   config[std::string("a")] = YAML::Node(10);
   config[std::string("b")] = YAML::Node(20);
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4169,7 +4336,7 @@ TEST(TypeCoverage, MapOfDouble)  // NOLINT
   config[std::string("x")] = YAML::Node(1.1);
   config[std::string("y")] = YAML::Node(2.2);
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4186,7 +4353,7 @@ TEST(TypeCoverage, MapOfUnsignedInt)  // NOLINT
   config[std::string("val1")] = YAML::Node(100U);
   config[std::string("val2")] = YAML::Node(200U);
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4203,7 +4370,7 @@ TEST(TypeCoverage, MapOfChar)  // NOLINT
   config[std::string("first")] = YAML::Node("a");
   config[std::string("second")] = YAML::Node("z");
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4220,7 +4387,7 @@ TEST(TypeCoverage, MapOfLongUnsignedInt)  // NOLINT
   config[std::string("big1")] = YAML::Node(5000000000UL);
   config[std::string("big2")] = YAML::Node(9999999999UL);
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_TRUE(errors.empty());
 }
@@ -4237,7 +4404,7 @@ TEST(AutoValidatorVerification, SequenceValidatorAutomaticallyAdded)  // NOLINT
   YAML::Node config(YAML::NodeType::Map);  // Wrong type: should be Sequence
   config["value"] = 42;
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_FALSE(errors.empty()) << "Expected validateSequence to fail for non-sequence data";
   EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
@@ -4255,7 +4422,7 @@ TEST(AutoValidatorVerification, SequenceFixedSizeValidatorAutomaticallyAdded)  /
   config.push_back(2);
   config.push_back(3);  // Wrong size: expected 2, got 3
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_FALSE(errors.empty()) << "Expected validateSequence to fail for size mismatch";
   EXPECT_TRUE(std::any_of(errors.begin(), errors.end(), [](const auto& e) {
@@ -4276,7 +4443,7 @@ TEST(AutoValidatorVerification, MapValidatorAutomaticallyAdded)  // NOLINT
   config.push_back(1);
   config.push_back(2);
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_FALSE(errors.empty()) << "Expected validateMap to fail for non-map data";
   EXPECT_TRUE(std::any_of(
@@ -4312,7 +4479,7 @@ TEST(AutoValidatorVerification, SequenceOfCustomTypesValidatorAutomaticallyAdded
   config.push_back(15);  // Valid
   config.push_back(25);  // Invalid: exceeds max
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_FALSE(errors.empty()) << "Expected sequence to validate each element";
   EXPECT_TRUE(
@@ -4333,7 +4500,7 @@ TEST(AutoValidatorVerification, MapOfCustomTypesValidatorAutomaticallyAdded)  //
   config[std::string("color1")] = "red";     // Valid
   config[std::string("color2")] = "yellow";  // Invalid: not in enum
 
-  schema.mergeConfig(config);
+  static_cast<void>(schema.applyConfig(config));
   auto errors = schema.validate();
   EXPECT_FALSE(errors.empty()) << "Expected map values to be validated against enum constraint";
 }
@@ -4429,15 +4596,14 @@ TEST(ValidatePluginInfo, ValidDerivedTypeWithConfigValidation)  // NOLINT
   reg->registerSchema("test::BaseWithConfig", base_schema);
 
   reg->registerDerivedType("test::BaseWithConfig", "test::ConcreteWithConfig");
+  // clang-format off
   PropertyTree concrete_schema = PropertyTreeBuilder()
-                                     .attribute(TYPE, "test::ConcreteWithConfig")
-                                     .container("params")
-                                     .int32("value")
-                                     .minimum(0)
-                                     .maximum(100)
-                                     .done()
-                                     .done()
-                                     .build();
+      .attribute(TYPE, "test::ConcreteWithConfig")
+      .container("params")
+        .int32("value").minimum(0).maximum(100).done()
+      .done()
+      .build();
+  // clang-format on
   reg->registerSchema("test::ConcreteWithConfig", concrete_schema);
 
   // Create plugin info with valid config
@@ -4462,15 +4628,14 @@ TEST(ValidatePluginInfo, ValidDerivedTypeWithInvalidConfig)  // NOLINT
   reg->registerSchema("test::BaseWithInvalidConfig", base_schema);
 
   reg->registerDerivedType("test::BaseWithInvalidConfig", "test::ConcreteWithInvalidConfig");
+  // clang-format off
   PropertyTree concrete_schema = PropertyTreeBuilder()
-                                     .attribute(TYPE, "test::ConcreteWithInvalidConfig")
-                                     .container("params")
-                                     .int32("value")
-                                     .minimum(0)
-                                     .maximum(100)
-                                     .done()
-                                     .done()
-                                     .build();
+      .attribute(TYPE, "test::ConcreteWithInvalidConfig")
+      .container("params")
+        .int32("value").minimum(0).maximum(100).done()
+      .done()
+      .build();
+  // clang-format on
   reg->registerSchema("test::ConcreteWithInvalidConfig", concrete_schema);
 
   // Create plugin info with invalid config

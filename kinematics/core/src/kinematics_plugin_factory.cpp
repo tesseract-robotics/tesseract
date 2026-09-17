@@ -55,11 +55,39 @@ tesseract::common::PropertyTree InvKinFactory::schema() const
   return tesseract::common::PropertyTreeBuilder().build();
 }
 
+std::unique_ptr<InverseKinematics> InvKinFactory::create(const std::string& solver_name,
+                                                         const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                         const tesseract::scene_graph::SceneState& scene_state,
+                                                         const KinematicsPluginFactory& plugin_factory,
+                                                         const YAML::Node& config) const
+{
+  auto validated_config = schema();
+  auto errors = validated_config.applyConfig(config);
+  if (!errors.empty())
+    throw tesseract::common::PropertyTreeValidationError(std::move(errors));
+
+  return createImpl(solver_name, scene_graph, scene_state, plugin_factory, validated_config);
+}
+
 std::string FwdKinFactory::getSection() { return "FwdKin"; }
 
 tesseract::common::PropertyTree FwdKinFactory::schema() const
 {
   return tesseract::common::PropertyTreeBuilder().build();
+}
+
+std::unique_ptr<ForwardKinematics> FwdKinFactory::create(const std::string& solver_name,
+                                                         const tesseract::scene_graph::SceneGraph& scene_graph,
+                                                         const tesseract::scene_graph::SceneState& scene_state,
+                                                         const KinematicsPluginFactory& plugin_factory,
+                                                         const YAML::Node& config) const
+{
+  auto validated_config = schema();
+  auto errors = validated_config.applyConfig(config);
+  if (!errors.empty())
+    throw tesseract::common::PropertyTreeValidationError(std::move(errors));
+
+  return createImpl(solver_name, scene_graph, scene_state, plugin_factory, validated_config);
 }
 
 KinematicsPluginFactory::KinematicsPluginFactory()
@@ -83,8 +111,7 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
     // Stage 1 validates only the metadata required to discover plugin schemas.
     auto discovery_schema = YAML::convert<PluginDiscoveryInfo>::schema();
     YAML::Node plugin_info_for_discovery_validation = YAML::Clone(plugin_info_for_decode);
-    discovery_schema.mergeConfig(plugin_info_for_discovery_validation, true);
-    auto discovery_errors = discovery_schema.validate(true);
+    auto discovery_errors = discovery_schema.applyConfig(plugin_info_for_discovery_validation, true);
     if (!discovery_errors.empty())
     {
       std::string error_msg = "KinematicsPluginFactory: Plugin discovery validation failed:\n";
@@ -112,9 +139,7 @@ void KinematicsPluginFactory::loadConfig(const YAML::Node& config)
     auto schema = YAML::convert<tesseract::common::KinematicsPluginInfo>::schema();
     auto config_tree = schema;
     YAML::Node plugin_info_for_validation = YAML::Clone(plugin_info_for_decode);
-    config_tree.mergeConfig(plugin_info_for_validation, false);
-
-    auto errors = config_tree.validate(false);
+    auto errors = config_tree.applyConfig(plugin_info_for_validation, false);
 
     if (!errors.empty())
     {
@@ -337,6 +362,9 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
     if (it != fwd_kin_factories_.end())
       return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<FwdKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
@@ -397,6 +425,9 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
     if (it != inv_kin_factories_.end())
       return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<InvKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
