@@ -332,6 +332,9 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
     if (it != discrete_factories_.end())
       return it->second->create(name, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<DiscreteContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
@@ -378,6 +381,9 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
     if (it != continuous_factories_.end())
       return it->second->create(name, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<ContinuousContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {

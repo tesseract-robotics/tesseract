@@ -362,6 +362,9 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
     if (it != fwd_kin_factories_.end())
       return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<FwdKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
@@ -422,6 +425,9 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
     if (it != inv_kin_factories_.end())
       return it->second->create(solver_name, scene_graph, scene_state, *this, plugin_info.config);
 
+    // Loading a factory may register schemas containing callbacks implemented by
+    // its library. Retain the library until the schema registry is destroyed.
+    tesseract::common::SchemaRegistry::instance()->loadAndRetainPluginLibraries(plugin_loader_);
     auto plugin = plugin_loader_.createInstance<InvKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
