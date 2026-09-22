@@ -212,10 +212,8 @@ bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A, Eigen::Ref<Eigen::Ma
 
 bool isNearSingularity(const Eigen::Ref<const Eigen::MatrixXd>& jacobian, double threshold)
 {
-  Eigen::JacobiSVD<Eigen::MatrixXd> svd;
-  svd.compute(jacobian, Eigen::ComputeThinU | Eigen::ComputeThinV);
-  const Eigen::VectorXd& sv = svd.singularValues();
-  return (sv.tail(1).value() < threshold);
+  const Eigen::JacobiSVD<Eigen::MatrixXd> svd(jacobian);
+  return (svd.singularValues().tail(1).value() < threshold);
 }
 
 Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacobian)
