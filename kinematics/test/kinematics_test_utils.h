@@ -27,6 +27,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <cmath>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -77,6 +78,112 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphABB(const tesseract
   return tesseract::urdf::parseURDFFile(path, locator);
 }
 
+/**
+ * @brief Joint limits for fixtures built with addRevoluteChild().
+ * @details Full [-pi, pi] revolute range with strictly positive effort / velocity / acceleration /
+ *          jerk bands — getTargetLimits() consumers reject zero-width bands. Callers wanting a
+ *          variant should copy this and assign the fields they care about by name, rather than
+ *          reintroducing a positional parameter list.
+ */
+inline tesseract::scene_graph::JointLimits defaultTestJointLimits()
+{
+  tesseract::scene_graph::JointLimits limits;
+  limits.lower = -M_PI;
+  limits.upper = M_PI;
+  limits.effort = 1.0;
+  limits.velocity = 1.0;
+  limits.acceleration = 1.0;
+  limits.jerk = 1.0;
+  return limits;
+}
+
+/**
+ * @brief Add a revolute joint between an existing parent link and a new child link.
+ * @details Convenience for test fixtures that build small chains. The child link is created with
+ *          id @p child and added to the graph; a revolute joint with id @p id connects parent->child
+ *          with the given @p axis, @p offset, and @p limits.
+ * @param sg     Scene graph to mutate (must already contain @p parent).
+ * @param id     Id for the new revolute joint.
+ * @param parent Existing parent link id.
+ * @param child  Id for the new child link (created by this function).
+ * @param axis   Joint rotation axis in the child link frame.
+ * @param offset Transform from parent joint origin to child (default: Identity).
+ * @param limits Joint limits (default: defaultTestJointLimits()).
+ */
+inline void addRevoluteChild(tesseract::scene_graph::SceneGraph& sg,
+                             const tesseract::common::JointId& id,
+                             const tesseract::common::LinkId& parent,
+                             const tesseract::common::LinkId& child,
+                             const Eigen::Vector3d& axis,
+                             const Eigen::Isometry3d& offset = Eigen::Isometry3d::Identity(),
+                             const tesseract::scene_graph::JointLimits& limits = defaultTestJointLimits())
+{
+  sg.addLink(tesseract::scene_graph::Link(child));
+  tesseract::scene_graph::Joint j(id);
+  j.parent_link_id = parent;
+  j.child_link_id = child;
+  j.type = tesseract::scene_graph::JointType::REVOLUTE;
+  j.axis = axis;
+  j.parent_to_joint_origin_transform = offset;
+  j.limits = std::make_shared<tesseract::scene_graph::JointLimits>(limits);
+  sg.addJoint(j);
+}
+
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  auto sg = getSceneGraphABB(locator);
+
+  // Append a single-revolute tool positioner: tool0 -> tool_tip, axis z, 0.1m offset along z.
+  auto limits = defaultTestJointLimits();
+  limits.velocity = 2.0;
+  addRevoluteChild(*sg,
+                   "tool_joint",
+                   "tool0",
+                   "tool_tip",
+                   Eigen::Vector3d::UnitZ(),
+                   Eigen::Isometry3d(Eigen::Translation3d(0, 0, 0.1)),
+                   limits);
+
+  return sg;
+}
+
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithActiveJointBeforeToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  auto sg = getSceneGraphABB(locator);
+
+  // Insert an active revolute joint between tool0 (manipulator tip) and a pivot link, then put
+  // the tool positioner's chain on the far side of that pivot. This violates the rigid-attachment
+  // contract between the manipulator tip and the tool positioner's base.
+  const Eigen::Isometry3d offset{ Eigen::Translation3d(0, 0, 0.05) };
+  auto limits = defaultTestJointLimits();
+  limits.velocity = 2.0;
+  addRevoluteChild(*sg, "bad_extra_joint", "tool0", "tool_pivot", Eigen::Vector3d::UnitZ(), offset, limits);
+  addRevoluteChild(*sg, "tool_joint", "tool_pivot", "tool_tip", Eigen::Vector3d::UnitZ(), offset, limits);
+
+  return sg;
+}
+
+inline tesseract::scene_graph::SceneGraph::UPtr
+getSceneGraphABBWithMultiJointToolPositioner(const tesseract::common::ResourceLocator& locator)
+{
+  auto sg = getSceneGraphABB(locator);
+
+  // Two-revolute tool positioner: tool0 -> tool_mid -> tool_tip.
+  // tool_joint_1: tool0 -> tool_mid, axis Y, 0.05m offset along Z.
+  // tool_joint_2: tool_mid -> tool_tip, axis X, 0.05m offset along Z.
+  const Eigen::Isometry3d offset{ Eigen::Translation3d(0, 0, 0.05) };
+  auto limits = defaultTestJointLimits();
+  limits.lower = -M_PI_2;
+  limits.upper = M_PI_2;
+  limits.velocity = 2.0;
+  addRevoluteChild(*sg, "tool_joint_1", "tool0", "tool_mid", Eigen::Vector3d::UnitY(), offset, limits);
+  addRevoluteChild(*sg, "tool_joint_2", "tool_mid", "tool_tip", Eigen::Vector3d::UnitX(), offset, limits);
+
+  return sg;
+}
+
 inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphIIWA7(const tesseract::common::ResourceLocator& locator)
 {
   std::string path = locator.locateResource("package://tesseract/support/urdf/iiwa7.urdf")->getFilePath();
@@ -91,109 +198,68 @@ inline tesseract::scene_graph::SceneGraph::UPtr getSceneGraphUR(const tesseract:
 
   auto sg = std::make_unique<SceneGraph>("universal_robot");
   sg->addLink(Link("base_link"));
-  sg->addLink(Link("shoulder_link"));
-  sg->addLink(Link("upper_arm_link"));
-  sg->addLink(Link("forearm_link"));
-  sg->addLink(Link("wrist_1_link"));
-  sg->addLink(Link("wrist_2_link"));
-  sg->addLink(Link("wrist_3_link"));
+  // The revolute children below are created by addRevoluteChild; only the two fixed-joint
+  // children need adding up front.
   sg->addLink(Link("ee_link"));
   sg->addLink(Link("tool0"));
 
-  {
-    Joint j("shoulder_pan_joint");
-    j.type = JointType::REVOLUTE;
-    j.parent_link_id = "base_link";
-    j.child_link_id = "shoulder_link";
-    j.axis = Eigen::Vector3d::UnitZ();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d1);
-    j.limits = std::make_shared<JointLimits>();
-    j.limits->lower = -2.0 * M_PI;
-    j.limits->upper = 2.0 * M_PI;
-    j.limits->velocity = 2.16;
-    j.limits->acceleration = 0.5 * j.limits->velocity;
-    sg->addJoint(j);
-  }
+  // Every UR revolute joint shares these limits. Built from a default-constructed JointLimits so
+  // effort and jerk stay 0.
+  JointLimits ur_limits;
+  ur_limits.lower = -2.0 * M_PI;
+  ur_limits.upper = 2.0 * M_PI;
+  ur_limits.velocity = 2.16;
+  ur_limits.acceleration = 0.5 * ur_limits.velocity;
 
-  {
-    Joint j("shoulder_lift_joint");
-    j.type = JointType::REVOLUTE;
-    j.parent_link_id = "shoulder_link";
-    j.child_link_id = "upper_arm_link";
-    j.axis = Eigen::Vector3d::UnitY();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, shoulder_offset, 0);
-    j.parent_to_joint_origin_transform =
-        j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
-    j.limits = std::make_shared<JointLimits>();
-    j.limits->lower = -2.0 * M_PI;
-    j.limits->upper = 2.0 * M_PI;
-    j.limits->velocity = 2.16;
-    j.limits->acceleration = 0.5 * j.limits->velocity;
-    sg->addJoint(j);
-  }
+  addRevoluteChild(*sg,
+                   "shoulder_pan_joint",
+                   "base_link",
+                   "shoulder_link",
+                   Eigen::Vector3d::UnitZ(),
+                   Eigen::Isometry3d(Eigen::Translation3d(0, 0, params.d1)),
+                   ur_limits);
 
-  {
-    Joint j("elbow_joint");
-    j.type = JointType::REVOLUTE;
-    j.parent_link_id = "upper_arm_link";
-    j.child_link_id = "forearm_link";
-    j.axis = Eigen::Vector3d::UnitY();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, elbow_offset, -params.a2);
-    j.limits = std::make_shared<JointLimits>();
-    j.limits->lower = -2.0 * M_PI;
-    j.limits->upper = 2.0 * M_PI;
-    j.limits->velocity = 2.16;
-    j.limits->acceleration = 0.5 * j.limits->velocity;
-    sg->addJoint(j);
-  }
+  addRevoluteChild(*sg,
+                   "shoulder_lift_joint",
+                   "shoulder_link",
+                   "upper_arm_link",
+                   Eigen::Vector3d::UnitY(),
+                   Eigen::Isometry3d(Eigen::Translation3d(0, shoulder_offset, 0) *
+                                     Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY())),
+                   ur_limits);
 
-  {
-    Joint j("wrist_1_joint");
-    j.type = JointType::REVOLUTE;
-    j.parent_link_id = "forearm_link";
-    j.child_link_id = "wrist_1_link";
-    j.axis = Eigen::Vector3d::UnitY();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, -params.a3);
-    j.parent_to_joint_origin_transform =
-        j.parent_to_joint_origin_transform * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY());
-    j.limits = std::make_shared<JointLimits>();
-    j.limits->lower = -2.0 * M_PI;
-    j.limits->upper = 2.0 * M_PI;
-    j.limits->velocity = 2.16;
-    j.limits->acceleration = 0.5 * j.limits->velocity;
-    sg->addJoint(j);
-  }
+  addRevoluteChild(*sg,
+                   "elbow_joint",
+                   "upper_arm_link",
+                   "forearm_link",
+                   Eigen::Vector3d::UnitY(),
+                   Eigen::Isometry3d(Eigen::Translation3d(0, elbow_offset, -params.a2)),
+                   ur_limits);
 
-  {
-    Joint j("wrist_2_joint");
-    j.type = JointType::REVOLUTE;
-    j.parent_link_id = "wrist_1_link";
-    j.child_link_id = "wrist_2_link";
-    j.axis = Eigen::Vector3d::UnitZ();
-    j.parent_to_joint_origin_transform.translation() =
-        Eigen::Vector3d(0, params.d4 - elbow_offset - shoulder_offset, 0);
-    j.limits = std::make_shared<JointLimits>();
-    j.limits->lower = -2.0 * M_PI;
-    j.limits->upper = 2.0 * M_PI;
-    j.limits->velocity = 2.16;
-    j.limits->acceleration = 0.5 * j.limits->velocity;
-    sg->addJoint(j);
-  }
+  addRevoluteChild(
+      *sg,
+      "wrist_1_joint",
+      "forearm_link",
+      "wrist_1_link",
+      Eigen::Vector3d::UnitY(),
+      Eigen::Isometry3d(Eigen::Translation3d(0, 0, -params.a3) * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY())),
+      ur_limits);
 
-  {
-    Joint j("wrist_3_joint");
-    j.type = JointType::REVOLUTE;
-    j.parent_link_id = "wrist_2_link";
-    j.child_link_id = "wrist_3_link";
-    j.axis = Eigen::Vector3d::UnitY();
-    j.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0, 0, params.d5);
-    j.limits = std::make_shared<JointLimits>();
-    j.limits->lower = -2.0 * M_PI;
-    j.limits->upper = 2.0 * M_PI;
-    j.limits->velocity = 2.16;
-    j.limits->acceleration = 0.5 * j.limits->velocity;
-    sg->addJoint(j);
-  }
+  addRevoluteChild(*sg,
+                   "wrist_2_joint",
+                   "wrist_1_link",
+                   "wrist_2_link",
+                   Eigen::Vector3d::UnitZ(),
+                   Eigen::Isometry3d(Eigen::Translation3d(0, params.d4 - elbow_offset - shoulder_offset, 0)),
+                   ur_limits);
+
+  addRevoluteChild(*sg,
+                   "wrist_3_joint",
+                   "wrist_2_link",
+                   "wrist_3_link",
+                   Eigen::Vector3d::UnitY(),
+                   Eigen::Isometry3d(Eigen::Translation3d(0, 0, params.d5)),
+                   ur_limits);
 
   {
     Joint j("ee_fixed_joint");
