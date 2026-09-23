@@ -28,7 +28,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <random>
 #include <string>
 #include <type_traits>
-#include <console_bridge/console.h>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -36,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/utils.h>
 
 namespace tesseract::common
@@ -443,15 +443,15 @@ int QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_element, const 
 
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
-    CONSOLE_BRIDGE_logError("Invalid %s attribute '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Invalid {} attribute '{}'", xml_element->Name(), name);
   }
   else if (status == tinyxml2::XML_NO_ATTRIBUTE)
   {
-    CONSOLE_BRIDGE_logError("Missing %s required attribute '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Missing {} required attribute '{}'", xml_element->Name(), name);
   }
   else if (status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE)
   {
-    CONSOLE_BRIDGE_logError("Invalid %s attribute type '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Invalid {} attribute type '{}'", xml_element->Name(), name);
   }
 
   return status;
@@ -463,15 +463,15 @@ int QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_element, const 
 
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
-    CONSOLE_BRIDGE_logError("Invalid %s attribute '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Invalid {} attribute '{}'", xml_element->Name(), name);
   }
   else if (status == tinyxml2::XML_NO_ATTRIBUTE)
   {
-    CONSOLE_BRIDGE_logError("Missing %s required attribute '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Missing {} required attribute '{}'", xml_element->Name(), name);
   }
   else if (status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE)
   {
-    CONSOLE_BRIDGE_logError("Invalid %s attribute type '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Invalid {} attribute type '{}'", xml_element->Name(), name);
   }
 
   return status;
@@ -483,15 +483,15 @@ int QueryIntAttributeRequired(const tinyxml2::XMLElement* xml_element, const cha
 
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
-    CONSOLE_BRIDGE_logError("Invalid %s attribute '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Invalid {} attribute '{}'", xml_element->Name(), name);
   }
   else if (status == tinyxml2::XML_NO_ATTRIBUTE)
   {
-    CONSOLE_BRIDGE_logError("Missing %s required attribute '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Missing {} required attribute '{}'", xml_element->Name(), name);
   }
   else if (status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE)
   {
-    CONSOLE_BRIDGE_logError("Invalid %s attribute type '%s'", xml_element->Name(), name);
+    TESSERACT_LOG_ERROR("Invalid {} attribute type '{}'", xml_element->Name(), name);
   }
 
   return status;

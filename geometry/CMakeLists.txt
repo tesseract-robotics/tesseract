@@ -52,7 +52,6 @@ target_link_libraries(
   geometry
   PUBLIC Eigen3::Eigen
          tesseract::common
-         console_bridge::console_bridge
          octomap
          octomath
          cereal::cereal
@@ -80,7 +79,6 @@ configure_component(
   TARGETS geometry
   DEPENDENCIES
     Eigen3
-    console_bridge
     "tesseract COMPONENTS common"
     octomap
     assimp
@@ -113,13 +111,11 @@ if(TESSERACT_PACKAGE)
     DESCRIPTION "Tesseract Geometry Components"
     LINUX_DEPENDS
       "libassimp-dev"
-      "libconsole-bridge-dev"
       "liboctomap-dev (>= 1.9.3) | ${TESSERACT_PACKAGE_PREFIX}octomap"
       "libeigen3-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
     WINDOWS_DEPENDS
       "Assimp"
-      "console_bridge"
       "octomap | ${TESSERACT_PACKAGE_PREFIX}octomap"
       "Eigen3"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common")

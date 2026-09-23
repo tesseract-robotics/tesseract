@@ -40,7 +40,7 @@ RUN apt update \
   libboost-all-dev \
   coinor-libipopt-dev \
   liborocos-kdl-dev \
-  libconsole-bridge-dev \
+  libspdlog-dev \
   liboctomap-dev \
   libfcl-dev \
   libpcl-dev \

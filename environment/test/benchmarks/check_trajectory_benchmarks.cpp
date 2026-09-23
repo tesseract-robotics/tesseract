@@ -1,7 +1,7 @@
 #include <tesseract/common/macros.h>
+#include <tesseract/common/logging.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <benchmark/benchmark.h>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/environment/environment.h>
 #include <tesseract/environment/utils.h>
@@ -52,9 +52,9 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_SS(benchmark::State& state,
                                               bool log_level_debug)
 {
   if (log_level_debug)
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+    tesseract::common::getLogger()->set_level(spdlog::level::debug);
   else
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
+    tesseract::common::getLogger()->set_level(spdlog::level::info);
 
   for (auto _ : state)  // NOLINT
   {
@@ -71,9 +71,9 @@ static void BM_CHECK_TRAJECTORY_CONTINUOUS_MANIP(benchmark::State& state,
                                                  bool log_level_debug)
 {
   if (log_level_debug)
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+    tesseract::common::getLogger()->set_level(spdlog::level::debug);
   else
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
+    tesseract::common::getLogger()->set_level(spdlog::level::info);
 
   for (auto _ : state)  // NOLINT
   {
@@ -91,9 +91,9 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_SS(benchmark::State& state,
                                             bool log_level_debug)
 {
   if (log_level_debug)
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+    tesseract::common::getLogger()->set_level(spdlog::level::debug);
   else
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
+    tesseract::common::getLogger()->set_level(spdlog::level::info);
 
   for (auto _ : state)  // NOLINT
   {
@@ -110,9 +110,9 @@ static void BM_CHECK_TRAJECTORY_DISCRETE_MANIP(benchmark::State& state,
                                                bool log_level_debug)
 {
   if (log_level_debug)
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+    tesseract::common::getLogger()->set_level(spdlog::level::debug);
   else
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
+    tesseract::common::getLogger()->set_level(spdlog::level::info);
 
   for (auto _ : state)  // NOLINT
   {

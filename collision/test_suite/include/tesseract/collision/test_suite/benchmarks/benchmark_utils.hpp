@@ -3,7 +3,7 @@
 
 #include <benchmark/benchmark.h>
 #include <Eigen/Eigen>
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 
 using namespace tesseract::collision;
 using namespace test_suite;
@@ -34,7 +34,7 @@ inline tesseract::geometry::Geometry::Ptr CreateUnitPrimative(const tesseract::g
       geom = std::make_shared<tesseract::geometry::Cylinder>(scale, scale);
       break;
     default:
-      CONSOLE_BRIDGE_logError("Invalid Geometry Type. Can only create primatives");
+      TESSERACT_LOG_ERROR("Invalid Geometry Type. Can only create primatives");
       break;
   }
   return geom;

@@ -32,12 +32,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/profile_plugin_factory.h>
 #include <tesseract/common/profile_dictionary.h>
 #include <tesseract/common/profile.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
 #include <boost_plugin_loader/plugin_loader.hpp>
 #include <boost/algorithm/string.hpp>
-#include <console_bridge/console.h>
 
 static const std::string PLUGIN_DIRECTORIES_ENV = "TESSERACT_PROFILES_PLUGIN_DIRECTORIES";
 static const std::string PLUGIN_ENV = "TESSERACT_PROFILES_PLUGINS";
@@ -189,20 +189,16 @@ std::unique_ptr<Profile> ProfilePluginFactory::create(const std::string& ns, con
   auto ns_it = std::as_const(*impl_).plugin_infos.find(ns);
   if (ns_it == std::as_const(*impl_).plugin_infos.end())
   {
-    CONSOLE_BRIDGE_logWarn("ProfilePluginFactory, tried to get profile '%s' for namespace '%s' that does not "
-                           "exist!",
-                           name.c_str(),
-                           ns.c_str());
+    TESSERACT_LOG_WARN(
+        "ProfilePluginFactory, tried to get profile '{}' for namespace '{}' that does not exist!", name, ns);
     return nullptr;
   }
 
   auto profile_it = ns_it->second.find(name);
   if (profile_it == ns_it->second.end())
   {
-    CONSOLE_BRIDGE_logWarn("ProfilePluginFactory, tried to get profile '%s' that does not exist for namespace "
-                           "'%s'!",
-                           name.c_str(),
-                           ns.c_str());
+    TESSERACT_LOG_WARN(
+        "ProfilePluginFactory, tried to get profile '{}' that does not exist for namespace '{}'!", name, ns);
     return nullptr;
   }
 
@@ -222,7 +218,7 @@ std::unique_ptr<Profile> ProfilePluginFactory::create(const std::string& name,
     auto plugin = std::as_const(*impl_).plugin_loader.createInstance<ProfileFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
-      CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+      TESSERACT_LOG_WARN("Failed to load symbol '{}'", plugin_info.class_name);
       return nullptr;
     }
     factories[plugin_info.class_name] = plugin;
@@ -230,7 +226,7 @@ std::unique_ptr<Profile> ProfilePluginFactory::create(const std::string& name,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s', Details: %s", plugin_info.class_name.c_str(), e.what());
+    TESSERACT_LOG_WARN("Failed to load symbol '{}', Details: {}", plugin_info.class_name, e.what());
     return nullptr;
   }
 }

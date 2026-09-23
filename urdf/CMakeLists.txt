@@ -53,7 +53,7 @@ target_link_libraries(
          tesseract::geometry
          tesseract::scene_graph
          tesseract::collision_bullet
-  PRIVATE Boost::boost console_bridge::console_bridge)
+  PRIVATE Boost::boost)
 target_compile_options(urdf PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(urdf PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(urdf PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -80,11 +80,7 @@ configure_component(
   COMPONENT urdf
   NAMESPACE tesseract
   TARGETS urdf
-  DEPENDENCIES
-    Boost
-    Eigen3
-    console_bridge
-    "tesseract COMPONENTS common geometry scene_graph collision_bullet")
+  DEPENDENCIES Boost Eigen3 "tesseract COMPONENTS common geometry scene_graph collision_bullet")
 
 # Mark cpp header files for installation
 install(FILES include/tesseract/urdf/urdf_parser.h include/tesseract/urdf/utils.h DESTINATION include/tesseract/urdf
@@ -106,7 +102,6 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract URDF Components"
     LINUX_DEPENDS
-      "libconsole-bridge-dev"
       "libeigen3-dev"
       "libpcl-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-bullet"
@@ -114,7 +109,6 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
     WINDOWS_DEPENDS
-      "console-bridge"
       "Eigen3"
       "pcl"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-bullet"

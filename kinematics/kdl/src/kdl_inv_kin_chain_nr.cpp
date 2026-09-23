@@ -23,7 +23,7 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/kdl_parser.h>
 #include <memory>
@@ -114,26 +114,26 @@ void KDLInvKinChainNR::calcInvKinHelper(IKSolutions& solutions,
     // LCOV_EXCL_START
     if (status == KDL::ChainIkSolverPos_NR::E_DEGRADED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, solution converged to <eps in maxiter, but solution is "
-                              "degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
+      TESSERACT_LOG_DEBUG("KDL NR Failed to calculate IK, solution converged to <eps in maxiter, but solution is "
+                          "degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
     }
     else if (status == KDL::ChainIkSolverPos_NR::E_IKSOLVER_FAILED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, velocity solver failed");
+      TESSERACT_LOG_DEBUG("KDL NR Failed to calculate IK, velocity solver failed");
     }
     else if (status == KDL::ChainIkSolverPos_NR::E_NO_CONVERGE)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, no solution found");
+      TESSERACT_LOG_DEBUG("KDL NR Failed to calculate IK, no solution found");
     }
 #ifndef KDL_LESS_1_4_0
     else if (status == KDL::ChainIkSolverPos_NR::E_MAX_ITERATIONS_EXCEEDED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, max iteration exceeded");
+      TESSERACT_LOG_DEBUG("KDL NR Failed to calculate IK, max iteration exceeded");
     }
 #endif
     else
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK");
+      TESSERACT_LOG_DEBUG("KDL NR Failed to calculate IK");
     }
     // LCOV_EXCL_STOP
     return;

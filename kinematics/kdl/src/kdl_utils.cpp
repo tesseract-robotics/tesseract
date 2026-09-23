@@ -24,10 +24,10 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/kdl/kdl_utils.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
@@ -92,7 +92,7 @@ bool parseSceneGraph(KDLChainData& results,
   }
   catch (...)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
+    TESSERACT_LOG_ERROR("Failed to parse KDL tree from Scene Graph");
     return false;
   }
 
@@ -103,9 +103,8 @@ bool parseSceneGraph(KDLChainData& results,
     KDL::Chain sub_chain;
     if (!results.kdl_tree.getChain(chain.first.name(), chain.second.name(), sub_chain))
     {
-      CONSOLE_BRIDGE_logError("Failed to initialize KDL between links: '%s' and '%s'",
-                              chain.first.name().c_str(),
-                              chain.second.name().c_str());
+      TESSERACT_LOG_ERROR(
+          "Failed to initialize KDL between links: '{}' and '{}'", chain.first.name(), chain.second.name());
       return false;
     }
     results.robot_chain.addChain(sub_chain);

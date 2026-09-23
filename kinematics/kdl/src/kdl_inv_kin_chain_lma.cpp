@@ -23,7 +23,7 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/kdl_parser.h>
 #include <memory>
@@ -115,18 +115,18 @@ void KDLInvKinChainLMA::calcInvKinHelper(IKSolutions& solutions,
 #ifndef KDL_LESS_1_4_0
     if (status == KDL::ChainIkSolverPos_LMA::E_GRADIENT_JOINTS_TOO_SMALL)
     {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, gradient joints are tool small");
+      TESSERACT_LOG_DEBUG("KDL LMA Failed to calculate IK, gradient joints are tool small");
     }
     else if (status == KDL::ChainIkSolverPos_LMA::E_INCREMENT_JOINTS_TOO_SMALL)
     {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, increment joints are tool small");
+      TESSERACT_LOG_DEBUG("KDL LMA Failed to calculate IK, increment joints are tool small");
     }
     else if (status == KDL::ChainIkSolverPos_LMA::E_MAX_ITERATIONS_EXCEEDED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, max iteration exceeded");
+      TESSERACT_LOG_DEBUG("KDL LMA Failed to calculate IK, max iteration exceeded");
     }
 #else
-    CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK");
+    TESSERACT_LOG_DEBUG("KDL LMA Failed to calculate IK");
 #endif
     // LCOV_EXCL_STOP
     return;

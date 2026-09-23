@@ -29,9 +29,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionShapes/btPolyhedralConvexShape.h>
 #include <BulletCollision/CollisionShapes/btSdfCollisionShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/bullet/tesseract_convex_sdf_algorithm.h>
 #include <tesseract/collision/implicit_sdf_collision_solver.h>
@@ -197,10 +197,10 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
   {
     if (!m_warned_unsupported)
     {
-      CONSOLE_BRIDGE_logWarn("Convex shape type '%s' cannot be collision checked against a signed distance field; "
-                             "only boxes, spheres, capsules, cylinders, cones and polyhedral shapes are supported. "
-                             "No contacts will be reported for this pair.",
-                             convex->getName());
+      TESSERACT_LOG_WARN("Convex shape type '{}' cannot be collision checked against a signed distance field; "
+                         "only boxes, spheres, capsules, cylinders, cones and polyhedral shapes are supported. "
+                         "No contacts will be reported for this pair.",
+                         convex->getName());
       m_warned_unsupported = true;
     }
     return;

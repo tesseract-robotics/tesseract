@@ -28,9 +28,9 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/kinematic_limits.h>
 
@@ -209,7 +209,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
     {
       std::stringstream ss;
       ss << "Lower limit of joint " << *current_index << " is infinite; no redundant solutions will be generated\n";
-      CONSOLE_BRIDGE_logWarn(ss.str().c_str());
+      TESSERACT_LOG_WARN("{}", ss.str());
     }
     else
     {
@@ -240,7 +240,7 @@ inline void getRedundantSolutionsHelper(std::vector<VectorX<FloatType>>& redunda
     {
       std::stringstream ss;
       ss << "Upper limit of joint " << *current_index << " is infinite; no redundant solutions will be generated\n";
-      CONSOLE_BRIDGE_logWarn(ss.str().c_str());
+      TESSERACT_LOG_WARN("{}", ss.str());
     }
     else
     {

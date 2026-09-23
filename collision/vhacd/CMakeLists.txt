@@ -8,8 +8,8 @@ target_link_libraries(
   PUBLIC collision
          collision_bullet
          Eigen3::Eigen
-         tesseract::geometry
-         console_bridge::console_bridge)
+         tesseract::common
+         tesseract::geometry)
 target_compile_options(collision_vhacd_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(collision_vhacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(collision_vhacd_convex_decomposition PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -39,7 +39,6 @@ if(NOT MSVC)
             Eigen3::Eigen
             tesseract::common
             tesseract::geometry
-            console_bridge::console_bridge
             Threads::Threads)
   target_compile_options(create_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                              ${TESSERACT_COMPILE_OPTIONS_PUBLIC})

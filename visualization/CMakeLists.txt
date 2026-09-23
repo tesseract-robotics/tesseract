@@ -41,8 +41,7 @@ target_link_libraries(
          tesseract::state_solver
          tesseract::collision
          tesseract::common
-         boost_plugin_loader::boost_plugin_loader
-         console_bridge::console_bridge)
+         boost_plugin_loader::boost_plugin_loader)
 target_compile_options(visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(visualization PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(visualization PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -72,8 +71,7 @@ if(GAZEBO_FOUND AND TESSERACT_BUILD_GZ_VISUALIZATION)
            gz-common5::gz-common5-profiler
            gz-common5::gz-common5-events
            gz-common5::gz-common5-av
-           gz-msg8::gz-msg8
-           console_bridge::console_bridge)
+           gz-msg8::gz-msg8)
   target_compile_options(visualization_ignition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(visualization_ignition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(visualization_ignition PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -102,8 +100,7 @@ if(GAZEBO_FOUND AND TESSERACT_BUILD_GZ_VISUALIZATION)
            gz-common5::gz-common5-events
            gz-common5::gz-common5-av
            gz-transport11::gz-transport11
-           gz-msg8::gz-msg8
-           console_bridge::console_bridge)
+           gz-msg8::gz-msg8)
   target_compile_options(visualization_ignition_visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(visualization_ignition_visualization PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(visualization_ignition_visualization PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -147,7 +144,7 @@ configure_component(
   COMPONENT visualization
   NAMESPACE tesseract
   TARGETS ${PACKAGE_LIBRARIES}
-  DEPENDENCIES Eigen3 console_bridge "tesseract COMPONENTS common environment scene_graph state_solver collision")
+  DEPENDENCIES Eigen3 "tesseract COMPONENTS common environment scene_graph state_solver collision")
 
 # Mark cpp header files for installation
 install(
@@ -169,7 +166,6 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract Visualization Components"
     LINUX_DEPENDS
-      "libconsole-bridge-dev"
       "libeigen3-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
@@ -177,7 +173,6 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
     WINDOWS_DEPENDS
-      "console-bridge"
       "Eigen3"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"

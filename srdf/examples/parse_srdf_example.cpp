@@ -173,7 +173,7 @@
  */
 
 //! [parse_srdf_full_source]
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/joint.h>
@@ -290,7 +290,7 @@ int main(int /*argc*/, char** /*argv*/)
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    TESSERACT_LOG_ERROR("Failed to parse SRDF.");
     tesseract::common::printNestedException(e);
     return 1;
   }
@@ -305,7 +305,7 @@ int main(int /*argc*/, char** /*argv*/)
   //! [parse_srdf_get_acm_info]
   tesseract::common::AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
   const tesseract::common::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
-  CONSOLE_BRIDGE_logInform("ACM Number of entries: %d", acm_entries.size());
+  TESSERACT_LOG_INFO("ACM Number of entries: {}", acm_entries.size());
   //! [parse_srdf_get_acm_info]
 }
 //! [parse_srdf_full_source]

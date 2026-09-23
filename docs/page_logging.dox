@@ -1,0 +1,87 @@
+/**
+@page logging Logging
+
+Tesseract uses spdlog directly for logger ownership, severity filtering, formatting, sinks, and registry access. The
+header `tesseract/common/logging.h` adds structured records and fan-out handlers for integrations that need more than
+formatted text.
+
+@section logging_native Native spdlog configuration
+
+`tesseract::common::getLogger()` returns the registered Tesseract logger. Configure it with normal spdlog APIs:
+
+@code
+#include <tesseract/common/logging.h>
+
+auto logger = tesseract::common::getLogger();
+logger->set_level(spdlog::level::debug);
+logger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%l] %v");
+
+TESSERACT_LOG_INFO("Loaded {} links", link_count);
+TESSERACT_LOG_DEBUG_NAMED("tesseract.environment", "Revision {}", revision);
+@endcode
+
+Named loggers clone the default logger's sinks, formatter, level, error handler, and flush level when they are first
+requested. Configure the default logger before creating named loggers when they should share the same initial setup.
+Tesseract libraries should use the `TESSERACT_LOG_*` macros rather than call a logger directly so registered structured
+record handlers also receive the event. Use stable subsystem names such as `tesseract.environment` or
+`tesseract.collision.bullet`; do not create logger names from object identifiers or other transient values.
+
+@section logging_records Structured records
+
+The `TESSERACT_LOG_*` macros emit both the formatted spdlog message and a `tesseract::common::LogRecord`. A record
+contains the original timestamp and severity, logger and optional component names, source location, thread ID, message,
+and typed attributes. Use the macros for ordinary messages. Construct a record directly when an integration needs
+machine-readable context that should not be encoded into the message:
+
+@code
+tesseract::common::LogRecord record;
+record.level = spdlog::level::warn;
+record.logger_name = "tesseract.environment";
+record.component_name = "environment";
+record.message = "Command rejected";
+record.source_location = TESSERACT_LOG_SOURCE_LOCATION;
+record.attributes.emplace("revision", std::int64_t{ revision });
+record.attributes.emplace("command_type", command_type);
+tesseract::common::emitLogRecord(std::move(record));
+@endcode
+
+Keep subsystem-specific values such as object identifiers, resource paths, operation names, and middleware endpoint
+identifiers in `attributes`. Add a first-class `LogRecord` field only when it has stable semantics across Tesseract
+subsystems and logging integrations.
+
+Register a handler at the application boundary only when an integration needs structured records:
+
+@code
+auto id = tesseract::common::addLogRecordHandler(
+    [](const tesseract::common::LogRecord& record) {
+      exportRecord(record);
+    });
+
+// Remove the handler before destroying state captured by its callback.
+tesseract::common::removeLogRecordHandler(id);
+@endcode
+
+Calls made directly through `spdlog::logger`, such as `logger->info(...)`, do not create a structured record and do not
+invoke `LogRecordHandler` callbacks. Use the Tesseract macros or call `emitLogRecord()` when structured fan-out is
+required. Handlers are additional outputs; they do not replace or reconfigure the logger's spdlog sinks.
+Handlers run synchronously on the logging thread. A handler that performs network, disk, or other potentially blocking
+work should enqueue a copy of the record and return promptly. Tesseract libraries must not install application logging
+handlers or configure process-wide sinks and providers.
+
+@section logging_ros2 ROS 2 adapter
+
+The `tesseract_rosutils` package provides an adapter that forwards structured records to rcutils. Keep the RAII handler
+alive for as long as forwarding is required:
+
+@code
+#include <tesseract_rosutils/log_record_handler.h>
+
+tesseract_rosutils::RosLogRecordHandler ros_logging;
+ros_logging.start();
+@endcode
+
+The severity mapping is trace/debug to DEBUG, info to INFO, warn to WARN, error to ERROR, and critical to FATAL. Logger
+name and source location are passed natively to rcutils. The component name and typed attributes are appended to the
+message as deterministic `key=value` text because rcutils has no structured-attribute API. rcutils assigns the ROS log
+timestamp when it receives the record; its public logging API cannot accept the original Tesseract timestamp.
+*/

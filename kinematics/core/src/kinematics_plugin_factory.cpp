@@ -33,11 +33,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/scene_state.h>
 #include <tesseract/common/resource_locator.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
 #include <tesseract/kinematics/kinematics_plugin_factory.h>
 #include <boost_plugin_loader/plugin_loader.hpp>
-#include <console_bridge/console.h>
 #include <fstream>
 
 static const std::string TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_KINEMATICS_PLUGIN_DIRECTORIES";
@@ -330,20 +330,20 @@ KinematicsPluginFactory::createFwdKin(const std::string& group_name,
   auto group_it = fwd_plugin_info_.find(group_name);
   if (group_it == fwd_plugin_info_.end())
   {
-    CONSOLE_BRIDGE_logWarn("KinematicsPluginFactory, tried to get fwd kin solver '%s' for a group '%s' that does not "
-                           "exist!",
-                           solver_name.c_str(),
-                           group_name.c_str());
+    TESSERACT_LOG_WARN("KinematicsPluginFactory, tried to get fwd kin solver '{}' for a group '{}' that does not "
+                       "exist!",
+                       solver_name,
+                       group_name);
     return nullptr;
   }
 
   auto solver_it = group_it->second.plugins.find(solver_name);
   if (solver_it == group_it->second.plugins.end())
   {
-    CONSOLE_BRIDGE_logWarn("KinematicsPluginFactory, tried to get fwd kin solver '%s' that does not exist for group "
-                           "'%s'!",
-                           solver_name.c_str(),
-                           group_name.c_str());
+    TESSERACT_LOG_WARN("KinematicsPluginFactory, tried to get fwd kin solver '{}' that does not exist for group "
+                       "'{}'!",
+                       solver_name,
+                       group_name);
     return nullptr;
   }
 
@@ -368,7 +368,7 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
     auto plugin = plugin_loader_.createInstance<FwdKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
-      CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+      TESSERACT_LOG_WARN("Failed to load symbol '{}'", plugin_info.class_name);
       return nullptr;
     }
     fwd_kin_factories_[plugin_info.class_name] = plugin;
@@ -376,10 +376,10 @@ KinematicsPluginFactory::createFwdKin(const std::string& solver_name,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to create fwd kin solver '%s' with factory '%s'! Details: %s",
-                           solver_name.c_str(),
-                           plugin_info.class_name.c_str(),
-                           e.what());
+    TESSERACT_LOG_WARN("Failed to create fwd kin solver '{}' with factory '{}'! Details: {}",
+                       solver_name,
+                       plugin_info.class_name,
+                       e.what());
     return nullptr;
   }
 }
@@ -393,20 +393,20 @@ KinematicsPluginFactory::createInvKin(const std::string& group_name,
   auto group_it = inv_plugin_info_.find(group_name);
   if (group_it == inv_plugin_info_.end())
   {
-    CONSOLE_BRIDGE_logWarn("KinematicsPluginFactory, tried to get inv kin solver '%s' for a group '%s' that does not "
-                           "exist!",
-                           solver_name.c_str(),
-                           group_name.c_str());
+    TESSERACT_LOG_WARN("KinematicsPluginFactory, tried to get inv kin solver '{}' for a group '{}' that does not "
+                       "exist!",
+                       solver_name,
+                       group_name);
     return nullptr;
   }
 
   auto solver_it = group_it->second.plugins.find(solver_name);
   if (solver_it == group_it->second.plugins.end())
   {
-    CONSOLE_BRIDGE_logWarn("KinematicsPluginFactory, tried to get inv kin solver '%s' that does not exist for group "
-                           "'%s'!",
-                           solver_name.c_str(),
-                           group_name.c_str());
+    TESSERACT_LOG_WARN("KinematicsPluginFactory, tried to get inv kin solver '{}' that does not exist for group "
+                       "'{}'!",
+                       solver_name,
+                       group_name);
     return nullptr;
   }
 
@@ -431,7 +431,7 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
     auto plugin = plugin_loader_.createInstance<InvKinFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
-      CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+      TESSERACT_LOG_WARN("Failed to load symbol '{}'", plugin_info.class_name);
       return nullptr;
     }
     inv_kin_factories_[plugin_info.class_name] = plugin;
@@ -439,10 +439,10 @@ KinematicsPluginFactory::createInvKin(const std::string& solver_name,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to create inv kin solver '%s' with factory '%s'! Details: %s",
-                           solver_name.c_str(),
-                           plugin_info.class_name.c_str(),
-                           e.what());
+    TESSERACT_LOG_WARN("Failed to create inv kin solver '{}' with factory '{}'! Details: {}",
+                       solver_name,
+                       plugin_info.class_name,
+                       e.what());
     return nullptr;
   }
 }

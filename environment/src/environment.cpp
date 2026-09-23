@@ -57,14 +57,13 @@
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/eigen_types.h>
 #include <tesseract/common/types.h>
+#include <tesseract/common/logging.h>
 
 #include <tesseract/state_solver/mutable_state_solver.h>
 #include <tesseract/state_solver/ofkt/ofkt_state_solver.h>
 
 #include <tesseract/collision/contact_managers_plugin_factory.h>
 #include <tesseract/common/collision_margin_data.h>
-
-#include <console_bridge/console.h>
 
 #include <unordered_set>
 #include <utility>
@@ -167,13 +166,13 @@ getInitCommands(const tesseract::scene_graph::SceneGraph& scene_graph,
   tesseract::scene_graph::SceneGraph::Ptr local_sg = scene_graph.clone();
   if (local_sg == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
+    TESSERACT_LOG_ERROR("Null pointer to Scene Graph");
     return {};
   }
 
   if (!local_sg->getLink(local_sg->getRoot()))
   {
-    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
+    TESSERACT_LOG_ERROR("The scene graph has an invalid root.");
     return {};
   }
 
@@ -556,8 +555,8 @@ bool Environment::Implementation::initHelper(const std::vector<std::shared_ptr<c
 
   if (commands.at(0)->getType() != CommandType::ADD_SCENE_GRAPH)
   {
-    CONSOLE_BRIDGE_logError("When initializing environment from command history the first command must be type "
-                            "ADD_SCENE_GRAPH!");
+    TESSERACT_LOG_ERROR("When initializing environment from command history the first command must be type "
+                        "ADD_SCENE_GRAPH!");
     return false;
   }
 
@@ -570,7 +569,7 @@ bool Environment::Implementation::initHelper(const std::vector<std::shared_ptr<c
 
   if (!applyCommandsHelper(commands))
   {
-    CONSOLE_BRIDGE_logError("When initializing environment from command history, it failed to apply a command!");
+    TESSERACT_LOG_ERROR("When initializing environment from command history, it failed to apply a command!");
     return false;
   }
 
@@ -861,8 +860,8 @@ Environment::Implementation::getKinematicGroup(const std::string& group_name, st
 #if !defined(NDEBUG) && TESSERACT_ENABLE_TESTING
   if (!tesseract_kinematics::checkKinematics(*kg))
   {
-    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
-                            "match forward kinematics solution. Did you change the URDF recently?");
+    TESSERACT_LOG_ERROR("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
+                        "match forward kinematics solution. Did you change the URDF recently?");
   }
 #endif
 
@@ -895,7 +894,7 @@ Eigen::Isometry3d Environment::Implementation::findTCPOffset(const tesseract::co
     }
     catch (...)
     {
-      CONSOLE_BRIDGE_logDebug("User Defined Find TCP Callback Failed!");
+      TESSERACT_LOG_DEBUG("User Defined Find TCP Callback Failed!");
     }
   }
 
@@ -917,7 +916,7 @@ Environment::Implementation::getDiscreteContactManager() const
     discrete_manager = getDiscreteContactManagerHelper(name);
     if (discrete_manager == nullptr)
     {
-      CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
+      TESSERACT_LOG_ERROR("Discrete manager with {} does not exist in factory!", name);
       return nullptr;
     }
   }
@@ -940,7 +939,7 @@ Environment::Implementation::getContinuousContactManager() const
     continuous_manager = getContinuousContactManagerHelper(name);
     if (continuous_manager == nullptr)
     {
-      CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
+      TESSERACT_LOG_ERROR("Continuous manager with {} does not exist in factory!", name);
       return nullptr;
     }
   }
@@ -970,7 +969,7 @@ bool Environment::Implementation::setActiveDiscreteContactManagerHelper(const st
     for (const auto& m : contact_managers_factory.getDiscreteContactManagerPlugins())
       msg += "      " + m.first + "\n";
 
-    CONSOLE_BRIDGE_logError(msg.c_str());
+    TESSERACT_LOG_ERROR("{}", msg);
     return false;
   }
 
@@ -993,7 +992,7 @@ bool Environment::Implementation::setActiveContinuousContactManagerHelper(const 
     for (const auto& m : contact_managers_factory.getContinuousContactManagerPlugins())
       msg += "      " + m.first + "\n";
 
-    CONSOLE_BRIDGE_logError(msg.c_str());
+    TESSERACT_LOG_ERROR("{}", msg);
     return false;
   }
 
@@ -1070,7 +1069,7 @@ Environment::Implementation::getDiscreteContactManager(const std::string& name) 
   tesseract::collision::DiscreteContactManager::UPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
+    TESSERACT_LOG_ERROR("Discrete manager with {} does not exist in factory!", name);
     return nullptr;
   }
 
@@ -1089,7 +1088,7 @@ Environment::Implementation::getContinuousContactManager(const std::string& name
   tesseract::collision::ContinuousContactManager::UPtr manager = getContinuousContactManagerHelper(name);
   if (manager == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
+    TESSERACT_LOG_ERROR("Continuous manager with {} does not exist in factory!", name);
     return nullptr;
   }
 
@@ -1100,7 +1099,7 @@ bool Environment::Implementation::removeLinkHelper(const common::LinkId& id)
 {
   if (scene_graph->getLink(id) == nullptr)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) that does not exist", id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to remove link ({}) that does not exist", id.name());
     return false;
   }
   std::vector<tesseract::scene_graph::Joint::ConstPtr> joints = scene_graph->getInboundJoints(id);
@@ -1275,7 +1274,7 @@ bool Environment::Implementation::applyCommandsHelper(const std::vector<std::sha
       // LCOV_EXCL_START
       default:
       {
-        CONSOLE_BRIDGE_logError("Unhandled environment command");
+        TESSERACT_LOG_ERROR("Unhandled environment command");
         success &= false;
       }
         // LCOV_EXCL_STOP
@@ -1323,22 +1322,22 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
 
   if (!cmd->getLinkId().isValid())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add trajectory link with empty link name.");
+    TESSERACT_LOG_WARN("Tried to add trajectory link with empty link name.");
     return false;
   }
 
   if (!cmd->getParentLinkId().isValid())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add trajectory link with empty parent link name.");
+    TESSERACT_LOG_WARN("Tried to add trajectory link with empty parent link name.");
     return false;
   }
 
   const bool parent_link_exists = (scene_graph->getLink(cmd->getParentLinkId()) != nullptr);
   if (!parent_link_exists)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with parent link (%s) which does not exists.",
-                           cmd->getLinkId().name().c_str(),
-                           cmd->getParentLinkId().name().c_str());
+    TESSERACT_LOG_WARN("Tried to add trajectory link ({}) with parent link ({}) which does not exists.",
+                       cmd->getLinkId().name(),
+                       cmd->getParentLinkId().name());
     return false;
   }
 
@@ -1358,21 +1357,20 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
   {
     if (state.joint_ids.empty())
     {
-      CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with empty joint names.",
-                             cmd->getLinkId().name().c_str());
+      TESSERACT_LOG_WARN("Tried to add trajectory link ({}) with empty joint names.", cmd->getLinkId().name());
       return false;
     }
 
     if (state.position.rows() == 0)
     {
-      CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) with empty position.", cmd->getLinkId().name().c_str());
+      TESSERACT_LOG_WARN("Tried to add trajectory link ({}) with empty position.", cmd->getLinkId().name());
       return false;
     }
 
     if (static_cast<Eigen::Index>(state.joint_ids.size()) != state.position.size())
     {
-      CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) where joint names and position are different sizes.",
-                             cmd->getLinkId().name().c_str());
+      TESSERACT_LOG_WARN("Tried to add trajectory link ({}) where joint names and position are different sizes.",
+                         cmd->getLinkId().name());
       return false;
     }
 
@@ -1384,8 +1382,8 @@ bool Environment::Implementation::applyAddTrajectoryLinkCommand(const AddTraject
 
       if (std::find(active_link_ids.begin(), active_link_ids.end(), parent_link_id) != active_link_ids.end())
       {
-        CONSOLE_BRIDGE_logWarn("Tried to add trajectory link (%s) where parent link is an active link.",
-                               cmd->getLinkId().name().c_str());
+        TESSERACT_LOG_WARN("Tried to add trajectory link ({}) where parent link is an active link.",
+                           cmd->getLinkId().name());
         return false;
       }
     }
@@ -1538,33 +1536,33 @@ bool Environment::Implementation::applyAddLinkCommandHelper(
 
   if (link_exists && !replace_allowed)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists. Set replace_allowed to enable replacing.",
-                           link_id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to add link ({}) which already exists. Set replace_allowed to enable replacing.",
+                       link_id.name());
     return false;
   }
 
   if (joint_exists && !replace_allowed)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to replace link (%s) and joint (%s) where the joint exist but the link does not. "
-                           "This is not supported.",
-                           link_id.name().c_str(),
-                           joint_id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to replace link ({}) and joint ({}) where the joint exist but the link does not. "
+                       "This is not supported.",
+                       link_id.name(),
+                       joint_id.name());
     return false;
   }
 
   if (!link_exists && joint_exists)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which does not exists with a joint provided which already exists. "
-                           "This is not supported.",
-                           link_id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to add link ({}) which does not exists with a joint provided which already exists. "
+                       "This is not supported.",
+                       link_id.name());
     return false;
   }
 
   if (link_exists && joint && !joint_exists)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) which already exists with a joint provided which does not exist. "
-                           "This is not supported.",
-                           link_id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to add link ({}) which already exists with a joint provided which does not exist. "
+                       "This is not supported.",
+                       link_id.name());
     return false;
   }
 
@@ -1582,10 +1580,10 @@ bool Environment::Implementation::applyAddLinkCommandHelper(
 
     if (orig_joint->child_link_id != orig_link->getId())
     {
-      CONSOLE_BRIDGE_logWarn("Tried to replace link (%s) and joint (%s) which are currently not linked. This is not "
-                             "supported.",
-                             link_id.name().c_str(),
-                             joint_id.name().c_str());
+      TESSERACT_LOG_WARN("Tried to replace link ({}) and joint ({}) which are currently not linked. This is not "
+                         "supported.",
+                         link_id.name(),
+                         joint_id.name());
       return false;
     }
 
@@ -1717,7 +1715,7 @@ bool Environment::Implementation::applyRemoveJointCommand(const std::shared_ptr<
 {
   if (scene_graph->getJoint(cmd->getJointId()) == nullptr)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to remove Joint (%s) that does not exist", cmd->getJointId().name().c_str());
+    TESSERACT_LOG_WARN("Tried to remove Joint ({}) that does not exist", cmd->getJointId().name());
     return false;
   }
 
@@ -1740,14 +1738,14 @@ bool Environment::Implementation::applyReplaceJointCommand(const std::shared_ptr
   tesseract::scene_graph::Joint::ConstPtr current_joint = scene_graph->getJoint(cmd->getJoint()->getId());
   if (current_joint == nullptr)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to replace Joint (%s) that does not exist", cmd->getJoint()->getName().c_str());
+    TESSERACT_LOG_WARN("Tried to replace Joint ({}) that does not exist", cmd->getJoint()->getName());
     return false;
   }
 
   if (cmd->getJoint()->child_link_id != current_joint->child_link_id)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to replace Joint (%s) where the child links are not the same",
-                           cmd->getJoint()->getName().c_str());
+    TESSERACT_LOG_WARN("Tried to replace Joint ({}) where the child links are not the same",
+                       cmd->getJoint()->getName());
     return false;
   }
 
@@ -2115,7 +2113,7 @@ bool Environment::Implementation::applyAddContactManagersPluginInfoCommand(
   }
   else
   {
-    CONSOLE_BRIDGE_logDebug("Environment, No discrete contact manager plugins were provided");
+    TESSERACT_LOG_DEBUG("Environment, No discrete contact manager plugins were provided");
   }
 
   if (contact_managers_factory.hasContinuousContactManagerPlugins())
@@ -2127,7 +2125,7 @@ bool Environment::Implementation::applyAddContactManagersPluginInfoCommand(
   }
   else
   {
-    CONSOLE_BRIDGE_logDebug("Environment, No continuous contact manager plugins were provided");
+    TESSERACT_LOG_DEBUG("Environment, No continuous contact manager plugins were provided");
   }
 
   ++revision;
@@ -2226,7 +2224,7 @@ bool Environment::init(const std::string& urdf_string,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    TESSERACT_LOG_ERROR("Failed to parse URDF.");
     tesseract::common::printNestedException(e);
     return false;
   }
@@ -2252,7 +2250,7 @@ bool Environment::init(const std::string& urdf_string,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    TESSERACT_LOG_ERROR("Failed to parse URDF.");
     tesseract::common::printNestedException(e);
     return false;
   }
@@ -2265,7 +2263,7 @@ bool Environment::init(const std::string& urdf_string,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    TESSERACT_LOG_ERROR("Failed to parse SRDF.");
     tesseract::common::printNestedException(e);
     return false;
   }
@@ -2290,7 +2288,7 @@ bool Environment::init(const std::filesystem::path& urdf_path,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    TESSERACT_LOG_ERROR("Failed to parse URDF.");
     tesseract::common::printNestedException(e);
     return false;
   }
@@ -2316,7 +2314,7 @@ bool Environment::init(const std::filesystem::path& urdf_path,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    TESSERACT_LOG_ERROR("Failed to parse URDF.");
     tesseract::common::printNestedException(e);
     return false;
   }
@@ -2329,7 +2327,7 @@ bool Environment::init(const std::filesystem::path& urdf_path,
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    TESSERACT_LOG_ERROR("Failed to parse SRDF.");
     tesseract::common::printNestedException(e);
     return false;
   }

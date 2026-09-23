@@ -170,9 +170,9 @@
 //! [box_box_example_full_source]
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract/collision/bullet/convex_hull_utils.h>
 #include <tesseract/geometry/impl/box.h>
@@ -251,7 +251,7 @@ int main(int /*argc*/, char** /*argv*/)
   checker.addCollisionObject("second_box_link", 0, obj3_shapes, obj3_poses);
   //! [collision_example_add_convex_hull_collision]
 
-  CONSOLE_BRIDGE_logInform("Test when object is inside another");
+  TESSERACT_LOG_INFO("Test when object is inside another");
 
   //! [collision_example_set_active_objects]
   checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
@@ -279,21 +279,19 @@ int main(int /*argc*/, char** /*argv*/)
   ContactResultVector result_vector;
   result.flattenMoveResults(result_vector);
 
-  CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
-  CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_ids[0].name().c_str(),
-                           toString(result_vector[0].nearest_points[0]).c_str());
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_ids[1].name().c_str(),
-                           toString(result_vector[0].nearest_points[1]).c_str());
-  CONSOLE_BRIDGE_logInform("Direction to move Link %s out of collision with Link %s: %s",
-                           result_vector[0].link_ids[0].name().c_str(),
-                           result_vector[0].link_ids[1].name().c_str(),
-                           toString(result_vector[0].normal).c_str());
+  TESSERACT_LOG_INFO("Has collision: {}", toString(result_vector.empty()));
+  TESSERACT_LOG_INFO("Distance: {}", result_vector[0].distance);
+  TESSERACT_LOG_INFO(
+      "Link {} nearest point: {}", result_vector[0].link_ids[0].name(), toString(result_vector[0].nearest_points[0]));
+  TESSERACT_LOG_INFO(
+      "Link {} nearest point: {}", result_vector[0].link_ids[1].name(), toString(result_vector[0].nearest_points[1]));
+  TESSERACT_LOG_INFO("Direction to move Link {} out of collision with Link {}: {}",
+                     result_vector[0].link_ids[0].name(),
+                     result_vector[0].link_ids[1].name(),
+                     toString(result_vector[0].normal));
   //! [collision_example_first_check]
 
-  CONSOLE_BRIDGE_logInform("Test object is out side the contact distance");
+  TESSERACT_LOG_INFO("Test object is out side the contact distance");
 
   //! [collision_example_move_outside_contact_distance]
   location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
@@ -306,7 +304,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   checker.contactTest(result, request);
   result.flattenMoveResults(result_vector);
-  CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
+  TESSERACT_LOG_INFO("Has collision: {}", toString(result_vector.empty()));
   //! [collision_example_second_check]
 
   //! [collision_example_change_default_margin]
@@ -314,25 +312,23 @@ int main(int /*argc*/, char** /*argv*/)
   //! [collision_example_change_default_margin]
 
   //! [collision_example_third_check]
-  CONSOLE_BRIDGE_logInform("Test object inside the contact distance");
+  TESSERACT_LOG_INFO("Test object inside the contact distance");
   result.clear();
   result_vector.clear();
 
   checker.contactTest(result, request);
   result.flattenMoveResults(result_vector);
 
-  CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
-  CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_ids[0].name().c_str(),
-                           toString(result_vector[0].nearest_points[0]).c_str());
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
-                           result_vector[0].link_ids[1].name().c_str(),
-                           toString(result_vector[0].nearest_points[1]).c_str());
-  CONSOLE_BRIDGE_logInform("Direction to move Link %s further from Link %s: %s",
-                           result_vector[0].link_ids[0].name().c_str(),
-                           result_vector[0].link_ids[1].name().c_str(),
-                           toString(result_vector[0].normal).c_str());
+  TESSERACT_LOG_INFO("Has collision: {}", toString(result_vector.empty()));
+  TESSERACT_LOG_INFO("Distance: {}", result_vector[0].distance);
+  TESSERACT_LOG_INFO(
+      "Link {} nearest point: {}", result_vector[0].link_ids[0].name(), toString(result_vector[0].nearest_points[0]));
+  TESSERACT_LOG_INFO(
+      "Link {} nearest point: {}", result_vector[0].link_ids[1].name(), toString(result_vector[0].nearest_points[1]));
+  TESSERACT_LOG_INFO("Direction to move Link {} further from Link {}: {}",
+                     result_vector[0].link_ids[0].name(),
+                     result_vector[0].link_ids[1].name(),
+                     toString(result_vector[0].normal));
   //! [collision_example_third_check]
 }
 //! [box_box_example_full_source]

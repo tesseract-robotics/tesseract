@@ -23,12 +23,12 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/ply_io.h>
 #include <tesseract/collision/vhacd/convex_decomposition_vhacd.h>
 #include <tesseract/geometry/impl/convex_mesh.h>
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
   std::streamsize size = file.tellg();
   if (size < 0)
   {
-    CONSOLE_BRIDGE_logError("Failed to locate input file!");
+    TESSERACT_LOG_ERROR("Failed to locate input file!");
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
   int num_faces = tesseract::common::loadSimplePlyFile(input, mesh_vertices, mesh_faces, true);
   if (num_faces < 0)
   {
-    CONSOLE_BRIDGE_logError("Failed to read mesh from file!");
+    TESSERACT_LOG_ERROR("Failed to read mesh from file!");
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 
   if (convex_hulls.empty())
   {
-    CONSOLE_BRIDGE_logError("Failed to create convex decomposition!");
+    TESSERACT_LOG_ERROR("Failed to create convex decomposition!");
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
     if (!tesseract::common::writeSimplePlyFile(
             std::to_string(i) + "_" + output, *(ch->getVertices()), *(ch->getFaces()), ch->getFaceCount()))
     {
-      CONSOLE_BRIDGE_logError("Failed to write convex hull to file!");
+      TESSERACT_LOG_ERROR("Failed to write convex hull to file!");
       return ERROR_UNHANDLED_EXCEPTION;
     }
   }

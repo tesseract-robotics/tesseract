@@ -48,9 +48,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/types.h>
 #include <tesseract/collision/common.h>
 #include <tesseract/collision/fcl/fcl_collision_object_wrapper.h>
@@ -202,14 +202,14 @@ inline COW::Ptr createFCLCollisionObject(const tesseract::common::LinkId& id,
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
-    CONSOLE_BRIDGE_logDebug("ignoring link %s", id.name().c_str());
+    TESSERACT_LOG_DEBUG("ignoring link {}", id.name());
     return nullptr;
   }
 
   auto new_cow = std::make_shared<COW>(id, type_id, shapes, shape_poses);
 
   new_cow->m_enabled = enabled;
-  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getLinkId().name().c_str());
+  TESSERACT_LOG_DEBUG("Created collision object for link {}", new_cow->getLinkId().name());
   return new_cow;
 }
 

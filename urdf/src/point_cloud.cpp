@@ -26,7 +26,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 // pcl/memory.h #errors when Eigen's allocation convention in this translation unit differs from the
 // one PCL was built with (a PCL built with AVX uses Eigen's handmade aligned malloc; a consumer at
 // Eigen's default alignment uses plain malloc, and a buffer allocated by one and freed by the other
@@ -71,7 +71,7 @@ tesseract::geometry::Octree::Ptr parsePointCloud(const tinyxml2::XMLElement* xml
   if (!located_resource || !located_resource->isFile() || !std::filesystem::exists(located_resource->getFilePath()))
   {
     // TODO: Handle point clouds that are not files
-    CONSOLE_BRIDGE_logError("Point clouds can only be loaded from file");
+    TESSERACT_LOG_ERROR("Point clouds can only be loaded from file");
     std::throw_with_nested(std::runtime_error("PointCloud: Unable to locate resource '" + filename + "'!"));
   }
 

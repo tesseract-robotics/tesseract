@@ -59,7 +59,6 @@ configure_component(
   TARGETS collision
   DEPENDENCIES
     Eigen3
-    console_bridge
     "tesseract COMPONENTS geometry common"
     yaml-cpp
     octomap
@@ -73,7 +72,6 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract Collision core components"
     LINUX_DEPENDS
-      "libconsole-bridge-dev"
       "libeigen3-dev"
       "libyaml-cpp-dev"
       "liboctomap-dev"
@@ -85,7 +83,6 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
     WINDOWS_DEPENDS
-      "console_bridge"
       "Eigen3"
       "yaml-cpp"
       "liboctomap-dev"

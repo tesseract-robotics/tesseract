@@ -31,13 +31,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/continuous_contact_manager.h>
 #include <tesseract/common/property_tree.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/schema_registry.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/yaml_utils.h>
 #include <tesseract/common/yaml_extensions.h>
 #include <tesseract/collision/contact_managers_plugin_factory.h>
 #include <boost_plugin_loader/plugin_loader.hpp>
-#include <console_bridge/console.h>
 
 static const std::string TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGIN_"
                                                                              "DIRECTORIES";
@@ -313,9 +313,8 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
   auto cm_it = discrete_plugin_info_.plugins.find(name);
   if (cm_it == discrete_plugin_info_.plugins.end())
   {
-    CONSOLE_BRIDGE_logWarn("ContactManagersPluginFactory, tried to get discrete contact manager '%s' that does not "
-                           "exist!",
-                           name.c_str());
+    TESSERACT_LOG_WARN("ContactManagersPluginFactory, tried to get discrete contact manager '{}' that does not exist!",
+                       name);
     return nullptr;
   }
 
@@ -338,7 +337,7 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
     auto plugin = plugin_loader_.createInstance<DiscreteContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
-      CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+      TESSERACT_LOG_WARN("Failed to load symbol '{}'", plugin_info.class_name);
       return nullptr;
     }
     discrete_factories_[plugin_info.class_name] = plugin;
@@ -347,10 +346,10 @@ ContactManagersPluginFactory::createDiscreteContactManager(const std::string& na
   // LCOV_EXCL_START
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to create discrete contact manager '%s' with factory '%s'! Details: %s",
-                           name.c_str(),
-                           plugin_info.class_name.c_str(),
-                           e.what());
+    TESSERACT_LOG_WARN("Failed to create discrete contact manager '{}' with factory '{}'! Details: {}",
+                       name,
+                       plugin_info.class_name,
+                       e.what());
     return nullptr;
   }
   // LCOV_EXCL_STOP
@@ -362,9 +361,9 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
   auto cm_it = continuous_plugin_info_.plugins.find(name);
   if (cm_it == continuous_plugin_info_.plugins.end())
   {
-    CONSOLE_BRIDGE_logWarn("ContactManagersPluginFactory, tried to get continuous contact manager '%s' that does not "
-                           "exist!",
-                           name.c_str());
+    TESSERACT_LOG_WARN("ContactManagersPluginFactory, tried to get continuous contact manager '{}' that does not "
+                       "exist!",
+                       name);
     return nullptr;
   }
 
@@ -387,7 +386,7 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
     auto plugin = plugin_loader_.createInstance<ContinuousContactManagerFactory>(plugin_info.class_name);
     if (plugin == nullptr)
     {
-      CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_info.class_name.c_str());
+      TESSERACT_LOG_WARN("Failed to load symbol '{}'", plugin_info.class_name);
       return nullptr;
     }
     continuous_factories_[plugin_info.class_name] = plugin;
@@ -396,10 +395,10 @@ ContactManagersPluginFactory::createContinuousContactManager(const std::string& 
   // LCOV_EXCL_START
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to create continuous contact manager '%s' with factory '%s'! Details: %s",
-                           name.c_str(),
-                           plugin_info.class_name.c_str(),
-                           e.what());
+    TESSERACT_LOG_WARN("Failed to create continuous contact manager '{}' with factory '{}'! Details: {}",
+                       name,
+                       plugin_info.class_name,
+                       e.what());
     return nullptr;
   }
   // LCOV_EXCL_STOP

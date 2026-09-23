@@ -8,7 +8,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 
 #include <gtest/gtest.h>
-#include <console_bridge/console.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

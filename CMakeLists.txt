@@ -14,7 +14,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/common/cmake/")
 
 find_package(Eigen3 REQUIRED)
 find_package(cereal REQUIRED)
-find_package(console_bridge REQUIRED)
+find_package(spdlog REQUIRED)
 
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()

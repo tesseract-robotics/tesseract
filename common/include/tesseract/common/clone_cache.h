@@ -31,9 +31,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <algorithm>
 #include <mutex>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/sfinae_utils.h>
 
 namespace tesseract::common
@@ -180,7 +180,7 @@ public:
 
     while (cache_.size() < cache_size_)
     {
-      CONSOLE_BRIDGE_logDebug("Adding clone to the cache. Current cache size: %i", cache_.size());
+      TESSERACT_LOG_DEBUG("Adding clone to the cache. Current cache size: {}", cache_.size());
       std::shared_ptr<CacheType> clone = getClone();
       if (clone != nullptr)
         cache_.push_back(clone);
@@ -213,7 +213,7 @@ protected:
     }
     catch (std::exception& e)
     {
-      CONSOLE_BRIDGE_logError("Clone Cache failed to update cache with the following exception: %s", e.what());
+      TESSERACT_LOG_ERROR("Clone Cache failed to update cache with the following exception: {}", e.what());
       return nullptr;
     }
     return clone;

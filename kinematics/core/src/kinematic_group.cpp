@@ -24,9 +24,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <utility>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/kinematics/kinematic_group.h>
 #include <tesseract/kinematics/inverse_kinematics.h>
 #include <tesseract/kinematics/utils.h>

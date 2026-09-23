@@ -26,7 +26,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -49,14 +49,14 @@ tesseract::scene_graph::JointDynamics::Ptr parseDynamics(const tinyxml2::XMLElem
     std::throw_with_nested(std::runtime_error("Dynamics: Error parsing attribute 'damping'!"));
 
   if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    CONSOLE_BRIDGE_logDebug("Dynamics: Missing attribute 'damping', using default value 0!");
+    TESSERACT_LOG_DEBUG("Dynamics: Missing attribute 'damping', using default value 0!");
 
   status = xml_element->QueryDoubleAttribute("friction", &(dynamics->friction));
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     std::throw_with_nested(std::runtime_error("Dynamics: Error parsing attribute 'friction'!"));
 
   if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    CONSOLE_BRIDGE_logDebug("Dynamics: Missing attribute 'friction', using default value 0!");
+    TESSERACT_LOG_DEBUG("Dynamics: Missing attribute 'friction', using default value 0!");
 
   return dynamics;
 }

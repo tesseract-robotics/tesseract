@@ -1,9 +1,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <iomanip>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/bullet/convex_hull_utils.h>
 #include <tesseract/collision/vhacd/convex_decomposition_vhacd.h>
 #include <tesseract/geometry/impl/convex_mesh.h>
@@ -116,7 +116,7 @@ ConvexDecompositionVHACD::compute(const tesseract::common::VectorVector3d& verti
   }
   else
   {
-    CONSOLE_BRIDGE_logError("Decomposition cancelled by user!");
+    TESSERACT_LOG_ERROR("Decomposition cancelled by user!");
   }
 
   interfaceVHACD->Clean();

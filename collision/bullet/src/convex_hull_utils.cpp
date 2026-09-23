@@ -24,10 +24,10 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <LinearMath/btConvexHullComputer.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/bullet/convex_hull_utils.h>
 
 namespace tesseract::collision
@@ -57,7 +57,7 @@ int createConvexHull(tesseract::common::VectorVector3d& vertices,
                               static_cast<btScalar>(shrinkClamp));
   if (val < 0)
   {
-    CONSOLE_BRIDGE_logError("Failed to create convex hull");
+    TESSERACT_LOG_ERROR("Failed to create convex hull");
     return -1;
   }
 

@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/common/schema_registration.h>
 #include <tesseract/common/property_tree.h>
 
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 
 namespace
 {

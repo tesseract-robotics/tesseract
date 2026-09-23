@@ -53,6 +53,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/fwd.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/fcl/fcl_utils.h>
 #include <tesseract/collision/fcl/fcl_collision_geometry_cache.h>
 #include <tesseract/collision/implicit_sdf_collision_solver.h>
@@ -130,7 +131,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Mesh::Const
     return g;
   }
 
-  CONSOLE_BRIDGE_logError("The mesh is empty!");
+  TESSERACT_LOG_ERROR("The mesh is empty!");
   return nullptr;
 }
 
@@ -146,7 +147,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::ConvexMesh:
     return std::make_shared<fcl::Convexd>(geom->getVertices(), face_count, faces);
   }
 
-  CONSOLE_BRIDGE_logError("The mesh is empty!");
+  TESSERACT_LOG_ERROR("The mesh is empty!");
   return nullptr;
 }
 
@@ -160,8 +161,8 @@ CollisionGeometryPtr createShapePrimitive(const tesseract::geometry::Octree::Con
     }
     default:
     {
-      CONSOLE_BRIDGE_logError("This fcl octree sub shape type (%d) is not supported for geometry octree",
-                              static_cast<int>(geom->getSubType()));
+      TESSERACT_LOG_ERROR("This fcl octree sub shape type ({}) is not supported for geometry octree",
+                          static_cast<int>(geom->getSubType()));
       return nullptr;
     }
   }
@@ -217,8 +218,8 @@ CollisionGeometryPtr createShapePrimitiveHelper(const CollisionShapeConstPtr& ge
     }
     default:
     {
-      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using fcl yet",
-                              static_cast<int>(geom->getType()));
+      TESSERACT_LOG_ERROR("This geometric shape type ({}) is not supported using fcl yet",
+                          static_cast<int>(geom->getType()));
       return nullptr;
     }
   }

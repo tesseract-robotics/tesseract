@@ -34,7 +34,7 @@
   <exec_depend>libpcl-io</exec_depend>
 
   <!-- Core dependencies -->
-  <depend>libconsole-bridge-dev</depend>
+  <depend>spdlog</depend>
   <depend>tinyxml2</depend>
   <depend>yaml-cpp</depend>
   <depend>boost_plugin_loader</depend>

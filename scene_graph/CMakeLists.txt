@@ -19,8 +19,7 @@ target_link_libraries(
          Eigen3::Eigen
          tesseract::geometry
          tesseract::common
-         orocos-kdl
-         console_bridge::console_bridge)
+         orocos-kdl)
 target_compile_options(scene_graph PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(scene_graph PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(scene_graph PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -49,7 +48,6 @@ configure_component(
   DEPENDENCIES
     "Boost COMPONENTS graph"
     Eigen3
-    console_bridge
     orocos_kdl
     "tesseract COMPONENTS geometry common")
 
@@ -81,14 +79,12 @@ if(TESSERACT_PACKAGE)
       "libboost-all-dev"
       "liborocos-kdl-dev"
       "libeigen3-dev"
-      "libconsole-bridge-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
     WINDOWS_DEPENDS
       "boost-all"
       "orocos-kdl"
       "Eigen3"
-      "console-bridge"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry")
 

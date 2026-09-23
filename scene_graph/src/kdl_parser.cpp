@@ -37,8 +37,8 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/depth_first_search.hpp>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/kdl_parser.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
@@ -161,7 +161,7 @@ KDL::Joint convert(const std::shared_ptr<const Joint>& joint)
     }
     default:
     {
-      CONSOLE_BRIDGE_logWarn("Converting unknown joint type of joint '%s' into a fixed joint", name.c_str());
+      TESSERACT_LOG_WARN("Converting unknown joint type of joint '{}' into a fixed joint", name);
       return KDL::Joint(name, KDL::Joint::None);
     }
   }
@@ -506,10 +506,10 @@ KDLTreeData parseSceneGraph(const SceneGraph& scene_graph)
   // warn if root link has inertia. KDL does not support this
   if (root_link->inertial)
   {
-    CONSOLE_BRIDGE_logWarn("The root link %s has an inertia specified in the URDF, but KDL does not "
-                           "support a root link with an inertia.  As a workaround, you can add an extra "
-                           "dummy link to your URDF.",
-                           root.name().c_str());
+    TESSERACT_LOG_WARN("The root link {} has an inertia specified in the URDF, but KDL does not "
+                       "support a root link with an inertia.  As a workaround, you can add an extra "
+                       "dummy link to your URDF.",
+                       root.name());
   }
 
   kdl_tree_builder builder(data);

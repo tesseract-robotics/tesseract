@@ -24,7 +24,7 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -71,12 +71,12 @@ tesseract::common::CollisionMarginData::Ptr parseCollisionMargins(const tesserac
 
     if (!scene_graph.getLink(common::LinkId(link1_name)))
     {
-      CONSOLE_BRIDGE_logWarn("parseCollisionMargins: Link '%s' is not known to URDF.", link1_name.c_str());
+      TESSERACT_LOG_WARN("parseCollisionMargins: Link '{}' is not known to URDF.", link1_name);
       continue;
     }
     if (!scene_graph.getLink(common::LinkId(link2_name)))
     {
-      CONSOLE_BRIDGE_logWarn("parseCollisionMargins: Link '%s' is not known to URDF.", link2_name.c_str());
+      TESSERACT_LOG_WARN("parseCollisionMargins: Link '{}' is not known to URDF.", link2_name);
       continue;
     }
 

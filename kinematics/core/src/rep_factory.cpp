@@ -29,10 +29,9 @@
 #include <tesseract/scene_graph/joint.h>
 
 #include <tesseract/common/schema_registration.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/property_tree.h>
 #include <tesseract/common/yaml_extensions.h>
-
-#include <console_bridge/console.h>
 
 namespace
 {
@@ -144,7 +143,7 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::createImpl(const std::strin
   }
   catch (const std::exception& e)
   {
-    CONSOLE_BRIDGE_logError("REPInvKinFactory: Failed to parse yaml config data! Details: %s", e.what());
+    TESSERACT_LOG_ERROR("REPInvKinFactory: Failed to parse yaml config data! Details: {}", e.what());
     return nullptr;
   }
 }

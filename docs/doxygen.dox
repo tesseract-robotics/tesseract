@@ -35,6 +35,7 @@ Foundation and core components of Tesseract.
 - @subpage collision
 - @subpage geometry
 - @subpage kinematics
+- @subpage logging
 - @subpage property_tree
   - @subpage property_tree_derived_types
 

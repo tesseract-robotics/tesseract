@@ -483,7 +483,7 @@ find_package(LAPACK REQUIRED)  # Required for IKFast
 add_library(${PROJECT_NAME} src/my_robot_kinematics.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_kinematics_ikfast
-  console_bridge
+  spdlog
   Eigen3::Eigen
   ${LAPACK_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PUBLIC

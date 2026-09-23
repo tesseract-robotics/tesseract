@@ -46,9 +46,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
 #include <BulletCollision/CollisionDispatch/btManifoldResult.h>
 #include <btBulletCollisionCommon.h>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/types.h>
 #include <tesseract/collision/common.h>
 #include <tesseract/collision/bullet/bullet_collision_shape_cache.h>

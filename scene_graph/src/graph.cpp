@@ -32,9 +32,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/undirected_graph.hpp>
 #include <boost/graph/copy.hpp>
 #include <fstream>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/joint.h>
@@ -270,13 +270,13 @@ bool SceneGraph::addLink(const Link& link, const Joint& joint)
 {
   if (getLink(link.getId()) != nullptr)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with same name as an existing link.", link.getName().c_str());
+    TESSERACT_LOG_WARN("Tried to add link ({}) with same name as an existing link.", link.getName());
     return false;
   }
 
   if (getJoint(joint.getId()) != nullptr)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to add joint (%s) with same name as an existing joint.", joint.getName().c_str());
+    TESSERACT_LOG_WARN("Tried to add joint ({}) with same name as an existing joint.", joint.getName());
     return false;
   }
 
@@ -356,7 +356,7 @@ bool SceneGraph::removeLink(const common::LinkId& id, bool recursive)
   auto found = link_map_.find(id);
   if (found == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) from scene graph that does not exist.", id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to remove link ({}) from scene graph that does not exist.", id.name());
     return false;
   }
 
@@ -406,16 +406,15 @@ bool SceneGraph::moveLink(const Joint& joint)
 {
   if (link_map_.find(joint.child_link_id) == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that does not exist.",
-                           joint.child_link_id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to move link ({}) in scene graph that does not exist.", joint.child_link_id.name());
     return false;
   }
 
   if (link_map_.find(joint.parent_link_id) == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to move link (%s) in scene graph that parent link (%s) which does not exist.",
-                           joint.child_link_id.name().c_str(),
-                           joint.parent_link_id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to move link ({}) in scene graph that parent link ({}) which does not exist.",
+                       joint.child_link_id.name(),
+                       joint.parent_link_id.name());
     return false;
   }
 
@@ -457,28 +456,27 @@ bool SceneGraph::addJointHelper(const std::shared_ptr<Joint>& joint_ptr)
 
   if (parent == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Parent link (%s) does not exist in scene graph.", joint_ptr->parent_link_id.name().c_str());
+    TESSERACT_LOG_WARN("Parent link ({}) does not exist in scene graph.", joint_ptr->parent_link_id.name());
     return false;
   }
 
   if (child == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Child link (%s) does not exist in scene graph.", joint_ptr->child_link_id.name().c_str());
+    TESSERACT_LOG_WARN("Child link ({}) does not exist in scene graph.", joint_ptr->child_link_id.name());
     return false;
   }
 
   if (found != joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Joint with name (%s) already exists in scene graph.", joint_ptr->getName().c_str());
+    TESSERACT_LOG_WARN("Joint with name ({}) already exists in scene graph.", joint_ptr->getName());
     return false;
   }
 
   if ((joint_ptr->type != JointType::FIXED) && (joint_ptr->type != JointType::FLOATING) &&
       (joint_ptr->type != JointType::CONTINUOUS) && joint_ptr->limits == nullptr)
   {
-    CONSOLE_BRIDGE_logWarn("Joint with name (%s) requires limits because it is not of type fixed, floating or "
-                           "continuous.",
-                           joint_ptr->getName().c_str());
+    TESSERACT_LOG_WARN("Joint with name ({}) requires limits because it is not of type fixed, floating or continuous.",
+                       joint_ptr->getName());
     return false;
   }
 
@@ -547,17 +545,15 @@ bool SceneGraph::moveJoint(const common::JointId& id, const common::LinkId& pare
 
   if (found_joint == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) which does not exist in scene graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to move Joint with name ({}) which does not exist in scene graph.", id.name());
     return false;
   }
 
   if (found_parent_link == link_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) to parent link (%s) which does not exist in scene "
-                           "graph.",
-                           id.name().c_str(),
-                           parent_link_id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to move Joint with name ({}) to parent link ({}) which does not exist in scene graph.",
+                       id.name(),
+                       parent_link_id.name());
     return false;
   }
 
@@ -598,8 +594,7 @@ bool SceneGraph::changeJointOrigin(const common::JointId& id, const Eigen::Isome
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint origin with name (%s) which does not exist in scene graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint origin with name ({}) which does not exist in scene graph.", id.name());
     return false;
   }
 
@@ -620,14 +615,13 @@ bool SceneGraph::changeJointLimits(const common::JointId& id, const JointLimits&
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint limit with name (%s) which does not exist in scene graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint limit with name ({}) which does not exist in scene graph.", id.name());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint limits for a fixed or floating joint type.", id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint limits for a fixed or floating joint type.");
     return false;
   }
 
@@ -650,15 +644,14 @@ bool SceneGraph::changeJointPositionLimits(const common::JointId& id, double low
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits with name (%s) which does not exist in scene graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Position limits with name ({}) which does not exist in scene graph.",
+                       id.name());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Position limits for a fixed or floating joint type.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Position limits for a fixed or floating joint type.");
     return false;
   }
 
@@ -674,15 +667,14 @@ bool SceneGraph::changeJointVelocityLimits(const common::JointId& id, double lim
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit with name (%s) which does not exist in scene graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Velocity limit with name ({}) which does not exist in scene graph.",
+                       id.name());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Velocity limit for a fixed or floating joint type.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Velocity limit for a fixed or floating joint type.");
     return false;
   }
 
@@ -696,16 +688,14 @@ bool SceneGraph::changeJointAccelerationLimits(const common::JointId& id, double
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit with name (%s) which does not exist in scene "
-                           "graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Acceleration limit with name ({}) which does not exist in scene graph.",
+                       id.name());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Acceleration limit for a fixed or floating joint type.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Acceleration limit for a fixed or floating joint type.");
     return false;
   }
 
@@ -723,15 +713,14 @@ bool SceneGraph::changeJointJerkLimits(const common::JointId& id, double limit)
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Jerk limit with name (%s) which does not exist in scene "
-                           "graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Jerk limit with name ({}) which does not exist in scene graph.",
+                       id.name());
     return false;
   }
 
   if (found->second.first->type == JointType::FIXED || found->second.first->type == JointType::FLOATING)
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint Jerk limit for a fixed or floating joint type.", id.name().c_str());
+    TESSERACT_LOG_WARN("Tried to change Joint Jerk limit for a fixed or floating joint type.");
     return false;
   }
 
@@ -749,9 +738,9 @@ std::shared_ptr<const JointLimits> SceneGraph::getJointLimits(const common::Join
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("SceneGraph::getJointLimits tried to find Joint with name (%s) which does not exist in "
-                           "scene graph.",
-                           id.name().c_str());
+    TESSERACT_LOG_WARN("SceneGraph::getJointLimits tried to find Joint with name ({}) which does not exist in scene "
+                       "graph.",
+                       id.name());
     return nullptr;
   }
   return found->second.first->limits;
@@ -1089,15 +1078,15 @@ ShortestPath SceneGraph::getShortestPath(const common::LinkId& root_id, const co
   std::reverse(path.active_joints.begin(), path.active_joints.end());
 
 #ifndef NDEBUG
-  CONSOLE_BRIDGE_logDebug("distances and parents:");
+  TESSERACT_LOG_DEBUG("distances and parents:");
   UGraph::vertex_iterator vi, vend;
   for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
   {
-    CONSOLE_BRIDGE_logDebug("distance(%s) = %f, parent(%s) = %s",
-                            boost::get(boost::vertex_link, graph)[*vi]->getName().c_str(),
-                            distance_map[*vi],
-                            boost::get(boost::vertex_link, graph)[*vi]->getName().c_str(),
-                            boost::get(boost::vertex_link, graph)[predicessor_map[*vi]]->getName().c_str());
+    TESSERACT_LOG_DEBUG("distance({}) = {}, parent({}) = {}",
+                        boost::get(boost::vertex_link, graph)[*vi]->getName(),
+                        distance_map[*vi],
+                        boost::get(boost::vertex_link, graph)[*vi]->getName(),
+                        boost::get(boost::vertex_link, graph)[predicessor_map[*vi]]->getName());
   }
 #endif
   return path;
@@ -1161,8 +1150,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
   {
     if (link_map_.find(LinkId(prefix + link->getName())) != link_map_.end())
     {
-      CONSOLE_BRIDGE_logError("Failed to add inserted graph, link names are not unique: %s",
-                              (prefix + link->getName()).c_str());
+      TESSERACT_LOG_ERROR("Failed to add inserted graph, link names are not unique: {}", prefix + link->getName());
       return false;
     }
   }
@@ -1172,8 +1160,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
   {
     if (joint_map_.find(JointId(prefix + joint->getName())) != joint_map_.end())
     {
-      CONSOLE_BRIDGE_logError("Failed to add inserted graph, joint names are not unique: %s",
-                              (prefix + joint->getName()).c_str());
+      TESSERACT_LOG_ERROR("Failed to add inserted graph, joint names are not unique: {}", prefix + joint->getName());
       return false;
     }
   }
@@ -1184,7 +1171,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
     bool res = addLinkHelper(new_link);
     if (!res)
     {
-      CONSOLE_BRIDGE_logError("Failed to add inserted graph link: %s", link->getName().c_str());
+      TESSERACT_LOG_ERROR("Failed to add inserted graph link: {}", link->getName());
       return false;
     }
 
@@ -1199,7 +1186,7 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
     bool res = addJointHelper(new_joint);
     if (!res)
     {
-      CONSOLE_BRIDGE_logError("Failed to add inserted graph joint: %s", joint->getName().c_str());
+      TESSERACT_LOG_ERROR("Failed to add inserted graph joint: {}", joint->getName());
       return false;
     }
   }
@@ -1227,14 +1214,13 @@ bool SceneGraph::insertSceneGraph(const tesseract::scene_graph::SceneGraph& scen
 
   if (getLink(joint.parent_link_id) == nullptr || scene_graph.getLink(LinkId(child_link_name)) == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Failed to add inserted graph, provided joint link names do not exist in inserted graph!");
+    TESSERACT_LOG_ERROR("Failed to add inserted graph, provided joint link names do not exist in inserted graph!");
     return false;
   }
 
   if (getJoint(joint.getId()) != nullptr)
   {
-    CONSOLE_BRIDGE_logError("Failed to add inserted graph, provided joint name %s already exists!",
-                            joint.getName().c_str());
+    TESSERACT_LOG_ERROR("Failed to add inserted graph, provided joint name {} already exists!", joint.getName());
     return false;
   }
 

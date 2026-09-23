@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gz/math/eigen3/Conversions.hh>
 #include <gz/common/Console.hh>
 #include <gz/common/MeshManager.hh>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/visualization/ignition/conversions.h>

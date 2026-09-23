@@ -26,7 +26,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -46,11 +46,11 @@ tesseract::scene_graph::JointMimic::Ptr parseMimic(const tinyxml2::XMLElement* x
   m->joint_id = tesseract::common::JointId(joint_name);
 
   if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") == nullptr)
-    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset' and 'multiplier', using default value 0 and 1!");
+    TESSERACT_LOG_DEBUG("Mimic: Missing attribute 'offset' and 'multiplier', using default value 0 and 1!");
   else if (xml_element->Attribute("offset") != nullptr && xml_element->Attribute("multiplier") == nullptr)
-    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'multiplier', using default value 1!");
+    TESSERACT_LOG_DEBUG("Mimic: Missing attribute 'multiplier', using default value 1!");
   else if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") != nullptr)
-    CONSOLE_BRIDGE_logDebug("Mimic: Missing attribute 'offset', using default value 1!");
+    TESSERACT_LOG_DEBUG("Mimic: Missing attribute 'offset', using default value 1!");
 
   int s = xml_element->QueryDoubleAttribute("offset", &(m->offset));
   if (s != tinyxml2::XML_NO_ATTRIBUTE && s != tinyxml2::XML_SUCCESS)

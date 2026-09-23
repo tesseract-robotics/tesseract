@@ -18,7 +18,6 @@ target_link_libraries(
          tesseract::common
          tesseract::scene_graph
          tesseract::state_solver_kdl
-         console_bridge::console_bridge
          boost_plugin_loader::boost_plugin_loader
          yaml-cpp)
 target_compile_options(kinematics PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
@@ -40,7 +39,7 @@ target_include_directories(kinematics PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_
 # Add KDL kinematics factories
 add_library(kinematics_factories src/rop_factory.cpp src/rep_factory.cpp)
 set_target_properties(kinematics_factories PROPERTIES OUTPUT_NAME tesseract_kinematics_factories)
-target_link_libraries(kinematics_factories PUBLIC kinematics console_bridge::console_bridge)
+target_link_libraries(kinematics_factories PUBLIC kinematics)
 target_compile_options(kinematics_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_factories PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -73,7 +72,6 @@ configure_component(
   TARGETS kinematics kinematics_factories
   DEPENDENCIES
     Eigen3
-    console_bridge
     "tesseract COMPONENTS common scene_graph state_solver"
     boost_plugin_loader
     yaml-cpp)
@@ -84,7 +82,6 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract Kinematics core components"
     LINUX_DEPENDS
-      "libconsole-bridge-dev"
       "libeigen3-dev"
       "libyaml-cpp-dev"
       "boost-plugin-loader"
@@ -92,7 +89,6 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
     WINDOWS_DEPENDS
-      "console_bridge"
       "Eigen3"
       "yaml-cpp"
       "boost-plugin-loader"

@@ -15,8 +15,7 @@ target_link_libraries(
          Eigen3::Eigen
          tesseract::scene_graph
          tesseract::common
-         orocos-kdl
-         console_bridge::console_bridge)
+         orocos-kdl)
 target_compile_options(kinematics_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_kdl PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -38,12 +37,7 @@ target_include_directories(kinematics_kdl PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURR
 # Add KDL kinematics factories
 add_library(kinematics_kdl_factories src/kdl_factories.cpp)
 set_target_properties(kinematics_kdl_factories PROPERTIES OUTPUT_NAME tesseract_kinematics_kdl_factories)
-target_link_libraries(
-  kinematics_kdl_factories
-  PUBLIC kinematics_kdl
-         tesseract::scene_graph
-         tesseract::common
-         console_bridge::console_bridge)
+target_link_libraries(kinematics_kdl_factories PUBLIC kinematics_kdl tesseract::scene_graph tesseract::common)
 target_compile_options(kinematics_kdl_factories PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_kdl_factories PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_kdl_factories PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
