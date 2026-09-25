@@ -21,7 +21,6 @@ macro(add_gtest test_name test_file)
             tesseract::collision_fcl
             tesseract::geometry
             tesseract::scene_graph
-            console_bridge::console_bridge
             OpenMP::OpenMP_CXX
             Eigen3::Eigen
             ${Boost_LIBRARIES}

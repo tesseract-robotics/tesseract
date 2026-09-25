@@ -28,7 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 
 #include <boost/algorithm/string.hpp>
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <Eigen/Geometry>
 #include <tesseract/common/utils.h>
 #include <tinyxml2.h>
@@ -106,7 +106,7 @@ parseMaterial(const tinyxml2::XMLElement* xml_element,
     {
       auto it = available_materials.find(material_name);
       if (it != available_materials.end())
-        CONSOLE_BRIDGE_logDebug("Multiple materials with the same name '%s' exist!", material_name.c_str());
+        TESSERACT_LOG_DEBUG("Multiple materials with the same name '{}' exist!", material_name);
 
       available_materials[material_name] = m;
     }

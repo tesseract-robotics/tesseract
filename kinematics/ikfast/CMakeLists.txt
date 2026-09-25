@@ -1,6 +1,6 @@
 add_library(kinematics_ikfast INTERFACE)
 add_library(tesseract::kinematics_ikfast ALIAS kinematics_ikfast)
-target_link_libraries(kinematics_ikfast INTERFACE kinematics Eigen3::Eigen console_bridge::console_bridge)
+target_link_libraries(kinematics_ikfast INTERFACE kinematics Eigen3::Eigen)
 target_compile_definitions(kinematics_ikfast INTERFACE -DIKFAST_NO_MAIN -DIKFAST_CLIBRARY -DIKFAST_HAS_LIBRARY)
 target_compile_options(kinematics_ikfast INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_ikfast INTERFACE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})

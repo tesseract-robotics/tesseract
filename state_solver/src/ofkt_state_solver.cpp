@@ -29,10 +29,10 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <boost/graph/depth_first_search.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/state_solver/ofkt/ofkt_state_solver.h>
 #include <tesseract/state_solver/ofkt/ofkt_node.h>
 #include <tesseract/state_solver/ofkt/ofkt_nodes.h>
@@ -614,22 +614,21 @@ bool OFKTStateSolver::replaceJoint(const Joint& joint)
   auto it = nodes_.find(joint.getId());
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to replace joint '%s' which does not exist!",
-                            joint.getName().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to replace joint '{}' which does not exist!", joint.getName());
     return false;
   }
 
   if (link_map_.find(joint.parent_link_id) == link_map_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to replace joint '%s' with parent link name that does not exist!",
-                            joint.getName().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to replace joint '{}' with parent link name that does not exist!",
+                        joint.getName());
     return false;
   }
 
   if (it->second->getLinkId() != joint.child_link_id)
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to replace joint '%s' with different child link name!",
-                            joint.getName().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to replace joint '{}' with different child link name!",
+                        joint.getName());
     return false;
   }
 
@@ -648,15 +647,14 @@ bool OFKTStateSolver::moveLink(const Joint& joint)
 
   if (link_map_.find(joint.child_link_id) == link_map_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to link '%s' that does not exist!",
-                            joint.child_link_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to link '{}' that does not exist!", joint.child_link_id.name());
     return false;
   }
 
   if (link_map_.find(joint.parent_link_id) == link_map_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move link to parent link '%s' that does not exist!",
-                            joint.parent_link_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to move link to parent link '{}' that does not exist!",
+                        joint.parent_link_id.name());
     return false;
   }
 
@@ -675,7 +673,7 @@ bool OFKTStateSolver::removeLink(const LinkId& link_id)
   auto it = link_map_.find(link_id);
   if (it == link_map_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to remove link '%s' which does not exist!", link_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to remove link '{}' which does not exist!", link_id.name());
     return false;
   }
 
@@ -707,8 +705,7 @@ bool OFKTStateSolver::removeJoint(const JointId& joint_id)
   auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to remove joint '%s' which does not exist!",
-                            joint_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to remove joint '{}' which does not exist!", joint_id.name());
     return false;
   }
 
@@ -740,15 +737,15 @@ bool OFKTStateSolver::moveJoint(const JointId& joint_id, const LinkId& parent_li
   auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move joint '%s' which does not exist!", joint_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to move joint '{}' which does not exist!", joint_id.name());
     return false;
   }
 
   if (link_map_.find(parent_link_id) == link_map_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to move joint '%s' to parent link '%s' which does not exist!",
-                            joint_id.name().c_str(),
-                            parent_link_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to move joint '{}' to parent link '{}' which does not exist!",
+                        joint_id.name(),
+                        parent_link_id.name());
     return false;
   }
 
@@ -769,8 +766,7 @@ bool OFKTStateSolver::changeJointOrigin(const JointId& joint_id, const Eigen::Is
   auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' origin which does not exist!",
-                            joint_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to change joint '{}' origin which does not exist!", joint_id.name());
     return false;
   }
 
@@ -789,8 +785,8 @@ bool OFKTStateSolver::changeJointPositionLimits(const JointId& joint_id, double 
   auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            joint_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to change joint '{}' positioner limits which does not exist!",
+                        joint_id.name());
     return false;
   }
 
@@ -807,8 +803,8 @@ bool OFKTStateSolver::changeJointVelocityLimits(const JointId& joint_id, double 
   auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            joint_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to change joint '{}' positioner limits which does not exist!",
+                        joint_id.name());
     return false;
   }
 
@@ -825,8 +821,8 @@ bool OFKTStateSolver::changeJointAccelerationLimits(const JointId& joint_id, dou
   auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            joint_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to change joint '{}' positioner limits which does not exist!",
+                        joint_id.name());
     return false;
   }
 
@@ -843,8 +839,8 @@ bool OFKTStateSolver::changeJointJerkLimits(const JointId& joint_id, double limi
   auto it = nodes_.find(joint_id);
   if (it == nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, tried to change joint '%s' positioner limits which does not exist!",
-                            joint_id.name().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, tried to change joint '{}' positioner limits which does not exist!",
+                        joint_id.name());
     return false;
   }
 
@@ -872,15 +868,15 @@ bool OFKTStateSolver::insertSceneGraph(const SceneGraph& scene_graph, const Join
 
   if (link_map_.find(joint.parent_link_id) == link_map_.end() || scene_graph.getLink(child_link_id) == nullptr)
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, Failed to add inserted graph, provided joint link names do not exist in "
-                            "inserted graph!");
+    TESSERACT_LOG_ERROR("OFKTStateSolver, Failed to add inserted graph, provided joint link names do not exist in "
+                        "inserted graph!");
     return false;
   }
 
   if (nodes_.find(joint.getId()) != nodes_.end())
   {
-    CONSOLE_BRIDGE_logError("OFKTStateSolver, Failed to add inserted graph, provided joint name %s already exists!",
-                            joint.getName().c_str());
+    TESSERACT_LOG_ERROR("OFKTStateSolver, Failed to add inserted graph, provided joint name {} already exists!",
+                        joint.getName());
     return false;
   }
 

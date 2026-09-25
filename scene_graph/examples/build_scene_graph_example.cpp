@@ -200,11 +200,7 @@
  */
 
 //! [build_scene_graph_full_source]
-#include <tesseract/common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/joint.h>
@@ -224,7 +220,7 @@ std::string toString(bool b) { return b ? "true" : "false"; }
 
 int main(int /*argc*/, char** /*argv*/)
 {
-  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
+  tesseract::common::getLogger()->set_level(spdlog::level::info);
 
   //! [build_scene_graph_create_graph]
   SceneGraph g;
@@ -282,25 +278,25 @@ int main(int /*argc*/, char** /*argv*/)
   //! [build_scene_graph_adjacent_links]
   std::vector<tesseract::common::LinkId> adjacent_links = g.getAdjacentLinkIds("link_3");
   for (const auto& adj : adjacent_links)
-    CONSOLE_BRIDGE_logInform(adj.name().c_str());
+    TESSERACT_LOG_INFO("{}", adj.name());
   //! [build_scene_graph_adjacent_links]
 
   //! [build_scene_graph_inv_adjacent_links]
   std::vector<tesseract::common::LinkId> inv_adjacent_links = g.getInvAdjacentLinkIds("link_3");
   for (const auto& inv_adj : inv_adjacent_links)
-    CONSOLE_BRIDGE_logInform(inv_adj.name().c_str());
+    TESSERACT_LOG_INFO("{}", inv_adj.name());
   //! [build_scene_graph_inv_adjacent_links]
 
   //! [build_scene_graph_link_children]
   std::vector<tesseract::common::LinkId> child_link_ids = g.getLinkChildrenIds("link_2");
   for (const auto& child_link : child_link_ids)
-    CONSOLE_BRIDGE_logInform(child_link.name().c_str());
+    TESSERACT_LOG_INFO("{}", child_link.name());
   //! [build_scene_graph_link_children]
 
   //! [build_scene_graph_joint_children]
   child_link_ids = g.getJointChildrenIds("joint_1");
   for (const auto& child_link : child_link_ids)
-    CONSOLE_BRIDGE_logInform(child_link.name().c_str());
+    TESSERACT_LOG_INFO("{}", child_link.name());
   //! [build_scene_graph_joint_children]
 
   //! [build_scene_graph_save_dot]
@@ -309,25 +305,25 @@ int main(int /*argc*/, char** /*argv*/)
 
   //! [build_scene_graph_is_acyclic]
   bool is_acyclic = g.isAcyclic();
-  CONSOLE_BRIDGE_logInform(toString(is_acyclic).c_str());
+  TESSERACT_LOG_INFO("{}", toString(is_acyclic));
   //! [build_scene_graph_is_acyclic]
 
   //! [build_scene_graph_is_tree]
   bool is_tree = g.isTree();
-  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+  TESSERACT_LOG_INFO("{}", toString(is_tree));
   //! [build_scene_graph_is_tree]
 
   //! [build_scene_graph_disconnected]
   Link link_6("link_6");
   g.addLink(link_6);
   is_tree = g.isTree();
-  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+  TESSERACT_LOG_INFO("{}", toString(is_tree));
   //! [build_scene_graph_disconnected]
 
   //! [build_scene_graph_remove_link]
   g.removeLink("link_6");
   is_tree = g.isTree();
-  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+  TESSERACT_LOG_INFO("{}", toString(is_tree));
   //! [build_scene_graph_remove_link]
 
   //! [build_scene_graph_add_cycle]
@@ -345,17 +341,17 @@ int main(int /*argc*/, char** /*argv*/)
 
   //! [build_scene_graph_cycle_acyclic]
   is_acyclic = g.isAcyclic();
-  CONSOLE_BRIDGE_logInform(toString(is_acyclic).c_str());
+  TESSERACT_LOG_INFO("{}", toString(is_acyclic));
   //! [build_scene_graph_cycle_acyclic]
 
   //! [build_scene_graph_cycle_tree]
   is_tree = g.isTree();
-  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+  TESSERACT_LOG_INFO("{}", toString(is_tree));
   //! [build_scene_graph_cycle_tree]
 
   //! [build_scene_graph_shortest_path]
   ShortestPath path = g.getShortestPath("link_1", "link_4");
-  CONSOLE_BRIDGE_logInform(toString(path).c_str());
+  TESSERACT_LOG_INFO("{}", toString(path));
   //! [build_scene_graph_shortest_path]
 }
 //! [build_scene_graph_full_source]

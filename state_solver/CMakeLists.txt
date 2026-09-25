@@ -4,12 +4,7 @@ set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "state_solver" PARENT_SCOPE)
 
 add_library(state_solver INTERFACE)
 add_library(tesseract::state_solver ALIAS state_solver)
-target_link_libraries(
-  state_solver
-  INTERFACE Eigen3::Eigen
-            tesseract::common
-            tesseract::scene_graph
-            console_bridge::console_bridge)
+target_link_libraries(state_solver INTERFACE Eigen3::Eigen tesseract::common tesseract::scene_graph)
 target_compile_options(state_solver INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(state_solver INTERFACE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
 target_clang_tidy(state_solver ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -26,8 +21,7 @@ target_link_libraries(
          Eigen3::Eigen
          tesseract::common
          tesseract::scene_graph
-         orocos-kdl
-         console_bridge::console_bridge)
+         orocos-kdl)
 target_compile_options(state_solver_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(state_solver_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(state_solver_kdl PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -51,8 +45,7 @@ target_link_libraries(
   PUBLIC state_solver
          Eigen3::Eigen
          tesseract::common
-         tesseract::scene_graph
-         console_bridge::console_bridge)
+         tesseract::scene_graph)
 target_compile_options(state_solver_ofkt PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(state_solver_ofkt PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(state_solver_ofkt PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -73,11 +66,7 @@ configure_component(
   COMPONENT state_solver
   NAMESPACE tesseract
   TARGETS state_solver state_solver_kdl state_solver_ofkt
-  DEPENDENCIES
-    Eigen3
-    orocos_kdl
-    console_bridge
-    "tesseract COMPONENTS common scene_graph")
+  DEPENDENCIES Eigen3 orocos_kdl "tesseract COMPONENTS common scene_graph")
 
 # Mark cpp header files for installation
 install(
@@ -99,13 +88,11 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract State Solver Components"
     LINUX_DEPENDS
-      "libconsole-bridge-dev"
       "liborocos-kdl-dev"
       "libeigen3-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
     WINDOWS_DEPENDS
-      "console_bridge"
       "orocos-kdl"
       "Eigen3"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"

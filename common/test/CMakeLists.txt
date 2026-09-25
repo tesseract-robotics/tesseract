@@ -1,4 +1,13 @@
 find_gtest()
+
+add_executable(tesseract_common_logging_unit logging_unit.cpp)
+target_link_libraries(tesseract_common_logging_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
+target_compile_options(tesseract_common_logging_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                             ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(tesseract_common_logging_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
+target_cxx_version(tesseract_common_logging_unit PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+add_gtest_discover_tests(tesseract_common_logging_unit)
+add_dependencies(tesseract_common_logging_unit tesseract::common)
 find_package(boost_plugin_loader REQUIRED)
 
 add_executable(tesseract_common_serialization_unit tesseract_common_serialization_unit.cpp)
@@ -44,12 +53,7 @@ add_gtest_discover_tests(tesseract_common_unit)
 add_dependencies(tesseract_common_unit tesseract::common)
 
 add_executable(tesseract_common_clone_cache_unit clone_cache_unit.cpp)
-target_link_libraries(
-  tesseract_common_clone_cache_unit
-  PRIVATE GTest::GTest
-          GTest::Main
-          tesseract::common
-          console_bridge::console_bridge)
+target_link_libraries(tesseract_common_clone_cache_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
 target_compile_options(tesseract_common_clone_cache_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                  ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(tesseract_common_clone_cache_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
@@ -78,7 +82,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           tesseract::common
-          console_bridge::console_bridge
           boost_plugin_loader::boost_plugin_loader)
 target_compile_options(tesseract_common_plugin_loader_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -101,7 +104,6 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           tesseract::common
-          console_bridge::console_bridge
           boost_plugin_loader::boost_plugin_loader)
 target_compile_options(tesseract_common_profile_plugin_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                             ${TESSERACT_COMPILE_OPTIONS_PUBLIC})

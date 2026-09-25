@@ -11,10 +11,10 @@ macro(add_benchmark benchmark_name benchmark_file)
   target_link_libraries(
     ${benchmark_name}
     benchmark::benchmark
+    tesseract::common
     tesseract::environment
     tesseract::urdf
     tesseract::kinematics
-    console_bridge::console_bridge
     ${Boost_LIBRARIES})
   target_include_directories(${benchmark_name} PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   if(TESSERACT_ENABLE_RUN_BENCHMARKING)

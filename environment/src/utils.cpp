@@ -23,9 +23,9 @@
  */
 
 #include <tesseract/collision/utils.h>
+#include <tesseract/common/logging.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/environment/utils.h>
@@ -124,7 +124,7 @@ void printContinuousDebugInfo(const std::vector<std::string>& joint_names,
      << "    State0: " << swp0 << "\n"
      << "    State1: " << swp1 << "\n";
 
-  CONSOLE_BRIDGE_logDebug(ss.str().c_str());
+  TESSERACT_LOG_DEBUG("{}", ss.str());
 }
 
 void printDiscreteDebugInfo(const std::vector<std::string>& joint_names,
@@ -146,7 +146,7 @@ void printDiscreteDebugInfo(const std::vector<std::string>& joint_names,
   ss << "\n"
      << "    State: " << swp << "\n";
 
-  CONSOLE_BRIDGE_logDebug(ss.str().c_str());
+  TESSERACT_LOG_DEBUG("{}", ss.str());
 }
 
 using CalcStateFn = std::function<tesseract::common::LinkIdTransformMap(const Eigen::VectorXd& state)>;
@@ -168,7 +168,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
 
-  bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
+  bool debug_logging = tesseract::common::getLogger()->should_log(spdlog::level::debug);
 
   tesseract::collision::ContactTrajectoryResults traj_contacts(joint_ids, static_cast<int>(traj.rows()));
 
@@ -455,7 +455,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   if (traj.rows() == 0)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
 
-  bool debug_logging = console_bridge::getLogLevel() < console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO;
+  bool debug_logging = tesseract::common::getLogger()->should_log(spdlog::level::debug);
 
   tesseract::collision::ContactTrajectoryResults traj_contacts(joint_ids, static_cast<int>(traj.rows()));
 

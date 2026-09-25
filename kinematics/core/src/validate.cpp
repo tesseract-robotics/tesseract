@@ -25,12 +25,12 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
-#include <console_bridge/console.h>
 #include <algorithm>
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/validate.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/types.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/kinematics/kinematic_group.h>
@@ -121,16 +121,16 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
   // LCOV_EXCL_START
   if (!failed_data.empty())
   {
-    CONSOLE_BRIDGE_logError("checkKinematics failed %d out of %d\n           Translation failures %d out of %d (max: "
-                            "%f)\n           Angular failures %d out of %d (max: %f)",
-                            failed_data.size(),
-                            (failed_data.size() + passed_data.size()),
-                            translation_failures,
-                            failed_data.size(),
-                            translation_max,
-                            angular_failures,
-                            failed_data.size(),
-                            angular_max);
+    TESSERACT_LOG_ERROR("checkKinematics failed {} out of {}\n           Translation failures {} out of {} (max: "
+                        "{})\n           Angular failures {} out of {} (max: {})",
+                        failed_data.size(),
+                        (failed_data.size() + passed_data.size()),
+                        translation_failures,
+                        failed_data.size(),
+                        translation_max,
+                        angular_failures,
+                        failed_data.size(),
+                        angular_max);
     std::stringstream msg;
     msg << "\n";
     msg << "*****************************\n";
@@ -166,7 +166,7 @@ bool checkKinematics(const KinematicGroup& manip, double tol)
       }
     }
 
-    CONSOLE_BRIDGE_logError("%s", msg.str().c_str());
+    TESSERACT_LOG_ERROR("{}", msg.str());
     return false;
   }
   // LCOV_EXCL_STOP

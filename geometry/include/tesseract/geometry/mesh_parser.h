@@ -50,8 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <assimp/pbrmaterial.h>
 #endif
 
-#include <console_bridge/console.h>
-
+#include <tesseract/common/logging.h>
 #include <tesseract/common/types.h>
 #include <tesseract/common/resource_locator.h>
 
@@ -118,7 +117,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       }
       else
       {
-        CONSOLE_BRIDGE_logDebug("Mesh had a face with less than three vertices: %s", resource->getUrl().c_str());
+        TESSERACT_LOG_DEBUG("Mesh had a face with less than three vertices: {}", resource->getUrl());
       }
     }
 
@@ -307,14 +306,14 @@ std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
 {
   if (!scene->HasMeshes())
   {
-    CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", resource->getUrl().c_str());
+    TESSERACT_LOG_WARN("Assimp reports scene in {} has no meshes", resource->getUrl());
     return std::vector<std::shared_ptr<T>>();
   }
   std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(
       scene, scene->mRootNode, aiMatrix4x4(), scale, resource, normals, vertex_colors, material_and_texture);
   if (meshes.empty())
   {
-    CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", resource->getUrl().c_str());
+    TESSERACT_LOG_WARN("There are no meshes in the scene {}", resource->getUrl());
     return std::vector<std::shared_ptr<T>>();
   }
 
@@ -377,7 +376,7 @@ std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
 
   if (!scene)
   {
-    CONSOLE_BRIDGE_logError("Could not load mesh from \"%s\": %s", path.c_str(), importer.GetErrorString());
+    TESSERACT_LOG_ERROR("Could not load mesh from \"{}\": {}", path, importer.GetErrorString());
     return std::vector<std::shared_ptr<T>>();
   }
 
@@ -492,8 +491,7 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract::common::Resour
 
   if (!scene)
   {
-    CONSOLE_BRIDGE_logError(
-        "Could not load mesh from \"%s\": %s", resource->getUrl().c_str(), importer.GetErrorString());
+    TESSERACT_LOG_ERROR("Could not load mesh from \"{}\": {}", resource->getUrl(), importer.GetErrorString());
     return std::vector<std::shared_ptr<T>>();
   }
 

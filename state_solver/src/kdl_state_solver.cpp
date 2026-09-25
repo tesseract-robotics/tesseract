@@ -23,10 +23,10 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/types.h>
 #include <tesseract/scene_graph/graph.h>
@@ -396,7 +396,7 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
     return true;
   }
 
-  CONSOLE_BRIDGE_logError("Tried to set joint name %s which does not exist!", joint_id.name().c_str());
+  TESSERACT_LOG_ERROR("Tried to set joint name {} which does not exist!", joint_id.name());
   return false;
 }
 
@@ -538,7 +538,7 @@ bool KDLStateSolver::calcJacobianHelper(KDL::Jacobian& jacobian,
   jacobian.resize(static_cast<unsigned>(kdl_joints.data.size()));
   if (getJacobianSolver().JntToJac(kdl_joints, jacobian, link_id.name()) < 0)
   {
-    CONSOLE_BRIDGE_logError("Failed to calculate jacobian");
+    TESSERACT_LOG_ERROR("Failed to calculate jacobian");
     return false;
   }
 

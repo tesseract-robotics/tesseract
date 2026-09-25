@@ -69,11 +69,7 @@ configure_component(
   COMPONENT environment
   NAMESPACE tesseract
   TARGETS environment
-  DEPENDENCIES
-    Eigen3
-    cereal
-    console_bridge
-    "tesseract COMPONENTS common collision kinematics scene_graph state_solver srdf urdf")
+  DEPENDENCIES Eigen3 cereal "tesseract COMPONENTS common collision kinematics scene_graph state_solver srdf urdf")
 
 # Mark cpp header files for installation
 install(
@@ -100,7 +96,6 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract Environment Components"
     LINUX_DEPENDS
-      "libconsole-bridge-dev"
       "libeigen3-dev"
       "cereal"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"
@@ -112,7 +107,6 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-srdf"
     WINDOWS_DEPENDS
-      "console_bridge"
       "Eigen3"
       "cereal"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision-core"

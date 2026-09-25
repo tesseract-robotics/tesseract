@@ -3,11 +3,11 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <chrono>
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/bullet/convex_hull_utils.h>
 #include <tesseract/collision/discrete_contact_manager.h>
 #include <tesseract/collision/common.h>
@@ -98,7 +98,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   for (long i = 0; i < num_threads; ++i)  // NOLINT
   {
     const int tn = omp_get_thread_num();
-    CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, num_threads);
+    TESSERACT_LOG_DEBUG("Thread (ID: {}): {} of {}", tn, i, num_threads);
     const DiscreteContactManager::Ptr& manager = contact_manager[static_cast<size_t>(tn)];
     for (const auto& link_id : link_ids)
     {
@@ -139,7 +139,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   }
   auto end_time = std::chrono::high_resolution_clock::now();
 
-  CONSOLE_BRIDGE_logInform("DT: %f ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
+  TESSERACT_LOG_INFO("DT: {} ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
   for (long i = 0; i < num_threads; ++i)
   {

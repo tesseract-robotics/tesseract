@@ -26,7 +26,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -44,10 +44,10 @@ tesseract::scene_graph::JointCalibration::Ptr parseCalibration(const tinyxml2::X
 
   auto calibration = std::make_shared<tesseract::scene_graph::JointCalibration>();
   if (xml_element->Attribute("rising") == nullptr && xml_element->Attribute("falling") != nullptr)
-    CONSOLE_BRIDGE_logDebug("Calibration: Missing attribute 'rising', using default value 0!");
+    TESSERACT_LOG_DEBUG("Calibration: Missing attribute 'rising', using default value 0!");
 
   if (xml_element->Attribute("rising") != nullptr && xml_element->Attribute("falling") == nullptr)
-    CONSOLE_BRIDGE_logDebug("Calibration: Missing attribute 'falling', using default value 0!");
+    TESSERACT_LOG_DEBUG("Calibration: Missing attribute 'falling', using default value 0!");
 
   auto xml_status = xml_element->QueryDoubleAttribute("rising", &(calibration->rising));
   if (xml_status != tinyxml2::XML_NO_ATTRIBUTE && xml_status != tinyxml2::XML_SUCCESS)

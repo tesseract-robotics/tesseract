@@ -147,7 +147,7 @@
  */
 
 //! [create_geometries_full_source]
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/geometry/mesh_parser.h>
 #include <tesseract/geometry/impl/signed_distance_field_utils.h>
@@ -166,13 +166,13 @@ int main(int /*argc*/, char** /*argv*/)
   //! [create_geometries_load_mesh]
 
   //! [create_geometries_mesh_info]
-  CONSOLE_BRIDGE_logInform("Number of meshes loaded: %zu", loaded_meshes.size());
+  TESSERACT_LOG_INFO("Number of meshes loaded: {}", loaded_meshes.size());
   for (size_t i = 0; i < loaded_meshes.size(); ++i)
   {
-    CONSOLE_BRIDGE_logInform("Mesh #%zu - Triangles: %zu, Vertices: %zu",
-                             i + 1,
-                             loaded_meshes[i]->getFaceCount(),
-                             loaded_meshes[i]->getVertexCount());
+    TESSERACT_LOG_INFO("Mesh #{} - Triangles: {}, Vertices: {}",
+                       i + 1,
+                       loaded_meshes[i]->getFaceCount(),
+                       loaded_meshes[i]->getVertexCount());
   }
   //! [create_geometries_mesh_info]
 

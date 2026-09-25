@@ -26,7 +26,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <utility>
-#include <console_bridge/console.h>
 #include <fstream>
 #include <tinyxml2.h>
 #include <boost/algorithm/string/classification.hpp>
@@ -34,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/srdf/groups.h>
 #include <tesseract/srdf/group_states.h>
 #include <tesseract/srdf/group_tool_center_points.h>
@@ -107,7 +107,7 @@ void SRDFModel::initString(const tesseract::scene_graph::SceneGraph& scene_graph
     std::throw_with_nested(std::runtime_error("SRDF: Missing or failed to parse attribute 'name'!"));
 
   if (name != scene_graph.getName())
-    CONSOLE_BRIDGE_logError("Semantic description is not specified for the same robot as the URDF");
+    TESSERACT_LOG_ERROR("Semantic description is not specified for the same robot as the URDF");
 
   std::string version_string;
   status = tesseract::common::QueryStringAttribute(srdf_xml, "version", version_string);
@@ -131,11 +131,11 @@ void SRDFModel::initString(const tesseract::scene_graph::SceneGraph& scene_graph
   }
   else
   {
-    CONSOLE_BRIDGE_logDebug("SRDF Parser: The version number warning can be suppressed by adding the attribute: "
-                            "version=%i.%i.%i",
-                            version[0],
-                            version[1],
-                            version[2]);
+    TESSERACT_LOG_DEBUG("SRDF Parser: The version number warning can be suppressed by adding the attribute: "
+                        "version={}.{}.{}",
+                        version[0],
+                        version[1],
+                        version[2]);
   }
 
   std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups> groups_info;
@@ -405,7 +405,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   if (status != tinyxml2::XML_SUCCESS)
   {
     // LCOV_EXCL_START
-    CONSOLE_BRIDGE_logError("Failed to save SRDF XML File: %s", file_path.c_str());
+    TESSERACT_LOG_ERROR("Failed to save SRDF XML File: {}", file_path);
     return false;
     // LCOV_EXCL_STOP
   }

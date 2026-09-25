@@ -24,8 +24,8 @@ target_link_libraries(
   PUBLIC collision
          Eigen3::Eigen
          Bullet3::Bullet
+         tesseract::common
          tesseract::geometry
-         console_bridge::console_bridge
          octomap
          octomath)
 target_compile_options(collision_bullet PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
@@ -74,8 +74,8 @@ if(${HACD_LIBRARY})
     PUBLIC collision_bullet
            Eigen3::Eigen
            Bullet3::Bullet
+           tesseract::common
            tesseract::geometry
-           console_bridge::console_bridge
            ${HACD_LIBRARY})
   target_compile_options(collision_hacd_convex_decomposition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(collision_hacd_convex_decomposition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -108,7 +108,6 @@ if(NOT MSVC)
            Boost::boost
            Boost::program_options
            Eigen3::Eigen
-           console_bridge::console_bridge
            octomap
            octomath)
   target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}

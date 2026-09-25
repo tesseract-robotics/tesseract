@@ -23,11 +23,11 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/kdl_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/types.h>
 #include <tesseract/kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract/kinematics/kdl/kdl_utils.h>
@@ -126,7 +126,7 @@ bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
 
   if (success < 0)
   {
-    CONSOLE_BRIDGE_logError("Failed to calculate jacobian");
+    TESSERACT_LOG_ERROR("Failed to calculate jacobian");
     return false;
   }
 

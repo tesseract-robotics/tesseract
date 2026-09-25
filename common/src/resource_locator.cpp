@@ -25,12 +25,12 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
-#include <console_bridge/console.h>
 #include <iostream>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/common/types.h>
 #include <tesseract/common/utils.h>
@@ -95,7 +95,7 @@ bool GeneralResourceLocator::addPath(const std::filesystem::path& path)
     return true;
   }
 
-  CONSOLE_BRIDGE_logError("Package Path does not exist: %s", path.string().c_str());
+  TESSERACT_LOG_ERROR("Package Path does not exist: {}", path.string());
   return false;
 }
 
@@ -134,7 +134,7 @@ void GeneralResourceLocator::processToken(const std::string& token)
   }
   else
   {
-    CONSOLE_BRIDGE_logError("Package Path does not exist: %s", token.c_str());
+    TESSERACT_LOG_ERROR("Package Path does not exist: {}", token);
   }
 }
 
@@ -182,14 +182,14 @@ std::shared_ptr<Resource> GeneralResourceLocator::locateResource(const std::stri
     }
     else
     {
-      CONSOLE_BRIDGE_logError("Failed to find package resource %s for %s", package.c_str(), url.c_str());
+      TESSERACT_LOG_ERROR("Failed to find package resource {} for {}", package, url);
       return nullptr;
     }
   }
 
   if (!std::filesystem::path(mod_url).is_absolute())
   {
-    CONSOLE_BRIDGE_logWarn("Resource not handled: %s", mod_url.c_str());
+    TESSERACT_LOG_WARN("Resource not handled: {}", mod_url);
     return nullptr;
   }
 
@@ -224,7 +224,7 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents() const
   std::ifstream ifs(filename_, std::ios::binary | std::ios::ate);
   if (ifs.fail())
   {
-    CONSOLE_BRIDGE_logError("Could not read all bytes from file: %s", filename_.c_str());
+    TESSERACT_LOG_ERROR("Could not read all bytes from file: {}", filename_);
     return {};
   }
   std::ifstream::pos_type pos = ifs.tellg();
@@ -242,7 +242,7 @@ std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream() 
   std::shared_ptr<std::ifstream> ifs = std::make_shared<std::ifstream>(filename_, std::ios::binary);
   if (ifs->fail())
   {
-    CONSOLE_BRIDGE_logError("Could not get resource: %s", filename_.c_str());
+    TESSERACT_LOG_ERROR("Could not get resource: {}", filename_);
     return nullptr;
   }
   return ifs;
@@ -272,7 +272,7 @@ tesseract::common::Resource::Ptr SimpleLocatedResource::locateResource(const std
     std::string url_base_path = url_.substr(0, last_separator);
     std::string new_url =
         url_base_path + std::string(1, std::filesystem::path::preferred_separator) + path.filename().string();
-    CONSOLE_BRIDGE_logDebug("new_url: %s", new_url.c_str());
+    TESSERACT_LOG_DEBUG("new_url: {}", new_url);
     return parent_->locateResource(new_url);
   }
 

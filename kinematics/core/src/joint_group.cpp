@@ -23,10 +23,10 @@
  */
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/kinematics/joint_group.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/types.h>
 #include <tesseract/common/utils.h>
 
@@ -278,8 +278,8 @@ bool JointGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
 {
   if (vec.size() != numJoints())
   {
-    CONSOLE_BRIDGE_logError(
-        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), numJoints());
+    TESSERACT_LOG_ERROR(
+        "Number of joint angles ({}) don't match robot_model ({})", static_cast<int>(vec.size()), numJoints());
     return false;
   }
 
@@ -287,11 +287,11 @@ bool JointGroup::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
   {
     if ((vec[i] < limits_.joint_limits(i, 0)) || (vec(i) > limits_.joint_limits(i, 1)))
     {
-      CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
-                              joint_ids_[static_cast<size_t>(i)].name().c_str(),
-                              limits_.joint_limits(i, 0),
-                              vec(i),
-                              limits_.joint_limits(i, 1));
+      TESSERACT_LOG_DEBUG("Joint {} is out-of-range ({} < {} < {})",
+                          joint_ids_[static_cast<size_t>(i)].name(),
+                          limits_.joint_limits(i, 0),
+                          vec(i),
+                          limits_.joint_limits(i, 1));
       return false;
     }
   }

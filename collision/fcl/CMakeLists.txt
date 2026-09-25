@@ -13,9 +13,9 @@ target_link_libraries(
   collision_fcl
   PUBLIC collision
          Eigen3::Eigen
+         tesseract::common
          tesseract::geometry
          fcl
-         console_bridge::console_bridge
          octomap
          octomath)
 target_compile_options(collision_fcl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})

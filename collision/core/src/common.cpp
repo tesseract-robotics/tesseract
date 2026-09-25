@@ -25,9 +25,9 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cassert>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/common/utils.h>
 #include <tesseract/common/types.h>
 #include <tesseract/collision/common.h>
@@ -94,8 +94,7 @@ bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
     if (verbose)
     {
       const auto [link1, link2] = pair.orderedNameView();
-      CONSOLE_BRIDGE_logError(
-          "Collision between '%s' and '%s' is allowed. No contacts are computed.", link1.c_str(), link2.c_str());
+      TESSERACT_LOG_ERROR("Collision between '{}' and '{}' is allowed. No contacts are computed.", link1, link2);
     }
     return true;
   }
@@ -103,7 +102,7 @@ bool isContactAllowed(const tesseract::common::LinkIdPair& pair,
   if (verbose)
   {
     const auto [link1, link2] = pair.orderedNameView();
-    CONSOLE_BRIDGE_logError("Actually checking collisions between %s and %s", link1.c_str(), link2.c_str());
+    TESSERACT_LOG_ERROR("Actually checking collisions between {} and {}", link1, link2);
   }
 
   return false;
@@ -128,9 +127,8 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
     {
       if (verbose)
       {
-        CONSOLE_BRIDGE_logError("Collision between '%s' and '%s' is allowed. No contacts are computed.",
-                                id1.name().c_str(),
-                                id2.name().c_str());
+        TESSERACT_LOG_ERROR(
+            "Collision between '{}' and '{}' is allowed. No contacts are computed.", id1.name(), id2.name());
       }
       return true;
     }
@@ -138,7 +136,7 @@ bool isContactAllowed(const tesseract::common::LinkId& id1,
 
   if (verbose)
   {
-    CONSOLE_BRIDGE_logError("Actually checking collisions between %s and %s", id1.name().c_str(), id2.name().c_str());
+    TESSERACT_LOG_ERROR("Actually checking collisions between {} and {}", id1.name(), id2.name());
   }
 
   return false;

@@ -55,7 +55,8 @@ add_library(
   src/stopwatch.cpp
   src/timer.cpp
   src/types.cpp
-  src/yaml_utils.cpp)
+  src/yaml_utils.cpp
+  src/logging.cpp)
 add_library(tesseract::common ALIAS common)
 if(NOT WIN32)
   # Compile the cereal polymorphic-type registration. On Windows it is registered in the header instead.
@@ -72,7 +73,7 @@ target_link_libraries(
          Boost::system
          Boost::filesystem
          ${TESSERACT_BACKTRACE_LIB}
-         console_bridge::console_bridge
+         spdlog::spdlog
          cereal::cereal
          yaml-cpp)
 target_compile_options(common PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -139,7 +140,7 @@ if(TESSERACT_PACKAGE)
     LINUX_DEPENDS
       "libboost-system-dev"
       "libboost-filesystem-dev"
-      "libconsole-bridge-dev"
+      "libspdlog-dev"
       "libtinyxml2-dev"
       "libeigen3-dev"
       "libyaml-cpp-dev"
@@ -147,7 +148,7 @@ if(TESSERACT_PACKAGE)
     WINDOWS_DEPENDS
       "boost_system"
       "boost_filesystem"
-      "console-bridge"
+      "spdlog"
       "tinyxml2"
       "Eigen3"
       "yaml-cpp"

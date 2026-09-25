@@ -15,6 +15,7 @@ target_link_libraries(
   PRIVATE GTest::GTest
           GTest::Main
           OpenMP::OpenMP_CXX
+          tesseract::common
           tesseract::environment
           tesseract::urdf
           tesseract::collision_bullet

@@ -25,7 +25,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 #include <utility>
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <opw_kinematics/opw_kinematics.h>
 #include <opw_kinematics/opw_utilities.h>
 #include <cassert>

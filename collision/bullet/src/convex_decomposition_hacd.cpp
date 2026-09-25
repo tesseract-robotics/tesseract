@@ -1,6 +1,5 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <bullet/HACD/hacdCircularList.h>
 #include <bullet/HACD/hacdGraph.h>
 #include <bullet/HACD/hacdHACD.h>
@@ -8,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <bullet/HACD/hacdVector.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/collision/common.h>
 #include <tesseract/collision/bullet/convex_decomposition_hacd.h>
 #include <tesseract/collision/bullet/convex_hull_utils.h>
@@ -67,7 +67,7 @@ ConvexDecompositionHACD::compute(const tesseract::common::VectorVector3d& vertic
   if (res)
   {
     std::size_t num_convex_hulls = my_hacd.GetNClusters();
-    CONSOLE_BRIDGE_logError("Convex decomposition generated %lu convex hulls!", num_convex_hulls);
+    TESSERACT_LOG_ERROR("Convex decomposition generated {} convex hulls!", num_convex_hulls);
 
     for (unsigned int p = 0; p < num_convex_hulls; ++p)
     {
@@ -96,7 +96,7 @@ ConvexDecompositionHACD::compute(const tesseract::common::VectorVector3d& vertic
   }
   else
   {
-    CONSOLE_BRIDGE_logError("Decomposition cancelled by user!");
+    TESSERACT_LOG_ERROR("Decomposition cancelled by user!");
   }
 
   return output;

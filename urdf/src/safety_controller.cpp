@@ -26,10 +26,10 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <stdexcept>
 
-#include <console_bridge/console.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/urdf/safety_controller.h>
 #include <tesseract/urdf/utils.h>
@@ -45,20 +45,20 @@ tesseract::scene_graph::JointSafety::Ptr parseSafetyController(const tinyxml2::X
   if (xml_element->Attribute("soft_upper_limit") == nullptr && xml_element->Attribute("soft_lower_limit") == nullptr &&
       xml_element->Attribute("k_position") == nullptr)
   {
-    CONSOLE_BRIDGE_logDebug("SafetyController: Missing attributes 'soft_upper_limit', 'soft_lower_limit', and "
-                            "'k_position', using default value 0, 0, and 0!");
+    TESSERACT_LOG_DEBUG("SafetyController: Missing attributes 'soft_upper_limit', 'soft_lower_limit', and "
+                        "'k_position', using default value 0, 0, and 0!");
   }
   else if (xml_element->Attribute("soft_upper_limit") == nullptr ||
            xml_element->Attribute("soft_lower_limit") == nullptr || xml_element->Attribute("k_position") == nullptr)
   {
     if (xml_element->Attribute("soft_upper_limit") == nullptr)
-      CONSOLE_BRIDGE_logDebug("SafetyController: Missing attribute 'soft_upper_limit', using default value 0!");
+      TESSERACT_LOG_DEBUG("SafetyController: Missing attribute 'soft_upper_limit', using default value 0!");
 
     if (xml_element->Attribute("soft_lower_limit") == nullptr)
-      CONSOLE_BRIDGE_logDebug("SafetyController: Missing attribute 'soft_lower_limit', using default value 0!");
+      TESSERACT_LOG_DEBUG("SafetyController: Missing attribute 'soft_lower_limit', using default value 0!");
 
     if (xml_element->Attribute("k_position") == nullptr)
-      CONSOLE_BRIDGE_logDebug("SafetyController: Missing attribute 'k_position', using default value 0!");
+      TESSERACT_LOG_DEBUG("SafetyController: Missing attribute 'k_position', using default value 0!");
   }
 
   s->soft_upper_limit = 0;

@@ -24,10 +24,10 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/logging.h>
 #include <tesseract/geometry/utils.h>
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/geometry/conversions.h>
@@ -245,7 +245,7 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
     }
     default:
     {
-      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported", static_cast<int>(geom1.getType()));
+      TESSERACT_LOG_ERROR("This geometric shape type ({}) is not supported", static_cast<int>(geom1.getType()));
       return false;
     }
   }
@@ -305,7 +305,7 @@ tesseract::common::VectorVector3d extractVertices(const Geometry& geom, const Ei
     {
       const std::string type_str = std::to_string(static_cast<int>(geom.getType()));
       const std::string message = "This geometric shape type (" + type_str + ") is not supported";
-      CONSOLE_BRIDGE_logError(message.c_str());
+      TESSERACT_LOG_ERROR("{}", message);
       throw std::runtime_error(message);
     }
   }

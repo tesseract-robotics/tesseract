@@ -23,7 +23,7 @@ target_link_libraries(
          tesseract::scene_graph
          yaml-cpp
          cereal::cereal)
-target_link_libraries(srdf PRIVATE Boost::boost console_bridge::console_bridge)
+target_link_libraries(srdf PRIVATE Boost::boost)
 target_compile_options(srdf PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(srdf PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(srdf PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})
@@ -48,7 +48,6 @@ configure_component(
   DEPENDENCIES
     Boost
     Eigen3
-    console_bridge
     "tesseract COMPONENTS common scene_graph"
     yaml-cpp
     cereal)
@@ -80,13 +79,11 @@ if(TESSERACT_PACKAGE)
     VERSION ${pkg_extracted_version}
     DESCRIPTION "Tesseract SRDF Components"
     LINUX_DEPENDS
-      "libconsole-bridge-dev"
       "libeigen3-dev"
       "libyaml-cpp-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
     WINDOWS_DEPENDS
-      "console-bridge"
       "Eigen3"
       "yaml-cpp"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"

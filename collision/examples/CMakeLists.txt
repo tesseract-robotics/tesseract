@@ -3,8 +3,8 @@ target_link_libraries(
   tesseract_collision_box_box_example
   collision_bullet
   collision_fcl
+  tesseract::common
   tesseract::geometry
-  console_bridge::console_bridge
   ${Boost_LIBRARIES}
   octomap
   octomath)
@@ -18,7 +18,7 @@ configure_component(
   COMPONENT collision_examples
   NAMESPACE tesseract
   TARGETS tesseract_collision_box_box_example
-  DEPENDENCIES "tesseract COMPONENTS collision collision_bullet collision_fcl")
+  DEPENDENCIES "tesseract COMPONENTS collision collision_bullet collision_fcl common")
 
 if(TESSERACT_PACKAGE)
   cpack_component(

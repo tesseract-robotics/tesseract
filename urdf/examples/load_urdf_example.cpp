@@ -213,7 +213,7 @@
 //! [load_urdf_full_source]
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -246,10 +246,10 @@ int main(int /*argc*/, char** /*argv*/)
   //! [load_urdf_parse_urdf]
 
   //! [load_urdf_print_info]
-  CONSOLE_BRIDGE_logInform(std::to_string(g->getJoints().size()).c_str());
-  CONSOLE_BRIDGE_logInform(std::to_string(g->getLinks().size()).c_str());
-  CONSOLE_BRIDGE_logInform(toString(g->isTree()).c_str());
-  CONSOLE_BRIDGE_logInform(toString(g->isAcyclic()).c_str());
+  TESSERACT_LOG_INFO("{}", g->getJoints().size());
+  TESSERACT_LOG_INFO("{}", g->getLinks().size());
+  TESSERACT_LOG_INFO("{}", toString(g->isTree()));
+  TESSERACT_LOG_INFO("{}", toString(g->isAcyclic()));
   //! [load_urdf_print_info]
 
   //! [load_urdf_save_graph]

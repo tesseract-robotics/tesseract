@@ -141,13 +141,13 @@ bool solvePInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
 
   if ((A.rows() == 0) || (A.cols() == 0))
   {
-    CONSOLE_BRIDGE_logError("Empty matrices not supported in solvePinv()");
+    TESSERACT_LOG_ERROR("Empty matrices not supported in solvePinv()");
     return false;
   }
 
   if (A.rows() != b.size())
   {
-    CONSOLE_BRIDGE_logError("Matrix size mismatch: A(%d, %d), b(%d)", A.rows(), A.cols(), b.size());
+    TESSERACT_LOG_ERROR("Matrix size mismatch: A({}, {}), b({})", A.rows(), A.cols(), b.size());
     return false;
   }
 
@@ -180,7 +180,7 @@ bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A, Eigen::Ref<Eigen::Ma
 {
   if ((A.rows() == 0) || (A.cols() == 0))
   {
-    CONSOLE_BRIDGE_logError("Empty matrices not supported in dampedPInv()");
+    TESSERACT_LOG_ERROR("Empty matrices not supported in dampedPInv()");
     return false;
   }
 

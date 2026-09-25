@@ -22,11 +22,7 @@
  * limitations under the License.
  */
 
-#include <tesseract/common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <console_bridge/console.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
+#include <tesseract/common/logging.h>
 #include <tesseract/visualization/visualization_loader.h>
 #include <tesseract/visualization/visualization.h>
 
@@ -57,7 +53,7 @@ std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name)
   }
   catch (const std::exception&)
   {
-    CONSOLE_BRIDGE_logWarn("Failed to load symbol '%s'", plugin_name.c_str());
+    TESSERACT_LOG_WARN("Failed to load symbol '{}'", plugin_name);
     return nullptr;
   }
 }

@@ -23,9 +23,8 @@
  */
 
 #include <tesseract/common/ply_io.h>
+#include <tesseract/common/logging.h>
 #include <tesseract/common/utils.h>
-
-#include <console_bridge/console.h>
 
 #include <boost/algorithm/string.hpp>
 
@@ -102,10 +101,10 @@ bool writeSimplePlyFile(const std::string& path,
   // A single color is applied to every vertex; otherwise there must be exactly one per vertex
   if (vectices_color.size() > 1 && vectices_color.size() != vertices.size())
   {
-    CONSOLE_BRIDGE_logError("Number of vertex colors (%zu) does not match the number of vertices (%zu): %s",
-                            vectices_color.size(),
-                            vertices.size(),
-                            path.c_str());
+    TESSERACT_LOG_ERROR("Number of vertex colors ({}) does not match the number of vertices ({}): {}",
+                        vectices_color.size(),
+                        vertices.size(),
+                        path);
     return false;
   }
 
@@ -113,7 +112,7 @@ bool writeSimplePlyFile(const std::string& path,
   myfile.open(path);
   if (myfile.fail())
   {
-    CONSOLE_BRIDGE_logError("Failed to open file: %s", path.c_str());
+    TESSERACT_LOG_ERROR("Failed to open file: {}", path);
     return false;
   }
 
@@ -227,7 +226,7 @@ int loadSimplePlyFile(const std::string& path,
   myfile.open(path);
   if (myfile.fail())
   {
-    CONSOLE_BRIDGE_logError("Failed to open file: %s", path.c_str());
+    TESSERACT_LOG_ERROR("Failed to open file: {}", path);
     return 0;
   }
   // The header is parsed by keyword rather than by line offset, so optional property lines
@@ -264,7 +263,7 @@ int loadSimplePlyFile(const std::string& path,
 
   if (!found_end_header || !found_vertices || !found_faces)
   {
-    CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
+    TESSERACT_LOG_ERROR("Failed to parse file: {}", path);
     return 0;
   }
 
@@ -279,7 +278,7 @@ int loadSimplePlyFile(const std::string& path,
 
     if (!parsed)
     {
-      CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
+      TESSERACT_LOG_ERROR("Failed to parse file: {}", path);
       return 0;
     }
 
@@ -293,7 +292,7 @@ int loadSimplePlyFile(const std::string& path,
   {
     if (!readTokens(myfile, str, tokens) || tokens.size() < 4)
     {
-      CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
+      TESSERACT_LOG_ERROR("Failed to parse file: {}", path);
       return 0;
     }
 

@@ -1,12 +1,7 @@
 add_library(kinematics_ur src/ur_inv_kin.cpp)
 add_library(tesseract::kinematics_ur ALIAS kinematics_ur)
 set_target_properties(kinematics_ur PROPERTIES OUTPUT_NAME tesseract_kinematics_ur)
-target_link_libraries(
-  kinematics_ur
-  PUBLIC kinematics
-         Eigen3::Eigen
-         tesseract::scene_graph
-         console_bridge::console_bridge)
+target_link_libraries(kinematics_ur PUBLIC kinematics Eigen3::Eigen tesseract::scene_graph)
 target_compile_options(kinematics_ur PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_ur PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_ur PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
@@ -24,7 +19,7 @@ target_include_directories(kinematics_ur PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRE
 
 add_library(kinematics_ur_factory src/ur_factory.cpp)
 set_target_properties(kinematics_ur_factory PROPERTIES OUTPUT_NAME tesseract_kinematics_ur_factory)
-target_link_libraries(kinematics_ur_factory PUBLIC kinematics_ur tesseract::scene_graph console_bridge::console_bridge)
+target_link_libraries(kinematics_ur_factory PUBLIC kinematics_ur tesseract::scene_graph)
 target_compile_options(kinematics_ur_factory PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_ur_factory PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_ur_factory PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})

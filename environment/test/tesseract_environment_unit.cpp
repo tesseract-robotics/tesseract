@@ -1,4 +1,5 @@
 #include <tesseract/common/macros.h>
+#include <tesseract/common/logging.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <algorithm>
@@ -7,7 +8,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <omp.h>
 #include <cmath>
 #include <fstream>
-#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/urdf/urdf_parser.h>
@@ -2376,7 +2376,7 @@ TEST(TesseractEnvironmentUnit, EnvMultithreadedApplyCommandsTest)  // NOLINT
   {
     // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     const int tn = omp_get_thread_num();
-    CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, 10);
+    TESSERACT_LOG_DEBUG("Thread (ID: {}): {} of {}", tn, i, 10);
 
     auto visual = std::make_shared<Visual>();
     visual->geometry = std::make_shared<tesseract::geometry::Box>(1, 1, 1);
@@ -6474,7 +6474,7 @@ int main(int argc, char** argv)
   testing::InitGoogleTest(&argc, argv);
 
   // Set to debug to also exercies debug code
-  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+  tesseract::common::getLogger()->set_level(spdlog::level::debug);
 
   return RUN_ALL_TESTS();
 }

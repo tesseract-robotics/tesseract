@@ -8,8 +8,7 @@ target_link_libraries(
   PUBLIC kinematics
          Eigen3::Eigen
          tesseract::scene_graph
-         opw_kinematics::opw_kinematics
-         console_bridge::console_bridge)
+         opw_kinematics::opw_kinematics)
 target_compile_options(kinematics_opw PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_opw PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_opw PUBLIC ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
@@ -27,8 +26,7 @@ target_include_directories(kinematics_opw PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURR
 
 add_library(kinematics_opw_factory src/opw_factory.cpp)
 set_target_properties(kinematics_opw_factory PROPERTIES OUTPUT_NAME tesseract_kinematics_opw_factory)
-target_link_libraries(kinematics_opw_factory PUBLIC kinematics_opw tesseract::scene_graph
-                                                    console_bridge::console_bridge)
+target_link_libraries(kinematics_opw_factory PUBLIC kinematics_opw tesseract::scene_graph)
 target_compile_options(kinematics_opw_factory PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(kinematics_opw_factory PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(kinematics_opw_factory PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PRIVATE})

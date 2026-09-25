@@ -312,7 +312,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geom
     collision_shape->top_level = compound;
     return collision_shape;
   }
-  CONSOLE_BRIDGE_logError("The mesh is empty!");
+  TESSERACT_LOG_ERROR("The mesh is empty!");
   return nullptr;
 }
 
@@ -331,7 +331,7 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geom
 
     return std::make_shared<BulletCollisionShape>(convex_hull_shape);
   }
-  CONSOLE_BRIDGE_logError("The mesh is empty!");
+  TESSERACT_LOG_ERROR("The mesh is empty!");
   return nullptr;
 }
 
@@ -457,8 +457,8 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geom
     }
   }
 
-  CONSOLE_BRIDGE_logError("This bullet shape type (%d) is not supported for geometry octree",
-                          static_cast<int>(geom->getSubType()));
+  TESSERACT_LOG_ERROR("This bullet shape type ({}) is not supported for geometry octree",
+                      static_cast<int>(geom->getSubType()));
   return nullptr;
 }
 
@@ -493,7 +493,7 @@ createShapePrimitive(const tesseract::geometry::SignedDistanceField::ConstPtr& g
 {
   if (geom->getDimensions().minCoeff() < 2)
   {
-    CONSOLE_BRIDGE_logError("The SDF grid is empty!");
+    TESSERACT_LOG_ERROR("The SDF grid is empty!");
     return nullptr;
   }
 
@@ -587,8 +587,8 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const CollisionShapeC
     // LCOV_EXCL_START
     default:
     {
-      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using BULLET yet",
-                              static_cast<int>(geom->getType()));
+      TESSERACT_LOG_ERROR("This geometric shape type ({}) is not supported using BULLET yet",
+                          static_cast<int>(geom->getType()));
       break;
     }
       // LCOV_EXCL_STOP
@@ -1347,7 +1347,7 @@ COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
-    CONSOLE_BRIDGE_logDebug("ignoring link %s", id.name().c_str());
+    TESSERACT_LOG_DEBUG("ignoring link {}", id.name());
     return nullptr;
   }
 
@@ -1356,7 +1356,7 @@ COW::Ptr createCollisionObject(const tesseract::common::LinkId& id,
   new_cow->m_enabled = enabled;
   new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
 
-  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getLinkId().name().c_str());
+  TESSERACT_LOG_DEBUG("Created collision object for link {}", new_cow->getLinkId().name());
   return new_cow;
 }
 
