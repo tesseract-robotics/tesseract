@@ -60,6 +60,18 @@ TEST(TesseractKinematicsUnit, KdlParseSceneGraphSinglePairOverloadUnit)  // NOLI
   EXPECT_FALSE(results.joint_ids.empty());
 }
 
+TEST(TesseractKinematicsUnit, KdlParseSceneGraphRejectsJointWithoutLimits)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getSceneGraphIIWA(locator);
+  std::const_pointer_cast<tesseract::scene_graph::Joint>(scene_graph->getJoint("joint_a3"))->limits = nullptr;
+
+  tesseract::kinematics::KDLChainData results;
+  EXPECT_FALSE(tesseract::kinematics::parseSceneGraph(results, *scene_graph, "base_link", "tool0"));
+  EXPECT_THROW(tesseract::kinematics::KDLFwdKinChain(*scene_graph, "base_link", "tool0"),  // NOLINT
+               std::runtime_error);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

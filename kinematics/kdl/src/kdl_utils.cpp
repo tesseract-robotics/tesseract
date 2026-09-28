@@ -142,6 +142,11 @@ bool parseSceneGraph(KDLChainData& results,
     // Does the joint have limits?
     if (joint->type != tesseract::scene_graph::JointType::CONTINUOUS)
     {
+      if (joint->limits == nullptr)
+      {
+        TESSERACT_LOG_ERROR("Joint '{}' has no limits", joint->getName());
+        return false;
+      }
       if (joint->safety)
       {
         lower = std::max(joint->limits->lower, joint->safety->soft_lower_limit);
