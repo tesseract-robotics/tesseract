@@ -28,9 +28,10 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <atomic>
 #include <condition_variable>
 #include <mutex>
-#include <sstream>
+#include <stdexcept>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -54,7 +55,10 @@ struct RecordHandlerEntry
 struct LoggingState
 {
   std::mutex mutex;
+  std::shared_ptr<spdlog::logger> default_logger;
+  std::atomic<spdlog::logger*> default_logger_raw{ nullptr };
   LogRecordHandlerId next_handler_id{ 1 };
+  std::atomic<std::size_t> active_handler_count{ 0 };
   std::vector<std::shared_ptr<RecordHandlerEntry>> handlers;
 };
 
@@ -81,51 +85,151 @@ std::string formatAttribute(const LogAttribute& attribute)
       attribute);
 }
 
-std::string formatAttributes(const LogAttributes& attributes)
+std::string formatMessage(const LogRecord& record)
 {
+  if (record.attributes.empty())
+    return record.message;
+
   std::vector<std::pair<std::string, std::string>> values;
-  values.reserve(attributes.size());
-  for (const auto& attribute : attributes)
+  values.reserve(record.attributes.size());
+  std::size_t size = record.message.size();
+  for (const auto& attribute : record.attributes)
+  {
     values.emplace_back(attribute.first, formatAttribute(attribute.second));
+    size += attribute.first.size() + values.back().second.size() + 2;
+  }
 
   std::sort(values.begin(), values.end());
-  std::ostringstream stream;
+  std::string message;
+  message.reserve(size);
+  message.append(record.message);
   for (const auto& attribute : values)
-    stream << ' ' << attribute.first << '=' << attribute.second;
-  return stream.str();
+  {
+    message.push_back(' ');
+    message.append(attribute.first);
+    message.push_back('=');
+    message.append(attribute.second);
+  }
+  return message;
+}
+
+std::shared_ptr<spdlog::logger> createDefaultLogger()
+{
+  auto sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+  auto logger = std::make_shared<spdlog::logger>("tesseract", std::move(sink));
+  logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v");
+  logger->set_level(spdlog::level::info);
+  return logger;
+}
+
+void dispatchHandlers(const LogRecord& record)
+{
+  auto& logging_state = state();
+  if (logging_state.active_handler_count.load(std::memory_order_acquire) == 0)
+    return;
+
+  std::vector<std::shared_ptr<RecordHandlerEntry>> handlers;
+  {
+    std::lock_guard<std::mutex> lock(logging_state.mutex);
+    handlers = logging_state.handlers;
+  }
+
+  for (const auto& entry : handlers)
+  {
+    {
+      std::lock_guard<std::mutex> lock(entry->mutex);
+      if (!entry->active)
+        continue;
+
+      ++entry->in_flight;
+      try
+      {
+        ++entry->callbacks_by_thread[std::this_thread::get_id()];
+      }
+      catch (...)
+      {
+        --entry->in_flight;
+        entry->condition.notify_all();
+        throw;
+      }
+    }
+
+    bool handler_failed{ false };
+    try
+    {
+      entry->handler(record);
+    }
+    catch (...)
+    {
+      handler_failed = true;
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(entry->mutex);
+      --entry->in_flight;
+      const auto callback_thread = entry->callbacks_by_thread.find(std::this_thread::get_id());
+      if (--callback_thread->second == 0)
+        entry->callbacks_by_thread.erase(callback_thread);
+      entry->condition.notify_all();
+    }
+
+    if (handler_failed)
+      continue;
+  }
 }
 }  // namespace
 
 std::shared_ptr<spdlog::logger> getLogger(std::string_view name)
 {
   const std::string logger_name(name);
+  auto& logging_state = state();
+  if (logger_name == "tesseract")
+  {
+    std::lock_guard<std::mutex> lock(logging_state.mutex);
+    if (logging_state.default_logger == nullptr)
+    {
+      logging_state.default_logger = spdlog::get(logger_name);
+      if (logging_state.default_logger == nullptr)
+      {
+        logging_state.default_logger = createDefaultLogger();
+        spdlog::register_logger(logging_state.default_logger);
+      }
+      logging_state.default_logger_raw.store(logging_state.default_logger.get(), std::memory_order_release);
+    }
+    return logging_state.default_logger;
+  }
+
   if (auto logger = spdlog::get(logger_name))
     return logger;
 
-  std::shared_ptr<spdlog::logger> base_logger;
-  if (logger_name != "tesseract")
-    base_logger = getLogger();
+  auto base_logger = getLogger();
 
-  auto& logging_state = state();
   std::lock_guard<std::mutex> lock(logging_state.mutex);
   if (auto logger = spdlog::get(logger_name))
     return logger;
 
-  std::shared_ptr<spdlog::logger> logger;
-  if (logger_name == "tesseract")
-  {
-    auto sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
-    logger = std::make_shared<spdlog::logger>(logger_name, std::move(sink));
-    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v");
-    logger->set_level(spdlog::level::info);
-  }
-  else
-  {
-    logger = base_logger->clone(logger_name);
-  }
-
+  auto logger = base_logger->clone(logger_name);
   spdlog::register_logger(logger);
   return logger;
+}
+
+void setLogger(std::shared_ptr<spdlog::logger> logger)
+{
+  if (logger == nullptr || logger->name() != "tesseract")
+    throw std::invalid_argument("The default Tesseract logger must be non-null and named 'tesseract'");
+
+  auto& logging_state = state();
+  std::lock_guard<std::mutex> lock(logging_state.mutex);
+  spdlog::drop("tesseract");
+  spdlog::register_logger(logger);
+  logging_state.default_logger = std::move(logger);
+  logging_state.default_logger_raw.store(logging_state.default_logger.get(), std::memory_order_release);
+}
+
+bool isLogLevelEnabled(spdlog::level::level_enum level) noexcept
+{
+  auto* logger = detail::getDefaultLogger();
+  return logger != nullptr && logger->should_log(level);
 }
 
 LogRecordHandlerId addLogRecordHandler(LogRecordHandler handler)
@@ -140,6 +244,7 @@ LogRecordHandlerId addLogRecordHandler(LogRecordHandler handler)
   entry->id = id;
   entry->handler = std::move(handler);
   logging_state.handlers.push_back(std::move(entry));
+  logging_state.active_handler_count.fetch_add(1, std::memory_order_release);
   return id;
 }
 
@@ -179,9 +284,54 @@ bool removeLogRecordHandler(LogRecordHandlerId id) noexcept
                                   logging_state.handlers.end(),
                                   [&handler_entry](const auto& item) { return item == handler_entry; });
   if (entry != logging_state.handlers.end())
+  {
     logging_state.handlers.erase(entry);
+    logging_state.active_handler_count.fetch_sub(1, std::memory_order_release);
+  }
   return true;
 }
+
+namespace detail
+{
+spdlog::logger* getDefaultLogger() noexcept
+{
+  auto& logging_state = state();
+  auto* logger = logging_state.default_logger_raw.load(std::memory_order_acquire);
+  if (logger != nullptr)
+    return logger;
+
+  try
+  {
+    return getLogger().get();
+  }
+  catch (...)
+  {
+    return nullptr;
+  }
+}
+
+void emitLogRecord(spdlog::logger& logger, const LogRecord& record) noexcept
+{
+  try
+  {
+    if (record.attributes.empty())
+    {
+      logger.log(
+          record.source_location, record.level, spdlog::string_view_t(record.message.data(), record.message.size()));
+    }
+    else
+    {
+      const std::string message = formatMessage(record);
+      logger.log(record.source_location, record.level, spdlog::string_view_t(message.data(), message.size()));
+    }
+    dispatchHandlers(record);
+  }
+  catch (...)
+  {
+    return;
+  }
+}
+}  // namespace detail
 
 void emitLogRecord(const LogRecord& record) noexcept
 {
@@ -190,60 +340,7 @@ void emitLogRecord(const LogRecord& record) noexcept
     auto logger = getLogger(record.logger_name);
     if (!logger->should_log(record.level))
       return;
-
-    logger->log(record.source_location, record.level, "{}{}", record.message, formatAttributes(record.attributes));
-
-    std::vector<std::shared_ptr<RecordHandlerEntry>> handlers;
-    auto& logging_state = state();
-    {
-      std::lock_guard<std::mutex> lock(logging_state.mutex);
-      handlers.reserve(logging_state.handlers.size());
-      for (const auto& entry : logging_state.handlers)
-        handlers.push_back(entry);
-    }
-
-    for (const auto& entry : handlers)
-    {
-      {
-        std::lock_guard<std::mutex> lock(entry->mutex);
-        if (!entry->active)
-          continue;
-
-        ++entry->in_flight;
-        try
-        {
-          ++entry->callbacks_by_thread[std::this_thread::get_id()];
-        }
-        catch (...)
-        {
-          --entry->in_flight;
-          entry->condition.notify_all();
-          throw;
-        }
-      }
-
-      bool handler_failed{ false };
-      try
-      {
-        entry->handler(record);
-      }
-      catch (...)
-      {
-        handler_failed = true;
-      }
-
-      {
-        std::lock_guard<std::mutex> lock(entry->mutex);
-        --entry->in_flight;
-        const auto callback_thread = entry->callbacks_by_thread.find(std::this_thread::get_id());
-        if (--callback_thread->second == 0)
-          entry->callbacks_by_thread.erase(callback_thread);
-        entry->condition.notify_all();
-      }
-
-      if (handler_failed)
-        continue;
-    }
+    detail::emitLogRecord(*logger, record);
   }
   catch (...)
   {

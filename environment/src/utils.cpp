@@ -168,7 +168,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
     throw std::runtime_error("checkTrajectory was given continuous contact manager with a trajectory that only has one "
                              "state.");
 
-  bool debug_logging = tesseract::common::getLogger()->should_log(spdlog::level::debug);
+  bool debug_logging = tesseract::common::isLogLevelEnabled(spdlog::level::debug);
 
   tesseract::collision::ContactTrajectoryResults traj_contacts(joint_ids, static_cast<int>(traj.rows()));
 
@@ -455,7 +455,7 @@ checkTrajectory(std::vector<tesseract::collision::ContactResultMap>& contacts,
   if (traj.rows() == 0)
     throw std::runtime_error("checkTrajectory was given continuous contact manager with empty trajectory.");
 
-  bool debug_logging = tesseract::common::getLogger()->should_log(spdlog::level::debug);
+  bool debug_logging = tesseract::common::isLogLevelEnabled(spdlog::level::debug);
 
   tesseract::collision::ContactTrajectoryResults traj_contacts(joint_ids, static_cast<int>(traj.rows()));
 
