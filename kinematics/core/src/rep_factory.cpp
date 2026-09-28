@@ -29,7 +29,6 @@
 #include <tesseract/scene_graph/joint.h>
 
 #include <tesseract/common/schema_registration.h>
-#include <tesseract/common/logging.h>
 #include <tesseract/common/property_tree.h>
 #include <tesseract/common/yaml_extensions.h>
 
@@ -72,80 +71,66 @@ std::unique_ptr<InverseKinematics> REPInvKinFactory::createImpl(const std::strin
   Eigen::MatrixX2d sample_range;
   Eigen::VectorXd sample_res;
 
-  try
+  m_reach = config.at("manipulator_reach").as<double>();
+
+  // Get positioner sample resolution
+  std::unordered_map<common::JointId, std::array<double, 3>> sample_res_map;
+  const YAML::Node& sample_res_node = config.at("positioner_sample_resolution").getValue();
+  for (const auto& entry : sample_res_node)
   {
-    m_reach = config.at("manipulator_reach").as<double>();
+    auto psr = entry.as<PositionerSampleResolution>();
+    common::JointId joint_id(psr.name);
 
-    // Get positioner sample resolution
-    std::unordered_map<common::JointId, std::array<double, 3>> sample_res_map;
-    const YAML::Node& sample_res_node = config.at("positioner_sample_resolution").getValue();
-    for (const auto& entry : sample_res_node)
-    {
-      auto psr = entry.as<PositionerSampleResolution>();
-      common::JointId joint_id(psr.name);
+    auto jnt = scene_graph.getJoint(joint_id);
+    if (jnt == nullptr)
+      throw std::runtime_error("REPInvKinFactory, 'positioner_sample_resolution' failed to find joint '" + psr.name +
+                               "' in scene graph!");
 
-      auto jnt = scene_graph.getJoint(joint_id);
-      if (jnt == nullptr)
-        throw std::runtime_error("REPInvKinFactory, 'positioner_sample_resolution' failed to find joint '" + psr.name +
-                                 "' in scene graph!");
+    double range_min = psr.min.value_or(jnt->limits->lower);
+    double range_max = psr.max.value_or(jnt->limits->upper);
 
-      double range_min = psr.min.value_or(jnt->limits->lower);
-      double range_max = psr.max.value_or(jnt->limits->upper);
+    if (range_min < jnt->limits->lower)
+      throw std::runtime_error("REPInvKinFactory, sample range minimum is less than joint minimum!");
+    if (range_max > jnt->limits->upper)
+      throw std::runtime_error("REPInvKinFactory, sample range maximum is greater than joint maximum!");
+    if (range_min > range_max)
+      throw std::runtime_error("REPInvKinFactory, sample range is not valid!");
 
-      if (range_min < jnt->limits->lower)
-        throw std::runtime_error("REPInvKinFactory, sample range minimum is less than joint minimum!");
-      if (range_max > jnt->limits->upper)
-        throw std::runtime_error("REPInvKinFactory, sample range maximum is greater than joint maximum!");
-      if (range_min > range_max)
-        throw std::runtime_error("REPInvKinFactory, sample range is not valid!");
-
-      sample_res_map[joint_id] = { psr.value, range_min, range_max };
-    }
-
-    // Get Positioner
-    const auto p_info = config.at("positioner").as<tesseract::common::PluginInfo>();
-    fwd_kin = plugin_factory.createFwdKin(p_info.class_name, p_info, scene_graph, scene_state);
-    if (fwd_kin == nullptr)
-      throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
-    if (sample_res_map.size() != static_cast<std::size_t>(fwd_kin->numJoints()))
-      throw std::runtime_error("REPInvKinFactory, positioner sample resolution has incorrect number of joints!");
-
-    // Load Positioner Resolution and Range
-    sample_range.resize(fwd_kin->numJoints(), 2);
-    sample_res.resize(fwd_kin->numJoints());
-    auto joint_ids = fwd_kin->getJointIds();
-    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(joint_ids.size()); ++i)
-    {
-      const auto& jn = joint_ids[static_cast<std::size_t>(i)];
-      auto it = sample_res_map.find(jn);
-      if (it == sample_res_map.end())
-        throw std::runtime_error("REPInvKinFactory, positioner sample resolution missing joint '" + jn.name() + "'!");
-
-      sample_res(i) = it->second[0];
-      sample_range(i, 0) = it->second[1];
-      sample_range(i, 1) = it->second[2];
-    }
-
-    // Get Manipulator
-    const auto m_info = config.at("manipulator").as<tesseract::common::PluginInfo>();
-    inv_kin = plugin_factory.createInvKin(m_info.class_name, m_info, scene_graph, scene_state);
-    if (inv_kin == nullptr)
-      throw std::runtime_error("REPInvKinFactory, failed to create manipulator inverse kinematics!");
-
-    return std::make_unique<REPInvKin>(scene_graph,
-                                       scene_state,
-                                       std::move(inv_kin),
-                                       m_reach,
-                                       std::move(fwd_kin),
-                                       sample_range,
-                                       sample_res,
-                                       solver_name);
+    sample_res_map[joint_id] = { psr.value, range_min, range_max };
   }
-  catch (const std::exception& e)
+
+  // Get Positioner
+  const auto p_info = config.at("positioner").as<tesseract::common::PluginInfo>();
+  fwd_kin = plugin_factory.createFwdKin(p_info.class_name, p_info, scene_graph, scene_state);
+  if (fwd_kin == nullptr)
+    throw std::runtime_error("REPInvKinFactory, failed to create positioner forward kinematics!");
+  if (sample_res_map.size() != static_cast<std::size_t>(fwd_kin->numJoints()))
+    throw std::runtime_error("REPInvKinFactory, positioner sample resolution has incorrect number of joints!");
+
+  // Load Positioner Resolution and Range
+  sample_range.resize(fwd_kin->numJoints(), 2);
+  sample_res.resize(fwd_kin->numJoints());
+  auto joint_ids = fwd_kin->getJointIds();
+  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(joint_ids.size()); ++i)
   {
-    TESSERACT_LOG_ERROR("REPInvKinFactory: Failed to parse yaml config data! Details: {}", e.what());
-    return nullptr;
+    const auto& jn = joint_ids[static_cast<std::size_t>(i)];
+    auto it = sample_res_map.find(jn);
+    if (it == sample_res_map.end())
+      throw std::runtime_error("REPInvKinFactory, positioner sample resolution missing joint '" + jn.name() + "'!");
+
+    sample_res(i) = it->second[0];
+    sample_range(i, 0) = it->second[1];
+    sample_range(i, 1) = it->second[2];
   }
+
+  // Get Manipulator
+  const auto m_info = config.at("manipulator").as<tesseract::common::PluginInfo>();
+  inv_kin = plugin_factory.createInvKin(m_info.class_name, m_info, scene_graph, scene_state);
+  if (inv_kin == nullptr)
+    throw std::runtime_error("REPInvKinFactory, failed to create manipulator inverse kinematics!");
+
+  return std::make_unique<REPInvKin>(
+      scene_graph, scene_state, std::move(inv_kin), m_reach, std::move(fwd_kin), sample_range, sample_res, solver_name);
 }
 
 PLUGIN_ANCHOR_IMPL(REPInvKinFactoriesAnchor)

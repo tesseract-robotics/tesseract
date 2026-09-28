@@ -192,7 +192,7 @@ kinematic_plugins:
 
 TEST(TesseractKinematicsFactoryUnit, RopRepFactoryMissingPositionerJointUnit)  // NOLINT
 {
-  // InvKinFactory::create reports failure by returning nullptr. The ROP and REP factories fail with
+  // InvKinFactory::create propagates implementation failures. The ROP and REP factories fail with
   // "positioner sample resolution missing joint" when the sample_res_map has the correct count but
   // contains joint names that do not match the fwd_kin positioner joint ids. The sample names must
   // still refer to real scene-graph joints (to pass the earlier getJoint check), so abb-manipulator
@@ -265,7 +265,7 @@ manipulator:
 
     const ROPInvKinFactory rop_factory;
     const InvKinFactory& inv_kin_factory = rop_factory;
-    EXPECT_EQ(inv_kin_factory.create("ROPInvKin", *rop_sg, state, factory, YAML::Load(rop_config)), nullptr);
+    EXPECT_ANY_THROW(inv_kin_factory.create("ROPInvKin", *rop_sg, state, factory, YAML::Load(rop_config)));  // NOLINT
   }
 
   {
@@ -275,13 +275,13 @@ manipulator:
 
     const REPInvKinFactory rep_factory;
     const InvKinFactory& inv_kin_factory = rep_factory;
-    EXPECT_EQ(inv_kin_factory.create("REPInvKin", *rep_sg, state, factory, YAML::Load(rep_config)), nullptr);
+    EXPECT_ANY_THROW(inv_kin_factory.create("REPInvKin", *rep_sg, state, factory, YAML::Load(rep_config)));  // NOLINT
   }
 }
 
-TEST(TesseractKinematicsFactoryUnit, RopRepFactoryCreateReturnsNullOnConstructionFailureUnit)  // NOLINT
+TEST(TesseractKinematicsFactoryUnit, RopRepFactoryCreatePropagatesConstructionFailureUnit)  // NOLINT
 {
-  // InvKinFactory::create reports failure by returning nullptr. Neither factory checks that
+  // InvKinFactory::create propagates implementation failures. Neither factory checks that
   // 'manipulator_reach' is positive, but both solver constructors reject it, so a reach of zero is
   // a config that parses and builds both sub-solvers before construction fails.
   tesseract::common::GeneralResourceLocator locator;
@@ -339,7 +339,7 @@ manipulator:)") + manipulator_config;
 
     const ROPInvKinFactory rop_factory;
     const InvKinFactory& inv_kin_factory = rop_factory;
-    EXPECT_EQ(inv_kin_factory.create("ROPInvKin", *rop_sg, state, factory, YAML::Load(rop_config)), nullptr);
+    EXPECT_ANY_THROW(inv_kin_factory.create("ROPInvKin", *rop_sg, state, factory, YAML::Load(rop_config)));  // NOLINT
   }
 
   {
@@ -349,7 +349,7 @@ manipulator:)") + manipulator_config;
 
     const REPInvKinFactory rep_factory;
     const InvKinFactory& inv_kin_factory = rep_factory;
-    EXPECT_EQ(inv_kin_factory.create("REPInvKin", *rep_sg, state, factory, YAML::Load(rep_config)), nullptr);
+    EXPECT_ANY_THROW(inv_kin_factory.create("REPInvKin", *rep_sg, state, factory, YAML::Load(rep_config)));  // NOLINT
   }
 }
 
