@@ -1,7 +1,9 @@
 #include <tesseract/common/logging.h>
 
 #include <gtest/gtest.h>
+#include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/ostream_sink.h>
+#include <spdlog/spdlog.h>
 
 #include <atomic>
 #include <condition_variable>
@@ -10,6 +12,97 @@
 #include <stdexcept>
 #include <thread>
 #include <vector>
+
+namespace
+{
+class DefaultLoggerGuard
+{
+public:
+  DefaultLoggerGuard() : logger_(tesseract::common::getLogger()->clone("tesseract")) {}
+
+  ~DefaultLoggerGuard() { tesseract::common::setLogger(std::move(logger_)); }
+
+  DefaultLoggerGuard(const DefaultLoggerGuard&) = delete;
+  DefaultLoggerGuard& operator=(const DefaultLoggerGuard&) = delete;
+  DefaultLoggerGuard(DefaultLoggerGuard&&) = delete;
+  DefaultLoggerGuard& operator=(DefaultLoggerGuard&&) = delete;
+
+private:
+  std::shared_ptr<spdlog::logger> logger_;
+};
+}  // namespace
+
+TEST(TesseractLoggingUnit, ReplacesDefaultLoggerAndChecksLevelWithoutRegistryLookup)
+{
+  DefaultLoggerGuard guard;
+  auto stream = std::make_shared<std::ostringstream>();
+  auto sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(*stream);
+  sink->set_pattern("%n|%l|%v");
+  auto logger = std::make_shared<spdlog::logger>("tesseract", sink);
+  logger->set_level(spdlog::level::warn);
+  tesseract::common::setLogger(logger);
+
+  EXPECT_EQ(tesseract::common::getLogger(), logger);
+  EXPECT_FALSE(tesseract::common::isLogLevelEnabled(spdlog::level::debug));
+  EXPECT_TRUE(tesseract::common::isLogLevelEnabled(spdlog::level::warn));
+
+  TESSERACT_LOG_INFO("filtered");
+  TESSERACT_LOG_WARN("retained");
+  logger->flush();
+
+  EXPECT_EQ(stream->str().find("filtered"), std::string::npos);
+  EXPECT_NE(stream->str().find("tesseract|warning|retained"), std::string::npos);
+}
+
+TEST(TesseractLoggingUnit, SupportsDirectDefaultLoggerConfiguration)
+{
+  DefaultLoggerGuard guard;
+  auto logger = tesseract::common::getLogger();
+  auto stream = std::make_shared<std::ostringstream>();
+  logger->sinks() = { std::make_shared<spdlog::sinks::ostream_sink_mt>(*stream) };
+  logger->set_level(spdlog::level::err);
+
+  TESSERACT_LOG_WARN("filtered");
+  TESSERACT_LOG_ERROR("retained");
+  logger->flush();
+
+  EXPECT_EQ(stream->str().find("filtered"), std::string::npos);
+  EXPECT_NE(stream->str().find("retained"), std::string::npos);
+}
+
+TEST(TesseractLoggingUnit, RetainsOwnedDefaultLoggerAfterRegistryDrop)
+{
+  DefaultLoggerGuard guard;
+  auto logger = tesseract::common::getLogger();
+  spdlog::drop("tesseract");
+
+  EXPECT_EQ(spdlog::get("tesseract"), nullptr);
+  EXPECT_EQ(tesseract::common::getLogger(), logger);
+}
+
+TEST(TesseractLoggingUnit, RejectsInvalidDefaultLogger)
+{
+  EXPECT_THROW(tesseract::common::setLogger(nullptr), std::invalid_argument);
+  EXPECT_THROW(tesseract::common::setLogger(std::make_shared<spdlog::logger>("other")), std::invalid_argument);
+}
+
+TEST(TesseractLoggingUnit, NamedLoggerClonesReplacementDefaultLogger)
+{
+  DefaultLoggerGuard guard;
+  auto stream = std::make_shared<std::ostringstream>();
+  auto sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(*stream);
+  sink->set_pattern("%n|%l|%v");
+  auto logger = std::make_shared<spdlog::logger>("tesseract", sink);
+  logger->set_level(spdlog::level::debug);
+  tesseract::common::setLogger(logger);
+
+  auto named_logger = tesseract::common::getLogger("test.replacement_clone");
+  TESSERACT_LOG_DEBUG_NAMED("test.replacement_clone", "cloned");
+  named_logger->flush();
+
+  EXPECT_EQ(named_logger->level(), spdlog::level::debug);
+  EXPECT_NE(stream->str().find("test.replacement_clone|debug|cloned"), std::string::npos);
+}
 
 TEST(TesseractLoggingUnit, UsesNativeSpdlogLoggerAndSink)
 {
@@ -108,6 +201,36 @@ TEST(TesseractLoggingUnit, HandlerExceptionsAreIsolated)
   EXPECT_TRUE(tesseract::common::removeLogRecordHandler(throwing_handler));
   EXPECT_TRUE(tesseract::common::removeLogRecordHandler(observing_handler));
   EXPECT_EQ(calls, 1);
+}
+
+TEST(TesseractLoggingUnit, ConcurrentDispatchInvokesHandlerForEveryRecord)
+{
+  DefaultLoggerGuard guard;
+  auto logger = std::make_shared<spdlog::logger>("tesseract", std::make_shared<spdlog::sinks::null_sink_mt>());
+  logger->set_level(spdlog::level::info);
+  tesseract::common::setLogger(std::move(logger));
+
+  std::atomic<std::size_t> calls{ 0 };
+  const auto handler_id = tesseract::common::addLogRecordHandler([&calls](const auto&) { ++calls; });
+  ASSERT_NE(handler_id, 0);
+
+  constexpr std::size_t thread_count = 8;
+  static constexpr std::size_t records_per_thread = 1000;
+  std::vector<std::thread> threads;
+  threads.reserve(thread_count);
+  for (std::size_t thread_index = 0; thread_index < thread_count; ++thread_index)
+  {
+    threads.emplace_back([] {
+      for (std::size_t record_index = 0; record_index < records_per_thread; ++record_index)
+        TESSERACT_LOG_INFO("Record {}", record_index);
+    });
+  }
+
+  for (auto& thread : threads)
+    thread.join();
+
+  EXPECT_TRUE(tesseract::common::removeLogRecordHandler(handler_id));
+  EXPECT_EQ(calls, thread_count * records_per_thread);
 }
 
 TEST(TesseractLoggingUnit, RemovedHandlerIsSkippedByInFlightDispatch)

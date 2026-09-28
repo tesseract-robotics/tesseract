@@ -1,13 +1,14 @@
 /**
 @page logging Logging
 
-Tesseract uses spdlog directly for logger ownership, severity filtering, formatting, sinks, and registry access. The
-header `tesseract/common/logging.h` adds structured records and fan-out handlers for integrations that need more than
+Tesseract uses spdlog for severity filtering, formatting, sinks, and named logger registry access. Tesseract owns the
+active default logger so its convenience macros can avoid registry lookup on the logging hot path. The header
+`tesseract/common/logging.h` also adds structured records and fan-out handlers for integrations that need more than
 formatted text.
 
 @section logging_native Native spdlog configuration
 
-`tesseract::common::getLogger()` returns the registered Tesseract logger. Configure it with normal spdlog APIs:
+`tesseract::common::getLogger()` returns the Tesseract-owned default logger. Configure it with normal spdlog APIs:
 
 @code
 #include <tesseract/common/logging.h>
@@ -20,11 +21,32 @@ TESSERACT_LOG_INFO("Loaded {} links", link_count);
 TESSERACT_LOG_DEBUG_NAMED("tesseract.environment", "Revision {}", revision);
 @endcode
 
+Applications may replace the default logger during single-threaded startup, before creating worker threads or emitting
+log messages. The replacement must be named `tesseract`:
+
+@code
+auto logger = std::make_shared<spdlog::logger>("tesseract", application_sink);
+logger->set_level(spdlog::level::debug);
+tesseract::common::setLogger(std::move(logger));
+@endcode
+
+Do not call `setLogger()` concurrently with logging. Tesseract retains shared ownership of the replacement, and
+`spdlog::drop("tesseract")` removes only its registry entry: the default macros and `getLogger()` continue using the
+owned logger. Use `setLogger()` for replacement and `getLogger()` for normal direct configuration.
+
 Named loggers clone the default logger's sinks, formatter, level, error handler, and flush level when they are first
 requested. Configure the default logger before creating named loggers when they should share the same initial setup.
 Tesseract libraries should use the `TESSERACT_LOG_*` macros rather than call a logger directly so registered structured
 record handlers also receive the event. Use stable subsystem names such as `tesseract.environment` or
 `tesseract.collision.bullet`; do not create logger names from object identifiers or other transient values.
+
+The macros check the current runtime level before formatting. When expensive work is needed only to prepare a debug
+message, guard it without a registry lookup:
+
+@code
+if (tesseract::common::isLogLevelEnabled(spdlog::level::debug))
+  buildAndLogDebugDetails();
+@endcode
 
 @section logging_records Structured records
 
