@@ -70,7 +70,9 @@ public:
    * @param scene_graph The Tesseract Scene Graph
    * @param scene_state The state of the scene graph
    * @param plugin_factory Provide access to the plugin factory so plugins and load plugins
-   * @return If failed to create, nullptr is returned.
+   * @return The created kinematics object
+   * @throws tesseract::common::PropertyTreeValidationError if @p config does not match schema()
+   * @throws std::exception if the implementation fails to create the object
    */
   std::unique_ptr<InverseKinematics> create(const std::string& solver_name,
                                             const tesseract::scene_graph::SceneGraph& scene_graph,
@@ -108,7 +110,9 @@ public:
    * @param scene_graph The Tesseract Scene Graph
    * @param scene_state The state of the scene graph
    * @param plugin_factory Provide access to the plugin factory so plugins and load plugins
-   * @return If failed to create, nullptr is returned.
+   * @return The created kinematics object
+   * @throws tesseract::common::PropertyTreeValidationError if @p config does not match schema()
+   * @throws std::exception if the implementation fails to create the object
    */
   std::unique_ptr<ForwardKinematics> create(const std::string& solver_name,
                                             const tesseract::scene_graph::SceneGraph& scene_graph,
