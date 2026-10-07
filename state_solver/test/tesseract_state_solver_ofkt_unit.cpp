@@ -179,6 +179,21 @@ TEST(TesseractStateSolverUnit, OFKTGetJacobianUnit)  // NOLINT
   test_suite::runJacobianTest<OFKTStateSolver>();
 }
 
+TEST(TesseractStateSolverUnit, KDLGetJacobianRotatedOriginUnit)  // NOLINT
+{
+  test_suite::runJacobianRotatedOriginTest<KDLStateSolver>();
+}
+
+TEST(TesseractStateSolverUnit, OFKTGetJacobianRotatedOriginUnit)  // NOLINT
+{
+  test_suite::runJacobianRotatedOriginTest<OFKTStateSolver>();
+}
+
+TEST(TesseractStateSolverUnit, OFKTChangeJointOriginJacobianUnit)  // NOLINT
+{
+  test_suite::runChangeJointOriginJacobianTest<OFKTStateSolver>();
+}
+
 TEST(TesseractStateSolverUnit, OFKTSetFloatingJointStateUnit)  // NOLINT
 {
   test_suite::runSetFloatingJointStateTest<OFKTStateSolver>();

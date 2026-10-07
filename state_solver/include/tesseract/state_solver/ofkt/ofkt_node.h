@@ -192,8 +192,11 @@ public:
   virtual bool updateWorldTransformationRequired() const = 0;
 
   /**
-   * @brief Return the twist of the node in its local frame
-   * @return The node twist
+   * @brief Return the twist of the node's link relative to its parent link for a unit joint velocity
+   *
+   * It is expressed in the frame of the node's link, with the origin of that link as the reference point, so it does
+   * not depend on the joint value or on the joint origin. It is zero for a node without a joint value.
+   * @return The node twist, linear part first
    */
   virtual Eigen::Matrix<double, 6, 1> getLocalTwist() const = 0;
 
