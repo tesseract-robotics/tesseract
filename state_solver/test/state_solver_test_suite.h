@@ -211,12 +211,14 @@ inline void runCompareStateSolverLimits(const SceneGraph& scene_graph, const Sta
 }
 
 /**
- * @brief Numerically calculate a jacobian. This is mainly used for testing
+ * @brief Numerically calculate a jacobian by central difference. This is mainly used for testing
  * @param jacobian (Return) The jacobian which gets filled out.
- * @param state_solver          The state solver object
+ * @param change_base  The transform from the desired frame to the base frame of the state solver
+ * @param state_solver The state solver object
+ * @param joint_ids    The joints the joint values belong to. If empty, the active joints of the state solver
  * @param joint_values The joint values for which to calculate the jacobian
- * @param link_id    The link_id for which the jacobian should be calculated
- * @param link_point   The point on the link for which to calculate the jacobian
+ * @param link_id      The link_id for which the jacobian should be calculated
+ * @param link_point   The point on the link, in the link frame, for which to calculate the jacobian
  */
 inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                                      const Eigen::Isometry3d& change_base,
@@ -226,58 +228,44 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                                      const LinkId& link_id,
                                      const Eigen::Ref<const Eigen::Vector3d>& link_point)
 {
-  Eigen::VectorXd njvals;
-  double delta = 0.001;
-  tesseract::common::LinkIdTransformMap poses;
-  if (joint_ids.empty())
-    poses = state_solver.getState(joint_values).link_transforms;
-  else
-    poses = state_solver.getState(joint_ids, joint_values).link_transforms;
-
-  Eigen::Isometry3d pose = poses[link_id];
-  pose = change_base * pose;
+  const double delta = 1e-5;
+  const auto pose_at = [&](const Eigen::VectorXd& jvals) {
+    SceneState state = joint_ids.empty() ? state_solver.getState(jvals) : state_solver.getState(joint_ids, jvals);
+    return change_base * state.link_transforms[link_id];
+  };
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
-    njvals = joint_values;
-    njvals[i] += delta;
-    tesseract::common::LinkIdTransformMap updated_poses;
-    if (joint_ids.empty())
-      updated_poses = state_solver.getState(njvals).link_transforms;
-    else
-      updated_poses = state_solver.getState(joint_ids, njvals).link_transforms;
+    Eigen::VectorXd njvals = joint_values;
+    njvals[i] = joint_values[i] - delta;
+    const Eigen::Isometry3d pose_minus = pose_at(njvals);
+    njvals[i] = joint_values[i] + delta;
+    const Eigen::Isometry3d pose_plus = pose_at(njvals);
 
-    Eigen::Isometry3d updated_pose = updated_poses[link_id];
-    updated_pose = change_base * updated_pose;
+    jacobian.col(i).head<3>() = (pose_plus * link_point - pose_minus * link_point) / (2 * delta);
 
-    Eigen::Vector3d temp = pose * link_point;
-    Eigen::Vector3d temp2 = updated_pose * link_point;
-    jacobian(0, i) = (temp2.x() - temp.x()) / delta;
-    jacobian(1, i) = (temp2.y() - temp.y()) / delta;
-    jacobian(2, i) = (temp2.z() - temp.z()) / delta;
-
-    Eigen::AngleAxisd r12(pose.rotation().transpose() * updated_pose.rotation());  // rotation from p1 -> p2
-    double theta = r12.angle();
-    theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
-    if (theta < -M_PI)
-      theta = theta + 2. * M_PI;
-    if (theta > M_PI)
-      theta = theta - 2. * M_PI;
-    Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta) / delta;
-    jacobian(3, i) = omega(0);
-    jacobian(4, i) = omega(1);
-    jacobian(5, i) = omega(2);
+    // The rotation from the pose at minus delta to the pose at plus delta
+    const Eigen::AngleAxisd rotation(pose_minus.linear().transpose() * pose_plus.linear());
+    jacobian.col(i).tail<3>() = pose_minus.linear() * rotation.axis() * rotation.angle() / (2 * delta);
   }
+}
+
+/**
+ * @brief Get a change of base rotated about the given axis
+ * @details The translation of a change of base does not affect a jacobian, its rotation does.
+ */
+inline Eigen::Isometry3d getRotatedChangeBase(int axis)
+{
+  return Eigen::Translation3d(0.1, 0.2, 0.3) * Eigen::AngleAxisd(1.0, Eigen::Vector3d::Unit(axis));
 }
 
 /**
  * @brief Run a kinematic jacobian test
  * @param state_solver The state solver object
+ * @param joint_ids The joints the joint values belong to. If empty, the active joints of the state solver
  * @param jvals The joint values to calculate the jacobian about
- * @param link_id Name of link to calculate jacobian. If empty it will use the function that does not require link
- * name
- * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
- * point.
+ * @param link_id The link to calculate the jacobian for
+ * @param link_point The point on the link, in the link frame, to calculate the jacobian for
  * @param change_base The transform from the desired frame to the current base frame of the jacobian
  */
 inline void runCompareJacobian(StateSolver& state_solver,
@@ -324,7 +312,7 @@ inline void runCompareJacobian(StateSolver& state_solver,
   {
     for (int j = 0; j < static_cast<int>(jvals.size()); ++j)
     {
-      EXPECT_NEAR(numerical_jacobian(i, order[static_cast<std::size_t>(j)]), jacobian(i, j), 1e-3);
+      EXPECT_NEAR(numerical_jacobian(i, order[static_cast<std::size_t>(j)]), jacobian(i, j), 1e-9);
     }
   }
 }
@@ -370,7 +358,7 @@ inline void runCompareJacobian(StateSolver& state_solver,
   {
     for (int j = 0; j < static_cast<int>(jvals.size()); ++j)
     {
-      EXPECT_NEAR(numerical_jacobian(i, order[static_cast<std::size_t>(j)]), jacobian(i, j), 1e-3);
+      EXPECT_NEAR(numerical_jacobian(i, order[static_cast<std::size_t>(j)]), jacobian(i, j), 1e-9);
     }
   }
 }
@@ -464,14 +452,7 @@ inline void runJacobianTest()
   for (int k = 0; k < 3; ++k)
   {
     Eigen::Vector3d link_point(0, 0, 0);
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = Eigen::Vector3d(0, 0, 0);
-    change_base.translation()[k] = 1;
+    const Eigen::Isometry3d change_base = getRotatedChangeBase(k);
 
     for (const auto& link_id : link_ids)
     {
@@ -495,13 +476,7 @@ inline void runJacobianTest()
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = link_point;
+    const Eigen::Isometry3d change_base = getRotatedChangeBase(k);
 
     for (const auto& link_id : link_ids)
     {
@@ -573,14 +548,7 @@ inline void runJacobianTest()
   for (int k = 0; k < 3; ++k)
   {
     Eigen::Vector3d link_point(0, 0, 0);
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = Eigen::Vector3d(0, 0, 0);
-    change_base.translation()[k] = 1;
+    const Eigen::Isometry3d change_base = getRotatedChangeBase(k);
 
     for (const auto& link_id : link_ids)
     {
@@ -606,13 +574,7 @@ inline void runJacobianTest()
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = link_point;
+    const Eigen::Isometry3d change_base = getRotatedChangeBase(k);
 
     for (const auto& link_id : link_ids)
     {
@@ -694,14 +656,7 @@ inline void runJacobianTest()
   for (int k = 0; k < 3; ++k)
   {
     Eigen::Vector3d link_point(0, 0, 0);
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = Eigen::Vector3d(0, 0, 0);
-    change_base.translation()[k] = 1;
+    const Eigen::Isometry3d change_base = getRotatedChangeBase(k);
 
     for (const auto& link_id : link_ids)
     {
@@ -726,13 +681,7 @@ inline void runJacobianTest()
     Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = link_point;
+    const Eigen::Isometry3d change_base = getRotatedChangeBase(k);
 
     for (const auto& link_id : link_ids)
     {
