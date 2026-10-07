@@ -116,6 +116,7 @@ public:
    * @param base_link_id The frame that the jacobian is calculated in
    * @param link_id The frame that the jacobian is calculated for
    * @return The jacobian at the provided link_id relative to the provided base_link_id
+   * @throws std::runtime_error If the base link does not exist
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const tesseract::common::LinkId& base_link_id,
@@ -128,6 +129,7 @@ public:
    * @param link_id The frame that the jacobian is calculated for
    * @param link_point A point on the link that the jacobian is calculated for
    * @return The jacobian at the provided link_id relative to the provided base_link_id
+   * @throws std::runtime_error If the base link does not exist
    */
   Eigen::MatrixXd calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const tesseract::common::LinkId& base_link_id,

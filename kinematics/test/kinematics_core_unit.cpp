@@ -708,7 +708,7 @@ TEST(TesseractKinematicsUnit, JointGroupByJointIdAccessorsUnit)  // NOLINT
   EXPECT_EQ(jac_active_base.cols(), q.size());
 }
 
-TEST(TesseractKinematicsUnit, JointGroupCalcJacobian4ArgStaticBaseUnit)  // NOLINT
+TEST(TesseractKinematicsUnit, JointGroupCalcJacobianStaticBaseUnit)  // NOLINT
 {
   using tesseract::common::JointId;
   using tesseract::common::LinkId;
@@ -716,27 +716,30 @@ TEST(TesseractKinematicsUnit, JointGroupCalcJacobian4ArgStaticBaseUnit)  // NOLI
   tesseract::common::GeneralResourceLocator locator;
   auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
 
+  // Bend the joints left out of the group, so that the static links differ in orientation
   tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
-  const auto scene_state = ss.getState();
+  const std::unordered_map<JointId, double> bent{ { "joint_a1", 0.5 }, { "joint_a2", -0.6 }, { "joint_a3", 0.7 } };
+  const auto scene_state = ss.getState(bent);
 
-  // Sub-group of IIWA joints: excluding joint_a1..joint_a3 leaves link_3 as a
-  // non-root static link in the group's sub-tree — the only configuration that
-  // exercises the static-base branch of the 4-arg calcJacobian.
+  // A group of the last four joints has static links its state solver leaves out (such as link_1 and link_2) and
+  // one it keeps (link_3, the parent of the first joint)
   std::vector<JointId> joint_ids{ "joint_a4", "joint_a5", "joint_a6", "joint_a7" };
   tesseract::kinematics::JointGroup jg("sub_manipulator", joint_ids, *scene_graph, scene_state);
 
-  const LinkId static_base("link_3");
   const LinkId tip("tool0");
-  ASSERT_FALSE(jg.isActiveLinkId(static_base));
+  for (const auto& static_base : { "link_1", "link_2", "link_3" })
+    ASSERT_FALSE(jg.isActiveLinkId(static_base));
   ASSERT_TRUE(jg.isActiveLinkId(tip));
 
-  Eigen::VectorXd q = Eigen::VectorXd::Zero(static_cast<Eigen::Index>(joint_ids.size()));
-  q[0] = 0.3;
-  q[2] = -0.2;
+  Eigen::VectorXd q(4);
+  q << 0.3, -0.5, -0.2, 0.7;
 
-  Eigen::MatrixXd jac = jg.calcJacobian(q, static_base, tip, Eigen::Vector3d(0.05, 0.0, 0.0));
-  EXPECT_EQ(jac.rows(), 6);
-  EXPECT_EQ(jac.cols(), q.size());
+  // Compare against every static and every active base link
+  const Eigen::Vector3d point(0.05, 0.1, -0.2);
+  tesseract::kinematics::test_suite::runJacobianTest(jg, q, tip, point);
+
+  EXPECT_THROW(jg.calcJacobian(q, "does_not_exist", tip), std::runtime_error);
+  EXPECT_THROW(jg.calcJacobian(q, "does_not_exist", tip, point), std::runtime_error);
 }
 
 TEST(TesseractKinematicsUnit, KinematicGroupByJointIdAccessorsUnit)  // NOLINT
