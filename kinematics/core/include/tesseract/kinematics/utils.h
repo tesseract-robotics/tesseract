@@ -79,14 +79,16 @@ void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const Eigen::Ref<const Eigen::Vector3d>& link_point);
 
 /**
- * @brief Numerically calculate a jacobian when both source and target are active links
+ * @brief Numerically calculate the jacobian of a frame on one link relative to a frame on another link
+ * @details It is the twist of the offset frame on the link as seen from the offset frame on the base link, expressed
+ * in the latter, per unit joint velocity. Either link may be active or static.
  * @param jacobian (Return) The jacobian which gets filled out.
  * @param joint_group       The joint group object
  * @param joint_values      The joint values for which to calculate the jacobian
- * @param base_link_id    The link id for which the jacobian is calculated in
- * @param base_link_offset  The offset on the base link for which to calculate the jacobian in
- * @param link_id           The link id for which the jacobian is calculated for
- * @param link_offset       The offset on the link for which the jacobian is calcualted for
+ * @param base_link_id      The link id the jacobian is relative to
+ * @param base_link_offset  The frame on the base link, given in the base link frame, the jacobian is expressed in
+ * @param link_id           The link id for which the jacobian is calculated
+ * @param link_offset       The frame on the link, given in the link frame, whose origin the jacobian refers to
  */
 void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                        const JointGroup& joint_group,

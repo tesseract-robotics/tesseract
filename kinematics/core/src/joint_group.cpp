@@ -225,15 +225,18 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
     tesseract::common::LinkIdTransformMap transforms;
     state_solver_->getLinkTransforms(transforms, joint_ids_, joint_angles);
     assert(transforms.find(base_link_id) != transforms.end());
-    const Eigen::Isometry3d& base_link_tf = transforms[base_link_id];
+    const Eigen::Isometry3d base_link_tf_inv = transforms[base_link_id].inverse();
 
     Eigen::MatrixXd base_link_jac = state_solver_->getJacobian(joint_ids_, joint_angles, base_link_id);
     Eigen::MatrixXd base_kin_jac(6, numJoints());
     for (Eigen::Index i = 0; i < numJoints(); ++i)
       base_kin_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
 
-    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-    tesseract::common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
+    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf_inv);
+    tesseract::common::jacobianChangeBase(base_kin_jac, base_link_tf_inv);
+
+    // The base link frame turns under the link, so refer the base jacobian to the link origin before subtracting
+    tesseract::common::jacobianChangeRefPoint(base_kin_jac, base_link_tf_inv * transforms.at(link_id).translation());
     kin_jac = kin_jac - base_kin_jac;
   }
   else
@@ -268,6 +271,8 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
   const bool base_is_active = isActiveLinkId(base_link_id);
   const Eigen::Isometry3d& base_link_tf =
       base_is_active ? transforms.at(base_link_id) : getStaticBaseLinkTransform(static_link_transforms_, base_link_id);
+  const Eigen::Isometry3d base_link_tf_inv = base_link_tf.inverse();
+  const Eigen::Isometry3d base_to_link = base_link_tf_inv * link_tf;
 
   if (base_is_active)
   {
@@ -276,17 +281,19 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
     for (Eigen::Index i = 0; i < numJoints(); ++i)
       base_kin_jac.col(i) = base_link_jac.col(jacobian_map_[static_cast<std::size_t>(i)]);
 
-    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-    tesseract::common::jacobianChangeRefPoint(kin_jac, (base_link_tf.inverse() * link_tf).linear() * link_point);
+    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf_inv);
+    tesseract::common::jacobianChangeRefPoint(kin_jac, base_to_link.linear() * link_point);
 
-    tesseract::common::jacobianChangeBase(base_kin_jac, base_link_tf.inverse());
+    // The base link frame turns under the point, so refer the base jacobian to that point before subtracting
+    tesseract::common::jacobianChangeBase(base_kin_jac, base_link_tf_inv);
+    tesseract::common::jacobianChangeRefPoint(base_kin_jac, base_to_link * link_point);
 
     kin_jac = kin_jac - base_kin_jac;
   }
   else
   {
-    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf.inverse());
-    tesseract::common::jacobianChangeRefPoint(kin_jac, (base_link_tf.inverse() * link_tf).linear() * link_point);
+    tesseract::common::jacobianChangeBase(kin_jac, base_link_tf_inv);
+    tesseract::common::jacobianChangeRefPoint(kin_jac, base_to_link.linear() * link_point);
   }
 
   return kin_jac;

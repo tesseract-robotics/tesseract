@@ -742,6 +742,89 @@ TEST(TesseractKinematicsUnit, JointGroupCalcJacobianStaticBaseUnit)  // NOLINT
   EXPECT_THROW(jg.calcJacobian(q, "does_not_exist", tip, point), std::runtime_error);
 }
 
+TEST(TesseractKinematicsUnit, JointGroupCalcJacobianFixedJointsInChainUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  // Bend the joints left out of the group: they sit between the joints of the group and act as fixed joints
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  ss.setState(std::unordered_map<JointId, double>{ { "joint_a3", 0.7 }, { "joint_a4", -0.9 } });
+
+  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a5", "joint_a6", "joint_a7" };
+  tesseract::kinematics::JointGroup jg("split_manipulator", joint_ids, *scene_graph, ss.getState());
+
+  Eigen::VectorXd q(5);
+  q << 0.3, -0.5, -0.2, 0.7, 0.4;
+
+  // The group holds the joints left out of it at their bent values
+  EXPECT_TRUE(jg.calcFwdKin(q).at("tool0").isApprox(ss.getState(joint_ids, q).link_transforms.at("tool0"), 1e-9));
+
+  // Compare against every static and every active base link
+  for (const auto& link : { "tool0", "link_3" })
+    tesseract::kinematics::test_suite::runJacobianTest(jg, q, link, Eigen::Vector3d(0.05, 0.1, -0.2));
+}
+
+TEST(TesseractKinematicsUnit, NumericalJacobianRelativeOffsetsUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6", "joint_a7" };
+  tesseract::kinematics::JointGroup jg("manipulator", joint_ids, *scene_graph, ss.getState());
+
+  Eigen::VectorXd q(7);
+  q << -0.785398, 0.785398, -0.785398, 0.785398, -0.785398, 0.785398, -0.785398;
+
+  const LinkId base("link_3");
+  const LinkId tip("tool0");
+  const Eigen::Isometry3d base_offset =
+      Eigen::Translation3d(0.1, -0.2, 0.3) * Eigen::AngleAxisd(0.6, Eigen::Vector3d(1, 2, 3).normalized());
+  const Eigen::Isometry3d link_offset =
+      Eigen::Translation3d(0.05, 0.1, -0.2) * Eigen::AngleAxisd(-0.4, Eigen::Vector3d::UnitX());
+
+  Eigen::MatrixXd numerical_jacobian(6, jg.numJoints());
+  tesseract::kinematics::numericalJacobian(numerical_jacobian, jg, q, base, base_offset, tip, link_offset);
+
+  // The offset frame on the base link moves with it, so it only changes the frame the jacobian is expressed in
+  Eigen::MatrixXd jacobian = jg.calcJacobian(q, base, tip, link_offset.translation());
+  tesseract::common::jacobianChangeBase(jacobian, base_offset.inverse());
+
+  for (int i = 0; i < 6; ++i)
+    for (int j = 0; j < static_cast<int>(jg.numJoints()); ++j)
+      EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
+}
+
+TEST(TesseractKinematicsUnit, NumericalJacobianUnknownLinkUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::kinematics::numericalJacobian;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  std::vector<JointId> joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4", "joint_a5", "joint_a6", "joint_a7" };
+  tesseract::kinematics::JointGroup jg("manipulator", joint_ids, *scene_graph, ss.getState());
+  tesseract::kinematics::KDLFwdKinChain kin(*scene_graph, "base_link", "tool0");
+
+  const Eigen::VectorXd q = Eigen::VectorXd::Zero(7);
+  const Eigen::Isometry3d identity = Eigen::Isometry3d::Identity();
+  const Eigen::Vector3d point = Eigen::Vector3d::Zero();
+  Eigen::MatrixXd jacobian(6, 7);
+
+  EXPECT_THROW(numericalJacobian(jacobian, identity, kin, q, "does_not_exist", point), std::out_of_range);
+  EXPECT_THROW(numericalJacobian(jacobian, identity, jg, q, "does_not_exist", point), std::out_of_range);
+  EXPECT_THROW(numericalJacobian(jacobian, jg, q, "does_not_exist", identity, "tool0", identity), std::out_of_range);
+  EXPECT_THROW(numericalJacobian(jacobian, jg, q, "link_3", identity, "does_not_exist", identity), std::out_of_range);
+}
+
 TEST(TesseractKinematicsUnit, KinematicGroupByJointIdAccessorsUnit)  // NOLINT
 {
   using tesseract::common::JointId;
