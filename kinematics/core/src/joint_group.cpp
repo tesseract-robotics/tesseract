@@ -193,6 +193,20 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
   return kin_jac;
 }
 
+namespace
+{
+/** @brief Get the transform of a static base link, throwing if there is no such link */
+const Eigen::Isometry3d& getStaticBaseLinkTransform(const tesseract::common::LinkIdTransformMap& static_link_transforms,
+                                                    const tesseract::common::LinkId& base_link_id)
+{
+  const auto it = static_link_transforms.find(base_link_id);
+  if (it == static_link_transforms.end())
+    throw std::runtime_error("JointGroup: Base link '" + base_link_id.name() + "' does not exist!");
+
+  return it->second;
+}
+}  // namespace
+
 Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                          const tesseract::common::LinkId& base_link_id,
                                          const tesseract::common::LinkId& link_id) const
@@ -224,7 +238,8 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
   }
   else
   {
-    tesseract::common::jacobianChangeBase(kin_jac, state_.link_transforms.at(base_link_id).inverse());
+    tesseract::common::jacobianChangeBase(kin_jac,
+                                          getStaticBaseLinkTransform(static_link_transforms_, base_link_id).inverse());
   }
 
   return kin_jac;
@@ -247,11 +262,14 @@ Eigen::MatrixXd JointGroup::calcJacobian(const Eigen::Ref<const Eigen::VectorXd>
   tesseract::common::LinkIdTransformMap transforms;
   state_solver_->getLinkTransforms(transforms, joint_ids_, joint_angles);
   assert(transforms.find(link_id) != transforms.end());
-  assert(transforms.find(base_link_id) != transforms.end());
   const Eigen::Isometry3d& link_tf = transforms[link_id];
-  const Eigen::Isometry3d& base_link_tf = transforms[base_link_id];
 
-  if (isActiveLinkId(base_link_id))
+  // A static base link need not be known to the state solver, so take it from the static link transforms
+  const bool base_is_active = isActiveLinkId(base_link_id);
+  const Eigen::Isometry3d& base_link_tf =
+      base_is_active ? transforms.at(base_link_id) : getStaticBaseLinkTransform(static_link_transforms_, base_link_id);
+
+  if (base_is_active)
   {
     Eigen::MatrixXd base_link_jac = state_solver_->getJacobian(joint_ids_, joint_angles, base_link_id);
     Eigen::MatrixXd base_kin_jac(6, numJoints());

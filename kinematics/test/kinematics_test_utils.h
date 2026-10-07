@@ -343,14 +343,14 @@ inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
 }
 
 /**
- * @brief Run a kinematic jacobian test
- * @param kin The kinematics object
+ * @brief Run a jacobian test on a joint group: relative to its base link, to every static link and to every active
+ * link, with and without the link point
+ * @param kin_group The joint group
  * @param jvals The joint values to calculate the jacobian about
- * @param link_id Id of link to calculate jacobian. If empty it will use the function that does not require link id
- * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
- * point.
+ * @param link_id Id of the link to calculate the jacobian for
+ * @param link_point A point on the link, expressed in the link frame, to calculate the jacobian for
  */
-inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
+inline void runJacobianTest(const tesseract::kinematics::JointGroup& kin_group,
                             const Eigen::VectorXd& jvals,
                             const tesseract::common::LinkId& link_id,
                             const Eigen::Vector3d& link_point)
