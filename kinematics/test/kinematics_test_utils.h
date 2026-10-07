@@ -314,10 +314,8 @@ inline tesseract::common::KinematicLimits getTargetLimits(const tesseract::scene
  * @brief Run a kinematic jacobian test
  * @param kin The kinematics object
  * @param jvals The joint values to calculate the jacobian about
- * @param link_name Name of link to calculate jacobian. If empty it will use the function that does not require link
- * name
- * @param link_point Is expressed in the same base frame of the jacobian and is a vector from the old point to the new
- * point.
+ * @param link_id Id of the link to calculate the jacobian for
+ * @param link_point A point on the link, expressed in the link frame, to calculate the jacobian for
  * @param change_base The transform from the desired frame to the current base frame of the jacobian
  */
 inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
@@ -341,7 +339,7 @@ inline void runJacobianTest(tesseract::kinematics::ForwardKinematics& kin,
 
   for (int i = 0; i < 6; ++i)
     for (int j = 0; j < static_cast<int>(kin.numJoints()); ++j)
-      EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+      EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
 }
 
 /**
@@ -369,7 +367,7 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
 
     for (int i = 0; i < 6; ++i)
       for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
-        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
   }
 
   {  // Test don't use link_point
@@ -381,7 +379,7 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
 
     for (int i = 0; i < 6; ++i)
       for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
-        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
   }
 
   auto static_link_ids = kin_group.getStaticLinkIds();
@@ -397,7 +395,7 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
-          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
     }
 
     {  // Test don't use link_point
@@ -409,7 +407,7 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
-          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
     }
   }
 
@@ -430,7 +428,7 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
-          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
     }
 
     {  // Test don't use link_point
@@ -447,7 +445,7 @@ inline void runJacobianTest(tesseract::kinematics::KinematicGroup& kin_group,
 
       for (int i = 0; i < 6; ++i)
         for (int j = 0; j < static_cast<int>(kin_group.numJoints()); ++j)
-          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+          EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-6);
     }
   }
 }
@@ -622,6 +620,26 @@ inline void runInvKinTest(const tesseract::kinematics::KinematicGroup& kin_group
   }
 }
 
+/**
+ * @brief The pose of tool0 in base_link of lbr_iiwa_14_r820.urdf, written out from its joint origins and axes
+ * @param jvals The seven joint values
+ */
+inline Eigen::Isometry3d getIIWAToolPose(const Eigen::VectorXd& jvals)
+{
+  using Eigen::AngleAxisd;
+  using Eigen::Translation3d;
+  using Eigen::Vector3d;
+  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+  pose = pose * AngleAxisd(jvals(0), Vector3d::UnitZ());
+  pose = pose * Translation3d(-0.00043624, 0, 0.36) * AngleAxisd(jvals(1), Vector3d::UnitY());
+  pose = pose * AngleAxisd(jvals(2), Vector3d::UnitZ());
+  pose = pose * Translation3d(0.00043624, 0, 0.42) * AngleAxisd(jvals(3), -Vector3d::UnitY());
+  pose = pose * AngleAxisd(jvals(4), Vector3d::UnitZ());
+  pose = pose * Translation3d(0, 0, 0.4) * AngleAxisd(jvals(5), Vector3d::UnitY());
+  pose = pose * AngleAxisd(jvals(6), Vector3d::UnitZ());
+  return pose * Translation3d(0, 0, 0.126);
+}
+
 inline void runFwdKinIIWATest(tesseract::kinematics::ForwardKinematics& kin)
 {
   //////////////////////////////////////////////////////////////////
@@ -642,6 +660,15 @@ inline void runFwdKinIIWATest(tesseract::kinematics::ForwardKinematics& kin)
   result.translation()[1] = 0;
   result.translation()[2] = 1.306;
   EXPECT_TRUE(pose.isApprox(result));
+
+  //////////////////////////////////////////////////////////////////
+  // Test forward kinematics away from the home configuration
+  //////////////////////////////////////////////////////////////////
+  jvals << -0.785398, 0.785398, -0.785398, 0.785398, -0.785398, 0.785398, -0.785398;
+  EXPECT_TRUE(kin.calcFwdKin(jvals).at("tool0").isApprox(getIIWAToolPose(jvals), 1e-9));
+
+  jvals << 0.4, -1.1, 0.9, 1.3, -0.2, 0.7, -1.5;
+  EXPECT_TRUE(kin.calcFwdKin(jvals).at("tool0").isApprox(getIIWAToolPose(jvals), 1e-9));
 }
 
 inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, bool is_kin_tree = false)
@@ -685,44 +712,20 @@ inline void runJacobianIIWATest(tesseract::kinematics::ForwardKinematics& kin, b
   }
 
   ///////////////////////////////////////////
-  // Test Jacobian with change base
+  // Test Jacobian with change base, at the link origin and at a point
   ///////////////////////////////////////////
   for (int k = 0; k < 3; ++k)
   {
-    link_point = Eigen::Vector3d(0, 0, 0);
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = Eigen::Vector3d(0, 0, 0);
-    change_base.translation()[k] = 1;
+    // The translation of the change of base does not affect a jacobian, its rotation does
+    const Eigen::Isometry3d change_base =
+        Eigen::Translation3d(0.1, 0.2, 0.3) * Eigen::AngleAxisd(1.0, Eigen::Vector3d::Unit(k));
 
-    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
+    runJacobianTest(kin, jvals, tip_link, Eigen::Vector3d::Zero(), change_base);
 
-    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
-  }
+    const Eigen::Vector3d point = Eigen::Vector3d::Unit(k);
+    runJacobianTest(kin, jvals, tip_link, point, change_base);
 
-  ///////////////////////////////////////////
-  // Test Jacobian at point with change base
-  ///////////////////////////////////////////
-  for (int k = 0; k < 3; ++k)
-  {
-    Eigen::Vector3d link_point(0, 0, 0);
-    link_point[k] = 1;
-
-    Eigen::Isometry3d change_base;
-    change_base.setIdentity();
-    change_base(0, 0) = 0;
-    change_base(1, 0) = 1;
-    change_base(0, 1) = -1;
-    change_base(1, 1) = 0;
-    change_base.translation() = link_point;
-
-    runJacobianTest(kin, jvals, tip_link, link_point, change_base);
-
-    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", link_point, change_base));  // NOLINT
+    EXPECT_ANY_THROW(runJacobianTest(kin, jvals, "", point, change_base));  // NOLINT
   }
 }
 
@@ -1088,12 +1091,10 @@ inline void runInvKinIIWATest(const tesseract::kinematics::KinematicsPluginFacto
   inv_plugin_info.class_name = inv_factory_name;
   inv_plugin_info.config = fwd_plugin_info.config;
 
-  // Inverse target pose and seed
-  Eigen::Isometry3d pose;
-  pose.setIdentity();
-  pose.translation()[0] = 0;
-  pose.translation()[1] = 0;
-  pose.translation()[2] = 1.306;
+  // Inverse target pose, away from both the home configuration and the seed
+  Eigen::VectorXd target_jvals(7);
+  target_jvals << -0.4, 1.0, -0.6, 1.2, -1.0, 0.5, -0.3;
+  const Eigen::Isometry3d pose = getIIWAToolPose(target_jvals);
 
   Eigen::VectorXd seed;
   seed.resize(7);
