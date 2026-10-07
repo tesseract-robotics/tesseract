@@ -464,15 +464,15 @@ OFKTStateSolver::calcJacobianHelper(const SceneState::JointValues& joints,
     }
     else
     {
-      Eigen::Isometry3d local_tf = node->computeLocalTransformation(joints.at(node->getJointId()));
-      total_tf = local_tf * total_tf;
-
+      // Use the twist before moving total_tf up: it is expressed in the frame of the node's link
       Eigen::Index idx = std::distance(
           active_joint_ids_.begin(), std::find(active_joint_ids_.begin(), active_joint_ids_.end(), node->getJointId()));
       Eigen::VectorXd twist = node->getLocalTwist();
-      tesseract::common::twistChangeRefPoint(twist, total_tf.translation() - local_tf.translation());
+      tesseract::common::twistChangeRefPoint(twist, total_tf.translation());
       tesseract::common::twistChangeBase(twist, total_tf.inverse());
       jacobian.col(idx) = twist;
+
+      total_tf = node->computeLocalTransformation(joints.at(node->getJointId())) * total_tf;
     }
 
     node = node->getParent();

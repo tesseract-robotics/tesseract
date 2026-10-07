@@ -750,6 +750,78 @@ inline void runJacobianTest()
   }
 }
 
+/**
+ * @brief Get a robot whose joint origins are rotated, with a revolute, a continuous and a prismatic joint
+ * @details A joint axis is given in the joint frame, so reading it in the parent link frame goes unnoticed on a
+ * robot whose joint origins carry no rotation.
+ */
+inline SceneGraph::UPtr getRotatedOriginSceneGraph(const tesseract::common::ResourceLocator& locator)
+{
+  std::string path = locator.locateResource("package://tesseract/support/urdf/iiwa7.urdf")->getFilePath();
+  auto scene_graph = tesseract::urdf::parseURDFFile(path, locator);
+
+  // The robot has revolute joints only
+  const std::vector<std::pair<std::string, JointType>> joint_types = { { "joint_4", JointType::CONTINUOUS },
+                                                                       { "joint_6", JointType::PRISMATIC } };
+  for (const auto& [joint_name, joint_type] : joint_types)
+  {
+    Joint joint = scene_graph->getJoint(joint_name)->clone();
+    joint.type = joint_type;
+    EXPECT_TRUE(scene_graph->removeJoint(joint_name));
+    EXPECT_TRUE(scene_graph->addJoint(joint));
+  }
+
+  return scene_graph;
+}
+
+/**
+ * @brief Compare the jacobian of every active link, at a point off the link origin, to the numerical jacobian, for the
+ * solver and its clone
+ */
+inline void runCompareRotatedOriginJacobians(StateSolver& state_solver)
+{
+  Eigen::VectorXd jvals(7);
+  jvals << -0.1, 0.2, -0.3, 0.4, -0.5, 0.6, -0.7;
+
+  const Eigen::Vector3d link_point(0.1, 0.2, 0.3);
+  StateSolver::UPtr state_solver_clone = state_solver.clone();
+  for (const auto& link_id : state_solver.getActiveLinkIds())
+  {
+    runCompareJacobian(state_solver, {}, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
+    runCompareJacobian(*state_solver_clone, {}, jvals, link_id, link_point, Eigen::Isometry3d::Identity());
+  }
+}
+
+template <typename S>
+inline void runJacobianRotatedOriginTest()
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto state_solver = S(*getRotatedOriginSceneGraph(locator));
+  runCompareRotatedOriginJacobians(state_solver);
+}
+
+template <typename S>
+inline void runChangeJointOriginJacobianTest()
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = getRotatedOriginSceneGraph(locator);
+  auto state_solver = S(*scene_graph);
+
+  const Eigen::Quaterniond rotation = Eigen::AngleAxisd(0.3, Eigen::Vector3d::UnitX()) *
+                                      Eigen::AngleAxisd(0.4, Eigen::Vector3d::UnitY()) *
+                                      Eigen::AngleAxisd(0.5, Eigen::Vector3d::UnitZ());
+  const std::vector<std::string> joint_names = { "joint_2", "joint_4", "joint_6" };
+  for (const auto& joint_name : joint_names)
+  {
+    const Eigen::Isometry3d new_origin = scene_graph->getJoint(joint_name)->parent_to_joint_origin_transform * rotation;
+    EXPECT_TRUE(scene_graph->changeJointOrigin(joint_name, new_origin));
+    EXPECT_TRUE(state_solver.changeJointOrigin(joint_name, new_origin));
+  }
+
+  runCompareStateSolver(KDLStateSolver(*scene_graph), state_solver);
+  runCompareRotatedOriginJacobians(state_solver);
+}
+
 template <typename S>
 void runSetFloatingJointStateTest()
 {
