@@ -323,9 +323,6 @@ inline void runCompareJacobian(StateSolver& state_solver,
                                const Eigen::Vector3d& link_point,
                                const Eigen::Isometry3d& change_base)
 {
-  Eigen::MatrixXd jacobian, numerical_jacobian;
-  jacobian.resize(6, static_cast<Eigen::Index>(joints_values.size()));
-
   std::vector<JointId> joint_ids;
   Eigen::VectorXd jvals(joints_values.size());
   Eigen::Index j{ 0 };
@@ -335,32 +332,49 @@ inline void runCompareJacobian(StateSolver& state_solver,
     jvals(j++) = jv.second;
   }
 
-  tesseract::common::LinkIdTransformMap poses;
+  runCompareJacobian(state_solver, joint_ids, jvals, link_id, link_point, change_base);
+}
 
-  // The numerical jacobian orders things base on the provided joint list
-  // The order needs to be calculated to compare
-  std::vector<JointId> solver_jn = state_solver.getActiveJointIds();
-  std::vector<long> order;
-  order.reserve(solver_jn.size());
-  for (const auto& joint_id : solver_jn)
-    order.push_back(std::distance(joint_ids.begin(), std::find(joint_ids.begin(), joint_ids.end(), joint_id)));
+/**
+ * @brief Compare the state for a map of joint values to the state for the same values as a list of joints, for all
+ * active joints and for a subset of them
+ */
+inline void runCompareGetStateJointValues(const StateSolver& state_solver)
+{
+  Eigen::VectorXd jvals(7);
+  jvals << -0.1, 0.2, -0.3, 0.4, -0.5, 0.6, -0.7;
 
-  poses = state_solver.getState(joints_values).link_transforms;
-  jacobian = state_solver.getJacobian(joint_ids, jvals, link_id);
-
-  tesseract::common::jacobianChangeBase(jacobian, change_base);
-  tesseract::common::jacobianChangeRefPoint(jacobian, (change_base * poses[link_id]).linear() * link_point);
-
-  numerical_jacobian.resize(6, static_cast<Eigen::Index>(joints_values.size()));
-  numericalJacobian(numerical_jacobian, change_base, state_solver, joint_ids, jvals, link_id, link_point);
-
-  for (int i = 0; i < 6; ++i)
+  for (const Eigen::Index count : { jvals.size(), Eigen::Index{ 3 } })
   {
-    for (int j = 0; j < static_cast<int>(jvals.size()); ++j)
-    {
-      EXPECT_NEAR(numerical_jacobian(i, order[static_cast<std::size_t>(j)]), jacobian(i, j), 1e-9);
-    }
+    std::vector<JointId> joint_ids = state_solver.getActiveJointIds();
+    joint_ids.resize(static_cast<std::size_t>(count));
+
+    SceneState::JointValues jv_map;
+    for (Eigen::Index i = 0; i < count; ++i)
+      jv_map[joint_ids[static_cast<std::size_t>(i)]] = jvals(i);
+
+    const SceneState state = state_solver.getState(jv_map);
+    runCompareSceneStates(state_solver.getState(joint_ids, jvals.head(count)), state);
+
+    // The joint values move the tool
+    const LinkId tool("tool0");
+    EXPECT_FALSE(state.link_transforms.at(tool).isApprox(state_solver.getState().link_transforms.at(tool), 1e-6));
   }
+}
+
+template <typename S>
+inline void runGetStateJointValuesTest()
+{
+  tesseract::common::GeneralResourceLocator locator;
+  auto state_solver = S(*getSceneGraph(locator));
+
+  // A joint left out of the map keeps its current value, which is told apart from zero only when it is not zero
+  Eigen::VectorXd current_jvals(7);
+  current_jvals << 0.7, -0.6, 0.5, -0.4, 0.3, -0.2, 0.1;
+  state_solver.setState(current_jvals);
+
+  runCompareGetStateJointValues(state_solver);
+  runCompareGetStateJointValues(*state_solver.clone());
 }
 
 template <typename S>
