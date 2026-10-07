@@ -169,6 +169,16 @@ TEST(TesseractStateSolverUnit, OFKTChangeJointLimitsUnit)  // NOLINT
   test_suite::runChangeJointLimitsTest<OFKTStateSolver>();
 }
 
+TEST(TesseractStateSolverUnit, KDLGetStateJointValuesUnit)  // NOLINT
+{
+  test_suite::runGetStateJointValuesTest<KDLStateSolver>();
+}
+
+TEST(TesseractStateSolverUnit, OFKTGetStateJointValuesUnit)  // NOLINT
+{
+  test_suite::runGetStateJointValuesTest<OFKTStateSolver>();
+}
+
 TEST(TesseractStateSolverUnit, KDLGetJacobianUnit)  // NOLINT
 {
   test_suite::runJacobianTest<KDLStateSolver>();
