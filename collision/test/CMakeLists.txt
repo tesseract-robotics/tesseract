@@ -79,3 +79,5 @@ target_link_libraries(collision_factory_static_unit PRIVATE tesseract::collision
 
 add_gtest(collision_schema_unit contact_managers_schema_unit.cpp)
 target_link_libraries(collision_schema_unit PRIVATE tesseract::collision_bullet_factories collision_fcl_factories)
+
+add_gtest(collision_convex_hull_unit collision_convex_hull_unit.cpp)
