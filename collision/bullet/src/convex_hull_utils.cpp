@@ -75,6 +75,7 @@ int createConvexHull(tesseract::common::VectorVector3d& vertices,
   std::vector<int> face(3);
   for (int i = 0; i < conv.faces.size(); i++)
   {
+    face.resize(3);
     const btConvexHullComputer::Edge* sourceEdge = &(conv.edges[conv.faces[i]]);
     int a = sourceEdge->getSourceVertex();
     face[0] = a;
