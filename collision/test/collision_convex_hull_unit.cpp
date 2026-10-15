@@ -90,6 +90,12 @@ void checkHull(const Vertices& vertices,
 
 struct PlyFile
 {
+  PlyFile() = default;
+  PlyFile(const PlyFile&) = delete;
+  PlyFile& operator=(const PlyFile&) = delete;
+  PlyFile(PlyFile&&) = delete;
+  PlyFile& operator=(PlyFile&&) = delete;
+
   std::filesystem::path path =
       std::filesystem::temp_directory_path() /
       ("tesseract-convex-hull-" + boost::uuids::to_string(boost::uuids::random_generator()()) + ".ply");
