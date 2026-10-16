@@ -71,7 +71,7 @@ int createConvexHull(tesseract::common::VectorVector3d& vertices,
 
   auto num_faces = static_cast<size_t>(conv.faces.size());
   std::vector<int> local_faces;
-  local_faces.reserve(3UL * num_faces);
+  local_faces.reserve(4UL * num_faces);
   std::vector<int> face(3);
   for (int i = 0; i < conv.faces.size(); i++)
   {
