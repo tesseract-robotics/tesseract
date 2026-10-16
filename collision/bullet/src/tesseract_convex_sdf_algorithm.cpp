@@ -27,21 +27,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionShapes/btConvexShape.h>
 #include <BulletCollision/CollisionShapes/btCylinderShape.h>
 #include <BulletCollision/CollisionShapes/btPolyhedralConvexShape.h>
-#include <BulletCollision/CollisionShapes/btSdfCollisionShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/common/logging.h>
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/bullet/tesseract_convex_sdf_algorithm.h>
+#include <tesseract/collision/bullet/tesseract_sdf_collision_shape.h>
 #include <tesseract/collision/implicit_sdf_collision_solver.h>
 #include <tesseract/geometry/impl/box.h>
 #include <tesseract/geometry/impl/capsule.h>
 #include <tesseract/geometry/impl/cone.h>
 #include <tesseract/geometry/impl/cylinder.h>
 #include <tesseract/geometry/impl/sphere.h>
-
-#include <limits>
 
 namespace tesseract::collision::bullet_internal
 {
@@ -93,31 +91,6 @@ ImplicitSDFShape makeBulletConvexShape(const btConvexShape& shape, const btTrans
   }
 }
 
-ImplicitSDFShape makeBulletSDFShape(btSdfCollisionShape& shape, const btTransform& world_transform)
-{
-  const btTransform inverse_transform = world_transform.inverse();
-  ImplicitSDFShape result;
-  result.distance = [&shape, inverse_transform](const Eigen::Vector3d& point) {
-    btScalar distance{ 0 };
-    btVector3 normal;
-    if (!shape.queryPoint(inverse_transform * convertEigenToBt(point), distance, normal))
-      return std::numeric_limits<double>::infinity();
-    return static_cast<double>(distance);
-  };
-  result.gradient = [&shape, inverse_transform, world_transform](const Eigen::Vector3d& point) -> Eigen::Vector3d {
-    btScalar distance{ 0 };
-    btVector3 normal;
-    if (!shape.queryPoint(inverse_transform * convertEigenToBt(point), distance, normal))
-      return Eigen::Vector3d::Zero();
-    normal = world_transform.getBasis() * normal;
-    return convertBtToEigen(normal);
-  };
-  btVector3 aabb_min;
-  btVector3 aabb_max;
-  shape.getAabb(world_transform, aabb_min, aabb_max);
-  result.aabb = Eigen::AlignedBox3d(convertBtToEigen(aabb_min), convertBtToEigen(aabb_max));
-  return result;
-}
 }  // namespace
 
 TesseractConvexSdfAlgorithm::TesseractConvexSdfAlgorithm(btPersistentManifold* mf,
@@ -143,18 +116,14 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
   const btCollisionObjectWrapper* convexBodyWrap = m_isSwapped ? body1Wrap : body0Wrap;
   const btCollisionObjectWrapper* sdfBodyWrap = m_isSwapped ? body0Wrap : body1Wrap;
 
-  // queryPoint is a non-const member on btSdfCollisionShape even though it does not mutate the
-  // field, hence the const_cast (stock Bullet C-casts away constness in the same spot).
-  // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
-  auto* sdf_shape =
-      const_cast<btSdfCollisionShape*>(static_cast<const btSdfCollisionShape*>(sdfBodyWrap->getCollisionShape()));
-  // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
+  const auto& sdf_shape = static_cast<const TesseractSdfCollisionShape&>(*sdfBodyWrap->getCollisionShape());
+  const ImplicitSDFShape implicit_sdf =
+      makeImplicitSDFShape(sdf_shape.getField(), convertBtToEigen(sdfBodyWrap->getWorldTransform()));
   const auto* convex = static_cast<const btConvexShape*>(convexBodyWrap->getCollisionShape());
 
   const ImplicitSDFShape implicit_convex = makeBulletConvexShape(*convex, convexBodyWrap->getWorldTransform());
   if (implicit_convex.isValid())
   {
-    const ImplicitSDFShape implicit_sdf = makeBulletSDFShape(*sdf_shape, sdfBodyWrap->getWorldTransform());
     ImplicitSDFCollisionConfig config;
     config.contact_margin = static_cast<double>(resultOut->m_closestPointDistanceThreshold);
     const std::vector<ImplicitSDFContact> contacts = collideImplicitSDF(implicit_convex, implicit_sdf, config);
@@ -219,20 +188,18 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
   for (int v = 0; v < query_vertices.size(); v++)
   {
     const btVector3& vtx = query_vertices[v];
-    btVector3 vtx_world_space = convexBodyWrap->getWorldTransform() * vtx;
-    btVector3 vtx_in_sdf = sdfBodyWrap->getWorldTransform().invXform(vtx_world_space);
+    const Eigen::Vector3d vtx_world = convertBtToEigen(convexBodyWrap->getWorldTransform() * vtx);
 
-    btVector3 normal_local;
-    btScalar dist{ 0 };
-    if (sdf_shape->queryPoint(vtx_in_sdf, dist, normal_local))
+    // The implicit shape answers in world frame, and +infinity outside the field's domain.
+    const double dist = implicit_sdf.distance(vtx_world);
+    if (dist <= static_cast<double>(max_dist))
     {
-      if (dist <= max_dist)
-      {
-        normal_local.safeNormalize();
-        btVector3 normal = sdfBodyWrap->getWorldTransform().getBasis() * normal_local;
-
-        resultOut->addContactPoint(normal, vtx_world_space - normal * dist, dist);
-      }
+      Eigen::Vector3d normal = implicit_sdf.gradient(vtx_world);
+      if (normal.squaredNorm() > 0.0)
+        normal.normalize();
+      resultOut->addContactPoint(convertEigenToBt(normal),
+                                 convertEigenToBt(Eigen::Vector3d(vtx_world - (normal * dist))),
+                                 static_cast<btScalar>(dist));
     }
   }
   resultOut->refreshContactPoints();

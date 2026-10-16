@@ -89,8 +89,8 @@ std::vector<ImplicitSDFContact> collideImplicitSDF(const ImplicitSDFShape& shape
  * @brief Create a world-coordinate implicit representation of a supported Tesseract geometry.
  *
  * Supported geometries are box, sphere, cylinder, cone, capsule, and signed distance field.
- * This adapter is backend-neutral and is used by FCL; other backends may provide callbacks around
- * their native distance representations and call @ref collideImplicitSDF directly.
+ * This adapter is backend-neutral and is used by the FCL and Bullet backends; a backend may instead
+ * wrap its own distance representation in an @ref ImplicitSDFShape and call @ref collideImplicitSDF.
  *
  * @param geometry Geometry to represent
  * @param pose Geometry pose in world coordinates
