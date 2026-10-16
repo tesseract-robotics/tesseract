@@ -30,18 +30,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract::collision::bullet_internal
 {
 /**
- * @brief Convex vs btSdfCollisionShape narrowphase that honors the contact distance threshold
+ * @brief Convex vs signed distance field narrowphase that honors the contact distance threshold
  *
- * Stock Bullet handles convex-vs-SDF inside btConvexConcaveCollisionAlgorithm by sampling the
- * field at the convex shape's vertices (or a sphere's center) and only emitting a contact when
- * the sampled distance is within the shape's surface (dist <= radius). It ignores
- * btManifoldResult::m_closestPointDistanceThreshold, so positive-distance (separated) contacts
- * inside the collision margin band are never reported. Tesseract's margin-based consumers
- * (TrajOpt collision costs, contact-check gates) require those contacts, so this algorithm
- * replicates Bullet's SDF vertex query but widens the acceptance band by the pair's contact
- * distance threshold. It also adds capsule support (absent in stock Bullet) by sampling the
- * field along the capsule's axis segment with a radius offset, and cylinder/cone support through
- * dimension-adaptive sampling of exact parametric surface patches.
+ * Stock Bullet only samples an SDF at a convex shape's vertices, and ignores
+ * btManifoldResult::m_closestPointDistanceThreshold, so separated contacts inside the collision
+ * margin are never reported; Tesseract's margin-based consumers (TrajOpt costs, contact gates)
+ * need them. Boxes, spheres, capsules, cylinders and cones are collided with the field through the
+ * backend-neutral implicit solver. Other polyhedra fall back to sampling the field at their
+ * vertices, with the acceptance band widened by the pair's contact distance threshold.
  */
 class TesseractConvexSdfAlgorithm : public btActivatingCollisionAlgorithm
 {

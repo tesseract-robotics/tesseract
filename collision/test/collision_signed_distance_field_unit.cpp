@@ -3,9 +3,8 @@
  * @brief Discrete collision tests for the volumetric SignedDistanceField geometry against a sphere.
  *
  * A signed distance field for a sphere of radius R centered at the origin is discretized at runtime
- * into the Discregrid / btMiniSDF binary blob format and fed to the Bullet backend. A probe
- * sphere is then placed at known locations and the reported contact distance is validated. This
- * exercises both the SDF data-ingestion path (initializeSDF) and the convex-vs-SDF narrowphase.
+ * and added to the Bullet and FCL backends, which both query it in place through the shared implicit
+ * solver. A probe is then placed at known locations and the reported contact distance is validated.
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -40,8 +39,7 @@ namespace
 {
 CollisionShapePtr makeSphereSDF()
 {
-  // Discretize the field with the production sampler (shared tricubic nodes), exercising the real
-  // code path end-to-end: f(p) = ||p|| - 0.5 over [-1, 1]^3 at 16 cells per axis.
+  // f(p) = ||p|| - 0.5 sampled over [-1, 1]^3 at 16 samples per axis.
   const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
   return tesseract::geometry::createDiscreteSignedDistanceField(
       sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(16, 16, 16));
@@ -288,6 +286,46 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, FCLRejectsNonuniformSDFScale)  /
   CollisionShapesConst sdf_shapes{ sdf };
   tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
   EXPECT_THROW(checker.addCollisionObject("sdf_link", 0, sdf_shapes, poses, true), std::invalid_argument);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletRejectsNonuniformSDFScale)  // NOLINT
+{
+  // Rejected when the field is added, since Bullet's narrowphase must not throw.
+  BulletDiscreteBVHManager checker;
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d::Constant(-1.0), Eigen::Vector3d::Constant(1.0));
+  auto sdf = std::make_shared<tesseract::geometry::SignedDistanceField>(
+      domain, Eigen::Vector3i(2, 2, 2), std::vector<double>(8, 0.0), Eigen::Vector3d(1.0, 2.0, 1.0));
+  CollisionShapesConst sdf_shapes{ sdf };
+  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  EXPECT_THROW(checker.addCollisionObject("sdf_link", 0, sdf_shapes, poses, true), std::invalid_argument);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletLazyFieldIsNotDiscretized)  // NOLINT
+{
+  // Bullet queries the field in place, so a function-backed field is collided exactly and never sampled onto a grid.
+  const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+  auto sdf = tesseract::geometry::createSignedDistanceField(
+      sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(16, 16, 16));
+
+  BulletDiscreteBVHManager checker;
+  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf_link", 0, CollisionShapesConst{ sdf }, poses, true);
+  checker.addCollisionObject(
+      "sphere_link", 0, CollisionShapesConst{ std::make_shared<tesseract::geometry::Sphere>(0.1) }, poses, true);
+  checker.setActiveCollisionObjects({ "sdf_link", "sphere_link" });
+  checker.setDefaultCollisionMargin(0.0);
+
+  Eigen::Isometry3d sphere_tf = Eigen::Isometry3d::Identity();
+  sphere_tf.translation().x() = 0.45;
+  checker.setCollisionObjectsTransform("sphere_link", sphere_tf);
+  ContactResultMap result;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  ContactResultVector result_vector;
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_EQ(result_vector.size(), 1);
+  EXPECT_NEAR(result_vector[0].distance, -0.15, 1e-3);
+  EXPECT_FALSE(sdf->isDiscretized());
 }
 
 void addCapsuleObjects(DiscreteContactManager& checker)
