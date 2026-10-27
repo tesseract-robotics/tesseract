@@ -484,7 +484,7 @@ ImplicitSDFShape makeImplicitSDFShape(const tesseract::geometry::Geometry& geome
           return std::numeric_limits<double>::infinity();
         return sdf.getDistance(local_point) * distance_scale;
       };
-      // The field supplies its own gradient: exact for a grid-backed field, one batched
+      // The field supplies its own gradient: exact for grid-backed and sparse fields, one batched
       // sampler call for a function-backed one. Under a uniform scale s the scaled distance is
       // s * d(p / s), whose gradient is the local gradient unchanged.
       const auto gradient = [&sdf, domain, scale](const Eigen::Vector3d& point) {

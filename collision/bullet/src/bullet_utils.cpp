@@ -382,7 +382,7 @@ createShapePrimitive(const tesseract::geometry::SignedDistanceField::ConstPtr& g
   if (!scale.allFinite() || (scale.array() <= 0.0).any() || !scale.isApprox(Eigen::Vector3d::Constant(scale.x())))
     throw std::invalid_argument("Bullet signed distance fields need a finite, positive, uniform scale");
 
-  // Bullet queries the field in place (grid-backed or function-backed): no transcode to btMiniSDF.
+  // Bullet queries the field in place (dense, sparse or function-backed): no transcode to btMiniSDF.
   auto collision_shape = std::make_shared<BulletCollisionShape>();
   collision_shape->top_level = std::make_shared<TesseractSdfCollisionShape>(geom);  // children stays empty
   return collision_shape;

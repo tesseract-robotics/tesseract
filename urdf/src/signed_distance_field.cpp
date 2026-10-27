@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <locale>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -94,6 +95,21 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
     scale = Eigen::Vector3d(sx, sy, sz);
   }
 
+  // An .nvdb file is read sparse, kept as stored, when the element names its grid or band clamp:
+  // `grid` picks one grid of a file holding several, `band_clamp` is that grid's clamp (default 0,
+  // the values never saturate). Without either the file is read as one dense grid.
+  std::string grid_name;
+  const bool has_grid =
+      tesseract::common::QueryStringAttribute(xml_element, "grid", grid_name) == tinyxml2::XML_SUCCESS;
+  std::string clamp_string;
+  double band_clamp{ 0 };
+  const bool has_clamp =
+      tesseract::common::QueryStringAttribute(xml_element, "band_clamp", clamp_string) == tinyxml2::XML_SUCCESS;
+  if (has_clamp &&
+      (!tesseract::common::isNumeric(clamp_string) || !tesseract::common::toNumeric<double>(clamp_string, band_clamp)))
+    std::throw_with_nested(std::runtime_error("SignedDistanceField: Failed parsing attribute 'band_clamp'!"));
+  const bool sparse = has_grid || has_clamp;
+
   tesseract::common::Resource::Ptr resource = locator.locateResource(filename);
   if (resource == nullptr)
     std::throw_with_nested(std::runtime_error("SignedDistanceField: Missing resource '" + filename + "'!"));
@@ -105,8 +121,12 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
   tesseract::geometry::SignedDistanceField::Ptr geom;
   try
   {
+    if (sparse && !hasExtension(filename, ".nvdb"))
+      throw std::runtime_error("'grid' and 'band_clamp' need an .nvdb file");
     if (hasExtension(filename, ".vdb"))
       geom = tesseract::geometry::readSignedDistanceFieldVDB(data, scale);
+    else if (hasExtension(filename, ".nvdb") && sparse)
+      geom = tesseract::geometry::readSparseSignedDistanceFieldNVDB(data, band_clamp, scale, grid_name);
     else if (hasExtension(filename, ".nvdb"))
       geom = tesseract::geometry::readSignedDistanceFieldNVDB(data, scale);
     else
@@ -155,6 +175,16 @@ tinyxml2::XMLElement* writeSignedDistanceField(const tesseract::geometry::Signed
     std::stringstream scale_string;
     scale_string << sdf->getScale().format(eigen_format);
     xml_element->SetAttribute("scale", scale_string.str().c_str());
+  }
+
+  // The written file holds the one grid, so the clamp alone marks it sparse.
+  if (sdf->isSparse())
+  {
+    std::stringstream clamp_string;
+    clamp_string.imbue(std::locale::classic());
+    clamp_string.precision(17);
+    clamp_string << sdf->getBandClamp();
+    xml_element->SetAttribute("band_clamp", clamp_string.str().c_str());
   }
 
   return xml_element;

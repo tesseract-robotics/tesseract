@@ -28,6 +28,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -54,6 +55,21 @@ using SignedDistanceFunction = std::function<double(const Eigen::Vector3d&)>;
  */
 using BatchedSignedDistanceFunction = std::function<std::vector<double>(const std::vector<Eigen::Vector3d>&)>;
 
+class SparseSignedDistanceFieldGrid;
+
+/**
+ * @brief How a grid-backed or sparse field is read between its samples.
+ * @details Both pass through the samples and reproduce a linear field exactly. They differ in how many
+ * samples a read uses and whether the gradient is continuous across cell faces.
+ */
+enum class SignedDistanceFieldInterpolation : std::uint8_t
+{
+  /** @brief 2x2x2 samples. Passes through the samples; the gradient jumps at cell faces. The default. */
+  TRILINEAR,
+  /** @brief 4x4x4 samples, Catmull-Rom. Passes through the samples; the gradient is continuous. */
+  TRICUBIC
+};
+
 /**
  * @brief A volumetric signed distance field geometry.
  *
@@ -72,6 +88,11 @@ using BatchedSignedDistanceFunction = std::function<std::vector<double>(const st
  * representation (sensor-fused / analytic) or you need volumetric discrete collision.
  *
  * @note Distinct from the Gazebo "SDF" Simulation Description Format.
+ *
+ * A field can instead be SPARSE: one NanoVDB grid kept in its stored form (see the sparse
+ * constructor). Memory then follows the surface rather than a box around it,
+ * and no backend resamples it: queries read the grid directly through @ref getDistance
+ * and @ref getGradient. A sparse field has no dense grid, so @ref getDistances throws.
  *
  * @note The Bullet and FCL discrete collision backends consume this geometry through the shared
  * implicit collision solver. It is concave, so it is not supported by continuous/cast managers.
@@ -119,6 +140,41 @@ public:
                       BatchedSignedDistanceFunction sampler,
                       const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
+  /**
+   * @brief Construct a sparse field from one NanoVDB grid, kept in its stored sparse form.
+   *
+   * A query at a point reads the voxels around it. What an inactive voxel holds depends on the grid's
+   * class. In a level set (NanoVDB grid class LevelSet) inactive voxels and tiles hold the
+   * background, positive outside and negative inside, so they are read like active ones. In any
+   * other grid an inactive voxel holds no distance, so the grid answers only where every voxel the
+   * read uses is active (eight for trilinear).
+   *
+   * Where the grid cannot answer, and wherever it answers at or past @p band_clamp outside the
+   * surface, it knows only that the surface is at least that far away: the distance is +infinity,
+   * with a zero gradient. The field has no answer there; collision checks measure from where it
+   * does, and another geometry on the same link, or on another link, still answers. A read at or
+   * past the clamp inside the surface is returned as read: a contact, at least that deep.
+   *
+   * The domain is the grid's active voxel bounds. Values are read with the field's interpolation
+   * (trilinear unless @ref setInterpolation says otherwise), and @ref getGradient returns the
+   * interpolant's own gradient.
+   *
+   * @param nvdb One FloatGrid with an axis-aligned, uniformly scaled transform: a NanoVDB file holding
+   * exactly that grid, as written by NanoVDB / fVDB (any codec the reader supports), or the bare grid
+   * buffer. Voxel values are signed distances in the grid's own units, negative inside. To use one
+   * grid of a file holding several, see @ref readSparseSignedDistanceFieldNVDB.
+   * @param band_clamp The distance at which the grid's values saturate (a narrow band's clamp), in
+   * grid units; for a level set usually its background. 0 means the values never saturate.
+   * @param scale Finite, strictly positive local scaling applied to the field (e.g. 1e-3 for a grid
+   * stored in millimetres and used in metres)
+   * @throw std::runtime_error if @p nvdb is not a single uniform, axis-aligned NanoVDB FloatGrid of the
+   * supported major version, is a fog volume, has nodes outside its buffer, or has no active voxels,
+   * or if @p band_clamp is negative or not finite
+   */
+  SignedDistanceField(std::vector<std::uint8_t> nvdb,
+                      double band_clamp,
+                      const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
+
   SignedDistanceField() = default;
   ~SignedDistanceField() override = default;
 
@@ -131,6 +187,7 @@ public:
   /**
    * @brief Get the sampled signed distances (row-major: index = i + nx*(j + ny*k)).
    * @note Triggers @ref discretize on a lazy field (materializes the grid from its sampler).
+   * @throw std::runtime_error on a sparse field, which has no dense grid
    */
   const std::vector<double>& getDistances() const;
 
@@ -140,26 +197,63 @@ public:
   /**
    * @brief Get the signed distance at a point in the field's local frame.
    * @details A function-backed field evaluates its sampler directly (exact); a grid-backed field
-   * trilinearly interpolates the samples. The point is clamped to the domain.
+   * interpolates the samples (see @ref setInterpolation), with the point clamped to the domain. A sparse field
+   * answers from its grid (see the sparse constructor), and +infinity where the grid knows only
+   * that the surface is at least its band clamp away.
    */
   double getDistance(const Eigen::Vector3d& point) const;
 
   /**
    * @brief Get the gradient of the signed distance at a point in the field's local frame.
-   * @details A grid-backed field returns the exact gradient of its trilinear interpolant; a
-   * function-backed field takes central differences of its sampler. Not normalized. The local
-   * @c scale does not change the direction.
+   * @details Grid-backed and sparse fields return the exact gradient of their interpolant (see
+   * @ref setInterpolation); a function-backed field takes central differences of its sampler. Not normalized.
+   * Zero where a sparse field has no data. The local @c scale does not change the direction.
    */
   Eigen::Vector3d getGradient(const Eigen::Vector3d& point) const;
 
   /**
    * @brief Distance and gradient in one call: the same answers as @ref getDistance and
-   * @ref getGradient, from one cell lookup in a grid-backed field.
+   * @ref getGradient, with one lookup instead of two in a sparse field.
    */
   double getDistanceAndGradient(const Eigen::Vector3d& point, Eigen::Vector3d& gradient) const;
 
   /** @brief Whether the dense grid has been materialized (true for grid-backed and discretized fields) */
   bool isDiscretized() const;
+
+  /** @brief Whether this is a sparse field built from a NanoVDB grid */
+  bool isSparse() const;
+
+  /**
+   * @brief Choose how @ref getDistance and @ref getGradient read between samples (grid-backed and
+   * sparse fields; a function-backed field is always evaluated exactly). Sets both; follow with
+   * @ref setGradientInterpolation to read the direction differently.
+   * @details Near the edge of a sparse grid's active voxels, a wider stencil
+   * (tricubic) needs more active neighbours, so it answers in a slightly smaller region.
+   */
+  void setInterpolation(SignedDistanceFieldInterpolation interpolation);
+  /** @brief How the distance is read (@ref setInterpolation). */
+  SignedDistanceFieldInterpolation getInterpolation() const;
+
+  /**
+   * @brief Read the gradient with a different method from the distance.
+   * @details For example trilinear distance (it never overshoots the samples) with a tricubic
+   * gradient (continuous across cell faces, for gradient-based optimisers). The gradient is then no
+   * longer exactly the derivative of the reported distance. In a sparse field, where this method
+   * cannot read (a wider stencil reaching past the active voxels), the gradient falls back to the
+   * distance's method there.
+   */
+  void setGradientInterpolation(SignedDistanceFieldInterpolation interpolation);
+  /** @brief How the gradient is read (defaults to the distance's method). */
+  SignedDistanceFieldInterpolation getGradientInterpolation() const;
+
+  /**
+   * @brief A sparse field's grid, as its bare, uncompressed grid buffer (what the field reads in
+   * place); empty for a dense or function-backed field.
+   */
+  const std::vector<std::uint8_t>& getNVDB() const;
+
+  /** @brief A sparse field's band clamp (see the sparse constructor); 0 for a dense or function-backed field. */
+  double getBandClamp() const;
 
   /**
    * @brief Materialize the dense sample grid from the sampler (no-op if already discretized or grid-backed).
@@ -180,9 +274,6 @@ private:
   /** @brief Throw if the domain/dimensions are invalid or distances.size() != dimensions.prod(). */
   void validate() const;
 
-  /** @brief Trilinear read of the dense grid at @p point; also its gradient (local units) when @p gradient is set. */
-  double interpolateGrid(const Eigen::Vector3d& point, Eigen::Vector3d* gradient) const;
-
   Eigen::AlignedBox3d domain_;
   Eigen::Vector3i dimensions_{ 0, 0, 0 };
   /// Sampled grid. Empty on a lazy field until discretized; @c mutable so discretize() can memoize on a const field.
@@ -190,6 +281,18 @@ private:
   /// Source of truth for a lazy field; null on a grid-backed field. Not serialized.
   BatchedSignedDistanceFunction sampler_;
   Eigen::Vector3d scale_{ 1, 1, 1 };
+  SignedDistanceFieldInterpolation interpolation_{ SignedDistanceFieldInterpolation::TRILINEAR };
+  SignedDistanceFieldInterpolation gradient_interpolation_{ SignedDistanceFieldInterpolation::TRILINEAR };
+  /// The parsed grid of a sparse field (immutable, shared between copies); null otherwise.
+  std::shared_ptr<const SparseSignedDistanceFieldGrid> sparse_;
+
+  /** @brief Parse @p nvdb into @ref sparse_ and derive the domain and dimensions from it. */
+  void initializeSparse(std::vector<std::uint8_t> nvdb, double band_clamp);
+
+  /** @brief Read of the dense grid (point clamped to the domain), and its gradient when asked. */
+  double interpolateGrid(const Eigen::Vector3d& point,
+                         Eigen::Vector3d* gradient,
+                         SignedDistanceFieldInterpolation method) const;
 
   template <class Archive>
   friend void ::tesseract::geometry::serialize(Archive& ar, SignedDistanceField& obj);
