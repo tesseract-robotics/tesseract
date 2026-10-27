@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <string>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -95,7 +96,8 @@ SignedDistanceField::Ptr createSignedDistanceField(const BatchedSignedDistanceFu
  * @details The grid transform maps lattice index (0, 0, 0) to the field domain minimum and uses
  * the field sample spacing as its uniform voxel size. The local @c scale is not stored; it is
  * carried alongside the field (e.g. as a URDF attribute) and supplied on load.
- * @throws std::runtime_error if the field has non-uniform voxel spacing or cannot be encoded.
+ * @throws std::runtime_error if the field has non-uniform voxel spacing or cannot be encoded, or is
+ * sparse (a sparse field has no single dense grid; use @ref writeSignedDistanceFieldNVDB).
  */
 std::vector<std::uint8_t> writeSignedDistanceFieldVDB(const SignedDistanceField& sdf);
 
@@ -124,13 +126,17 @@ SignedDistanceField::Ptr readSignedDistanceFieldVDB(const std::vector<std::uint8
 /**
  * @brief Serialize a field as a standard NanoVDB FloatGrid file.
  * @details The field's local @c scale is not stored and must be supplied separately when loading.
+ * A sparse field is written as its FloatGrid, as stored. Its band clamp is not stored either: pass
+ * it to @ref readSparseSignedDistanceFieldNVDB to read the file back as an equal sparse field.
  * @throws std::runtime_error if the field cannot be represented as a uniform FloatGrid.
  */
 std::vector<std::uint8_t> writeSignedDistanceFieldNVDB(const SignedDistanceField& sdf);
 
 /**
- * @brief Reconstruct a @ref SignedDistanceField from a NanoVDB FloatGrid byte buffer.
- * @details Exactly one FloatGrid with an axis-aligned, uniformly scaled transform is supported.
+ * @brief Reconstruct a dense @ref SignedDistanceField from a NanoVDB FloatGrid byte buffer.
+ * @details Exactly one FloatGrid with an axis-aligned, uniformly scaled transform is supported, and
+ * its active bounds are read into a dense grid. To keep a file sparse, use
+ * @ref readSparseSignedDistanceFieldNVDB.
  * @param data Pointer to the serialized NanoVDB file
  * @param size Number of bytes in @p data
  * @param scale Local scaling applied to the field
@@ -147,5 +153,39 @@ SignedDistanceField::Ptr readSignedDistanceFieldNVDB(const std::uint8_t* data,
  */
 SignedDistanceField::Ptr readSignedDistanceFieldNVDB(const std::vector<std::uint8_t>& data,
                                                      const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
+
+/**
+ * @brief The names of the grids in a NanoVDB file, in file order.
+ * @details A file can hold several grids: level sets of different objects, or anything else. Read
+ * one as a field with @ref readSparseSignedDistanceFieldNVDB; how several relate is the caller's to say.
+ * @throw std::runtime_error if the NanoVDB file is malformed
+ */
+std::vector<std::string> getSignedDistanceFieldNVDBGridNames(const std::uint8_t* data, std::size_t size);
+
+/** @brief Convenience overload of @ref getSignedDistanceFieldNVDBGridNames for an owning byte vector. */
+std::vector<std::string> getSignedDistanceFieldNVDBGridNames(const std::vector<std::uint8_t>& data);
+
+/**
+ * @brief Read one FloatGrid of a NanoVDB file as a sparse @ref SignedDistanceField, kept in its stored
+ * sparse form (see the sparse @ref SignedDistanceField constructor).
+ * @param data Pointer to the serialized NanoVDB file
+ * @param size Number of bytes in @p data
+ * @param band_clamp The grid's band clamp, in grid units (0: the values never saturate)
+ * @param scale Local scaling applied to the field
+ * @param grid_name The grid to read; may be empty only when the file holds exactly one grid
+ * @throw std::runtime_error if the file is malformed, @p grid_name is empty and the file holds more
+ * than one grid, no grid has that name (or more than one does), or the grid is not a valid sparse field
+ */
+SignedDistanceField::Ptr readSparseSignedDistanceFieldNVDB(const std::uint8_t* data,
+                                                           std::size_t size,
+                                                           double band_clamp,
+                                                           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
+                                                           const std::string& grid_name = "");
+
+/** @brief Convenience overload of @ref readSparseSignedDistanceFieldNVDB for an owning byte vector. */
+SignedDistanceField::Ptr readSparseSignedDistanceFieldNVDB(const std::vector<std::uint8_t>& data,
+                                                           double band_clamp,
+                                                           const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1),
+                                                           const std::string& grid_name = "");
 }  // namespace tesseract::geometry
 #endif  // TESSERACT_GEOMETRY_SIGNED_DISTANCE_FIELD_UTILS_H
