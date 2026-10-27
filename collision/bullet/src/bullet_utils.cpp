@@ -42,7 +42,6 @@
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/bullet/bullet_collision_shape_cache.h>
 #include <tesseract/collision/bullet/tesseract_sdf_collision_shape.h>
-#include <tesseract/collision/implicit_sdf_collision_solver.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <LinearMath/btConvexHullComputer.h>
@@ -55,6 +54,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <limits>
 #include <memory>
 #include <stdexcept>
+#include <unordered_map>
 #include <unordered_set>
 #include <octomap/octomap.h>
 #include <cassert>
@@ -378,11 +378,11 @@ createShapePrimitive(const tesseract::geometry::SignedDistanceField::ConstPtr& g
     return nullptr;
   }
 
-  // Bullet reads the field in place through the shared implicit solver, so nothing is sampled or copied here. Check
-  // up front that the solver can represent it (uniform scale, valid domain): its narrowphase must not throw.
-  if (!makeImplicitSDFShape(*geom, Eigen::Isometry3d::Identity()).isValid())
-    throw std::invalid_argument("Bullet signed distance field geometry is invalid");
+  const Eigen::Vector3d& scale = geom->getScale();
+  if (!scale.allFinite() || (scale.array() <= 0.0).any() || !scale.isApprox(Eigen::Vector3d::Constant(scale.x())))
+    throw std::invalid_argument("Bullet signed distance fields need a finite, positive, uniform scale");
 
+  // Bullet queries the field in place (grid-backed or function-backed): no transcode to btMiniSDF.
   auto collision_shape = std::make_shared<BulletCollisionShape>();
   collision_shape->top_level = std::make_shared<TesseractSdfCollisionShape>(geom);  // children stays empty
   return collision_shape;

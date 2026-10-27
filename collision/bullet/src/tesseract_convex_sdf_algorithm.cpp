@@ -90,7 +90,6 @@ ImplicitSDFShape makeBulletConvexShape(const btConvexShape& shape, const btTrans
       return {};
   }
 }
-
 }  // namespace
 
 TesseractConvexSdfAlgorithm::TesseractConvexSdfAlgorithm(btPersistentManifold* mf,
@@ -116,14 +115,13 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
   const btCollisionObjectWrapper* convexBodyWrap = m_isSwapped ? body1Wrap : body0Wrap;
   const btCollisionObjectWrapper* sdfBodyWrap = m_isSwapped ? body0Wrap : body1Wrap;
 
-  const auto& sdf_shape = static_cast<const TesseractSdfCollisionShape&>(*sdfBodyWrap->getCollisionShape());
-  const ImplicitSDFShape implicit_sdf =
-      makeImplicitSDFShape(sdf_shape.getField(), convertBtToEigen(sdfBodyWrap->getWorldTransform()));
+  const btCollisionShape& sdf_shape = *sdfBodyWrap->getCollisionShape();
   const auto* convex = static_cast<const btConvexShape*>(convexBodyWrap->getCollisionShape());
 
   const ImplicitSDFShape implicit_convex = makeBulletConvexShape(*convex, convexBodyWrap->getWorldTransform());
   if (implicit_convex.isValid())
   {
+    const ImplicitSDFShape implicit_sdf = makeImplicitSdfShape(sdf_shape, sdfBodyWrap->getWorldTransform());
     ImplicitSDFCollisionConfig config;
     config.contact_margin = static_cast<double>(resultOut->m_closestPointDistanceThreshold);
     const std::vector<ImplicitSDFContact> contacts = collideImplicitSDF(implicit_convex, implicit_sdf, config);
@@ -188,18 +186,18 @@ void TesseractConvexSdfAlgorithm::processCollision(const btCollisionObjectWrappe
   for (int v = 0; v < query_vertices.size(); v++)
   {
     const btVector3& vtx = query_vertices[v];
-    const Eigen::Vector3d vtx_world = convertBtToEigen(convexBodyWrap->getWorldTransform() * vtx);
+    btVector3 vtx_world_space = convexBodyWrap->getWorldTransform() * vtx;
+    btVector3 vtx_in_sdf = sdfBodyWrap->getWorldTransform().invXform(vtx_world_space);
 
-    // The implicit shape answers in world frame, and +infinity outside the field's domain.
-    const double dist = implicit_sdf.distance(vtx_world);
-    if (dist <= static_cast<double>(max_dist))
+    // Most vertices are beyond the threshold: their normal is never read.
+    btVector3 normal_local;
+    btScalar dist{ 0 };
+    if (querySdfShapeContact(sdf_shape, vtx_in_sdf, max_dist, dist, normal_local))
     {
-      Eigen::Vector3d normal = implicit_sdf.gradient(vtx_world);
-      if (normal.squaredNorm() > 0.0)
-        normal.normalize();
-      resultOut->addContactPoint(convertEigenToBt(normal),
-                                 convertEigenToBt(Eigen::Vector3d(vtx_world - (normal * dist))),
-                                 static_cast<btScalar>(dist));
+      normal_local.safeNormalize();
+      btVector3 normal = sdfBodyWrap->getWorldTransform().getBasis() * normal_local;
+
+      resultOut->addContactPoint(normal, vtx_world_space - normal * dist, dist);
     }
   }
   resultOut->refreshContactPoints();
