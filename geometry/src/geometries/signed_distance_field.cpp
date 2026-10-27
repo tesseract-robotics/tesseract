@@ -151,7 +151,53 @@ double SignedDistanceField::getDistance(const Eigen::Vector3d& point) const
     return sampled.front();
   }
 
-  // Grid-backed: trilinear interpolation of the samples.
+  return interpolateGrid(point, nullptr);
+}
+
+Eigen::Vector3d SignedDistanceField::getGradient(const Eigen::Vector3d& point) const
+{
+  Eigen::Vector3d gradient = Eigen::Vector3d::Zero();
+  if (sampler_ != nullptr)
+  {
+    // Central differences of the sampler. The step matches what the implicit collision solver used
+    // before fields carried their own gradient: 1e-5 of the shortest domain extent, floored at 1e-6
+    // in the scaled frame.
+    const double step = std::max(1e-6 / scale_.x(), (domain_.max() - domain_.min()).minCoeff() * 1e-5);  // local units
+    std::vector<Eigen::Vector3d> probes;
+    probes.reserve(6);
+    for (Eigen::Index axis = 0; axis < 3; ++axis)
+    {
+      Eigen::Vector3d offset = Eigen::Vector3d::Zero();
+      offset[axis] = step;
+      probes.emplace_back(point + offset);
+      probes.emplace_back(point - offset);
+    }
+    const std::vector<double> sampled = sampler_(probes);
+    if (sampled.size() != probes.size())
+      throw std::runtime_error("SignedDistanceField: sampler returned " + std::to_string(sampled.size()) +
+                               " values for " + std::to_string(probes.size()) + " sample points");
+    for (Eigen::Index axis = 0; axis < 3; ++axis)
+      gradient[axis] = (sampled[static_cast<std::size_t>(2 * axis)] - sampled[static_cast<std::size_t>(2 * axis) + 1]) /
+                       (2.0 * step);
+    return gradient;
+  }
+
+  interpolateGrid(point, &gradient);
+  return gradient;
+}
+
+double SignedDistanceField::getDistanceAndGradient(const Eigen::Vector3d& point, Eigen::Vector3d& gradient) const
+{
+  if (sampler_ != nullptr)
+  {
+    gradient = getGradient(point);
+    return getDistance(point);
+  }
+  return interpolateGrid(point, &gradient);
+}
+
+double SignedDistanceField::interpolateGrid(const Eigen::Vector3d& point, Eigen::Vector3d* gradient) const
+{
   const Eigen::Vector3d extent = domain_.max() - domain_.min();
 
   // Continuous grid coordinates in [0, dims-1] on each axis (clamped to the domain).
@@ -185,6 +231,21 @@ double SignedDistanceField::getDistance(const Eigen::Vector3d& point) const
   const double c11 = at(i0, j0 + 1, k0 + 1) * (1 - fx) + at(i0 + 1, j0 + 1, k0 + 1) * fx;
   const double c0 = c00 * (1 - fy) + c10 * fy;
   const double c1 = c01 * (1 - fy) + c11 * fy;
+
+  if (gradient != nullptr)
+  {
+    // The blend's own partial derivatives in index units, then scaled to local units: one cell spans
+    // extent / (dims - 1) on each axis.
+    const double e00 = at(i0 + 1, j0, k0) - at(i0, j0, k0);
+    const double e10 = at(i0 + 1, j0 + 1, k0) - at(i0, j0 + 1, k0);
+    const double e01 = at(i0 + 1, j0, k0 + 1) - at(i0, j0, k0 + 1);
+    const double e11 = at(i0 + 1, j0 + 1, k0 + 1) - at(i0, j0 + 1, k0 + 1);
+    (*gradient)[0] = (e00 * (1 - fy) + e10 * fy) * (1 - fz) + (e01 * (1 - fy) + e11 * fy) * fz;
+    (*gradient)[1] = (c10 - c00) * (1 - fz) + (c11 - c01) * fz;
+    (*gradient)[2] = c1 - c0;
+    for (int a = 0; a < 3; ++a)
+      (*gradient)[a] *= static_cast<double>(dimensions_[a] - 1) / extent[a];
+  }
   return c0 * (1 - fz) + c1 * fz;
 }
 

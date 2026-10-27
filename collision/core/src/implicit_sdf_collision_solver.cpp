@@ -484,10 +484,18 @@ ImplicitSDFShape makeImplicitSDFShape(const tesseract::geometry::Geometry& geome
           return std::numeric_limits<double>::infinity();
         return sdf.getDistance(local_point) * distance_scale;
       };
+      // The field supplies its own gradient: exact for a grid-backed field, one batched
+      // sampler call for a function-backed one. Under a uniform scale s the scaled distance is
+      // s * d(p / s), whose gradient is the local gradient unchanged.
+      const auto gradient = [&sdf, domain, scale](const Eigen::Vector3d& point) {
+        const Eigen::Vector3d local_point = point.cwiseQuotient(scale);
+        if (!domain.contains(local_point))
+          return Eigen::Vector3d::Zero().eval();
+        return sdf.getGradient(local_point);
+      };
       Eigen::AlignedBox3d scaled_domain(sdf.getDomain().min().cwiseProduct(scale),
                                         sdf.getDomain().max().cwiseProduct(scale));
-      const double gradient_step = std::max(1e-6, scaled_domain.diagonal().minCoeff() * 1e-5);
-      return makeWorldShape(distance, makeNumericalGradient(distance, gradient_step), scaled_domain, pose);
+      return makeWorldShape(distance, gradient, scaled_domain, pose);
     }
     default:
       return {};

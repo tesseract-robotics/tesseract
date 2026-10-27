@@ -1,9 +1,11 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/geometries.h>
@@ -986,6 +988,85 @@ TEST(TesseractGeometryUnit, SignedDistanceFieldLazy)  // NOLINT
   // Cloning a lazy field preserves the sampler (clone queries exactly, still not yet discretized).
   auto clone = std::static_pointer_cast<tesseract::geometry::SignedDistanceField>(lazy2->clone());
   EXPECT_NEAR(clone->getDistance(Eigen::Vector3d(0, 0, 0)), -0.5, 1e-12);
+}
+
+namespace
+{
+const tesseract::geometry::SignedDistanceFunction SPHERE = [](const Eigen::Vector3d& p) { return p.norm() - 0.3; };
+
+/**
+ * @brief A grid-backed field (no sampler) holding @p f on @p n samples per axis over [-half, half]^3.
+ * @details Values pass through float, as a NanoVDB grid stores them, so the two can be compared exactly.
+ */
+std::shared_ptr<tesseract::geometry::SignedDistanceField>
+makeGridField(const tesseract::geometry::SignedDistanceFunction& f, double half, int n)
+{
+  std::vector<double> distances;
+  const double step = 2.0 * half / (n - 1);
+  for (int k = 0; k < n; ++k)
+    for (int j = 0; j < n; ++j)
+      for (int i = 0; i < n; ++i)
+        distances.push_back(
+            static_cast<float>(f(Eigen::Vector3d(-half + (i * step), -half + (j * step), -half + (k * step)))));
+  return std::make_shared<tesseract::geometry::SignedDistanceField>(
+      Eigen::AlignedBox3d(Eigen::Vector3d::Constant(-half), Eigen::Vector3d::Constant(half)),
+      Eigen::Vector3i::Constant(n),
+      std::move(distances));
+}
+
+/** @brief Central difference of the field's distance, for checking getGradient. */
+Eigen::Vector3d finiteDifferenceGradient(const tesseract::geometry::SignedDistanceField& field,
+                                         const Eigen::Vector3d& point,
+                                         double step)
+{
+  Eigen::Vector3d gradient;
+  for (Eigen::Index axis = 0; axis < 3; ++axis)
+  {
+    Eigen::Vector3d offset = Eigen::Vector3d::Zero();
+    offset[axis] = step;
+    gradient[axis] = (field.getDistance(point + offset) - field.getDistance(point - offset)) / (2.0 * step);
+  }
+  return gradient;
+}
+
+/** @brief Deterministic points in [-extent, extent]^3, kept off cell boundaries of a grid with @p voxel spacing. */
+std::vector<Eigen::Vector3d> probePoints(double extent, double voxel, std::size_t count)
+{
+  std::vector<Eigen::Vector3d> points;
+  for (std::size_t n = 0; points.size() < count; ++n)
+  {
+    const double t = static_cast<double>(n);
+    Eigen::Vector3d p(std::sin((1.3 * t) + 0.1), std::sin((2.1 * t) + 0.7), std::sin((3.7 * t) + 1.3));
+    p *= extent;
+    const Eigen::Vector3d fraction = (p / voxel).array() - (p / voxel).array().floor();
+    if ((fraction.array() < 0.05).any() || (fraction.array() > 0.95).any())
+      continue;
+    points.push_back(p);
+  }
+  return points;
+}
+}  // namespace
+
+TEST(TesseractGeometryUnit, SignedDistanceFieldGradient)  // NOLINT
+{
+  using tesseract::geometry::SignedDistanceField;
+  const double voxel = 0.05;
+  auto dense = makeGridField(SPHERE, 0.5, 21);
+  for (const Eigen::Vector3d& p : probePoints(0.45, voxel, 50))
+  {
+    EXPECT_TRUE(dense->getGradient(p).isApprox(finiteDifferenceGradient(*dense, p, 1e-6), 1e-5)) << p.transpose();
+    // The interpolant's gradient approximates the sphere's unit normal.
+    if (p.norm() > 0.2)
+    {
+      EXPECT_LT((dense->getGradient(p) - p.normalized()).norm(), 0.1) << p.transpose();
+    }
+  }
+
+  // A function-backed field takes central differences of its sampler.
+  auto lazy = tesseract::geometry::createSignedDistanceField(
+      SPHERE, Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5), Eigen::Vector3i::Constant(21));
+  const Eigen::Vector3d p(0.2, -0.1, 0.15);
+  EXPECT_TRUE(lazy->getGradient(p).isApprox(p.normalized(), 1e-6));
 }
 
 TEST(TesseractGeometryUnit, Octree)  // NOLINT

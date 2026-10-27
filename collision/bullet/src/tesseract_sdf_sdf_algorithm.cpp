@@ -32,15 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::collision::bullet_internal
 {
-namespace
-{
-ImplicitSDFShape makeSDFShape(const btCollisionObjectWrapper& wrap)
-{
-  const auto& shape = static_cast<const TesseractSdfCollisionShape&>(*wrap.getCollisionShape());
-  return makeImplicitSDFShape(shape.getField(), convertBtToEigen(wrap.getWorldTransform()));
-}
-}  // namespace
-
 TesseractSdfSdfAlgorithm::TesseractSdfSdfAlgorithm(btPersistentManifold* mf,
                                                    const btCollisionAlgorithmConstructionInfo& ci)
   : btActivatingCollisionAlgorithm(ci), m_manifoldPtr(mf)
@@ -58,8 +49,10 @@ void TesseractSdfSdfAlgorithm::processCollision(const btCollisionObjectWrapper* 
                                                 const btDispatcherInfo& /*dispatchInfo*/,
                                                 btManifoldResult* resultOut)
 {
-  const ImplicitSDFShape implicit_sdf0 = makeSDFShape(*body0Wrap);
-  const ImplicitSDFShape implicit_sdf1 = makeSDFShape(*body1Wrap);
+  const ImplicitSDFShape implicit_sdf0 =
+      makeImplicitSdfShape(*body0Wrap->getCollisionShape(), body0Wrap->getWorldTransform());
+  const ImplicitSDFShape implicit_sdf1 =
+      makeImplicitSdfShape(*body1Wrap->getCollisionShape(), body1Wrap->getWorldTransform());
   ImplicitSDFCollisionConfig config;
   config.contact_margin = static_cast<double>(resultOut->m_closestPointDistanceThreshold);
   const std::vector<ImplicitSDFContact> contacts = collideImplicitSDF(implicit_sdf0, implicit_sdf1, config);

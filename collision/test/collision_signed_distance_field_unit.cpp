@@ -17,7 +17,10 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <array>
 #include <cmath>
+#include <cstdint>
+#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -28,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/bullet/bullet_collision_shape_cache.h>
+#include <tesseract/collision/bullet/tesseract_sdf_collision_shape.h>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/collision/common.h>
 #include <tesseract/geometry/geometries.h>
@@ -45,10 +49,20 @@ CollisionShapePtr makeSphereSDF()
       sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(16, 16, 16));
 }
 
-void addObjects(DiscreteContactManager& checker)
+/** @brief The sphere of makeSphereSDF sampled with @p cells per axis. */
+CollisionShapePtr gridSphereSDF(int cells)
+{
+  const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+  return tesseract::geometry::createDiscreteSignedDistanceField(
+      sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i::Constant(cells));
+}
+
+using SDFFactory = std::function<CollisionShapePtr()>;
+
+void addObjects(DiscreteContactManager& checker, const SDFFactory& make_sdf = makeSphereSDF)
 {
   // SDF link (concave sphere distance field)
-  CollisionShapesConst sdf_shapes{ makeSphereSDF() };
+  CollisionShapesConst sdf_shapes{ make_sdf() };
   tesseract::common::VectorIsometry3d sdf_poses{ Eigen::Isometry3d::Identity() };
   checker.addCollisionObject("sdf_link", 0, sdf_shapes, sdf_poses, true);
 
@@ -61,9 +75,9 @@ void addObjects(DiscreteContactManager& checker)
   checker.setDefaultCollisionMargin(0.0);
 }
 
-void runSDFTest(DiscreteContactManager& checker)
+void runSDFTest(DiscreteContactManager& checker, const SDFFactory& make_sdf = makeSphereSDF)
 {
-  addObjects(checker);
+  addObjects(checker, make_sdf);
 
   // Place the probe sphere center just inside the SDF surface: SDF(0.45,0,0) = 0.45 - 0.5 = -0.05.
   // Reported contact distance = SDF(center) - sphere_radius = -0.05 - 0.1 = -0.15.
@@ -105,14 +119,14 @@ void runSDFTest(DiscreteContactManager& checker)
   EXPECT_TRUE(result_vector.empty());
 }
 
-void runSDFPositiveDistanceTest(DiscreteContactManager& checker)
+void runSDFPositiveDistanceTest(DiscreteContactManager& checker, const SDFFactory& make_sdf = makeSphereSDF)
 {
   // POSITIVE-distance (separation) contacts are the load-bearing case for motion
   // planning: TrajOpt's collision costs, contact-check gates, and OMPL admission
   // margins all consume contacts reported at distance > 0 within the configured
   // margin band -- never just boolean penetration. A backend that only reports
   // penetrating contacts silently breaks every margin-based consumer.
-  addObjects(checker);
+  addObjects(checker, make_sdf);
   checker.setDefaultCollisionMargin(0.05);  // report contacts out to 5cm separation
 
   // Probe center at x = 0.63: SDF(center) = 0.63 - 0.5 = 0.13; separation to the
@@ -151,10 +165,12 @@ void runSDFPositiveDistanceTest(DiscreteContactManager& checker)
   EXPECT_TRUE(result_vector.empty());
 }
 
-void runSDFPairTest(DiscreteContactManager& checker)
+void runSDFPairTest(DiscreteContactManager& checker,
+                    const SDFFactory& make_sdf0 = makeSphereSDF,
+                    const SDFFactory& make_sdf1 = makeSphereSDF)
 {
-  CollisionShapesConst sdf0_shapes{ makeSphereSDF() };
-  CollisionShapesConst sdf1_shapes{ makeSphereSDF() };
+  CollisionShapesConst sdf0_shapes{ make_sdf0() };
+  CollisionShapesConst sdf1_shapes{ make_sdf1() };
   tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
   checker.addCollisionObject("sdf0_link", 0, sdf0_shapes, poses, true);
   checker.addCollisionObject("sdf1_link", 0, sdf1_shapes, poses, true);
@@ -201,6 +217,44 @@ void runSDFPairTest(DiscreteContactManager& checker)
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   result.flattenMoveResults(result_vector);
   EXPECT_TRUE(result_vector.empty());
+}
+/**
+ * @brief A field stored at half size and scaled by 2: f(p) = ||p|| - 0.25 over [-0.5, 0.5]^3, so the
+ * world surface is a sphere of radius 0.5. Contacts must come out in scaled (world) units.
+ */
+void runScaledSDFTest(DiscreteContactManager& checker)
+{
+  const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.25; };
+  const Eigen::Vector3d scale = Eigen::Vector3d::Constant(2.0);
+  CollisionShapePtr field = tesseract::geometry::createDiscreteSignedDistanceField(
+      sphere, Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5), Eigen::Vector3i::Constant(16), scale);
+  addObjects(checker, [&field] { return field; });
+  checker.setDefaultCollisionMargin(0.05);
+
+  // Probe (radius 0.1) centre at x = 0.45: world SDF -0.05, so distance -0.15.
+  tesseract::common::LinkIdTransformMap location;
+  location["sdf_link"] = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d sphere_tf = Eigen::Isometry3d::Identity();
+  sphere_tf.translation().x() = 0.45;
+  location["sphere_link"] = sphere_tf;
+  checker.setCollisionObjectsTransform(location);
+  ContactResultMap result;
+  ContactResultVector result_vector;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_NEAR(result_vector[0].distance, -0.15, 0.02);
+  EXPECT_NEAR(std::abs(result_vector[0].normal.x()), 1.0, 0.05);
+
+  // Centre at x = 0.63: world SDF 0.13, separation +0.03 inside the 0.05 margin.
+  sphere_tf.translation().x() = 0.63;
+  checker.setCollisionObjectsTransform("sphere_link", sphere_tf);
+  result.clear();
+  result_vector.clear();
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  result.flattenMoveResults(result_vector);
+  ASSERT_FALSE(result_vector.empty());
+  EXPECT_NEAR(result_vector[0].distance, 0.03, 0.02);
 }
 }  // namespace
 
@@ -591,6 +645,108 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHCone)  // NOLINT
   runSDFCurvedPrimitiveTest(checker, std::make_shared<tesseract::geometry::Cone>(0.1, 0.2), "cone_link");
 }
 
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteBVHScaled)  // NOLINT
+{
+  BulletDiscreteBVHManager checker;
+  runScaledSDFTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, FCLDiscreteBVHScaled)  // NOLINT
+{
+  FCLDiscreteBVHManager checker;
+  runScaledSDFTest(checker);
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, ContactQueryReadsNormalOnlyWithinThreshold)  // NOLINT
+{
+  using tesseract::collision::bullet_internal::createShapePrimitive;
+  using tesseract::collision::bullet_internal::querySdfShapeContact;
+  using tesseract::collision::bullet_internal::querySdfShapePoint;
+  auto geom = std::static_pointer_cast<const tesseract::geometry::SignedDistanceField>(makeSphereSDF());
+  {
+    auto shape = createShapePrimitive(geom);
+    ASSERT_NE(shape, nullptr);
+    const btCollisionShape& s = *shape->top_level;
+    btScalar d_full{ 0 };
+    btVector3 n_full;
+    btScalar d{ 0 };
+    btVector3 n;
+    // Within the threshold: the same answer as the full query.
+    ASSERT_TRUE(querySdfShapePoint(s, btVector3(0.55, 0.02, 0.0), d_full, n_full));
+    ASSERT_TRUE(querySdfShapeContact(s, btVector3(0.55, 0.02, 0.0), 0.1, d, n));
+    EXPECT_EQ(d, d_full);
+    EXPECT_NEAR((n.normalized() - n_full.normalized()).length(), 0.0, 1e-9);
+    // Beyond it: no contact.
+    EXPECT_FALSE(querySdfShapeContact(s, btVector3(0.8, 0.0, 0.0), 0.1, d, n));
+    // Outside the domain: no contact.
+    EXPECT_FALSE(querySdfShapeContact(s, btVector3(1.5, 0.0, 0.0), 10.0, d, n));
+  }
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletConvexHullVertexPath)  // NOLINT
+{
+  // A convex mesh goes through the per-vertex path (no implicit adapter for arbitrary hulls). Its
+  // nearest vertex sets the contact, with the normal read only for vertices within the margin.
+  {
+    auto field = gridSphereSDF(32);
+
+    auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+    for (double x : { -0.05, 0.05 })
+      for (double y : { -0.05, 0.05 })
+        for (double z : { -0.05, 0.05 })
+          vertices->emplace_back(x, y, z);
+    auto faces = std::make_shared<Eigen::VectorXi>();
+    const std::vector<std::array<int, 4>> quads{ { 0, 1, 3, 2 }, { 4, 6, 7, 5 }, { 0, 4, 5, 1 },
+                                                 { 2, 3, 7, 6 }, { 0, 2, 6, 4 }, { 1, 5, 7, 3 } };
+    faces->resize(static_cast<Eigen::Index>(quads.size() * 5));
+    Eigen::Index k = 0;
+    for (const auto& q : quads)
+    {
+      (*faces)[k++] = 4;
+      for (int v : q)
+        (*faces)[k++] = v;
+    }
+    auto hull = std::make_shared<tesseract::geometry::ConvexMesh>(vertices, faces);
+
+    BulletDiscreteBVHManager checker;
+    checker.addCollisionObject("sdf_link",
+                               0,
+                               CollisionShapesConst{ field },
+                               tesseract::common::VectorIsometry3d{ Eigen::Isometry3d::Identity() },
+                               true);
+    checker.addCollisionObject("hull_link",
+                               0,
+                               CollisionShapesConst{ hull },
+                               tesseract::common::VectorIsometry3d{ Eigen::Isometry3d::Identity() },
+                               true);
+    checker.setActiveCollisionObjects({ "sdf_link", "hull_link" });
+    checker.setDefaultCollisionMargin(0.05);
+
+    // Hull centre at x = 0.58: its nearest vertices (x = 0.53, y, z = +-0.05) are
+    // sqrt(0.53^2 + 2 * 0.05^2) - 0.5 = 0.0347 from the sphere.
+    tesseract::common::LinkIdTransformMap location;
+    location["sdf_link"] = Eigen::Isometry3d::Identity();
+    location["hull_link"] = Eigen::Isometry3d(Eigen::Translation3d(0.58, 0.0, 0.0));
+    checker.setCollisionObjectsTransform(location);
+    ContactResultMap result;
+    checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+    ContactResultVector result_vector;
+    result.flattenMoveResults(result_vector);
+    ASSERT_FALSE(result_vector.empty());
+    EXPECT_NEAR(result_vector[0].distance, std::sqrt((0.53 * 0.53) + (2 * 0.05 * 0.05)) - 0.5, 0.005);
+    EXPECT_NEAR(std::abs(result_vector[0].normal.x()), 1.0, 0.05);
+
+    // Moved beyond the margin: no contact.
+    location["hull_link"] = Eigen::Isometry3d(Eigen::Translation3d(0.7, 0.0, 0.0));
+    checker.setCollisionObjectsTransform(location);
+    result.clear();
+    result_vector.clear();
+    checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+    result.flattenMoveResults(result_vector);
+    EXPECT_TRUE(result_vector.empty());
+  }
+}
+
 TEST(TesseractCollisionSignedDistanceFieldUnit, CastManagerRejects)  // NOLINT
 {
   // The cast/continuous manager only supports convex shapes; an SDF (concave) must be rejected
@@ -611,7 +767,7 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, CreateShapePrimitiveBranches)  /
     EXPECT_EQ(createShapePrimitive(geom), nullptr);
   }
 
-  // Valid field -> non-null shape.
+  // Valid dense field -> queried in place, like every field.
   {
     const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
     auto geom = tesseract::geometry::createDiscreteSignedDistanceField(sphere,
@@ -622,6 +778,37 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, CreateShapePrimitiveBranches)  /
     auto shape = createShapePrimitive(geom);
     ASSERT_NE(shape, nullptr);
     ASSERT_NE(shape->top_level, nullptr);
+    EXPECT_NE(dynamic_cast<tesseract::collision::bullet_internal::TesseractSdfCollisionShape*>(shape->top_level.get()),
+              nullptr);
+  }
+
+  // Non-uniform scale is refused (the implicit solver and the shape assume one scale).
+  {
+    const tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+    auto geom = tesseract::geometry::createDiscreteSignedDistanceField(sphere,
+                                                                       Eigen::Vector3d(-1, -1, -1),
+                                                                       Eigen::Vector3d(1, 1, 1),
+                                                                       Eigen::Vector3i(8, 8, 8),
+                                                                       Eigen::Vector3d(1, 2, 1));
+    EXPECT_ANY_THROW(createShapePrimitive(geom));  // NOLINT
+  }
+
+  // The shape queries the field itself.
+  {
+    auto geom = std::static_pointer_cast<const tesseract::geometry::SignedDistanceField>(makeSphereSDF());
+    auto shape = createShapePrimitive(geom);
+    ASSERT_NE(shape, nullptr);
+    auto* field_shape =
+        dynamic_cast<tesseract::collision::bullet_internal::TesseractSdfCollisionShape*>(shape->top_level.get());
+    ASSERT_NE(field_shape, nullptr);
+    EXPECT_EQ(field_shape->getShapeType(), SDF_SHAPE_PROXYTYPE);
+    btScalar distance{ 0 };
+    btVector3 normal;
+    ASSERT_TRUE(field_shape->queryPoint(btVector3(0.45, 0, 0), distance, normal));
+    EXPECT_NEAR(distance, geom->getDistance(Eigen::Vector3d(0.45, 0, 0)), 1e-6);
+    EXPECT_NEAR(normal.x(), 1.0, 0.05);
+    EXPECT_FALSE(field_shape->queryPoint(btVector3(1.5, 0, 0), distance, normal));
+    EXPECT_ANY_THROW(field_shape->setLocalScaling(btVector3(2, 2, 2)));  // NOLINT
   }
 }
 

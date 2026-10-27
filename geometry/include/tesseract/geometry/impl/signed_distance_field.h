@@ -59,12 +59,14 @@ using BatchedSignedDistanceFunction = std::function<std::vector<double>(const st
  *
  * Stores the field in a backend-neutral form: the signed distance to a surface (negative inside)
  * sampled on a regular axis-aligned grid over a local-frame domain. This is the canonical,
- * engine-agnostic representation; each collision backend's geometry-to-shape converter transcodes
- * it into its own native form (e.g. the Bullet backend builds a btMiniSDF blob for
- * @c btSdfCollisionShape::initializeSDF; a VDB / GPU backend would build its own). Hold a distance
- * function with @ref createSignedDistanceField (discretized on demand), sample it onto a grid up
- * front with @ref createDiscreteSignedDistanceField, construct it directly from sampled data, or load
- * a standard OpenVDB field with @ref readSignedDistanceFieldVDB.
+ * engine-agnostic representation; collision backends query it in place through @ref getDistance and
+ * @ref getGradient rather than copying it into a native form. Hold a distance function with
+ * @ref createSignedDistanceField (discretized on demand), sample it onto a grid up front with
+ * @ref createDiscreteSignedDistanceField, construct it directly from sampled data, or load a
+ * standard OpenVDB field with @ref readSignedDistanceFieldVDB.
+ *
+ * @note A function-backed field calls its function at every collision query. For an expensive
+ * function (e.g. distance to a mesh), sample it up front with @ref createDiscreteSignedDistanceField.
  *
  * @note This is the signed-distance-field geometry; use it when the field is your native
  * representation (sensor-fused / analytic) or you need volumetric discrete collision.
@@ -142,6 +144,20 @@ public:
    */
   double getDistance(const Eigen::Vector3d& point) const;
 
+  /**
+   * @brief Get the gradient of the signed distance at a point in the field's local frame.
+   * @details A grid-backed field returns the exact gradient of its trilinear interpolant; a
+   * function-backed field takes central differences of its sampler. Not normalized. The local
+   * @c scale does not change the direction.
+   */
+  Eigen::Vector3d getGradient(const Eigen::Vector3d& point) const;
+
+  /**
+   * @brief Distance and gradient in one call: the same answers as @ref getDistance and
+   * @ref getGradient, from one cell lookup in a grid-backed field.
+   */
+  double getDistanceAndGradient(const Eigen::Vector3d& point, Eigen::Vector3d& gradient) const;
+
   /** @brief Whether the dense grid has been materialized (true for grid-backed and discretized fields) */
   bool isDiscretized() const;
 
@@ -163,6 +179,9 @@ private:
 
   /** @brief Throw if the domain/dimensions are invalid or distances.size() != dimensions.prod(). */
   void validate() const;
+
+  /** @brief Trilinear read of the dense grid at @p point; also its gradient (local units) when @p gradient is set. */
+  double interpolateGrid(const Eigen::Vector3d& point, Eigen::Vector3d* gradient) const;
 
   Eigen::AlignedBox3d domain_;
   Eigen::Vector3i dimensions_{ 0, 0, 0 };

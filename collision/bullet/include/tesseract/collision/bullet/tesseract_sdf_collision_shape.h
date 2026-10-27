@@ -1,6 +1,6 @@
 /**
  * @file tesseract_sdf_collision_shape.h
- * @brief Bullet collision shape that refers to a Tesseract signed distance field.
+ * @brief Bullet collision shape that queries a Tesseract SignedDistanceField directly.
  *
  * @copyright Copyright (c) 2026, Tesseract Robotics
  * @par License
@@ -25,45 +25,92 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionShapes/btConcaveShape.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/collision/implicit_sdf_collision_solver.h>
 #include <tesseract/geometry/impl/signed_distance_field.h>
 
 namespace tesseract::collision::bullet_internal
 {
 /**
- * @brief A Bullet shape for a Tesseract signed distance field, which it refers to rather than copies.
+ * @brief A Bullet SDF shape that reads a @ref tesseract::geometry::SignedDistanceField in place.
  *
- * It carries Bullet's SDF shape type, so the dispatcher routes its pairs to the Tesseract SDF algorithms, and those
- * query the field through the backend-neutral implicit solver. Bullet itself only reads its bounding box. The
- * field's scale is applied by the solver, so the shape's own local scaling stays at one.
+ * Bullet's shape for every field (grid-backed or function-backed): it queries the field itself,
+ * with no copy into Bullet's @c btMiniSDF. It reports @c SDF_SHAPE_PROXYTYPE, so the existing SDF
+ * pair algorithms handle it; they reach the field through @ref makeImplicitSdfShape and
+ * @ref querySdfShapePoint, which accept this shape and @c btSdfCollisionShape alike. The field's own
+ * @c scale is applied here; Bullet local scaling is not supported.
  */
 class TesseractSdfCollisionShape : public btConcaveShape
 {
 public:
+  BT_DECLARE_ALIGNED_ALLOCATOR();
+
   explicit TesseractSdfCollisionShape(tesseract::geometry::SignedDistanceField::ConstPtr field);
 
-  /** @brief The field this shape refers to */
-  const tesseract::geometry::SignedDistanceField& getField() const;
-
+  /** @brief The field's scaled domain under @p t, grown by the margin. */
   void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const override;
 
-  /** @brief Ignored: the field's own scale is applied when it is queried */
+  /** @brief Only unit scaling is accepted (the field carries its own scale). */
   void setLocalScaling(const btVector3& scaling) override;
   const btVector3& getLocalScaling() const override;
 
+  /** @brief Static geometry: zero inertia. */
   void calculateLocalInertia(btScalar mass, btVector3& inertia) const override;
+
   const char* getName() const override;
 
-  /** @brief No-op: a field has no triangles */
+  /** @brief No triangles: this shape is only collided through the SDF pair algorithms. */
   void processAllTriangles(btTriangleCallback* callback,
                            const btVector3& aabbMin,
                            const btVector3& aabbMax) const override;
 
+  /**
+   * @brief Scaled signed distance and outward normal at a point in the shape's frame.
+   * @return false outside the field's domain
+   */
+  bool queryPoint(const btVector3& local_point, btScalar& distance, btVector3& normal) const;
+
+  /**
+   * @brief Scaled signed distance only, at a point in the shape's frame. Cheaper than
+   * @ref queryPoint when the normal may not be needed.
+   * @return false outside the field's domain
+   */
+  bool queryDistance(const btVector3& local_point, btScalar& distance) const;
+
+  const tesseract::geometry::SignedDistanceField& getField() const;
+
 private:
   tesseract::geometry::SignedDistanceField::ConstPtr field_;
-  btVector3 local_aabb_min_;
-  btVector3 local_aabb_max_;
   btVector3 local_scaling_{ 1, 1, 1 };
 };
+
+/**
+ * @brief The implicit solver's view of a Bullet SDF shape (@c SDF_SHAPE_PROXYTYPE) placed at
+ * @p world_transform: a @ref TesseractSdfCollisionShape or a @c btSdfCollisionShape.
+ * @details The shape must outlive the result.
+ */
+ImplicitSDFShape makeImplicitSdfShape(const btCollisionShape& shape, const btTransform& world_transform);
+
+/**
+ * @brief Distance and normal at a point in an SDF shape's frame, but only if the distance is within
+ * @p max_distance (a contact threshold). For a @ref TesseractSdfCollisionShape the distance is read
+ * first and the normal only for points that pass; a btSdfCollisionShape reads both at once.
+ * @return true if the shape has a value there and it is within @p max_distance
+ */
+bool querySdfShapeContact(const btCollisionShape& shape,
+                          const btVector3& local_point,
+                          btScalar max_distance,
+                          btScalar& distance,
+                          btVector3& normal);
+
+/**
+ * @brief Distance and normal at a point in an SDF shape's frame, for either Bullet SDF shape type.
+ * @return false where the shape has no value
+ */
+bool querySdfShapePoint(const btCollisionShape& shape,
+                        const btVector3& local_point,
+                        btScalar& distance,
+                        btVector3& normal);
+
 }  // namespace tesseract::collision::bullet_internal
 
 #endif  // TESSERACT_COLLISION_TESSERACT_SDF_COLLISION_SHAPE_H
