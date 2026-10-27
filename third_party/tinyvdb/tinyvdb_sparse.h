@@ -27,6 +27,11 @@ typedef struct
   float ox, oy, oz;
 } tvdb_sparse_grid;
 
+// Outputs for materializers, CSG, morphology, and convolution must be initialized
+// owning containers (init/reserve), including empty containers. Same-handle
+// in-place output is supported; distinct containers may not share backing arrays.
+// Failure leaves the prior output unchanged. Full int32 coordinates are compared
+// for equality; duplicate lookups use the first input occurrence.
 // Lifecycle.
 void tvdb_sparse_grid_init(tvdb_sparse_grid* sg);
 void tvdb_sparse_grid_free(tvdb_sparse_grid* sg);

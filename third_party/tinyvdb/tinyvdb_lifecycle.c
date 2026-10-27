@@ -4,6 +4,7 @@
 
 #include "tinyvdb_mesh.h"
 #include "tvdb_memory.h"
+#include "tinyvdb_checked.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,12 +32,31 @@ void tvdb_triangle_mesh_init_arena(tvdb_triangle_mesh* mesh, tvdb_arena_allocato
 }
 
 void tvdb_dense_grid_init(tvdb_dense_grid* grid, int nx, int ny, int nz) {
+  if (!grid) return;
   grid->nx = nx; grid->ny = ny; grid->nz = nz;
   grid->ox = grid->oy = grid->oz = 0.0f;
   grid->voxel_size = 1.0f;
-  size_t bytes = (size_t)nx * (size_t)ny * (size_t)nz * sizeof(float);
+  size_t bytes;
+  if (!tvdb_grid_bytes(nx, ny, nz, sizeof(float), &bytes)) {
+    grid->data = NULL; grid->nx = grid->ny = grid->nz = 0; return;
+  }
   grid->data = bytes ? (float*)malloc(bytes) : NULL;
   if (grid->data) memset(grid->data, 0, bytes);
+}
+
+// Like tvdb_dense_grid_init but leaves the data buffer uninitialized. Use only
+// when every voxel will be written before any read (advection scratch buffers,
+// BFECC correction fields).
+void tvdb_dense_grid_init_uninit(tvdb_dense_grid* grid, int nx, int ny, int nz) {
+  if (!grid) return;
+  grid->nx = nx; grid->ny = ny; grid->nz = nz;
+  grid->ox = grid->oy = grid->oz = 0.0f;
+  grid->voxel_size = 1.0f;
+  size_t bytes;
+  if (!tvdb_grid_bytes(nx, ny, nz, sizeof(float), &bytes)) {
+    grid->data = NULL; grid->nx = grid->ny = grid->nz = 0; return;
+  }
+  grid->data = bytes ? (float*)malloc(bytes) : NULL;
 }
 
 void tvdb_dense_grid_free(tvdb_dense_grid* grid) {
@@ -47,10 +67,14 @@ void tvdb_dense_grid_free(tvdb_dense_grid* grid) {
 
 void tvdb_dense_grid_init_arena(tvdb_dense_grid* grid, int nx, int ny, int nz,
                                 tvdb_arena_allocator_t* arena) {
+  if (!grid) return;
   grid->nx = nx; grid->ny = ny; grid->nz = nz;
   grid->ox = grid->oy = grid->oz = 0.0f;
   grid->voxel_size = 1.0f;
-  size_t bytes = (size_t)nx * (size_t)ny * (size_t)nz * sizeof(float);
+  size_t bytes;
+  if (!tvdb_grid_bytes(nx, ny, nz, sizeof(float), &bytes)) {
+    grid->data = NULL; grid->nx = grid->ny = grid->nz = 0; return;
+  }
   if (bytes == 0) { grid->data = NULL; return; }
   if (arena) {
     grid->data = (float*)tvdb_arena_alloc(arena, bytes);

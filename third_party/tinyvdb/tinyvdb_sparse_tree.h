@@ -44,16 +44,21 @@ size_t tvdb_grid_visit_leaves_float(const tvdb_grid_t* grid, tvdb_leaf_visit_fn 
 // Returns the number of leaves visited.
 size_t tvdb_grid_visit_leaves(const tvdb_grid_t* grid, tvdb_leaf_visit_fn cb, void* user);
 
-// Count active voxels across all leaves.
+// Count active voxels, including the represented volume of active tiles.
+// Invalid trees or counts that overflow size_t return zero.
 size_t tvdb_grid_active_voxel_count(const tvdb_grid_t* grid);
 
-// Read voxel-space AABB of all active voxels (inclusive of leaf extent).
-// Returns false if grid has no float leaves.
+// Exact voxel-index AABB of active voxels and tiles, with exclusive maximum.
+// Returns false for an empty/invalid tree or an unrepresentable int32 maximum;
+// output bounds are preserved on failure.
 bool tvdb_grid_active_bbox(const tvdb_grid_t* grid, int32_t out_min[3], int32_t out_max[3]);
 
 // Extract active voxels into a flat (coords[], values[]) sparse_grid. The
 // sparse grid's coords are in OpenVDB world-voxel-index space; voxel_size and
 // origin are taken from `grid`'s transform for downstream world-space ops.
+// Only positive axis-aligned uniform scale is representable. Active tiles
+// require explicit expansion and are rejected. Output must be initialized and
+// owning; failure preserves it. Use tinyvdb_tree.h _ex APIs for error details.
 bool tvdb_grid_to_sparse(const tvdb_grid_t* grid, tvdb_sparse_grid* out);
 
 // Materialize a voxel-index AABB of the grid into a dense grid. bbox_max is
@@ -93,7 +98,10 @@ size_t tvdb_grid_update_from_sparse(tvdb_grid_t* grid, const tvdb_sparse_grid* s
 // internal-node tiles. The voxel size and origin in `sg` are not used —
 // the template's transform is preserved.
 //
-// Currently supports only Tree_float_5_4_3 (3 internal levels above leaf,
+// Duplicate coordinates are allowed; the first occurrence in `sg` wins (this
+// also applies to the typed and vec3 variants below).
+//
+// Currently supports only Tree_float_5_4_3 (two internal levels above leaf,
 // float value type). Returns false otherwise.
 //
 // Pairs with tvdb_file_save: after building, append the grid to a
@@ -132,7 +140,8 @@ bool tvdb_grid_from_sparse_vec3_using_template(const tvdb_grid_t* tmpl,
                                                tvdb_grid_t* out);
 
 // Topology-extending merge: rebuild grid as `existing` ∪ `sg` (sg wins on
-// overlap, new leaves are created where needed). Output ownership matches
+// overlap, new leaves are created where needed). Among duplicate coordinates
+// inside `sg`, the first occurrence wins. Output ownership matches
 // tvdb_grid_from_sparse_using_template. Float layouts only.
 bool tvdb_grid_extend_from_sparse(const tvdb_grid_t* existing,
                                   const tvdb_sparse_grid* sg,
@@ -143,12 +152,14 @@ bool tvdb_grid_extend_from_sparse(const tvdb_grid_t* existing,
 // Free a grid produced by tvdb_grid_from_sparse_using_template.
 void tvdb_grid_destroy_owned(tvdb_grid_t* grid);
 
-// Leaf-stamp dilate / erode. Walks active leaves directly; for each leaf,
-// computes 6-neighbor min/max per voxel using halo data from adjacent leaves
-// via a leaf-coord hash (no dense intermediate). Output is a flat sparse grid
+// Tree dilate / erode. Computes seven-point min/max using a compact active
+// workspace; inactive voxels, signed tiles and background stay fixed during
+// every iteration. No dense intermediate. Output is a flat sparse grid
 // containing all originally-active voxels with updated values
-// (topology-preserving). For topology-growing dilation, use materialize_dense
-// + tvdb_dilate from tinyvdb_ops.h.
+// (topology-preserving). Zero iterations extracts unchanged active values.
+// Positive axis-aligned uniform scale is required; active tiles are rejected.
+// Output must be initialized and owning. Failure preserves source and output.
+// For topology-growing dilation use tvdb_grid_dilate_topology.
 bool tvdb_grid_dilate_active(const tvdb_grid_t* grid, int iterations, tvdb_sparse_grid* out);
 bool tvdb_grid_erode_active(const tvdb_grid_t* grid, int iterations, tvdb_sparse_grid* out);
 
@@ -162,10 +173,10 @@ bool tvdb_grid_dilate_topology(const tvdb_grid_t* grid, int iterations, tvdb_spa
 // are dropped. Output `count` is generally smaller than the input active count.
 bool tvdb_grid_erode_topology(const tvdb_grid_t* grid, int iterations, tvdb_sparse_grid* out);
 
-// Tree-aware sparse CSG. Extracts both grids into sparse_grids and runs the
-// matching sparse CSG. Both grids must share voxel_size and origin (they do
-// not need to share active topology). Output is in scan-order over the
-// union/intersection/difference of active sets.
+// Tree-aware CSG requires identical complete transforms and flat-compatible
+// uniform scale. All three operations use the union of active voxel sets,
+// sampling each input's own stored inactive leaf/tile/background values where
+// that input is inactive. Active tiles are rejected; failure preserves output.
 bool tvdb_grid_csg_union(const tvdb_grid_t* a, const tvdb_grid_t* b, tvdb_sparse_grid* out);
 bool tvdb_grid_csg_intersection(const tvdb_grid_t* a, const tvdb_grid_t* b, tvdb_sparse_grid* out);
 bool tvdb_grid_csg_difference(const tvdb_grid_t* a, const tvdb_grid_t* b, tvdb_sparse_grid* out);

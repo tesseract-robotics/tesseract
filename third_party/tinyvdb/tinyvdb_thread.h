@@ -1,48 +1,43 @@
 #pragma once
 
-#ifdef TINYVDB_ENABLE_THREAD
-#include <threads.h>
+/* Backend-independent synchronous task ranges. C11 is the default where its
+ * runtime is available; CMake selects GCD on Apple platforms. Public headers
+ * do not expose threads.h, pthreads, or Dispatch types. */
+#include "tinyvdb_io.h"
 
-typedef struct
-{
-  void (*func)(int, void*);
-  void* data;
-  int start;
-  int end;
-} tvdb_parallel_for_task_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-static int tvdb__thread_worker(void* arg)
-{
-  tvdb_parallel_for_task_t* task = (tvdb_parallel_for_task_t*)arg;
-  for (int i = task->start; i < task->end; ++i)
-  {
-    task->func(i, task->data);
-  }
-  return 0;
-}
+typedef struct tvdb_thread_pool tvdb_thread_pool_t;
+typedef void (*tvdb_range_fn)(size_t begin, size_t end, void* user);
 
-static void tvdb_parallel_for(int start, int end, void (*func)(int, void*), void* data)
-{
-  int num_threads = 4;  // Simplified: fixed count
-  thrd_t threads[4];
-  tvdb_parallel_for_task_t tasks[4];
-  int range = (end - start) / num_threads;
-  for (int i = 0; i < num_threads; i++)
-  {
-    tasks[i] = (tvdb_parallel_for_task_t){
-      func, data, start + i * range, (i == num_threads - 1) ? end : start + (i + 1) * range
-    };
-    thrd_create(&threads[i], tvdb__thread_worker, &tasks[i]);
-  }
-  for (int i = 0; i < num_threads; i++)
-  {
-    thrd_join(threads[i], NULL);
-  }
-}
-#else
-static void tvdb_parallel_for(int start, int end, void (*func)(int, void*), void* data)
-{
-  for (int i = start; i < end; ++i)
-    func(i, data);
+/* Zero selects the CPU count, capped at 32; explicit counts must be 1..256.
+ * The caller participates in C11/pthread work. NONE always uses one worker.
+ * Destroy only after all calls finish. */
+tvdb_status_t tvdb_thread_pool_create(size_t threads, tvdb_thread_pool_t** out, tvdb_error_t* err);
+void tvdb_thread_pool_destroy(tvdb_thread_pool_t* pool);
+size_t tvdb_thread_pool_size(const tvdb_thread_pool_t* pool);
+size_t tvdb_thread_default_count(void);
+const char* tvdb_thread_backend_name(void);
+
+/* Each index in [begin,end) is covered exactly once by disjoint ranges of at
+ * most grain indices. Returns after all callbacks complete, establishing the
+ * boundary between dependent processing passes. Callbacks must be thread-safe.
+ * Reentrant calls on the same pool run serially. C11/pthread parallel submissions from
+ * different callers are serialized. GCD submissions use independent jobs. */
+tvdb_status_t tvdb_thread_pool_for(tvdb_thread_pool_t* pool,
+                                   size_t begin,
+                                   size_t end,
+                                   size_t grain,
+                                   tvdb_range_fn fn,
+                                   void* user,
+                                   tvdb_error_t* err);
+
+/* Compatibility with the former header-only helper. Prefer a reusable pool
+ * for repeated work. Falls back to serial execution if pool creation fails. */
+void tvdb_parallel_for(int start, int end, void (*fn)(int, void*), void* user);
+
+#ifdef __cplusplus
 }
 #endif

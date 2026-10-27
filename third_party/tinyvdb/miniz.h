@@ -571,8 +571,8 @@ typedef struct mz_dummy_time_t_tag
 #define MZ_CLEAR_OBJ(obj) memset(&(obj), 0, sizeof(obj))
 
 #if MINIZ_USE_UNALIGNED_LOADS_AND_STORES && MINIZ_LITTLE_ENDIAN
-#define MZ_READ_LE16(p) *((const mz_uint16*)(p))
-#define MZ_READ_LE32(p) *((const mz_uint32*)(p))
+#define MZ_READ_LE16(p) mz_read_le16_unaligned(p)
+#define MZ_READ_LE32(p) mz_read_le32_unaligned(p)
 #else
 #define MZ_READ_LE16(p) ((mz_uint32)(((const mz_uint8*)(p))[0]) | ((mz_uint32)(((const mz_uint8*)(p))[1]) << 8U))
 #define MZ_READ_LE32(p)                                                                                                \
@@ -589,6 +589,21 @@ typedef struct mz_dummy_time_t_tag
 #define MZ_FORCEINLINE __inline__ __attribute__((__always_inline__))
 #else
 #define MZ_FORCEINLINE inline
+#endif
+
+#if MINIZ_USE_UNALIGNED_LOADS_AND_STORES && MINIZ_LITTLE_ENDIAN
+static MZ_FORCEINLINE mz_uint16 mz_read_le16_unaligned(const void* p)
+{
+  mz_uint16 value;
+  memcpy(&value, p, sizeof(value));
+  return value;
+}
+static MZ_FORCEINLINE mz_uint32 mz_read_le32_unaligned(const void* p)
+{
+  mz_uint32 value;
+  memcpy(&value, p, sizeof(value));
+  return value;
+}
 #endif
 
 #ifdef __cplusplus

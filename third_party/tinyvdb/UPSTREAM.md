@@ -1,10 +1,10 @@
 # TinyVDB source snapshot
 
 - Upstream: https://github.com/syoyo/tinyvdb
-- Commit: `c0ecb7d0ea970c413b9a276c92568646e562ec12`
-- Retrieved: 2026-07-23
+- Commit: `e68fdc5b2c80ea8051ad1ab57cb8adf21a3321f0` (`main`)
+- Retrieved: 2026-10-27
 - License: Apache-2.0; see `LICENSE` and the retained source-file notices.
 
-This directory contains only the TinyVDB sources needed to load, materialize, and write scalar OpenVDB and NanoVDB grids. The NanoVDB I/O support includes TinyVDB's `tinyvdb_nanovdb.h`, `tinyvdb_to_nanovdb.c`, and the upstream `PNanoVDB.h` portable accessor.
+This directory contains only the TinyVDB sources compiled by `CMakeLists.txt` and the headers they include, copied from upstream `src/` at the same relative paths (so `third_party/nanovdb/PNanoVDB.h` stays nested). The `.h` files are clang-formatted to this repository's style; `.c` and `.inl` files are verbatim. There are no local changes.
 
-The retained NanoVDB files contain small local interoperability fixes: parse NanoVDB's standard map/name layout and preserve uniform-transform translation during VDB-to-NanoVDB conversion. Keep any further vendor changes documented here.
+To update, copy the same files from upstream, add whatever new sources the link needs, and run `.run-clang-format`.

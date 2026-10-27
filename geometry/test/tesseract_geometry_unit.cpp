@@ -852,6 +852,40 @@ TEST(TesseractGeometryUnit, SignedDistanceField)  // NOLINT
       tesseract::geometry::readSignedDistanceFieldNVDB(std::vector<std::uint8_t>{ 0, 1, 2, 3 }));  // NOLINT
 }
 
+TEST(TesseractGeometryUnit, SignedDistanceFieldBloscNVDB)  // NOLINT
+{
+  // Written by fVDB (Grid.save_nanovdb(..., compressed=True)), as real NanoVDB producers write them: BLOSC-compressed,
+  // with the grid name's terminator counted in its size. A 10x9x8 dense grid of voxel 0.05 at origin (0.1, -0.2, 0.3)
+  // and index offset (-3, -2, -1), holding the signed distance to a sphere of radius 0.15 centred at (0.12, -0.17,
+  // 0.32).
+  tesseract::common::GeneralResourceLocator locator;
+  const std::vector<std::uint8_t> nvdb =
+      locator.locateResource("package://tesseract/support/sdf/sphere_blosc.nvdb")->getResourceContents();
+  const Eigen::Vector3d scale(2, 2, 2);
+
+#ifdef TESSERACT_TINYVDB_HAS_BLOSC
+  auto sdf = tesseract::geometry::readSignedDistanceFieldNVDB(nvdb, scale);
+  EXPECT_EQ(sdf->getDimensions(), Eigen::Vector3i(10, 9, 8));
+  EXPECT_TRUE(sdf->getDomain().min().isApprox(Eigen::Vector3d(-0.05, -0.3, 0.25), 1e-6));
+  EXPECT_TRUE(sdf->getDomain().max().isApprox(Eigen::Vector3d(0.4, 0.1, 0.6), 1e-6));
+  EXPECT_TRUE(sdf->getScale().isApprox(scale));
+
+  const Eigen::Vector3d centre(0.12, -0.17, 0.32);
+  const auto& distances = sdf->getDistances();
+  ASSERT_EQ(distances.size(), 720);
+  for (int k = 0; k < 8; ++k)
+    for (int j = 0; j < 9; ++j)
+      for (int i = 0; i < 10; ++i)
+      {
+        const Eigen::Vector3d p = sdf->getDomain().min() + 0.05 * Eigen::Vector3d(i, j, k);
+        EXPECT_NEAR(distances[static_cast<std::size_t>(i + (10 * (j + (9 * k))))], (p - centre).norm() - 0.15, 1e-6);
+      }
+#else
+  // Without Blosc the grid cannot be decoded, and must be rejected rather than read as garbage.
+  EXPECT_THROW(tesseract::geometry::readSignedDistanceFieldNVDB(nvdb, scale), std::runtime_error);  // NOLINT
+#endif
+}
+
 TEST(TesseractGeometryUnit, SignedDistanceFieldSampler)  // NOLINT
 {
   // Discretize a sphere distance field on a dense grid and verify the stored samples and interpolation.

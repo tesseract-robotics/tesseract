@@ -291,6 +291,8 @@ typedef struct tvdb_nanovdb_file
   uint16_t codec;
   tvdb_nanovdb_grid_t* grids;
   size_t num_grids;
+  /* Allocated slots in `grids`, grown geometrically by the reader. */
+  size_t grid_capacity;
   uint64_t file_size;
   const uint8_t* mmap_data;
   uint8_t* buffer;
@@ -439,6 +441,13 @@ struct tvdb_grid;
 typedef struct tvdb_grid tvdb_grid_t;
 tvdb_status_t
 tvdb_grid_to_nanovdb_float(const struct tvdb_grid* grid, uint8_t** out_data, size_t* out_size, tvdb_error_t* err);
+/* Any decoded 5_4_3 grid of float, double, int32, int64, vec3f, vec3d or
+ * mask values to one NanoVDB grid buffer (free with free()): the full
+ * affine map, the grid class from the "class" metadata (masks: Topology),
+ * root tiles kept, exact node bounding boxes, breadth-first node order.
+ * Bool and vec3i grids return TVDB_ERROR_UNSUPPORTED_GRID_TYPE. */
+tvdb_status_t
+tvdb_grid_to_nanovdb(const struct tvdb_grid* grid, uint8_t** out_data, size_t* out_size, tvdb_error_t* err);
 
 /* Trilinear sample for FloatGrid. Cell-center convention: integer voxel
    (i,j,k) sits at sample point (i+0.5, j+0.5, k+0.5), so a sample at
@@ -476,10 +485,12 @@ tvdb_status_t tvdb_nanovdb_file_save(const tvdb_nanovdb_file_t* file,
                                      int use_mmap,
                                      tvdb_error_t* err);
 
-/* Grid creation API */
+/* Grid creation API. Node sizes are exact on-disk byte counts derived from
+ * the NanoVDB grid-type constants table; they return 0 for an unknown type. */
 uint64_t tvdb_nanovdb_leaf_node_size(uint32_t grid_type);
 uint64_t tvdb_nanovdb_lower_node_size(uint32_t grid_type);
 uint64_t tvdb_nanovdb_upper_node_size(uint32_t grid_type);
+uint64_t tvdb_nanovdb_root_node_size(uint32_t grid_type);
 uint64_t tvdb_nanovdb_root_tile_size(void);
 
 tvdb_status_t tvdb_nanovdb_create_grid(tvdb_nanovdb_grid_t* grid,
@@ -576,6 +587,11 @@ tvdb_projected_gaussian_t* tvdb_gaussian_project(const tvdb_gaussian_splat_t* sp
                                                  uint32_t* out_count,
                                                  tvdb_error_t* err);
 
+/* Complete symmetric tile footprints, sorted by tile/depth/input index.
+ * num_features is 1..3 (zero defaults to 3). Opacity is finite in [0,1];
+ * conics must be finite positive semidefinite. Nonpositive radii are skipped.
+ * Background is composited by final transmittance. Output must be empty or
+ * uninitialized, never a live result; failure leaves it zero/destructible. */
 tvdb_status_t tvdb_gaussian_rasterize_forward(const tvdb_projected_gaussian_t* gaussians,
                                               uint32_t num_gaussians,
                                               uint32_t width,
@@ -590,7 +606,9 @@ tvdb_status_t tvdb_gaussian_rasterize_forward(const tvdb_projected_gaussian_t* g
  * per-tile depth-sorted alpha blend, replaying T and the post-i color
  * accumulator analytically (no per-pixel intersection list saved).
  * Caller pre-zeros the accumulator arrays in grad_out (or calls
- * tvdb_gaussian_grad_init); this routine accumulates contributions. */
+ * tvdb_gaussian_grad_init); this routine accumulates contributions. Forward
+ * dimensions, inputs, background and threshold must match. Failure preserves
+ * all accumulator arrays, including allocation or numeric failure. */
 typedef struct tvdb_gaussian_grad
 {
   float* grad_x;
@@ -686,6 +704,8 @@ tvdb_status_t tvdb_gaussian_mcmc_add_noise(uint32_t num_gaussians,
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
+#include <float.h>
+#include "tinyvdb_checked.h"
 
 /* Vendored PNanoVDB.h provides byte-exact NanoVDB hierarchical accessors
    (Root → Upper → Lower → Leaf) in pure C, matching nanovdb::ReadAccessor.
@@ -693,7 +713,7 @@ tvdb_status_t tvdb_gaussian_mcmc_add_noise(uint32_t num_gaussians,
    PNANOVDB_FORCE_INLINE symbols are static inline, so multiple TUs that
    include this header don't collide. */
 #define PNANOVDB_C
-#include "PNanoVDB.h"
+#include "third_party/nanovdb/PNanoVDB.h"
 
 #ifndef TVDB_ASSERT
 #define TVDB_ASSERT(x) assert(x)
@@ -905,11 +925,38 @@ static int tvdb__nnvdb_sw_init(tvdb__nnvdb_sw_t* sw, uint8_t* data, uint64_t cap
   return 1;
 }
 
+/* Grow the stream so at least `needed` more bytes fit. Returns 0 on OOM.
+ * This is the only capacity guard in the writer: the individual
+ * tvdb__nnvdb_sw_write* helpers are unchecked, so anything that grows the
+ * buffer must reserve through here first. */
+static int tvdb__nnvdb_sw_reserve(tvdb__nnvdb_sw_t* sw, size_t needed)
+{
+  if (needed > SIZE_MAX - sw->pos)
+    return 0;
+  uint64_t want = sw->pos + needed;
+  if (want <= sw->capacity)
+    return 1;
+  size_t new_cap = sw->capacity ? (size_t)sw->capacity : (size_t)1024 * 1024;
+  while ((uint64_t)new_cap < want)
+  {
+    if (new_cap > SIZE_MAX / 2)
+    {
+      new_cap = (size_t)want;
+      break;
+    }
+    new_cap *= 2;
+  }
+  uint8_t* new_buf = (uint8_t*)realloc(sw->data, new_cap);
+  if (!new_buf)
+    return 0;
+  sw->data = new_buf;
+  sw->capacity = (uint64_t)new_cap;
+  return 1;
+}
+
 static int tvdb__nnvdb_sw_ensure(tvdb__nnvdb_sw_t* sw, uint64_t needed)
 {
-  (void)sw;
-  (void)needed;
-  return 1;
+  return tvdb__nnvdb_sw_reserve(sw, (size_t)needed);
 }
 
 static int tvdb__nnvdb_sw_write(tvdb__nnvdb_sw_t* sw, size_t n, const void* src)
@@ -942,6 +989,15 @@ static void tvdb__nnvdb_sw_write_u64(tvdb__nnvdb_sw_t* sw, uint64_t v)
   if (sw->swap_endian)
     v = tvdb__nnvdb_swap64(v);
   tvdb__nnvdb_sw_write(sw, 8, &v);
+}
+
+/* Checked u64 write: reserves capacity first, then emits. */
+static int tvdb__nnvdb_sw_write_u64_checked(tvdb__nnvdb_sw_t* sw, uint64_t v)
+{
+  if (!tvdb__nnvdb_sw_reserve(sw, 8))
+    return 0;
+  tvdb__nnvdb_sw_write_u64(sw, v);
+  return 1;
 }
 
 static void tvdb__nnvdb_sw_write_i32(tvdb__nnvdb_sw_t* sw, int32_t v) { tvdb__nnvdb_sw_write_u32(sw, (uint32_t)v); }
@@ -985,19 +1041,22 @@ static int tvdb__nnvdb_decompress_blosc(void* dst, size_t dst_size, const void* 
 #ifdef TVDB_HAVE_BLOSC
   /* Real BLOSC1 decompression. NanoVDB writes one chunk per grid (each
      up to 1GB uncompressed), and each chunk is a full Blosc1 frame. */
+  /* A frame that decodes to fewer bytes would leave the tail of dst
+     uninitialized; require the exact payload size. */
+  if (dst_size > (size_t)INT32_MAX)
+    return 0;
   int rc = blosc_decompress_ctx(src, dst, dst_size, /*numinternalthreads=*/1);
-  return rc > 0 ? 1 : 0;
+  return rc >= 0 && (size_t)rc == dst_size ? 1 : 0;
 #else
   /* Fallback path retained only for backwards compatibility with the
      earlier "fake LZ4 with 12-byte prefix" framing produced by older
      tinyvdb writes. Real BLOSC-encoded NanoVDB files (e.g. produced by
      libnanovdb's nanovdb_convert --blosc) require building with
      TINYVDB_USE_SYSTEM_BLOSC=ON. */
-  (void)src_size;
-  if (src_size < 12)
+  if (src_size < 12 || src_size - 12 > (size_t)INT32_MAX || dst_size > (size_t)INT32_MAX)
     return 0;
   int rc = LZ4_decompress_safe((const char*)src + 12, (char*)dst, (int)(src_size - 12), (int)dst_size);
-  return rc >= 0 ? 1 : 0;
+  return rc >= 0 && (size_t)rc == dst_size ? 1 : 0;
 #endif
 }
 
@@ -1013,11 +1072,11 @@ static int tvdb__nnvdb_decompress_zip(void* dst, size_t dst_size, const void* sr
 #if !defined(TVDB_USE_SYSTEM_ZLIB)
   mz_ulong decomp_size = (mz_ulong)dst_size;
   int rc = mz_uncompress((uint8_t*)dst, &decomp_size, src, src_size);
-  return (rc == MZ_OK) ? 1 : 0;
+  return rc == MZ_OK && decomp_size == dst_size;
 #else
   uLongf decomp_size = (uLongf)dst_size;
   int rc = uncompress((uint8_t*)dst, &decomp_size, src, src_size);
-  return (rc == Z_OK) ? 1 : 0;
+  return rc == Z_OK && decomp_size == dst_size;
 #endif
 }
 
@@ -1124,17 +1183,8 @@ static tvdb_status_t tvdb__nnvdb_read_grid_data(tvdb__nnvdb_sr_t* sr, tvdb_nanov
   gd->grid_size = tvdb__nnvdb_sr_read_u64(sr);
   tvdb__nnvdb_sr_read_str(sr, 256, gd->grid_name);
 
-  /* NanoVDB Map is 264 bytes: float matrix/inverse/translation/taper,
-     then double matrix/inverse/translation/taper. Keep the double affine
-     transform in Tesseract's row-major 3x4 representation. */
-  tvdb__nnvdb_sr_skip(sr, 88);
-  for (int row = 0; row < 3; ++row)
-    for (int column = 0; column < 3; ++column)
-      gd->map[4 * row + column] = tvdb__nnvdb_sr_read_double(sr);
-  tvdb__nnvdb_sr_skip(sr, 72);
-  for (int row = 0; row < 3; ++row)
-    gd->map[4 * row + 3] = tvdb__nnvdb_sr_read_double(sr);
-  tvdb__nnvdb_sr_skip(sr, 8);
+  for (int i = 0; i < 12; i++)
+    gd->map[i] = tvdb__nnvdb_sr_read_double(sr);
   for (int i = 0; i < 3; i++)
     gd->world_bbox_min[i] = tvdb__nnvdb_sr_read_double(sr);
   for (int i = 0; i < 3; i++)
@@ -1170,292 +1220,7 @@ static tvdb_status_t tvdb__nnvdb_read_tree_data(tvdb__nnvdb_sr_t* sr, tvdb_nanov
 /*  Public API implementation                                                  */
 /* ========================================================================== */
 
-tvdb_status_t tvdb_nanovdb_file_open(tvdb_nanovdb_file_t* file,
-                                     const char* filepath_utf8,
-                                     const tvdb_allocator_t* alloc,
-                                     tvdb_error_t* err)
-{
-  if (!file || !filepath_utf8)
-  {
-    tvdb__nnvdb_set_error(err, TVDB_ERROR_INVALID_ARGUMENT, "Invalid argument");
-    return TVDB_ERROR_INVALID_ARGUMENT;
-  }
-
-  memset(file, 0, sizeof(*file));
-
-  if (alloc)
-  {
-    file->alloc = *alloc;
-  }
-  else
-  {
-    file->alloc.malloc_fn = (void* (*)(size_t, void*))malloc;
-    file->alloc.realloc_fn = (void* (*)(void*, size_t, size_t, void*))realloc;
-    file->alloc.free_fn = (void (*)(void*, size_t, void*))free;
-    file->alloc.user_ctx = NULL;
-  }
-
-#if !defined(TVDB_NO_MMAP) && !defined(_WIN32)
-  int fd = open(filepath_utf8, O_RDONLY);
-  if (fd >= 0)
-  {
-    struct stat st;
-    if (fstat(fd, &st) == 0)
-    {
-      file->file_size = (uint64_t)st.st_size;
-      file->mmap_data = (const uint8_t*)mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-      if (file->mmap_data)
-      {
-        close(fd);
-        return tvdb_nanovdb_file_open_memory(file, file->mmap_data, file->file_size, alloc, err);
-      }
-    }
-    close(fd);
-  }
-#endif
-
-  FILE* fp = fopen(filepath_utf8, "rb");
-  if (!fp)
-  {
-    tvdb__nnvdb_set_error(err, TVDB_ERROR_IO, "Failed to open file");
-    return TVDB_ERROR_IO;
-  }
-
-  fseek(fp, 0, SEEK_END);
-  long fsize = ftell(fp);
-  fseek(fp, 0, SEEK_SET);
-
-  uint8_t* data = (uint8_t*)malloc((size_t)fsize);
-  if (!data)
-  {
-    fclose(fp);
-    tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-    return TVDB_ERROR_OUT_OF_MEMORY;
-  }
-
-  if (fread(data, 1, (size_t)fsize, fp) != (size_t)fsize)
-  {
-    free(data);
-    fclose(fp);
-    tvdb__nnvdb_set_error(err, TVDB_ERROR_IO, "Failed to read file");
-    return TVDB_ERROR_IO;
-  }
-  fclose(fp);
-
-  file->buffer = data;
-  tvdb_status_t st = tvdb_nanovdb_file_open_memory(file, data, (size_t)fsize, alloc, err);
-  return st;
-}
-
-tvdb_status_t tvdb_nanovdb_file_open_memory(tvdb_nanovdb_file_t* file,
-                                            const uint8_t* data,
-                                            size_t data_len,
-                                            const tvdb_allocator_t* alloc,
-                                            tvdb_error_t* err)
-{
-  if (!file || !data)
-  {
-    tvdb__nnvdb_set_error(err, TVDB_ERROR_INVALID_ARGUMENT, "Invalid argument");
-    return TVDB_ERROR_INVALID_ARGUMENT;
-  }
-
-  memset(file, 0, sizeof(*file));
-  file->file_size = data_len;
-
-  if (alloc)
-  {
-    file->alloc = *alloc;
-  }
-  else
-  {
-    file->alloc.malloc_fn = (void* (*)(size_t, void*))malloc;
-    file->alloc.realloc_fn = (void* (*)(void*, size_t, size_t, void*))realloc;
-    file->alloc.free_fn = (void (*)(void*, size_t, void*))free;
-    file->alloc.user_ctx = NULL;
-  }
-
-  tvdb__nnvdb_sr_t sr;
-  tvdb__nnvdb_sr_init(&sr, data, data_len, 0);
-
-  tvdb_nanovdb_file_header_t hdr;
-  tvdb_status_t st = tvdb__nnvdb_read_header(&sr, &hdr, err);
-  if (st != TVDB_OK)
-    return st;
-
-  file->version = hdr.version;
-  file->grid_count = hdr.grid_count;
-  file->codec = hdr.codec;
-
-  if (hdr.magic == TVDB_NANOVDB_MAGIC_GRID)
-  {
-    file->num_grids = 1;
-    file->grids = (tvdb_nanovdb_grid_t*)calloc(1, sizeof(tvdb_nanovdb_grid_t));
-    if (!file->grids)
-    {
-      tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-      return TVDB_ERROR_OUT_OF_MEMORY;
-    }
-    file->grids[0].data = (uint8_t*)data;
-    file->grids[0].size = data_len;
-    file->grids[0].owns_data = 0;
-    return TVDB_OK;
-  }
-
-  file->num_grids = hdr.grid_count;
-  file->grids = (tvdb_nanovdb_grid_t*)calloc(file->num_grids, sizeof(tvdb_nanovdb_grid_t));
-  if (!file->grids)
-  {
-    tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-    return TVDB_ERROR_OUT_OF_MEMORY;
-  }
-
-  for (uint16_t i = 0; i < hdr.grid_count; i++)
-  {
-    tvdb_nanovdb_file_meta_t meta;
-    if (tvdb__nnvdb_read_file_meta(&sr, &meta, err) != TVDB_OK)
-      return TVDB_ERROR_INVALID_DATA;
-
-    file->grids[i].name = (char*)malloc(meta.name_size + 1);
-    if (file->grids[i].name)
-    {
-      tvdb__nnvdb_sr_read(&sr, meta.name_size, file->grids[i].name);
-      file->grids[i].name[meta.name_size] = '\0';
-    }
-    /* NanoVDB stores a null terminator after each variable-length name. */
-    if (!tvdb__nnvdb_sr_skip(&sr, 1))
-      return TVDB_ERROR_INVALID_DATA;
-
-    file->grids[i].grid_type = meta.grid_type;
-    file->grids[i].grid_class = meta.grid_class;
-    file->grids[i].voxel_size[0] = meta.voxel_size[0];
-    file->grids[i].voxel_size[1] = meta.voxel_size[1];
-    file->grids[i].voxel_size[2] = meta.voxel_size[2];
-    file->grids[i].world_bbox_min[0] = meta.world_bbox_min[0];
-    file->grids[i].world_bbox_min[1] = meta.world_bbox_min[1];
-    file->grids[i].world_bbox_min[2] = meta.world_bbox_min[2];
-    file->grids[i].world_bbox_max[0] = meta.world_bbox_max[0];
-    file->grids[i].world_bbox_max[1] = meta.world_bbox_max[1];
-    file->grids[i].world_bbox_max[2] = meta.world_bbox_max[2];
-    file->grids[i].index_bbox_min[0] = meta.index_bbox_min[0];
-    file->grids[i].index_bbox_min[1] = meta.index_bbox_min[1];
-    file->grids[i].index_bbox_min[2] = meta.index_bbox_min[2];
-    file->grids[i].index_bbox_max[0] = meta.index_bbox_max[0];
-    file->grids[i].index_bbox_max[1] = meta.index_bbox_max[1];
-    file->grids[i].index_bbox_max[2] = meta.index_bbox_max[2];
-    file->grids[i].active_voxel_count = meta.voxel_count;
-    file->grids[i].node_count[0] = meta.node_count[0];
-    file->grids[i].node_count[1] = meta.node_count[1];
-    file->grids[i].node_count[2] = meta.node_count[2];
-    file->grids[i].node_count[3] = meta.node_count[3];
-    file->grids[i].tile_count[0] = meta.tile_count[0];
-    file->grids[i].tile_count[1] = meta.tile_count[1];
-    file->grids[i].tile_count[2] = meta.tile_count[2];
-    file->grids[i].size = meta.grid_size;
-  }
-
-  for (uint16_t i = 0; i < hdr.grid_count; i++)
-  {
-    uint64_t grid_data_start = tvdb__nnvdb_sr_pos(&sr);
-    uint64_t grid_size = file->grids[i].size;
-
-    tvdb__nnvdb_sr_t gr;
-    tvdb__nnvdb_sr_init(&gr, sr.data + grid_data_start, sr.length - grid_data_start, sr.swap_endian);
-
-    tvdb_nanovdb_grid_data_t gd;
-    if (tvdb__nnvdb_read_grid_data(&gr, &gd, err) != TVDB_OK)
-      return TVDB_ERROR_INVALID_DATA;
-
-    tvdb_nanovdb_tree_data_t td;
-    if (tvdb__nnvdb_read_tree_data(&gr, &td, err) != TVDB_OK)
-      return TVDB_ERROR_INVALID_DATA;
-
-    if (hdr.codec != TVDB_NANOVDB_CODEC_NONE && grid_size > 0)
-    {
-      uint64_t compressed_size = tvdb__nnvdb_sr_read_u64(&sr);
-
-      uint8_t* decompressed = (uint8_t*)malloc((size_t)grid_size);
-      if (!decompressed)
-      {
-        tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-        return TVDB_ERROR_OUT_OF_MEMORY;
-      }
-
-      if (compressed_size > 0 && compressed_size < (1ULL << 30))
-      {
-        uint8_t* compressed = (uint8_t*)malloc((size_t)compressed_size);
-        if (!compressed)
-        {
-          free(decompressed);
-          tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-          return TVDB_ERROR_OUT_OF_MEMORY;
-        }
-
-        tvdb__nnvdb_sr_read(&sr, (size_t)compressed_size, compressed);
-
-        tvdb_nanovdb_codec_t codec =
-            (hdr.codec == TVDB_NANOVDB_CODEC_BLOSC) ? TVDB_NANOVDB_CODEC_BLOSC : TVDB_NANOVDB_CODEC_ZIP;
-
-        if (!tvdb__nnvdb_decompress(decompressed, (size_t)grid_size, compressed, (size_t)compressed_size, codec))
-        {
-          free(compressed);
-          free(decompressed);
-          tvdb__nnvdb_set_error(err, TVDB_ERROR_DECOMPRESSION_FAILED, "Failed to decompress grid data");
-          return TVDB_ERROR_DECOMPRESSION_FAILED;
-        }
-        free(compressed);
-      }
-      else
-      {
-        tvdb__nnvdb_sr_read(&sr, (size_t)grid_size, decompressed);
-      }
-
-      file->grids[i].data = decompressed;
-      file->grids[i].size = grid_size;
-      file->grids[i].owns_data = 1;
-    }
-    else
-    {
-      file->grids[i].data = (uint8_t*)(sr.data + grid_data_start);
-      file->grids[i].owns_data = 0;
-    }
-
-    file->grids[i].tree_data_offset = 672;
-    file->grids[i].leaf_data_offset = td.node_offset[0];
-    file->grids[i].lower_data_offset = td.node_offset[1];
-    file->grids[i].upper_data_offset = td.node_offset[2];
-    file->grids[i].root_data_offset = td.node_offset[3];
-    for (int m = 0; m < 12; ++m)
-      file->grids[i].map[m] = gd.map[m];
-  }
-
-  return TVDB_OK;
-}
-
-void tvdb_nanovdb_file_close(tvdb_nanovdb_file_t* file)
-{
-  if (!file)
-    return;
-
-  for (size_t i = 0; i < file->num_grids; i++)
-  {
-    if (file->grids[i].name)
-      free(file->grids[i].name);
-    if (file->grids[i].owns_data && file->grids[i].data)
-      free(file->grids[i].data);
-  }
-  if (file->grids)
-    free(file->grids);
-
-  if (file->buffer)
-    free(file->buffer);
-
-#if !defined(TVDB_NO_MMAP) && !defined(_WIN32)
-  if (file->mmap_data)
-    munmap((void*)file->mmap_data, file->file_size);
-#endif
-
-  memset(file, 0, sizeof(*file));
-}
+#include "tinyvdb_nanovdb_read.inl"
 
 size_t tvdb_nanovdb_grid_count(const tvdb_nanovdb_file_t* file) { return file ? file->num_grids : 0; }
 
@@ -1614,6 +1379,10 @@ int tvdb_nanovdb_is_voxel_active(const tvdb_nanovdb_grid_t* grid, int x, int y, 
 {
   if (!grid || !grid->data)
     return 0;
+  /* The type indexes PNanoVDB's constant table; grids from the reader have
+     had every child pointer validated for their type. */
+  if (grid->grid_type == 0 || grid->grid_type >= PNANOVDB_GRID_TYPE_END)
+    return 0;
   /* Quick bbox reject: voxels outside the active bbox are guaranteed
      inactive. PNanoVDB would return false at higher levels too, but the
      bbox check avoids descending the tree for the common all-outside
@@ -1634,26 +1403,52 @@ int tvdb_nanovdb_is_voxel_active(const tvdb_nanovdb_grid_t* grid, int x, int y, 
 
 /* ----- CRC32 + grid checksum (matches NanoVDB tools/GridChecksum.h) ----- */
 
+/* Byte-at-a-time table, built on first use. The previous implementation ran
+ * the 8-step bit loop per byte, which measured ~101 MB/s; a table gives
+ * roughly an order of magnitude more. The polynomial and the pre/post
+ * inversion are unchanged, so the output is bit-for-bit identical to
+ * NanoVDB's util::crc32 and to the old code. */
+static uint32_t tvdb__nvdb_crc32_table[256];
+static int tvdb__nvdb_crc32_table_ready = 0;
+
+static void tvdb__nvdb_crc32_init_table(void)
+{
+  for (uint32_t i = 0; i < 256u; ++i)
+  {
+    uint32_t c = i;
+    for (int j = 0; j < 8; ++j)
+      c = (c >> 1) ^ (0xEDB88320u & (uint32_t) - (int32_t)(c & 1u));
+    tvdb__nvdb_crc32_table[i] = c;
+  }
+  tvdb__nvdb_crc32_table_ready = 1;
+}
+
 uint32_t tvdb_nanovdb_crc32(const void* data, size_t size, uint32_t crc)
 {
   if (!data)
     return crc;
+  if (!tvdb__nvdb_crc32_table_ready)
+    tvdb__nvdb_crc32_init_table();
   crc = ~crc;
   const uint8_t* p = (const uint8_t*)data;
-  for (size_t i = 0; i < size; ++i)
-  {
-    crc ^= p[i];
-    for (int j = 0; j < 8; ++j)
-    {
-      crc = (crc >> 1) ^ (0xEDB88320u & (uint32_t) - (int32_t)(crc & 1u));
-    }
-  }
+  while (size--)
+    crc = tvdb__nvdb_crc32_table[(crc ^ *p++) & 0xFFu] ^ (crc >> 8);
   return ~crc;
 }
 
 #define TVDB__NVDB_GRID_DATA_BYTES 672u
 #define TVDB__NVDB_TREE_DATA_BYTES 64u
 #define TVDB__NVDB_CRC32_BLOCK_LOG2 12 /* 4 KB blocks */
+
+/* Encode a (major, minor, patch) triple into the grid version word. This must
+ * stay paired with tvdb__nvdb_version_gt_32_6_0 below: the v32.6.0+ wire
+ * encoding is `(major << 21) | (minor << 10) | patch`. Writing the older
+ * `(major << 24) | (minor << 16) | patch` layout produces a word that our own
+ * reader decodes as major=256 and rejects as an unsupported version. */
+static uint32_t tvdb__nvdb_make_version(uint32_t major, uint32_t minor, uint32_t patch)
+{
+  return (major << 21) | (minor << 10) | (patch & 0x3FFu);
+}
 
 /* Decode the grid's encoded version word into (major, minor, patch). The
  * NanoVDB encoding is `(major << 21) | (minor << 10) | patch` for v32.6.0+
@@ -1845,6 +1640,33 @@ static int tvdb__nnvdb_compress_blosc(void** dst, size_t* dst_size, const void* 
   if (!src || !dst)
     return 0;
 
+#ifdef TVDB_HAVE_BLOSC
+  /* Real BLOSC1 frame. NanoVDB stores one chunk per grid, so the whole grid
+   * goes in a single frame. Without this branch we would emit the legacy
+   * fake-LZ4 layout below, which is not a BLOSC frame and cannot be read by
+   * libnanovdb or by our own TVDB_HAVE_BLOSC decompressor. */
+  /* blosc.h documents (nbytes + BLOSC_MAX_OVERHEAD) as the destination size
+   * at which compression always succeeds; blosc_compress_bound is not
+   * available in every c-blosc version we support. */
+  size_t max_size = src_size + (size_t)BLOSC_MAX_OVERHEAD;
+  uint8_t* out = (uint8_t*)malloc(max_size);
+  if (!out)
+    return 0;
+  /* clevel 5, bytewise shuffle disabled, element size 1. One frame per grid,
+   * matching how NanoVDB chunks its payloads. */
+  int compressed = blosc_compress(5, 0, 1, src_size, src, out, max_size);
+  if (compressed <= 0)
+  {
+    free(out);
+    return 0;
+  }
+  *dst = out;
+  *dst_size = (size_t)compressed;
+  return 1;
+#else
+  /* Legacy fallback retained so builds without libblosc can still read files
+   * written by older tinyvdb versions. These are NOT BLOSC frames; see the
+   * matching decompress fallback. */
   size_t max_size = (size_t)LZ4_compressBound((int)src_size) + 12;
   *dst = malloc(max_size);
   if (!*dst)
@@ -1868,6 +1690,7 @@ static int tvdb__nnvdb_compress_blosc(void** dst, size_t* dst_size, const void* 
 
   *dst_size = (size_t)compressed + 12;
   return 1;
+#endif
 }
 
 /* ========================================================================== */
@@ -1926,16 +1749,20 @@ static void tvdb__nnvdb_write_file_header(tvdb__nnvdb_sw_t* sw, const tvdb_nanov
 {
   tvdb__nnvdb_sw_write_u64(sw, TVDB_NANOVDB_MAGIC_FILE);
   uint32_t version =
-      (TVDB_NANOVDB_VERSION_MAJOR << 24) | (TVDB_NANOVDB_VERSION_MINOR << 16) | TVDB_NANOVDB_VERSION_PATCH;
+      tvdb__nvdb_make_version(TVDB_NANOVDB_VERSION_MAJOR, TVDB_NANOVDB_VERSION_MINOR, TVDB_NANOVDB_VERSION_PATCH);
   tvdb__nnvdb_sw_write_u32(sw, version);
   tvdb__nnvdb_sw_write_u16(sw, (uint16_t)file->grid_count);
   tvdb__nnvdb_sw_write_u16(sw, (uint16_t)file->codec);
 }
 
-static void tvdb__nnvdb_write_file_meta(tvdb__nnvdb_sw_t* sw, const tvdb_nanovdb_grid_t* grid)
+/* `encoded_size` is the on-wire byte count of this grid's payload. For an
+ * uncompressed grid that equals grid->size; for a compressed one it is the
+ * frame length, and the reader advances its cursor by this value to reach the
+ * next grid. Writing grid->size here desynchronises every compressed file. */
+static void tvdb__nnvdb_write_file_meta(tvdb__nnvdb_sw_t* sw, const tvdb_nanovdb_grid_t* grid, uint64_t encoded_size)
 {
   tvdb__nnvdb_sw_write_u64(sw, grid->size);
-  tvdb__nnvdb_sw_write_u64(sw, grid->size);
+  tvdb__nnvdb_sw_write_u64(sw, encoded_size);
   tvdb__nnvdb_sw_write_u64(sw, 0);
   tvdb__nnvdb_sw_write_u64(sw, grid->active_voxel_count);
   tvdb__nnvdb_sw_write_u32(sw, grid->grid_type);
@@ -1952,8 +1779,12 @@ static void tvdb__nnvdb_write_file_meta(tvdb__nnvdb_sw_t* sw, const tvdb_nanovdb
   for (int i = 0; i < 3; i++)
     tvdb__nnvdb_sw_write_double(sw, grid->voxel_size[i]);
 
+  /* name_size counts the NUL terminator: NanoVDB stores strlen(name)+1, and
+   * the reader scans exactly name_size bytes for that terminator. Writing
+   * bare strlen() here emits one byte more than the field advertises, which
+   * desynchronises the per-grid metadata cursor. */
   size_t name_len = grid->name ? strlen(grid->name) : 0;
-  tvdb__nnvdb_sw_write_u32(sw, (uint32_t)name_len);
+  tvdb__nnvdb_sw_write_u32(sw, (uint32_t)name_len + 1u);
 
   for (int i = 0; i < 4; i++)
     tvdb__nnvdb_sw_write_u32(sw, grid->node_count[i]);
@@ -1964,7 +1795,7 @@ static void tvdb__nnvdb_write_file_meta(tvdb__nnvdb_sw_t* sw, const tvdb_nanovdb
   tvdb__nnvdb_sw_write_u16(sw, 0);
 
   uint32_t version =
-      (TVDB_NANOVDB_VERSION_MAJOR << 24) | (TVDB_NANOVDB_VERSION_MINOR << 16) | TVDB_NANOVDB_VERSION_PATCH;
+      tvdb__nvdb_make_version(TVDB_NANOVDB_VERSION_MAJOR, TVDB_NANOVDB_VERSION_MINOR, TVDB_NANOVDB_VERSION_PATCH);
   tvdb__nnvdb_sw_write_u32(sw, version);
 }
 
@@ -2041,9 +1872,79 @@ tvdb_status_t tvdb_nanovdb_write_to_memory(const tvdb_nanovdb_file_t* file,
   tvdb__nnvdb_sw_t sw;
   tvdb__nnvdb_sw_init(&sw, buffer, initial_capacity);
 
+  /* Compress every grid up front. The per-grid metadata block records both
+   * the uncompressed size (field@0) and the *encoded* size (field@8), and the
+   * reader advances its cursor by field@8 -- so the encoded size has to be
+   * known before any metadata is emitted. Compressing first also lets us
+   * fall back per grid when compression does not shrink the payload. */
+  size_t n_staged = file->num_grids;
+  uint8_t** staged = (uint8_t**)calloc(n_staged, sizeof(*staged));
+  size_t* staged_size = (size_t*)calloc(n_staged, sizeof(*staged_size));
+  int* staged_is_compressed = (int*)calloc(n_staged, sizeof(*staged_is_compressed));
+  if (!staged || !staged_size || !staged_is_compressed)
+  {
+    free(staged);
+    free(staged_size);
+    free(staged_is_compressed);
+    free(buffer);
+    tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
+    return TVDB_ERROR_OUT_OF_MEMORY;
+  }
+
+  for (size_t i = 0; i < file->num_grids; i++)
+  {
+    const tvdb_nanovdb_grid_t* grid = &file->grids[i];
+    if (!grid->data || grid->size == 0)
+      continue;
+
+    staged_size[i] = grid->size;
+    if (codec == TVDB_NANOVDB_CODEC_NONE)
+      continue;
+
+    void* compressed = NULL;
+    size_t compressed_size = 0;
+    int ok = 0;
+    if (codec == TVDB_NANOVDB_CODEC_BLOSC)
+    {
+      ok = tvdb__nnvdb_compress_blosc(&compressed, &compressed_size, grid->data, grid->size);
+    }
+    else if (codec == TVDB_NANOVDB_CODEC_ZIP)
+    {
+      ok = tvdb__nnvdb_compress_zip(&compressed, &compressed_size, grid->data, grid->size);
+    }
+    /* The codec is recorded once in the file header, so every grid must be
+     * emitted in that codec even when compression does not shrink it (as
+     * NanoVDB itself does); raw bytes under a ZIP/BLOSC header would be
+     * unreadable. */
+    if (!ok || !compressed || compressed_size == 0)
+    {
+      if (compressed)
+        free(compressed);
+      for (size_t k = 0; k < n_staged; k++)
+        free(staged[k]);
+      free(staged);
+      free(staged_size);
+      free(staged_is_compressed);
+      free(buffer);
+      tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "Grid compression failed");
+      return TVDB_ERROR_OUT_OF_MEMORY;
+    }
+    {
+      staged[i] = (uint8_t*)compressed;
+      /* A compressed grid's on-wire footprint is the 8-byte frame-length
+       * prefix plus the frame. Both the metadata field@8 and the bytes we
+       * emit must count the prefix, since the reader consumes the prefix
+       * before decompressing and then checks that it landed exactly on
+       * the end of the region. */
+      staged_size[i] = compressed_size + 8;
+      staged_is_compressed[i] = 1;
+    }
+  }
+
   tvdb_nanovdb_file_t wf;
   memset(&wf, 0, sizeof(wf));
-  wf.version = (TVDB_NANOVDB_VERSION_MAJOR << 24) | (TVDB_NANOVDB_VERSION_MINOR << 16) | TVDB_NANOVDB_VERSION_PATCH;
+  wf.version =
+      tvdb__nvdb_make_version(TVDB_NANOVDB_VERSION_MAJOR, TVDB_NANOVDB_VERSION_MINOR, TVDB_NANOVDB_VERSION_PATCH);
   wf.grid_count = (uint16_t)file->num_grids;
   wf.codec = codec;
 
@@ -2051,99 +1952,65 @@ tvdb_status_t tvdb_nanovdb_write_to_memory(const tvdb_nanovdb_file_t* file,
 
   for (size_t i = 0; i < file->num_grids; i++)
   {
-    tvdb__nnvdb_write_file_meta(&sw, &file->grids[i]);
+    /* field@8 is the encoded byte count the reader advances by. */
+    tvdb__nnvdb_write_file_meta(&sw, &file->grids[i], (uint64_t)staged_size[i]);
     tvdb__nnvdb_write_grid_name(&sw, file->grids[i].name);
   }
 
   for (size_t i = 0; i < file->num_grids; i++)
   {
     const tvdb_nanovdb_grid_t* grid = &file->grids[i];
-
     if (!grid->data || grid->size == 0)
-    {
       continue;
-    }
 
-    if (codec != TVDB_NANOVDB_CODEC_NONE)
+    size_t n = staged_size[i];
+    if (staged_is_compressed[i])
     {
-      void* compressed = NULL;
-      size_t compressed_size = 0;
-
-      int ok = 0;
-      if (codec == TVDB_NANOVDB_CODEC_BLOSC)
+      /* n counts the 8-byte prefix; the frame itself is n-8 bytes. */
+      size_t frame = n - 8;
+      if (!tvdb__nnvdb_sw_write_u64_checked(&sw, (uint64_t)frame))
       {
-        ok = tvdb__nnvdb_compress_blosc(&compressed, &compressed_size, grid->data, grid->size);
+        goto write_oom;
       }
-      else if (codec == TVDB_NANOVDB_CODEC_ZIP)
-      {
-        ok = tvdb__nnvdb_compress_zip(&compressed, &compressed_size, grid->data, grid->size);
-      }
-
-      if (ok && compressed && compressed_size < grid->size)
-      {
-        tvdb__nnvdb_sw_write_u64(&sw, compressed_size);
-        if (sw.pos + compressed_size > sw.capacity)
-        {
-          size_t new_cap = sw.capacity * 2 + compressed_size;
-          uint8_t* new_buf = (uint8_t*)realloc(sw.data, new_cap);
-          if (!new_buf)
-          {
-            free(compressed);
-            free(buffer);
-            tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-            return TVDB_ERROR_OUT_OF_MEMORY;
-          }
-          sw.data = new_buf;
-          sw.capacity = new_cap;
-        }
-        memcpy(sw.data + sw.pos, compressed, compressed_size);
-        sw.pos += compressed_size;
-        free(compressed);
-      }
-      else
-      {
-        if (compressed)
-          free(compressed);
-        if (sw.pos + grid->size > sw.capacity)
-        {
-          size_t new_cap = sw.capacity * 2 + grid->size;
-          uint8_t* new_buf = (uint8_t*)realloc(sw.data, new_cap);
-          if (!new_buf)
-          {
-            free(buffer);
-            tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-            return TVDB_ERROR_OUT_OF_MEMORY;
-          }
-          sw.data = new_buf;
-          sw.capacity = new_cap;
-        }
-        memcpy(sw.data + sw.pos, grid->data, grid->size);
-        sw.pos += grid->size;
-      }
+      if (!tvdb__nnvdb_sw_reserve(&sw, frame))
+        goto write_oom;
+      memcpy(sw.data + sw.pos, staged[i], frame);
+      sw.pos += frame;
     }
     else
     {
-      if (sw.pos + grid->size > sw.capacity)
-      {
-        size_t new_cap = sw.capacity * 2 + grid->size;
-        uint8_t* new_buf = (uint8_t*)realloc(sw.data, new_cap);
-        if (!new_buf)
-        {
-          free(buffer);
-          tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
-          return TVDB_ERROR_OUT_OF_MEMORY;
-        }
-        sw.data = new_buf;
-        sw.capacity = new_cap;
-      }
-      memcpy(sw.data + sw.pos, grid->data, grid->size);
-      sw.pos += grid->size;
+      if (!tvdb__nnvdb_sw_reserve(&sw, n))
+        goto write_oom;
+      memcpy(sw.data + sw.pos, grid->data, n);
+      sw.pos += n;
     }
   }
+
+  for (size_t i = 0; i < n_staged; i++)
+  {
+    if (staged[i])
+      free(staged[i]);
+  }
+  free(staged);
+  free(staged_size);
+  free(staged_is_compressed);
 
   *out_data = sw.data;
   *out_size = sw.pos;
   return TVDB_OK;
+
+write_oom:
+  for (size_t i = 0; i < n_staged; i++)
+  {
+    if (staged[i])
+      free(staged[i]);
+  }
+  free(staged);
+  free(staged_size);
+  free(staged_is_compressed);
+  free(sw.data);
+  tvdb__nnvdb_set_error(err, TVDB_ERROR_OUT_OF_MEMORY, "OOM");
+  return TVDB_ERROR_OUT_OF_MEMORY;
 }
 
 tvdb_status_t tvdb_nanovdb_file_save(const tvdb_nanovdb_file_t* file,
@@ -2224,25 +2091,38 @@ uint32_t tvdb_nanovdb_value_size(uint32_t grid_type)
   }
 }
 
+/* Node sizes come from pnanovdb_grid_type_constants rather than being
+ * recomputed here. The previous arithmetic assumed a 4-byte internal-node slot
+ * table, but the format uses `table_stride` (8 bytes for float/double, holding
+ * either a child offset or a value), which made lower_node_size report 18480
+ * instead of 33856. Deriving from the table keeps these correct for every grid
+ * type, including the ones with a larger leaf. */
 uint64_t tvdb_nanovdb_leaf_node_size(uint32_t grid_type)
 {
-  uint32_t value_size = tvdb_nanovdb_value_size(grid_type);
-  uint32_t value_bytes = (value_size <= 4) ? 4 : 8;
-  return 32 + 64 + 16 + (uint64_t)(512 * value_bytes);
+  if (grid_type == 0 || grid_type >= PNANOVDB_GRID_TYPE_CAP)
+    return 0;
+  return (uint64_t)pnanovdb_grid_type_constants[grid_type].leaf_size;
 }
 
 uint64_t tvdb_nanovdb_lower_node_size(uint32_t grid_type)
 {
-  uint32_t value_size = tvdb_nanovdb_value_size(grid_type);
-  uint32_t value_bytes = (value_size <= 4) ? 4 : 8;
-  return 32 + 1024 + 1024 + 16 + (uint64_t)(4096 * value_bytes);
+  if (grid_type == 0 || grid_type >= PNANOVDB_GRID_TYPE_CAP)
+    return 0;
+  return (uint64_t)pnanovdb_grid_type_constants[grid_type].lower_size;
 }
 
 uint64_t tvdb_nanovdb_upper_node_size(uint32_t grid_type)
 {
-  uint32_t value_size = tvdb_nanovdb_value_size(grid_type);
-  uint32_t value_bytes = (value_size <= 4) ? 4 : 8;
-  return 32 + 8192 + 8192 + 16 + (uint64_t)(32768 * value_bytes);
+  if (grid_type == 0 || grid_type >= PNANOVDB_GRID_TYPE_CAP)
+    return 0;
+  return (uint64_t)pnanovdb_grid_type_constants[grid_type].upper_size;
+}
+
+uint64_t tvdb_nanovdb_root_node_size(uint32_t grid_type)
+{
+  if (grid_type == 0 || grid_type >= PNANOVDB_GRID_TYPE_CAP)
+    return 0;
+  return (uint64_t)pnanovdb_grid_type_constants[grid_type].root_size;
 }
 
 uint64_t tvdb_nanovdb_root_tile_size(void) { return 32; }
@@ -2905,6 +2785,8 @@ tvdb_projected_gaussian_t* tvdb_gaussian_project(const tvdb_gaussian_splat_t* sp
 
   for (uint32_t i = 0; i < N; i++)
   {
+    /* Culled splats stay zero, matching the device kernels' zero fill. */
+    memset(&gaussians[i], 0, sizeof(gaussians[i]));
     const float* mean3d = splats->means + i * 3;
     const float* quat = splats->quats + i * 4;
     const float* log_scale = splats->log_scales + i * 3;
@@ -2918,11 +2800,7 @@ tvdb_projected_gaussian_t* tvdb_gaussian_project(const tvdb_gaussian_splat_t* sp
 
     float depth = proj[2];
     if (depth <= cam->near || depth >= cam->far)
-    {
-      gaussians[i].radius = 0.0f;
-      gaussians[i].opacity = 0.0f;
       continue;
-    }
 
     float cam_x = proj[0] / proj[3];
     float cam_y = proj[1] / proj[3];
@@ -2962,7 +2840,8 @@ tvdb_projected_gaussian_t* tvdb_gaussian_project(const tvdb_gaussian_splat_t* sp
     R[7] = 2 * (qy * qz + qw * qx);
     R[8] = 1 - 2 * (qx * qx + qy * qy);
 
-    float covar_rot[6];
+    /* World-space covariance R S R^T (row major, symmetric). */
+    float covar_rot[9];
     for (int r = 0; r < 3; r++)
     {
       for (int c = r; c < 3; c++)
@@ -2974,15 +2853,18 @@ tvdb_projected_gaussian_t* tvdb_gaussian_project(const tvdb_gaussian_splat_t* sp
       }
     }
 
-    float inv_fx = 1.0f / fx;
-    float inv_fy = 1.0f / fy;
     float d_x = x - cx;
     float d_y = y - cy;
 
+    /* EWA: the pinhole Jacobian at this offset is
+     * J = [[fx/z, 0, -d_x/z], [0, fy/z, -d_y/z]], so the 2D covariance is
+     * J (R S R^T) J^T, including the z variance. */
+    const float jx = fx * inv_depth, jy = fy * inv_depth;
+    const float jp = -d_x * inv_depth, jq = -d_y * inv_depth;
     float covar_2d[3];
-    covar_2d[0] = inv_fx * inv_fx * covar_rot[0] + d_x * d_x * inv_fx * inv_fx * inv_depth * inv_depth * covar_rot[2];
-    covar_2d[1] = d_x * d_y * inv_fx * inv_fy * inv_depth * inv_depth * covar_rot[2];
-    covar_2d[2] = inv_fy * inv_fy * covar_rot[3] + d_y * d_y * inv_fy * inv_fy * inv_depth * inv_depth * covar_rot[5];
+    covar_2d[0] = jx * jx * covar_rot[0] + 2.0f * jx * jp * covar_rot[2] + jp * jp * covar_rot[8];
+    covar_2d[1] = jx * jy * covar_rot[1] + jx * jq * covar_rot[2] + jp * jy * covar_rot[5] + jp * jq * covar_rot[8];
+    covar_2d[2] = jy * jy * covar_rot[4] + 2.0f * jy * jq * covar_rot[5] + jq * jq * covar_rot[8];
 
     covar_2d[0] += eps2d;
     covar_2d[2] += eps2d;
@@ -3002,15 +2884,13 @@ tvdb_projected_gaussian_t* tvdb_gaussian_project(const tvdb_gaussian_splat_t* sp
       gaussians[i].conic_c = 1.0f;
     }
 
-    float det2d = gaussians[i].conic_a * gaussians[i].conic_c - gaussians[i].conic_b * gaussians[i].conic_b;
-    float eig_max =
-        0.5f *
-        (gaussians[i].conic_a + gaussians[i].conic_c +
-         tvdb__fast_sqrt((gaussians[i].conic_a - gaussians[i].conic_c) * (gaussians[i].conic_a - gaussians[i].conic_c) +
-                         4.0f * gaussians[i].conic_b * gaussians[i].conic_b));
-    if (eig_max > 1e-10f)
+    /* Three sigma along the major axis of that covariance. */
+    const float mid = 0.5f * (covar_2d[0] + covar_2d[2]);
+    const float eig_max = mid + 0.5f * tvdb__fast_sqrt((covar_2d[0] - covar_2d[2]) * (covar_2d[0] - covar_2d[2]) +
+                                                       4.0f * covar_2d[1] * covar_2d[1]);
+    if (isfinite(eig_max) && eig_max > 0.0f)
     {
-      gaussians[i].radius = 3.0f * tvdb__fast_sqrt(1.0f / eig_max);
+      gaussians[i].radius = 3.0f * tvdb__fast_sqrt(eig_max);
     }
     else
     {
@@ -3224,6 +3104,124 @@ tvdb_status_t tvdb_gaussian_mcmc_add_noise(uint32_t num_gaussians,
   return TVDB_OK;
 }
 
+/* Shared complete tile list: count first, allocate exactly, and impose a total
+ * order so forward and backward agree even for equal-depth splats. */
+typedef struct
+{
+  uint32_t gaussian_id;
+  float depth;
+  int32_t tile_x, tile_y;
+} tvdb__raster_entry;
+static tvdb_status_t tvdb__raster_error(tvdb_error_t* err, tvdb_status_t st, const char* msg)
+{
+  if (err)
+  {
+    memset(err, 0, sizeof(*err));
+    err->status = st;
+    snprintf(err->message, sizeof(err->message), "%s", msg);
+  }
+  return st;
+}
+static int tvdb__raster_cmp(const void* aa, const void* bb)
+{
+  const tvdb__raster_entry *a = (const tvdb__raster_entry*)aa, *b = (const tvdb__raster_entry*)bb;
+  if (a->tile_x != b->tile_x)
+    return a->tile_x < b->tile_x ? -1 : 1;
+  if (a->tile_y != b->tile_y)
+    return a->tile_y < b->tile_y ? -1 : 1;
+  if (a->depth != b->depth)
+    return a->depth < b->depth ? -1 : 1;
+  return a->gaussian_id < b->gaussian_id ? -1 : a->gaussian_id > b->gaussian_id;
+}
+static int tvdb__raster_bounds(const tvdb_projected_gaussian_t* g, uint32_t w, uint32_t h, int32_t b[4])
+{
+  if (g->radius <= 0 || g->opacity <= 0)
+    return 0;
+  double x0 = floor(((double)g->x - g->radius) / TVDB_GAUSSIAN_RASTER_TILE_SIZE);
+  double y0 = floor(((double)g->y - g->radius) / TVDB_GAUSSIAN_RASTER_TILE_SIZE);
+  double x1 = floor(((double)g->x + g->radius) / TVDB_GAUSSIAN_RASTER_TILE_SIZE);
+  double y1 = floor(((double)g->y + g->radius) / TVDB_GAUSSIAN_RASTER_TILE_SIZE);
+  double mx = (w - 1) / TVDB_GAUSSIAN_RASTER_TILE_SIZE, my = (h - 1) / TVDB_GAUSSIAN_RASTER_TILE_SIZE;
+  if (x1 < 0 || y1 < 0 || x0 > mx || y0 > my)
+    return 0;
+  b[0] = (int32_t)fmax(0, x0);
+  b[1] = (int32_t)fmax(0, y0);
+  b[2] = (int32_t)fmin(mx, x1);
+  b[3] = (int32_t)fmin(my, y1);
+  return 1;
+}
+static tvdb_status_t tvdb__raster_entries(const tvdb_projected_gaussian_t* g,
+                                          uint32_t n,
+                                          uint32_t w,
+                                          uint32_t h,
+                                          uint32_t features,
+                                          tvdb__raster_entry** out,
+                                          size_t* count,
+                                          tvdb_error_t* err)
+{
+  *out = NULL;
+  *count = 0;
+  size_t pixels, values, bytes;
+  if ((n && !g) || n > INT32_MAX || !w || !h || w > INT32_MAX || h > INT32_MAX || features < 1 || features > 3 ||
+      !tvdb_size_mul(w, h, &pixels) || !tvdb_size_mul(pixels, features, &values) ||
+      !tvdb_size_mul(values, sizeof(float), &bytes))
+    return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "invalid raster shape/features");
+  size_t total = 0;
+  for (uint32_t i = 0; i < n; ++i)
+  {
+    if (!isfinite(g[i].x) || !isfinite(g[i].y) || !isfinite(g[i].depth) || !isfinite(g[i].radius) ||
+        !isfinite(g[i].opacity) || g[i].opacity < 0 || g[i].opacity > 1 || !isfinite(g[i].conic_a) ||
+        !isfinite(g[i].conic_b) || !isfinite(g[i].conic_c) || g[i].conic_a < 0 || g[i].conic_c < 0 ||
+        (double)g[i].conic_a * g[i].conic_c < (double)g[i].conic_b * g[i].conic_b)
+      return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "invalid Gaussian geometry/opacity");
+    for (uint32_t f = 0; f < features; ++f)
+      if (!isfinite(g[i].feature[f]))
+        return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "nonfinite Gaussian feature");
+    int32_t b[4];
+    if (!tvdb__raster_bounds(g + i, w, h, b))
+      continue;
+    size_t take;
+    if (!tvdb_size_mul((size_t)(b[2] - b[0]) + 1, (size_t)(b[3] - b[1]) + 1, &take) || take > SIZE_MAX - total)
+      return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "raster intersection count overflow");
+    total += take;
+  }
+  if (!tvdb_size_mul(total, sizeof(tvdb__raster_entry), &bytes))
+    return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "raster intersection size overflow");
+  tvdb__raster_entry* entries = bytes ? (tvdb__raster_entry*)malloc(bytes) : NULL;
+  if (bytes && !entries)
+    return tvdb__raster_error(err, TVDB_ERROR_OUT_OF_MEMORY, "raster intersections allocation failed");
+  size_t at = 0;
+  for (uint32_t i = 0; i < n; ++i)
+  {
+    int32_t b[4];
+    if (!tvdb__raster_bounds(g + i, w, h, b))
+      continue;
+    for (int32_t y = b[1]; y <= b[3]; ++y)
+      for (int32_t x = b[0]; x <= b[2]; ++x)
+      {
+        entries[at].gaussian_id = i;
+        entries[at].depth = g[i].depth;
+        entries[at].tile_x = x;
+        entries[at++].tile_y = y;
+      }
+  }
+  if (total > 1)
+    qsort(entries, total, sizeof(*entries), tvdb__raster_cmp);
+  *out = entries;
+  *count = total;
+  return TVDB_OK;
+}
+static float tvdb__raster_alpha(const tvdb_projected_gaussian_t* g, uint32_t x, uint32_t y)
+{
+  double dx = (double)x - g->x, dy = (double)y - g->y;
+  double sigma = 0.5 * ((double)g->conic_a * dx * dx + 2 * (double)g->conic_b * dx * dy + (double)g->conic_c * dy * dy);
+  if (sigma > 10)
+    return 0;
+  if (sigma < 0)
+    sigma = 0; /* Roundoff at a positive-semidefinite conic. */
+  return (float)(g->opacity * exp(-sigma));
+}
+
 /* Forward rasterization */
 tvdb_status_t tvdb_gaussian_rasterize_forward(const tvdb_projected_gaussian_t* gaussians,
                                               uint32_t num_gaussians,
@@ -3235,120 +3233,43 @@ tvdb_status_t tvdb_gaussian_rasterize_forward(const tvdb_projected_gaussian_t* g
                                               tvdb_raster_output_t* out,
                                               tvdb_error_t* err)
 {
-  if (!gaussians || !out || width == 0 || height == 0)
-  {
-    if (err)
-      snprintf(err->message, sizeof(err->message), "Invalid argument");
-    return TVDB_ERROR_INVALID_ARGUMENT;
-  }
-
+  if (!out)
+    return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "NULL raster output");
+  /* Legacy output may be uninitialized. It must not contain a live result. */
+  memset(out, 0, sizeof(*out));
   if (num_features == 0)
     num_features = 3;
+  if (!isfinite(alpha_threshold))
+    return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "nonfinite alpha threshold");
   if (alpha_threshold <= 0)
     alpha_threshold = TVDB_GAUSSIAN_RASTER_DEFAULT_ALPHA_THRESHOLD;
-
-  memset(out, 0, sizeof(*out));
+  if (background)
+    for (uint32_t f = 0; f < num_features && f < 3; ++f)
+      if (!isfinite(background[f]))
+        return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "nonfinite background");
+  tvdb__raster_entry* entries = NULL;
+  size_t num_entries = 0;
+  tvdb_status_t status =
+      tvdb__raster_entries(gaussians, num_gaussians, width, height, num_features, &entries, &num_entries, err);
+  if (status != TVDB_OK)
+    return status;
+  size_t pixel_count = (size_t)width * height;
   out->width = width;
   out->height = height;
   out->num_features = num_features;
   out->owns_data = 1;
-
-  size_t pixel_count = (size_t)width * height;
   out->image = (float*)calloc(pixel_count * num_features, sizeof(float));
   out->alpha = (float*)calloc(pixel_count, sizeof(float));
   out->last_ids = (int32_t*)malloc(pixel_count * sizeof(int32_t));
-
   if (!out->image || !out->alpha || !out->last_ids)
   {
-    if (out->image)
-      free(out->image);
-    if (out->alpha)
-      free(out->alpha);
-    if (out->last_ids)
-      free(out->last_ids);
-    if (err)
-      snprintf(err->message, sizeof(err->message), "Out of memory");
-    return TVDB_ERROR_OUT_OF_MEMORY;
+    free(entries);
+    tvdb_raster_output_destroy(out);
+    return tvdb__raster_error(err, TVDB_ERROR_OUT_OF_MEMORY, "raster output allocation failed");
   }
-
-  for (size_t i = 0; i < pixel_count; i++)
-  {
-    for (uint32_t f = 0; f < num_features; f++)
-    {
-      out->image[i * num_features + f] = background ? background[f] : 0.0f;
-    }
-  }
-
+  for (size_t i = 0; i < pixel_count; ++i)
+    out->last_ids[i] = -1;
   uint32_t tile_size = TVDB_GAUSSIAN_RASTER_TILE_SIZE;
-  uint32_t num_tiles_x = (width + tile_size - 1) / tile_size;
-  uint32_t num_tiles_y = (height + tile_size - 1) / tile_size;
-
-  typedef struct
-  {
-    uint32_t gaussian_id;
-    float depth;
-    int32_t tile_x, tile_y;
-  } tile_entry_t;
-
-  size_t max_entries = num_gaussians * 16;
-  tile_entry_t* entries = (tile_entry_t*)malloc(max_entries * sizeof(tile_entry_t));
-  if (!entries)
-  {
-    free(out->image);
-    free(out->alpha);
-    free(out->last_ids);
-    if (err)
-      snprintf(err->message, sizeof(err->message), "Out of memory");
-    return TVDB_ERROR_OUT_OF_MEMORY;
-  }
-  size_t num_entries = 0;
-
-  for (uint32_t i = 0; i < num_gaussians; i++)
-  {
-    if (gaussians[i].radius <= 0.0f || gaussians[i].opacity <= 0.0f)
-      continue;
-
-    int32_t center_x = (int32_t)gaussians[i].x;
-    int32_t center_y = (int32_t)gaussians[i].y;
-    int32_t radius = (int32_t)(gaussians[i].radius + 0.5f);
-
-    int32_t tile_x0 = center_x / (int32_t)tile_size;
-    int32_t tile_y0 = center_y / (int32_t)tile_size;
-    int32_t tile_x1 = (center_x + radius) / (int32_t)tile_size;
-    int32_t tile_y1 = (center_y + radius) / (int32_t)tile_size;
-
-    for (int32_t ty = tile_y0; ty <= tile_y1; ty++)
-    {
-      for (int32_t tx = tile_x0; tx <= tile_x1; tx++)
-      {
-        if (tx < 0 || ty < 0 || (uint32_t)tx >= num_tiles_x || (uint32_t)ty >= num_tiles_y)
-          continue;
-        if (num_entries >= max_entries)
-          continue;
-        entries[num_entries].gaussian_id = i;
-        entries[num_entries].depth = gaussians[i].depth;
-        entries[num_entries].tile_x = tx;
-        entries[num_entries].tile_y = ty;
-        num_entries++;
-      }
-    }
-  }
-
-  for (size_t e = 0; e < num_entries; e++)
-  {
-    for (size_t k = e + 1; k < num_entries; k++)
-    {
-      if (entries[e].tile_x > entries[k].tile_x ||
-          (entries[e].tile_x == entries[k].tile_x && entries[e].tile_y > entries[k].tile_y) ||
-          (entries[e].tile_x == entries[k].tile_x && entries[e].tile_y == entries[k].tile_y &&
-           entries[e].depth > entries[k].depth))
-      {
-        tile_entry_t tmp = entries[e];
-        entries[e] = entries[k];
-        entries[k] = tmp;
-      }
-    }
-  }
 
   for (size_t e = 0; e < num_entries; e++)
   {
@@ -3366,24 +3287,12 @@ tvdb_status_t tvdb_gaussian_rasterize_forward(const tvdb_projected_gaussian_t* g
     if (py1 > height)
       py1 = height;
 
-    float conic_a = g->conic_a, conic_b = g->conic_b, conic_c = g->conic_c;
-    float gx = g->x, gy = g->y;
-    float alpha = g->opacity;
-
     for (uint32_t py = py0; py < py1; py++)
     {
       for (uint32_t px = px0; px < px1; px++)
       {
-        float dx = (float)px - gx;
-        float dy = (float)py - gy;
-        float sigma = 0.5f * (conic_a * dx * dx + 2.0f * conic_b * dx * dy + conic_c * dy * dy);
-        if (sigma > 10.0f)
-          continue;
-
-        /* α = opacity · exp(-σ): natural exp matches the standard
-           Gaussian-splatting density; the backward uses the same. */
-        float gaussian_alpha = alpha * expf(-sigma);
-        if (gaussian_alpha < alpha_threshold)
+        float gaussian_alpha = tvdb__raster_alpha(g, px, py);
+        if (gaussian_alpha <= 0 || gaussian_alpha < alpha_threshold)
           continue;
 
         size_t pixel_idx = (size_t)py * width + px;
@@ -3402,8 +3311,18 @@ tvdb_status_t tvdb_gaussian_rasterize_forward(const tvdb_projected_gaussian_t* g
     }
   }
 
+  if (background)
+    for (size_t p = 0; p < pixel_count; ++p)
+      for (uint32_t f = 0; f < num_features; ++f)
+        out->image[p * num_features + f] += background[f] * (1 - out->alpha[p]);
   free(entries);
-  return TVDB_OK;
+  for (size_t p = 0; p < pixel_count * num_features; ++p)
+    if (!isfinite(out->image[p]))
+    {
+      tvdb_raster_output_destroy(out);
+      return tvdb__raster_error(err, TVDB_ERROR_INVALID_DATA, "raster color overflow");
+    }
+  return tvdb__raster_error(err, TVDB_OK, "");
 }
 
 void tvdb_raster_output_destroy(tvdb_raster_output_t* out)
@@ -3429,10 +3348,17 @@ tvdb_status_t tvdb_gaussian_grad_init(tvdb_gaussian_grad_t* g, uint32_t num_gaus
   if (!g)
     return TVDB_ERROR_INVALID_ARGUMENT;
   memset(g, 0, sizeof(*g));
-  if (num_gaussians == 0)
-    return TVDB_OK;
   if (num_features == 0)
     num_features = 3;
+  size_t count, bytes;
+  if (num_features > 3 || num_gaussians > INT32_MAX || !tvdb_size_mul(num_gaussians, num_features, &count) ||
+      !tvdb_size_mul(count, sizeof(float), &bytes))
+    return TVDB_ERROR_INVALID_ARGUMENT;
+  if (num_gaussians == 0)
+  {
+    g->num_features = num_features;
+    return TVDB_OK;
+  }
   g->num_gaussians = num_gaussians;
   g->num_features = num_features;
   g->grad_x = (float*)calloc(num_gaussians, sizeof(float));
@@ -3479,222 +3405,157 @@ tvdb_status_t tvdb_gaussian_rasterize_backward(const tvdb_projected_gaussian_t* 
                                                tvdb_gaussian_grad_t* grad_out,
                                                tvdb_error_t* err)
 {
-  if (!gaussians || !fwd || !dL_dC || !grad_out)
-  {
-    if (err)
-      snprintf(err->message, sizeof(err->message), "Invalid argument");
-    return TVDB_ERROR_INVALID_ARGUMENT;
-  }
-  if (grad_out->num_gaussians != num_gaussians || grad_out->num_features != fwd->num_features)
-  {
-    if (err)
-      snprintf(err->message, sizeof(err->message), "grad_out shape mismatch");
-    return TVDB_ERROR_INVALID_ARGUMENT;
-  }
-
-  uint32_t width = fwd->width;
-  uint32_t height = fwd->height;
-  uint32_t F = fwd->num_features;
+  if (!fwd || !dL_dC || !grad_out || !fwd->image || !fwd->alpha || grad_out->num_gaussians != num_gaussians ||
+      grad_out->num_features != fwd->num_features || !isfinite(alpha_threshold))
+    return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "invalid backward arguments/shape");
+  uint32_t width = fwd->width, height = fwd->height, F = fwd->num_features;
   if (alpha_threshold <= 0)
     alpha_threshold = TVDB_GAUSSIAN_RASTER_DEFAULT_ALPHA_THRESHOLD;
-
-  /* Re-derive the same per-tile, depth-sorted entry list as the forward
-     pass. We must traverse it in REVERSE order. */
-  uint32_t tile_size = TVDB_GAUSSIAN_RASTER_TILE_SIZE;
-  uint32_t num_tiles_x = (width + tile_size - 1) / tile_size;
-  uint32_t num_tiles_y = (height + tile_size - 1) / tile_size;
-
-  typedef struct
-  {
-    uint32_t gaussian_id;
-    float depth;
-    int32_t tile_x, tile_y;
-  } tile_entry_t;
-
-  size_t max_entries = (size_t)num_gaussians * 16;
-  tile_entry_t* entries = (tile_entry_t*)malloc(max_entries * sizeof(*entries));
-  if (!entries)
-  {
-    if (err)
-      snprintf(err->message, sizeof(err->message), "OOM");
-    return TVDB_ERROR_OUT_OF_MEMORY;
-  }
-  size_t num_entries = 0;
-  for (uint32_t i = 0; i < num_gaussians; ++i)
-  {
-    if (gaussians[i].radius <= 0.0f || gaussians[i].opacity <= 0.0f)
-      continue;
-    int32_t cx = (int32_t)gaussians[i].x;
-    int32_t cy = (int32_t)gaussians[i].y;
-    int32_t r = (int32_t)(gaussians[i].radius + 0.5f);
-    int32_t tx0 = cx / (int32_t)tile_size, ty0 = cy / (int32_t)tile_size;
-    int32_t tx1 = (cx + r) / (int32_t)tile_size;
-    int32_t ty1 = (cy + r) / (int32_t)tile_size;
-    for (int32_t ty = ty0; ty <= ty1; ++ty)
+  tvdb__raster_entry* entries = NULL;
+  size_t count = 0;
+  tvdb_status_t st = tvdb__raster_entries(gaussians, num_gaussians, width, height, F, &entries, &count, err);
+  if (st != TVDB_OK)
+    return st;
+  float* dst[7] = { grad_out->grad_x,       grad_out->grad_y,       grad_out->grad_conic_a, grad_out->grad_conic_b,
+                    grad_out->grad_conic_c, grad_out->grad_opacity, grad_out->grad_feature };
+  for (int k = 0; k < 7; ++k)
+    if (num_gaussians && !dst[k])
     {
-      for (int32_t tx = tx0; tx <= tx1; ++tx)
-      {
-        if (tx < 0 || ty < 0 || (uint32_t)tx >= num_tiles_x || (uint32_t)ty >= num_tiles_y)
-          continue;
-        if (num_entries >= max_entries)
-          continue;
-        entries[num_entries].gaussian_id = i;
-        entries[num_entries].depth = gaussians[i].depth;
-        entries[num_entries].tile_x = tx;
-        entries[num_entries].tile_y = ty;
-        ++num_entries;
-      }
+      free(entries);
+      return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "missing gradient storage");
     }
-  }
-  /* Same naive O(N²) sort as forward (so order matches). */
-  for (size_t e = 0; e < num_entries; ++e)
+  size_t pixels = (size_t)width * height;
+  for (size_t p = 0; p < pixels; ++p)
   {
-    for (size_t k = e + 1; k < num_entries; ++k)
+    if (!isfinite(fwd->alpha[p]) || fwd->alpha[p] < 0 || fwd->alpha[p] > 1 || (dL_dA && !isfinite(dL_dA[p])))
     {
-      int swap = (entries[e].tile_x > entries[k].tile_x) ||
-                 (entries[e].tile_x == entries[k].tile_x && entries[e].tile_y > entries[k].tile_y) ||
-                 (entries[e].tile_x == entries[k].tile_x && entries[e].tile_y == entries[k].tile_y &&
-                  entries[e].depth > entries[k].depth);
-      if (swap)
-      {
-        tile_entry_t tmp = entries[e];
-        entries[e] = entries[k];
-        entries[k] = tmp;
-      }
+      free(entries);
+      return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "invalid alpha/gradient input");
     }
+    for (uint32_t f = 0; f < F; ++f)
+      if (!isfinite(dL_dC[p * F + f]))
+      {
+        free(entries);
+        return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "nonfinite image gradient");
+      }
   }
-
-  size_t pixel_count = (size_t)width * height;
-  float* T_curr = (float*)malloc(pixel_count * sizeof(float));
-  float* S_curr = (float*)calloc(pixel_count * F, sizeof(float));
-  if (!T_curr || !S_curr)
+  for (uint32_t f = 0; f < F; ++f)
+    if (background && !isfinite(background[f]))
+    {
+      free(entries);
+      return tvdb__raster_error(err, TVDB_ERROR_INVALID_ARGUMENT, "nonfinite background");
+    }
+  size_t max_group = 0;
+  for (size_t a = 0; a < count;)
+  {
+    size_t b = a + 1;
+    while (b < count && entries[b].tile_x == entries[a].tile_x && entries[b].tile_y == entries[a].tile_y)
+      ++b;
+    if (b - a > max_group)
+      max_group = b - a;
+    a = b;
+  }
+  float* prefix = max_group ? (float*)malloc(max_group * sizeof(float)) : NULL;
+  if (max_group && !prefix)
   {
     free(entries);
-    free(T_curr);
-    free(S_curr);
-    if (err)
-      snprintf(err->message, sizeof(err->message), "OOM");
-    return TVDB_ERROR_OUT_OF_MEMORY;
+    return tvdb__raster_error(err, TVDB_ERROR_OUT_OF_MEMORY, "raster prefix allocation failed");
   }
-  /* Initialize: T_curr[p] = T_final = 1 - alpha_final.
-   *             S_curr[p,f] = T_final * bg[f] (post-all-gaussians color). */
-  for (size_t p = 0; p < pixel_count; ++p)
+  tvdb_gaussian_grad_t temp;
+  st = tvdb_gaussian_grad_init(&temp, num_gaussians, F);
+  if (st != TVDB_OK)
   {
-    float Tfin = 1.0f - fwd->alpha[p];
-    if (Tfin < 0.0f)
-      Tfin = 0.0f;
-    T_curr[p] = Tfin;
-    for (uint32_t f = 0; f < F; ++f)
-    {
-      S_curr[p * F + f] = Tfin * (background ? background[f] : 0.0f);
-    }
+    free(entries);
+    free(prefix);
+    return tvdb__raster_error(err, st, "gradient allocation failed");
   }
-
-  /* Walk entries in REVERSE forward order. */
-  for (size_t e = num_entries; e > 0; --e)
+  float* src[7] = { temp.grad_x,       temp.grad_y,       temp.grad_conic_a, temp.grad_conic_b,
+                    temp.grad_conic_c, temp.grad_opacity, temp.grad_feature };
+  /* Replay the exact forward prefix per pixel. Reverse compositing uses a
+   * relative suffix, avoiding division by (1-alpha), including alpha==1. */
+  for (size_t a = 0; a < count;)
   {
-    const tile_entry_t* en = &entries[e - 1];
-    const tvdb_projected_gaussian_t* g = &gaussians[en->gaussian_id];
-    uint32_t gid = en->gaussian_id;
-
-    uint32_t px0 = (uint32_t)(en->tile_x * (int32_t)tile_size);
-    uint32_t py0 = (uint32_t)(en->tile_y * (int32_t)tile_size);
-    uint32_t px1 = px0 + tile_size;
-    uint32_t py1 = py0 + tile_size;
-    if (px1 > width)
-      px1 = width;
-    if (py1 > height)
-      py1 = height;
-
-    float a_c = g->conic_a, b_c = g->conic_b, c_c = g->conic_c;
-    float gx = g->x, gy = g->y;
-    float opac = g->opacity;
-
-    for (uint32_t py = py0; py < py1; ++py)
-    {
-      for (uint32_t px = px0; px < px1; ++px)
+    size_t b = a + 1;
+    while (b < count && entries[b].tile_x == entries[a].tile_x && entries[b].tile_y == entries[a].tile_y)
+      ++b;
+    uint32_t x0 = (uint32_t)entries[a].tile_x * TVDB_GAUSSIAN_RASTER_TILE_SIZE;
+    uint32_t y0 = (uint32_t)entries[a].tile_y * TVDB_GAUSSIAN_RASTER_TILE_SIZE;
+    uint32_t x1 = x0 + TVDB_GAUSSIAN_RASTER_TILE_SIZE, y1 = y0 + TVDB_GAUSSIAN_RASTER_TILE_SIZE;
+    if (x1 > width)
+      x1 = width;
+    if (y1 > height)
+      y1 = height;
+    for (uint32_t y = y0; y < y1; ++y)
+      for (uint32_t x = x0; x < x1; ++x)
       {
-        float dx = (float)px - gx;
-        float dy = (float)py - gy;
-        float sigma = 0.5f * (a_c * dx * dx + 2.0f * b_c * dx * dy + c_c * dy * dy);
-        if (sigma > 10.0f)
-          continue;
-        float G = (float)exp(-(double)sigma);
-        float alpha = opac * G;
-        if (alpha < alpha_threshold)
-          continue;
-
-        /* T_pre is the transmittance entering this gaussian during
-         * the forward pass (i.e. what the forward called `T`). The
-         * forward skipped if T_pre < 0.001, so we replicate that
-         * test on T_pre, not T_curr. */
-        float one_m_alpha = 1.0f - alpha;
-        if (one_m_alpha < 1e-7f)
-          one_m_alpha = 1e-7f;
-        float T_pre = T_curr[(size_t)py * width + px] / one_m_alpha;
-        if (T_pre < 0.001f)
-          continue;
-
-        size_t pidx = (size_t)py * width + px;
-
-        /* dL/df_i [p] += dL/dC[p] * (T_pre * alpha) */
-        float w = T_pre * alpha;
-        /* Also compute:
-         *   dotCf  = Σ_f dL/dC[p,f] * f_i[f]  (for dα via C)
-         *   dotCS  = Σ_f dL/dC[p,f] * S_curr[p,f]  (for dα via C)
-         * dα/dα = T_pre*f_i - S_curr/(1-α). */
-        float dotCf = 0.0f, dotCS = 0.0f;
+        float T = 1;
+        for (size_t e = a; e < b; ++e)
+        {
+          float alpha = tvdb__raster_alpha(gaussians + entries[e].gaussian_id, x, y);
+          prefix[e - a] = -1;
+          if (T < 0.001f || alpha <= 0 || alpha < alpha_threshold)
+            continue;
+          prefix[e - a] = T;
+          T = 1 - (1 - T + alpha * T);
+        }
+        double suffix[3] = { 0, 0, 0 }, later = 1;
         for (uint32_t f = 0; f < F; ++f)
+          suffix[f] = background ? background[f] : 0;
+        size_t p = (size_t)y * width + x;
+        for (size_t e = b; e > a;)
         {
-          float dLdCf = dL_dC[pidx * F + f];
-          float feat = (f < 3) ? g->feature[f] : 0.0f;
-          dotCf += dLdCf * feat;
-          dotCS += dLdCf * S_curr[pidx * F + f];
-          grad_out->grad_feature[(size_t)gid * F + f] += dLdCf * w;
+          --e;
+          if (prefix[e - a] < 0)
+            continue;
+          uint32_t id = entries[e].gaussian_id;
+          const tvdb_projected_gaussian_t* g = gaussians + id;
+          double alpha = tvdb__raster_alpha(g, x, y), pre = prefix[e - a];
+          double da = dL_dA ? (double)dL_dA[p] * pre * later : 0;
+          for (uint32_t f = 0; f < F; ++f)
+          {
+            double dc = dL_dC[p * F + f];
+            temp.grad_feature[(size_t)id * F + f] += (float)(dc * pre * alpha);
+            da += dc * pre * ((double)g->feature[f] - suffix[f]);
+          }
+          double dx = (double)x - g->x, dy = (double)y - g->y;
+          double sigma =
+              0.5 * ((double)g->conic_a * dx * dx + 2 * (double)g->conic_b * dx * dy + (double)g->conic_c * dy * dy);
+          double G = exp(-fmax(0, sigma)), ds = -alpha * da;
+          temp.grad_opacity[id] += (float)(da * G);
+          temp.grad_x[id] += (float)(ds * (-((double)g->conic_a * dx + g->conic_b * dy)));
+          temp.grad_y[id] += (float)(ds * (-((double)g->conic_b * dx + g->conic_c * dy)));
+          temp.grad_conic_a[id] += (float)(ds * 0.5 * dx * dx);
+          temp.grad_conic_b[id] += (float)(ds * dx * dy);
+          temp.grad_conic_c[id] += (float)(ds * 0.5 * dy * dy);
+          for (uint32_t f = 0; f < F; ++f)
+            suffix[f] = alpha * g->feature[f] + (1 - alpha) * suffix[f];
+          later *= 1 - alpha;
         }
-        float Tfin = 1.0f - fwd->alpha[pidx];
-        if (Tfin < 0.0f)
-          Tfin = 0.0f;
-        float dL_dalpha = T_pre * dotCf - dotCS / one_m_alpha;
-        if (dL_dA)
-        {
-          /* dA_final/dα_i = T_N / (1 - α_i) */
-          dL_dalpha += dL_dA[pidx] * Tfin / one_m_alpha;
-        }
-
-        /* α = opacity * G  →  dα/dopacity = G, dα/dG = opacity,
-         * G = exp(-σ) → dG/dσ = -G → dα/dσ = -α. */
-        grad_out->grad_opacity[gid] += dL_dalpha * G;
-        float dL_dsigma = -alpha * dL_dalpha;
-
-        /* σ-grads:
-         *   ∂σ/∂gx = -(a*dx + b*dy)
-         *   ∂σ/∂gy = -(b*dx + c*dy)
-         *   ∂σ/∂a  = 0.5 * dx²
-         *   ∂σ/∂b  = dx * dy
-         *   ∂σ/∂c  = 0.5 * dy² */
-        grad_out->grad_x[gid] += dL_dsigma * -(a_c * dx + b_c * dy);
-        grad_out->grad_y[gid] += dL_dsigma * -(b_c * dx + c_c * dy);
-        grad_out->grad_conic_a[gid] += dL_dsigma * 0.5f * dx * dx;
-        grad_out->grad_conic_b[gid] += dL_dsigma * dx * dy;
-        grad_out->grad_conic_c[gid] += dL_dsigma * 0.5f * dy * dy;
-
-        /* Update running state: S_curr[p,f] += w * f_i[f];
-         *                       T_curr[p]    = T_pre. */
-        for (uint32_t f = 0; f < F; ++f)
-        {
-          float feat = (f < 3) ? g->feature[f] : 0.0f;
-          S_curr[pidx * F + f] += w * feat;
-        }
-        T_curr[pidx] = T_pre;
       }
-    }
+    a = b;
   }
-
+  /* Commit accumulated gradients only after every value is representable. */
+  for (int k = 0; k < 7; ++k)
+  {
+    size_t n = (size_t)num_gaussians * (k == 6 ? F : 1);
+    for (size_t i = 0; i < n; ++i)
+      if (!isfinite(src[k][i]) || !isfinite(dst[k][i]) || fabs((double)src[k][i] + dst[k][i]) > FLT_MAX)
+      {
+        st = TVDB_ERROR_INVALID_DATA;
+        goto backward_done;
+      }
+  }
+  for (int k = 0; k < 7; ++k)
+  {
+    size_t n = (size_t)num_gaussians * (k == 6 ? F : 1);
+    for (size_t i = 0; i < n; ++i)
+      dst[k][i] += src[k][i];
+  }
+backward_done:
+  tvdb_gaussian_grad_destroy(&temp);
   free(entries);
-  free(T_curr);
-  free(S_curr);
-  return TVDB_OK;
+  free(prefix);
+  return tvdb__raster_error(err, st, st == TVDB_OK ? "" : "nonfinite/overflowing raster gradient");
 }
 
 #endif /* TINYVDB_NANOVDB_IMPLEMENTATION */

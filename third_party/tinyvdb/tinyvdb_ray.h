@@ -28,6 +28,10 @@ typedef struct
 // Enumerate voxel indices the ray traverses across the grid. If `out` is NULL,
 // only counts; otherwise writes up to `cap` voxels and returns the number
 // written (which may be less than the actual count if `cap` is exceeded).
+// Every voxel whose interior the [tmin, tmax] segment passes through is
+// reported, including the voxel containing the segment end point. Returns 0
+// for invalid grids (non-positive dimensions or voxel size) and for rays with
+// non-finite origin/direction or NaN tmin/tmax.
 size_t tvdb_voxels_along_ray_dense(const tvdb_dense_grid* g, const tvdb_ray* ray, tvdb_vec3i* out_voxels, size_t cap);
 
 // Generate `n_samples` uniformly spaced points along the ray within
@@ -36,6 +40,9 @@ void tvdb_uniform_ray_samples(const tvdb_ray* ray, size_t n_samples, tvdb_vec3f*
 
 // Find SDF-zero crossings along the ray and emit them as t-pair entries
 // (entry, exit) for each contiguous "inside" run (sample f < isovalue).
+// A sample exactly equal to the isovalue (or NaN) counts as outside; a
+// crossing between samples of strictly opposite sign is linearly
+// interpolated, otherwise it is placed at the sample lying on the isovalue.
 // out_t_pairs is filled with up to `cap` pairs (2 floats each).
 // Returns the number of pairs written (or required, if out is NULL).
 size_t tvdb_segments_along_ray(const tvdb_dense_grid* g,

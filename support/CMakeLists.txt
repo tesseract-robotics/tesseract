@@ -3,7 +3,7 @@ set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "support" PARENT_SCOPE)
 # Configure Package
 configure_component(COMPONENT support)
 
-foreach(dir urdf meshes)
+foreach(dir urdf meshes sdf)
   install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/support/${dir} COMPONENT support)
 endforeach()
 
