@@ -81,3 +81,16 @@ add_gtest(collision_schema_unit contact_managers_schema_unit.cpp)
 target_link_libraries(collision_schema_unit PRIVATE tesseract::collision_bullet_factories collision_fcl_factories)
 
 add_gtest(collision_convex_hull_unit collision_convex_hull_unit.cpp)
+
+# Speed and accuracy of the Bullet signed distance field paths (a report, not a test).
+add_executable(collision_sdf_interpolation_benchmark sdf_interpolation_benchmark.cpp)
+target_link_libraries(
+  collision_sdf_interpolation_benchmark
+  PRIVATE tesseract::collision_bullet
+          tesseract::geometry
+          tesseract::tinyvdb
+          Eigen3::Eigen)
+target_compile_options(collision_sdf_interpolation_benchmark PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                     ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(collision_sdf_interpolation_benchmark PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
+target_cxx_version(collision_sdf_interpolation_benchmark PRIVATE VERSION ${TESSERACT_CXX_VERSION})
