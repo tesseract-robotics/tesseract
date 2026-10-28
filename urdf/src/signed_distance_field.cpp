@@ -59,6 +59,27 @@ bool hasExtension(const std::string& filename, const std::string& extension)
   });
   return actual == extension;
 }
+
+/** @brief Parse @p element's optional `band_clamp` attribute into @p band_clamp; false when absent. */
+bool parseBandClamp(const tinyxml2::XMLElement* element, double& band_clamp)
+{
+  std::string clamp_string;
+  if (tesseract::common::QueryStringAttribute(element, "band_clamp", clamp_string) != tinyxml2::XML_SUCCESS)
+    return false;
+  if (!tesseract::common::isNumeric(clamp_string) || !tesseract::common::toNumeric<double>(clamp_string, band_clamp))
+    std::throw_with_nested(std::runtime_error("SignedDistanceField: Failed parsing attribute 'band_clamp'!"));
+  return true;
+}
+
+/** @brief @p value with full precision in the classic locale, for an XML attribute. */
+std::string toAttribute(double value)
+{
+  std::stringstream text;
+  text.imbue(std::locale::classic());
+  text.precision(17);
+  text << value;
+  return text.str();
+}
 }  // namespace
 
 tesseract::geometry::SignedDistanceField::Ptr
@@ -101,14 +122,41 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
   std::string grid_name;
   const bool has_grid =
       tesseract::common::QueryStringAttribute(xml_element, "grid", grid_name) == tinyxml2::XML_SUCCESS;
-  std::string clamp_string;
   double band_clamp{ 0 };
-  const bool has_clamp =
-      tesseract::common::QueryStringAttribute(xml_element, "band_clamp", clamp_string) == tinyxml2::XML_SUCCESS;
-  if (has_clamp &&
-      (!tesseract::common::isNumeric(clamp_string) || !tesseract::common::toNumeric<double>(clamp_string, band_clamp)))
-    std::throw_with_nested(std::runtime_error("SignedDistanceField: Failed parsing attribute 'band_clamp'!"));
+  const bool has_clamp = parseBandClamp(xml_element, band_clamp);
   const bool sparse = has_grid || has_clamp;
+
+  // `level` children, finest first, stack grids of the file as levels of one surface (see the
+  // multi-level SignedDistanceField constructor): each names its grid by `grid` or `index` and gives
+  // its `band_clamp`.
+  struct Level
+  {
+    std::string grid;
+    std::size_t index{ 0 };
+    bool by_index{ false };
+    double band_clamp{ 0 };
+  };
+  std::vector<Level> level_specs;
+  for (const tinyxml2::XMLElement* child = xml_element->FirstChildElement("level"); child != nullptr;
+       child = child->NextSiblingElement("level"))
+  {
+    Level level;
+    const bool named = tesseract::common::QueryStringAttribute(child, "grid", level.grid) == tinyxml2::XML_SUCCESS;
+    std::string index_string;
+    level.by_index = tesseract::common::QueryStringAttribute(child, "index", index_string) == tinyxml2::XML_SUCCESS;
+    if (named == level.by_index)
+      std::throw_with_nested(std::runtime_error("SignedDistanceField: a level needs exactly one of 'grid' and "
+                                                "'index'!"));
+    int index{ -1 };
+    if (level.by_index && (!tesseract::common::toNumeric<int>(index_string, index) || index < 0))
+      std::throw_with_nested(std::runtime_error("SignedDistanceField: Failed parsing level attribute 'index'!"));
+    level.index = static_cast<std::size_t>(index);
+    parseBandClamp(child, level.band_clamp);
+    level_specs.push_back(level);
+  }
+  if (!level_specs.empty() && sparse)
+    std::throw_with_nested(std::runtime_error("SignedDistanceField: 'grid' and 'band_clamp' belong on the levels of a "
+                                              "multi-level field!"));
 
   tesseract::common::Resource::Ptr resource = locator.locateResource(filename);
   if (resource == nullptr)
@@ -121,9 +169,20 @@ parseSignedDistanceField(const tinyxml2::XMLElement* xml_element, const tesserac
   tesseract::geometry::SignedDistanceField::Ptr geom;
   try
   {
-    if (sparse && !hasExtension(filename, ".nvdb"))
-      throw std::runtime_error("'grid' and 'band_clamp' need an .nvdb file");
-    if (hasExtension(filename, ".vdb"))
+    if ((sparse || !level_specs.empty()) && !hasExtension(filename, ".nvdb"))
+      throw std::runtime_error("'grid', 'band_clamp' and levels need an .nvdb file");
+    if (!level_specs.empty())
+    {
+      std::vector<tesseract::geometry::SignedDistanceField::ConstPtr> levels;
+      levels.reserve(level_specs.size());
+      for (const Level& level : level_specs)
+        levels.push_back(
+            level.by_index ?
+                tesseract::geometry::readSparseSignedDistanceFieldNVDB(data, level.band_clamp, scale, level.index) :
+                tesseract::geometry::readSparseSignedDistanceFieldNVDB(data, level.band_clamp, scale, level.grid));
+      geom = std::make_shared<tesseract::geometry::SignedDistanceField>(std::move(levels));
+    }
+    else if (hasExtension(filename, ".vdb"))
       geom = tesseract::geometry::readSignedDistanceFieldVDB(data, scale);
     else if (hasExtension(filename, ".nvdb") && sparse)
       geom = tesseract::geometry::readSparseSignedDistanceFieldNVDB(data, band_clamp, scale, grid_name);
@@ -177,15 +236,18 @@ tinyxml2::XMLElement* writeSignedDistanceField(const tesseract::geometry::Signed
     xml_element->SetAttribute("scale", scale_string.str().c_str());
   }
 
-  // The written file holds the one grid, so the clamp alone marks it sparse.
-  if (sdf->isSparse())
+  // A multi-level field's file holds its levels' grids in order, which the levels name by index (their
+  // own names need not differ). A single grid's file holds just it, so the clamp alone marks it sparse.
+  const auto& levels = sdf->getLevels();
+  for (std::size_t i = 0; i < levels.size(); ++i)
   {
-    std::stringstream clamp_string;
-    clamp_string.imbue(std::locale::classic());
-    clamp_string.precision(17);
-    clamp_string << sdf->getBandClamp();
-    xml_element->SetAttribute("band_clamp", clamp_string.str().c_str());
+    tinyxml2::XMLElement* level = doc.NewElement("level");
+    level->SetAttribute("index", static_cast<unsigned>(i));
+    level->SetAttribute("band_clamp", toAttribute(levels[i]->getBandClamp()).c_str());
+    xml_element->InsertEndChild(level);
   }
+  if (sdf->isSparse() && levels.empty())
+    xml_element->SetAttribute("band_clamp", toAttribute(sdf->getBandClamp()).c_str());
 
   return xml_element;
 }

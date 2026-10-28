@@ -1404,6 +1404,98 @@ TEST(TesseractGeometryUnit, SparseSignedDistanceFieldEncoding)  // NOLINT
   EXPECT_ANY_THROW(tesseract::geometry::writeSignedDistanceFieldVDB(field));  // NOLINT
 }
 
+TEST(TesseractGeometryUnit, SparseSignedDistanceFieldLevels)  // NOLINT
+{
+  using tesseract::geometry::SignedDistanceField;
+  constexpr double inf = std::numeric_limits<double>::infinity();
+  // A fine narrow band (0.025 voxels, values clamped to +-0.05, active within 0.1 of the surface)
+  // over a coarse grid of the whole box (0.05 voxels, every voxel active, never saturating).
+  const std::vector<std::uint8_t> fine_grid =
+      makeNanoVDBGrid([](const Eigen::Vector3d& p) { return std::clamp(SPHERE(p), -0.05, 0.05); },
+                      Eigen::Vector3d::Zero(),
+                      0.025,
+                      Eigen::Vector3i::Constant(-20),
+                      Eigen::Vector3i::Constant(20),
+                      [](const Eigen::Vector3d& p) { return std::abs(SPHERE(p)) <= 0.1; });
+  const std::vector<std::uint8_t> coarse_grid = makeNanoVDBGrid(
+      SPHERE, Eigen::Vector3d::Zero(), 0.05, Eigen::Vector3i::Constant(-10), Eigen::Vector3i::Constant(10));
+  const auto fine = std::make_shared<SignedDistanceField>(fine_grid, 0.05);
+  const auto coarse = std::make_shared<SignedDistanceField>(coarse_grid, 0.0);
+  const SignedDistanceField multi_level(std::vector<SignedDistanceField::ConstPtr>{ fine, coarse });
+  EXPECT_TRUE(multi_level.isSparse());
+  ASSERT_EQ(multi_level.getLevels().size(), 2U);
+  EXPECT_TRUE(multi_level.getNVDB().empty());
+  EXPECT_ANY_THROW(multi_level.getDistances());  // NOLINT
+  EXPECT_TRUE(multi_level.getDomain().min().isApprox(Eigen::Vector3d::Constant(-0.5), 1e-12));
+  EXPECT_EQ(multi_level.getDimensions(), Eigen::Vector3i::Constant(41));  // at the finest level's spacing
+
+  // Within the fine band the fine level answers.
+  const Eigen::Vector3d near(0.32, 0.011, 0.007);
+  EXPECT_EQ(multi_level.getDistance(near), fine->getDistance(near));
+  // Past the fine clamp, outside or inside, the fine level gives way to the coarse one: a saturated
+  // read says only "at least this far", on either side.
+  const Eigen::Vector3d outside(0.38, 0.012, 0.007);
+  const Eigen::Vector3d inside(0.22, 0.012, 0.007);
+  EXPECT_EQ(fine->getDistance(outside), inf);           // alone: saturated outside, no answer
+  EXPECT_NEAR(fine->getDistance(inside), -0.05, 1e-6);  // alone: saturated inside, a contact
+  for (const Eigen::Vector3d& p : { outside, inside })
+  {
+    EXPECT_EQ(multi_level.getDistance(p), coarse->getDistance(p)) << p.transpose();
+    EXPECT_NEAR(multi_level.getDistance(p), SPHERE(p), 5e-3) << p.transpose();
+    EXPECT_TRUE(multi_level.getGradient(p).isApprox(coarse->getGradient(p), 1e-12)) << p.transpose();
+  }
+  // Where the fine level has no data at all (the centre), the coarse level answers.
+  EXPECT_EQ(multi_level.getDistance(Eigen::Vector3d(0.01, 0.02, 0.03)),
+            coarse->getDistance(Eigen::Vector3d(0.01, 0.02, 0.03)));
+  // Where no level can answer, there is no answer.
+  EXPECT_EQ(multi_level.getDistance(Eigen::Vector3d(5, 5, 5)), inf);
+  // The multi-level field reads its levels with its own interpolation settings.
+  SignedDistanceField cubic = multi_level;
+  cubic.setInterpolation(tesseract::geometry::SignedDistanceFieldInterpolation::TRICUBIC);
+  SignedDistanceField fine_cubic(fine_grid, 0.05);
+  fine_cubic.setInterpolation(tesseract::geometry::SignedDistanceFieldInterpolation::TRICUBIC);
+  EXPECT_EQ(cubic.getDistance(near), fine_cubic.getDistance(near));
+
+  // Identity is the levels' grids and clamps, in order.
+  const SignedDistanceField again(
+      std::vector<SignedDistanceField::ConstPtr>{ std::make_shared<SignedDistanceField>(fine_grid, 0.05),
+                                                  std::make_shared<SignedDistanceField>(coarse_grid, 0.0) });
+  EXPECT_TRUE(tesseract::geometry::isIdentical(again, multi_level));
+  const SignedDistanceField other_clamp(
+      std::vector<SignedDistanceField::ConstPtr>{ std::make_shared<SignedDistanceField>(fine_grid, 0.04), coarse });
+  EXPECT_FALSE(tesseract::geometry::isIdentical(other_clamp, multi_level));
+  EXPECT_FALSE(tesseract::geometry::isIdentical(*fine, multi_level));
+  auto clone = std::static_pointer_cast<SignedDistanceField>(multi_level.clone());
+  EXPECT_NE(clone->getUUID(), multi_level.getUUID());
+  EXPECT_TRUE(tesseract::geometry::isIdentical(*clone, multi_level));
+  EXPECT_EQ(clone->getDistance(near), multi_level.getDistance(near));
+
+  // Written as one file of the levels' grids in order, each read back by index.
+  const std::vector<std::uint8_t> nvdb = tesseract::geometry::writeSignedDistanceFieldNVDB(multi_level);
+  EXPECT_EQ(tesseract::geometry::getSignedDistanceFieldNVDBGridNames(nvdb).size(), 2U);
+  EXPECT_TRUE(tesseract::geometry::isIdentical(
+      *tesseract::geometry::readSparseSignedDistanceFieldNVDB(nvdb, 0.05, Eigen::Vector3d::Ones(), std::size_t{ 0 }),
+      *fine));
+  EXPECT_TRUE(tesseract::geometry::isIdentical(
+      *tesseract::geometry::readSparseSignedDistanceFieldNVDB(nvdb, 0.0, Eigen::Vector3d::Ones(), std::size_t{ 1 }),
+      *coarse));
+  EXPECT_ANY_THROW(  // NOLINT
+      tesseract::geometry::readSparseSignedDistanceFieldNVDB(nvdb, 0.0, Eigen::Vector3d::Ones(), std::size_t{ 2 }));
+
+  // Refused: no levels, a null or non-sparse level, a multi-level field as a level, mismatched scales, and levels
+  // not ordered finest first.
+  using Levels = std::vector<SignedDistanceField::ConstPtr>;
+  EXPECT_ANY_THROW(SignedDistanceField(Levels{}));                                        // NOLINT
+  EXPECT_ANY_THROW(SignedDistanceField(Levels{ fine, nullptr }));                         // NOLINT
+  EXPECT_ANY_THROW(SignedDistanceField(Levels{ fine, makeGridField(SPHERE, 0.5, 21) }));  // NOLINT
+  EXPECT_ANY_THROW(
+      SignedDistanceField(Levels{ std::make_shared<SignedDistanceField>(multi_level), coarse }));  // NOLINT
+  EXPECT_ANY_THROW(SignedDistanceField(                                                            // NOLINT
+      Levels{ fine, std::make_shared<SignedDistanceField>(coarse_grid, 0.0, Eigen::Vector3d::Constant(2.0)) }));
+  EXPECT_ANY_THROW(SignedDistanceField(Levels{ coarse, fine }));  // NOLINT
+  EXPECT_NO_THROW(SignedDistanceField(Levels{ coarse }));         // NOLINT
+}
+
 TEST(TesseractGeometryUnit, SparseSignedDistanceFieldRejectsInvalidGrids)  // NOLINT
 {
   using tesseract::geometry::SignedDistanceField;

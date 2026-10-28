@@ -309,6 +309,44 @@ TEST(TesseractGeometrySerializeUnit, SparseSignedDistanceField)  // NOLINT
   EXPECT_ANY_THROW(extra_in(rejected));  // NOLINT
 }
 
+TEST(TesseractGeometrySerializeUnit, SparseSignedDistanceFieldLevels)  // NOLINT
+{
+  // A fine level over a small box and a coarse one over a larger box, from dense fields' NanoVDB files.
+  const auto grid = [](double half, int n) {
+    std::vector<double> distances;
+    const double step = 2.0 * half / (n - 1);
+    for (int k = 0; k < n; ++k)
+      for (int j = 0; j < n; ++j)
+        for (int i = 0; i < n; ++i)
+          distances.push_back(Eigen::Vector3d(-half + (i * step), -half + (j * step), -half + (k * step)).norm() - 0.3);
+    return SignedDistanceField(Eigen::AlignedBox3d(Eigen::Vector3d::Constant(-half), Eigen::Vector3d::Constant(half)),
+                               Eigen::Vector3i::Constant(n),
+                               distances);
+  };
+  const Eigen::Vector3d scale = Eigen::Vector3d::Constant(1e-3);
+  auto object = std::make_shared<SignedDistanceField>(std::vector<SignedDistanceField::ConstPtr>{
+      std::make_shared<SignedDistanceField>(writeSignedDistanceFieldNVDB(grid(0.5, 21)), 0.25, scale),
+      std::make_shared<SignedDistanceField>(writeSignedDistanceFieldNVDB(grid(1.0, 11)), 0.0, scale) });
+  ASSERT_EQ(object->getLevels().size(), 2);
+  tesseract::common::testSerialization<SignedDistanceField>(*object, "SparseSignedDistanceFieldLevels");
+  tesseract::common::testSerializationDerivedClass<Geometry, SignedDistanceField>(object,
+                                                                                  "SparseSignedDistanceFieldLevels");
+
+  std::stringstream ss;
+  {
+    cereal::XMLOutputArchive ar(ss);
+    ar(*object);
+  }
+  cereal::XMLInputArchive ar(ss);
+  SignedDistanceField loaded;
+  ar(loaded);
+  ASSERT_EQ(loaded.getLevels().size(), 2);
+  EXPECT_EQ(loaded.getLevels()[0]->getBandClamp(), 0.25);
+  EXPECT_EQ(loaded.getScale(), scale);
+  for (const Eigen::Vector3d& p : { Eigen::Vector3d(0.31, 0.02, 0.01), Eigen::Vector3d(0.8, 0.1, 0.0) })
+    EXPECT_EQ(loaded.getDistance(p), object->getDistance(p)) << p.transpose();
+}
+
 TEST(TesseractGeometrySerializeUnit, SignedDistanceFieldRejectsMalformedArchive)  // NOLINT
 {
   // The load path writes directly into the members (bypassing the validating constructor), then
