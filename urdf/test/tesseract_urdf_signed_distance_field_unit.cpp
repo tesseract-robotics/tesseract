@@ -164,6 +164,61 @@ TEST(TesseractURDFUnit, parse_signed_distance_field)  // NOLINT
     }
   }
 
+  {  // Levels: grids of the file selected by index or name, finest first, each with its clamp
+    std::string str = R"(<tesseract:signed_distance_field filename="memory://parts.nvdb" scale="2 2 2">
+                           <level index="0" band_clamp="0.25"/>
+                           <level grid="part_b" band_clamp="0"/>
+                         </tesseract:signed_distance_field>)";
+    tesseract::geometry::SignedDistanceField::Ptr geom;
+    EXPECT_TRUE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
+        geom,
+        &tesseract::urdf::parseSignedDistanceField,
+        str,
+        tesseract::urdf::SIGNED_DISTANCE_FIELD_ELEMENT_NAME.data(),
+        resource_locator));
+    ASSERT_TRUE(geom != nullptr);
+    ASSERT_EQ(geom->getLevels().size(), 2);
+    EXPECT_DOUBLE_EQ(geom->getLevels()[0]->getBandClamp(), 0.25);
+    EXPECT_DOUBLE_EQ(geom->getLevels()[1]->getBandClamp(), 0.0);
+    EXPECT_EQ(geom->getScale(), Eigen::Vector3d::Constant(2.0));
+  }
+
+  {  // Failure: a level naming its grid both ways or neither, a bad or missing index, levels beside a
+     // field-level grid or clamp, and levels of a .vdb file
+    for (const std::string level : { R"(<level grid="part_a" index="0"/>)",
+                                     R"(<level band_clamp="0.25"/>)",
+                                     R"(<level index="x"/>)",
+                                     R"(<level index="-1"/>)",
+                                     R"(<level index="5"/>)",
+                                     R"(<level grid="part_c"/>)" })
+    {
+      std::string str = R"(<tesseract:signed_distance_field filename="memory://parts.nvdb">)" + level +
+                        "</tesseract:signed_distance_field>";
+      tesseract::geometry::SignedDistanceField::Ptr geom;
+      EXPECT_FALSE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
+          geom,
+          &tesseract::urdf::parseSignedDistanceField,
+          str,
+          tesseract::urdf::SIGNED_DISTANCE_FIELD_ELEMENT_NAME.data(),
+          resource_locator))
+          << str;
+    }
+    for (
+        const std::string str :
+        { R"(<tesseract:signed_distance_field filename="memory://parts.nvdb" band_clamp="0.25"><level index="0"/></tesseract:signed_distance_field>)",
+          R"(<tesseract:signed_distance_field filename="memory://sphere.vdb"><level index="0"/></tesseract:signed_distance_field>)" })
+    {
+      tesseract::geometry::SignedDistanceField::Ptr geom;
+      EXPECT_FALSE(runTest<tesseract::geometry::SignedDistanceField::Ptr>(
+          geom,
+          &tesseract::urdf::parseSignedDistanceField,
+          str,
+          tesseract::urdf::SIGNED_DISTANCE_FIELD_ELEMENT_NAME.data(),
+          resource_locator))
+          << str;
+    }
+  }
+
   {  // Failure: missing filename
     std::string str = R"(<tesseract:signed_distance_field scale="1 2 3"/>)";
     tesseract::geometry::SignedDistanceField::Ptr geom;
@@ -264,6 +319,26 @@ TEST(TesseractURDFUnit, write_signed_distance_field)  // NOLINT
                                                                        tesseract::common::getTempPath(),
                                                                        std::string("sdf_sparse.nvdb")));
     EXPECT_NE(text.find("band_clamp=\"0.25\""), std::string::npos) << text;
+  }
+
+  {  // A multi-level field writes its levels' grids to one file, and a level element per level by index
+    const auto fine = make_field(Eigen::Vector3d(1, 1, 1));
+    const auto level = std::make_shared<tesseract::geometry::SignedDistanceField>(
+        tesseract::geometry::writeSignedDistanceFieldNVDB(*fine), 0.25);
+    auto sdf = std::make_shared<tesseract::geometry::SignedDistanceField>(
+        std::vector<tesseract::geometry::SignedDistanceField::ConstPtr>{ level, level });
+    std::string text;
+    EXPECT_EQ(0,
+              writeTest<tesseract::geometry::SignedDistanceField::Ptr>(sdf,
+                                                                       &tesseract::urdf::writeSignedDistanceField,
+                                                                       text,
+                                                                       tesseract::common::getTempPath(),
+                                                                       std::string("sdf_levels.nvdb")));
+    EXPECT_NE(text.find(R"(<level index="0" band_clamp="0.25"/>)"), std::string::npos) << text;
+    EXPECT_NE(text.find(R"(<level index="1" band_clamp="0.25"/>)"), std::string::npos) << text;
+    EXPECT_EQ(text.find(R"(signed_distance_field filename="package://tesseract/sdf_levels.nvdb" band_clamp)"),
+              std::string::npos)
+        << text;
   }
 
   {  // Failure: unwritable path

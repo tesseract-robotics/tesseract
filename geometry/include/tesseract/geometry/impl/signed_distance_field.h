@@ -175,6 +175,31 @@ public:
                       double band_clamp,
                       const Eigen::Vector3d& scale = Eigen::Vector3d(1, 1, 1));
 
+  /**
+   * @brief Stack sparse fields of one surface as levels by resolution: a fallback, not a union.
+   *
+   * The levels are ordered finest first: level 0 is the finest, as in OpenVDB's tools::MultiResGrid.
+   * A query at a point asks each level in turn and the first
+   * that can answer does. A level other than the last also declines a read at or past its band clamp,
+   * inside or outside the surface, which says only "at least this far", so a coarser level with real
+   * range answers instead. The last level answers as it would alone (see the sparse constructor).
+   * Typical use: a fine grid cropped around a region of interest over a coarse grid of the whole
+   * object, so accuracy is paid for only where it is needed.
+   *
+   * The domain is the union of the levels' domains, and the field reads every level with its own
+   * interpolation settings (@ref setInterpolation), not the levels'.
+   *
+   * @warning Every level must describe the same surface, in the same frame, at a different
+   * resolution. The field answers from the first level that can, not from the nearest surface across
+   * levels, so a level holding a different object would be hidden wherever an earlier level has
+   * data. Give separate objects separate fields; several fields on a link combine as any geometries do.
+   *
+   * @param levels Sparse single-grid fields (see the sparse constructor), finest first, with equal scales
+   * @throw std::runtime_error if @p levels is empty, a level is null, not a sparse single-grid field,
+   * or has a different scale from the first, or a level has a smaller voxel size than the level before it
+   */
+  explicit SignedDistanceField(std::vector<SignedDistanceField::ConstPtr> levels);
+
   SignedDistanceField() = default;
   ~SignedDistanceField() override = default;
 
@@ -220,7 +245,7 @@ public:
   /** @brief Whether the dense grid has been materialized (true for grid-backed and discretized fields) */
   bool isDiscretized() const;
 
-  /** @brief Whether this is a sparse field built from a NanoVDB grid */
+  /** @brief Whether this is a sparse field: one NanoVDB grid, or levels of them (@ref getLevels) */
   bool isSparse() const;
 
   /**
@@ -248,12 +273,18 @@ public:
 
   /**
    * @brief A sparse field's grid, as its bare, uncompressed grid buffer (what the field reads in
-   * place); empty for a dense or function-backed field.
+   * place); empty for a dense, function-backed or multi-level field (a multi-level field's grids are its
+   * levels').
    */
   const std::vector<std::uint8_t>& getNVDB() const;
 
-  /** @brief A sparse field's band clamp (see the sparse constructor); 0 for a dense or function-backed field. */
+  /** @brief A sparse field's band clamp (see the sparse constructor); 0 for a dense, function-backed or multi-level
+   * field.
+   */
   double getBandClamp() const;
+
+  /** @brief A multi-level field's levels, finest first (see the multi-level constructor); empty otherwise. */
+  const std::vector<SignedDistanceField::ConstPtr>& getLevels() const;
 
   /**
    * @brief Materialize the dense sample grid from the sampler (no-op if already discretized or grid-backed).
@@ -285,9 +316,17 @@ private:
   SignedDistanceFieldInterpolation gradient_interpolation_{ SignedDistanceFieldInterpolation::TRILINEAR };
   /// The parsed grid of a sparse field (immutable, shared between copies); null otherwise.
   std::shared_ptr<const SparseSignedDistanceFieldGrid> sparse_;
+  /// The levels of a multi-level field (sparse single-grid fields, finest first); empty otherwise.
+  std::vector<SignedDistanceField::ConstPtr> levels_;
 
   /** @brief Parse @p nvdb into @ref sparse_ and derive the domain and dimensions from it. */
   void initializeSparse(std::vector<std::uint8_t> nvdb, double band_clamp);
+
+  /** @brief Check @p levels and derive the multi-level field's domain, dimensions and scale from them. */
+  void initializeLevels(std::vector<SignedDistanceField::ConstPtr> levels);
+
+  /** @brief A sparse or multi-level field's distance at @p point, and its gradient when @p gradient is set. */
+  double querySparse(const Eigen::Vector3d& point, Eigen::Vector3d* gradient) const;
 
   /** @brief Read of the dense grid (point clamped to the domain), and its gradient when asked. */
   double interpolateGrid(const Eigen::Vector3d& point,

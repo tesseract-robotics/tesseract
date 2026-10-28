@@ -551,7 +551,8 @@ private:
     return true;
   }
 
-  /** @brief The grid's answer at @p point (see @ref query); false where it has no data. */
+public:
+  /** @brief The grid's raw read at @p point, saturated or not; false where it cannot answer. */
   bool answer(const Eigen::Vector3d& point,
               Eigen::Vector3d* gradient,
               SignedDistanceFieldInterpolation distance_method,
@@ -571,11 +572,15 @@ private:
     return true;
   }
 
-  /** @brief Whether @p distance says only "at least the band clamp away, outside". */
-  bool saturatedOutside(double distance) const
+  /** @brief Whether @p distance says only "at least the band clamp away", on either side. */
+  bool saturated(double distance) const
   {
-    return grid_.band_clamp > 0.0 && distance >= grid_.band_clamp * (1.0 - SATURATION_RELATIVE_TOLERANCE);
+    return grid_.band_clamp > 0.0 && std::abs(distance) >= grid_.band_clamp * (1.0 - SATURATION_RELATIVE_TOLERANCE);
   }
+
+private:
+  /** @brief Whether @p distance says only "at least the band clamp away, outside". */
+  bool saturatedOutside(double distance) const { return distance > 0.0 && saturated(distance); }
 
   std::vector<std::uint8_t> nvdb_;
   Grid grid_;
@@ -642,6 +647,63 @@ SignedDistanceField::SignedDistanceField(std::vector<std::uint8_t> nvdb,
   initializeSparse(std::move(nvdb), band_clamp);
 }
 
+SignedDistanceField::SignedDistanceField(std::vector<SignedDistanceField::ConstPtr> levels)
+  : Geometry(GeometryType::SIGNED_DISTANCE_FIELD)
+{
+  initializeLevels(std::move(levels));
+}
+
+void SignedDistanceField::initializeLevels(std::vector<SignedDistanceField::ConstPtr> levels)
+{
+  if (levels.empty())
+    throw std::runtime_error("SignedDistanceField: a multi-level field needs at least one level");
+  Eigen::AlignedBox3d domain;
+  domain.setEmpty();
+  for (std::size_t i = 0; i < levels.size(); ++i)
+  {
+    const std::string where = "SignedDistanceField: level " + std::to_string(i) + " ";
+    if (levels[i] == nullptr || levels[i]->sparse_ == nullptr)
+      throw std::runtime_error(where + "is not a sparse single-grid field");
+    if (levels[i]->getScale() != levels.front()->getScale())
+      throw std::runtime_error(where + "has a different scale from the first level");
+    if (i > 0 && levels[i]->sparse_->voxelSize() < levels[i - 1]->sparse_->voxelSize())
+      throw std::runtime_error(where + "is finer than the level before it; order the levels finest first");
+    domain.extend(levels[i]->getDomain());
+  }
+  domain_ = domain;
+  // Nominal sample counts at the finest level's spacing, as for a single grid.
+  const double voxel = levels.front()->sparse_->voxelSize();
+  const Eigen::Vector3d extent = domain_.max() - domain_.min();
+  for (int a = 0; a < 3; ++a)
+  {
+    const double samples = std::round(extent[a] / voxel) + 1.0;
+    dimensions_[a] = static_cast<int>(std::clamp(samples, 2.0, static_cast<double>(std::numeric_limits<int>::max())));
+  }
+  scale_ = levels.front()->getScale();
+  distances_.clear();
+  sampler_ = nullptr;
+  sparse_ = nullptr;
+  levels_ = std::move(levels);
+  validateDomainAndDimensions();
+}
+
+double SignedDistanceField::querySparse(const Eigen::Vector3d& point, Eigen::Vector3d* gradient) const
+{
+  if (sparse_ != nullptr)
+    return sparse_->query(point, gradient, interpolation_, gradient_interpolation_);
+  // Fallback: a finer level answers unless it cannot, or its read is saturated (at least its clamp
+  // away, inside or out); the last level answers as it would alone.
+  for (std::size_t i = 0; i + 1 < levels_.size(); ++i)
+  {
+    const SparseSignedDistanceFieldGrid& grid = *levels_[i]->sparse_;
+    double distance{ 0 };
+    if (grid.domain().contains(point) &&
+        grid.answer(point, gradient, interpolation_, gradient_interpolation_, distance) && !grid.saturated(distance))
+      return distance;
+  }
+  return levels_.back()->sparse_->query(point, gradient, interpolation_, gradient_interpolation_);
+}
+
 void SignedDistanceField::initializeSparse(std::vector<std::uint8_t> nvdb, double band_clamp)
 {
   auto sparse = std::make_shared<const SparseSignedDistanceFieldGrid>(std::move(nvdb), band_clamp);
@@ -678,8 +740,8 @@ void SignedDistanceField::validateDomainAndDimensions() const
 void SignedDistanceField::validate() const
 {
   validateDomainAndDimensions();
-  if (sparse_ != nullptr)
-    return;  // the grid was validated when parsed; a sparse field has no dense grid
+  if (isSparse())
+    return;  // the grids were validated when parsed; a sparse field has no dense grid
 
   const auto expected = static_cast<std::size_t>(dimensions_.x()) * static_cast<std::size_t>(dimensions_.y()) *
                         static_cast<std::size_t>(dimensions_.z());
@@ -694,7 +756,7 @@ const Eigen::Vector3i& SignedDistanceField::getDimensions() const { return dimen
 
 const std::vector<double>& SignedDistanceField::getDistances() const
 {
-  if (sparse_ != nullptr)
+  if (isSparse())
     throw std::runtime_error("SignedDistanceField: a sparse field has no dense grid; query it with getDistance / "
                              "getGradient, or encode it with writeSignedDistanceFieldNVDB");
   discretize();
@@ -705,7 +767,7 @@ const Eigen::Vector3d& SignedDistanceField::getScale() const { return scale_; }
 
 bool SignedDistanceField::isDiscretized() const { return !distances_.empty(); }
 
-bool SignedDistanceField::isSparse() const { return sparse_ != nullptr; }
+bool SignedDistanceField::isSparse() const { return sparse_ != nullptr || !levels_.empty(); }
 
 const std::vector<std::uint8_t>& SignedDistanceField::getNVDB() const
 {
@@ -714,6 +776,8 @@ const std::vector<std::uint8_t>& SignedDistanceField::getNVDB() const
 }
 
 double SignedDistanceField::getBandClamp() const { return (sparse_ != nullptr) ? sparse_->bandClamp() : 0.0; }
+
+const std::vector<SignedDistanceField::ConstPtr>& SignedDistanceField::getLevels() const { return levels_; }
 
 void SignedDistanceField::discretize() const
 {
@@ -732,8 +796,8 @@ void SignedDistanceField::discretize() const
 
 double SignedDistanceField::getDistance(const Eigen::Vector3d& point) const
 {
-  if (sparse_ != nullptr)
-    return sparse_->query(point, nullptr, interpolation_, gradient_interpolation_);
+  if (isSparse())
+    return querySparse(point, nullptr);
 
   // A function-backed field evaluates its sampler directly (exact, no resampling).
   if (sampler_ != nullptr)
@@ -751,9 +815,9 @@ double SignedDistanceField::getDistance(const Eigen::Vector3d& point) const
 Eigen::Vector3d SignedDistanceField::getGradient(const Eigen::Vector3d& point) const
 {
   Eigen::Vector3d gradient = Eigen::Vector3d::Zero();
-  if (sparse_ != nullptr)
+  if (isSparse())
   {
-    sparse_->query(point, &gradient, interpolation_, gradient_interpolation_);
+    querySparse(point, &gradient);
     return gradient;
   }
 
@@ -793,8 +857,8 @@ Eigen::Vector3d SignedDistanceField::getGradient(const Eigen::Vector3d& point) c
 
 double SignedDistanceField::getDistanceAndGradient(const Eigen::Vector3d& point, Eigen::Vector3d& gradient) const
 {
-  if (sparse_ != nullptr)
-    return sparse_->query(point, &gradient, interpolation_, gradient_interpolation_);
+  if (isSparse())
+    return querySparse(point, &gradient);
   if (sampler_ != nullptr)
   {
     gradient = getGradient(point);
@@ -866,7 +930,7 @@ SignedDistanceFieldInterpolation SignedDistanceField::getGradientInterpolation()
 
 Geometry::Ptr SignedDistanceField::clone() const
 {
-  if (sparse_ != nullptr)
+  if (isSparse())
   {
     // The parsed grids are immutable, so the clone shares them; like any clone it gets its own UUID.
     auto copy = std::make_shared<SignedDistanceField>(*this);
@@ -883,14 +947,22 @@ Geometry::Ptr SignedDistanceField::clone() const
 
 bool SignedDistanceField::operator==(const SignedDistanceField& rhs) const
 {
-  // Sparse fields are equal when their grids and clamps are.
-  if (sparse_ != nullptr || rhs.sparse_ != nullptr)
+  // Sparse fields are equal when their grids and clamps are, level by level for a multi-level field.
+  if (isSparse() || rhs.isSparse())
   {
-    if (sparse_ == nullptr || rhs.sparse_ == nullptr)
+    if (!isSparse() || !rhs.isSparse() || (sparse_ == nullptr) != (rhs.sparse_ == nullptr) ||
+        levels_.size() != rhs.levels_.size())
       return false;
-    return Geometry::operator==(rhs) && sparse_->nvdb() == rhs.sparse_->nvdb() &&
-           sparse_->bandClamp() == rhs.sparse_->bandClamp() && scale_.isApprox(rhs.scale_, 1e-5) &&
-           interpolation_ == rhs.interpolation_ && gradient_interpolation_ == rhs.gradient_interpolation_;
+    const auto same_grid = [](const SparseSignedDistanceFieldGrid& a, const SparseSignedDistanceFieldGrid& b) {
+      return a.nvdb() == b.nvdb() && a.bandClamp() == b.bandClamp();
+    };
+    if (sparse_ != nullptr && !same_grid(*sparse_, *rhs.sparse_))
+      return false;
+    for (std::size_t i = 0; i < levels_.size(); ++i)
+      if (!same_grid(*levels_[i]->sparse_, *rhs.levels_[i]->sparse_))
+        return false;
+    return Geometry::operator==(rhs) && scale_.isApprox(rhs.scale_, 1e-5) && interpolation_ == rhs.interpolation_ &&
+           gradient_interpolation_ == rhs.gradient_interpolation_;
   }
 
   // Equality is defined on the materialized grids (samplers cannot be compared).
