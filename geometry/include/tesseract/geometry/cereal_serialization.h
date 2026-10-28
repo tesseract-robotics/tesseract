@@ -128,8 +128,9 @@ constexpr std::uint32_t SIGNED_DISTANCE_FIELD_ARCHIVE_VERSION = 1;
 /**
  * @brief Format version 1, the first with a version: the interpolation settings, then the band clamp
  * of each NanoVDB grid and the grids as one NanoVDB file, as @ref writeSignedDistanceFieldNVDB writes
- * it. A sparse field has one grid, and its domain and dimensions follow from it. A field without
- * grids is dense and stores its sample grid instead. Then the scale. A later format bumps
+ * it. A sparse field has one grid and a multi-level field one per level, finest first; their domain
+ * and dimensions follow from the grids, and a field with one level loads as a plain sparse field. A
+ * field without grids is dense and stores its sample grid instead. Then the scale. A later format bumps
  * SIGNED_DISTANCE_FIELD_ARCHIVE_VERSION and branches on it here.
  * @note An explicit field rather than CEREAL_CLASS_VERSION: cereal also matches the base class's
  * unversioned serialize for this type and rejects the pair as ambiguous.
@@ -159,11 +160,12 @@ void serialize(Archive& ar, SignedDistanceField& obj)
   }
   std::vector<double> band_clamps;
   std::vector<std::uint8_t> nvdb;
-  if (obj.isSparse())
-  {
+  for (const SignedDistanceField::ConstPtr& level : obj.getLevels())
+    band_clamps.push_back(level->getBandClamp());
+  if (band_clamps.empty() && obj.isSparse())
     band_clamps.push_back(obj.getBandClamp());
+  if (!band_clamps.empty())
     nvdb = writeSignedDistanceFieldNVDB(obj);
-  }
   ar(cereal::make_nvp("band_clamps", band_clamps));
   ar(cereal::make_nvp("nvdb", nvdb));
   if (band_clamps.empty())
@@ -179,11 +181,19 @@ void serialize(Archive& ar, SignedDistanceField& obj)
 
   if (Archive::is_loading::value)
   {
-    if (band_clamps.size() > 1)
-      throw std::runtime_error("SignedDistanceField: the archive has " + std::to_string(band_clamps.size()) +
-                               " grids; only one is supported");
     if (band_clamps.size() == 1)
       obj.initializeSparse(std::move(nvdb), band_clamps.front());
+    else if (band_clamps.size() > 1)
+    {
+      const std::size_t grids = getSignedDistanceFieldNVDBGridNames(nvdb).size();
+      if (grids != band_clamps.size())
+        throw std::runtime_error("SignedDistanceField: the archive has " + std::to_string(grids) + " grids but " +
+                                 std::to_string(band_clamps.size()) + " band clamps");
+      std::vector<SignedDistanceField::ConstPtr> levels;
+      for (std::size_t i = 0; i < grids; ++i)
+        levels.push_back(readSparseSignedDistanceFieldNVDB(nvdb, band_clamps[i], obj.scale_, i));
+      obj.initializeLevels(std::move(levels));
+    }
     obj.validate();
   }
 }

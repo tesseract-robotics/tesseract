@@ -51,6 +51,13 @@ example level sets of different objects stored in one file) combine as any geome
 nearest answers. In a level set (NanoVDB grid class LevelSet) inactive voxels hold the background and count
 as data; in any other grid every voxel a read uses must be active.
 
+Grids of one surface at different resolutions can instead be stacked as levels, explicitly: a multi-level field
+takes sparse fields finest first and answers from the first that can, a finer level giving way at
+its band clamp to a coarser one with real range. A fine grid cropped around a region of interest
+over a coarse grid of the whole object then costs fine voxels only where they are needed. Levels
+must describe the same surface; separate objects belong in separate fields. In URDF, `level`
+children of the element select each level's grid (by `grid` name or `index`) and band clamp.
+
 > <b>Note:</b> A field built from a distance function calls that function at every collision query.
 > For an expensive function (for example, distance to a mesh), sample it onto a grid up front with
 > the discrete factory.
