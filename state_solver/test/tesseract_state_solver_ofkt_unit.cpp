@@ -16,6 +16,39 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract::scene_graph;
 
+TEST(TesseractStateSolverUnit, OFKTConstructorPrefixUnit)
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+  SceneGraph graph("prefix_test");
+  ASSERT_TRUE(graph.addLink(Link(LinkId("base_link"))));
+  ASSERT_TRUE(graph.addLink(Link(LinkId("child_link"))));
+  Joint joint(JointId("fixed_joint"));
+  joint.parent_link_id = LinkId("base_link");
+  joint.child_link_id = LinkId("child_link");
+  joint.type = JointType::FIXED;
+  joint.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(1, 2, 3);
+  ASSERT_TRUE(graph.addJoint(joint));
+  ASSERT_TRUE(graph.setRoot(LinkId("base_link")));
+
+  for (const std::string& prefix : { std::string(), std::string("r1_"), std::string("robot_two/") })
+  {
+    OFKTStateSolver solver(graph, prefix);
+    const auto state = solver.getState();
+    ASSERT_EQ(state.link_transforms.size(), 2);
+    ASSERT_EQ(state.link_transforms.count(LinkId(prefix + "base_link")), 1);
+    ASSERT_EQ(state.link_transforms.count(LinkId(prefix + "child_link")), 1);
+    EXPECT_TRUE(state.link_transforms.at(LinkId(prefix + "base_link")).isApprox(Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(state.link_transforms.at(LinkId(prefix + "child_link")).isApprox(joint.parent_to_joint_origin_transform));
+    EXPECT_EQ(graph.getRoot(), LinkId("base_link"));
+    EXPECT_EQ(graph.getLinks().size(), 2);
+  }
+
+  SceneGraph empty("empty");
+  OFKTStateSolver empty_solver(empty, "r1_");
+  EXPECT_TRUE(empty_solver.getState().link_transforms.empty());
+}
+
 // Most of OFKT is tested in the tesseract_environment_unit.cpp
 TEST(TesseractStateSolverUnit, OFKTNodeBaseAndFailuresUnit)  // NOLINT
 {
