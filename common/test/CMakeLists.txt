@@ -193,3 +193,11 @@ add_dependencies(tesseract_common_property_tree_unit tesseract::common)
 if(TESSERACT_ENABLE_BENCHMARKING)
   add_subdirectory(benchmarks)
 endif()
+
+add_executable(tesseract_common_kinematic_limits_unit kinematic_limits_unit.cpp)
+target_link_libraries(tesseract_common_kinematic_limits_unit PRIVATE GTest::GTest GTest::Main tesseract::common)
+target_compile_options(tesseract_common_kinematic_limits_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                      ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(tesseract_common_kinematic_limits_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
+target_cxx_version(tesseract_common_kinematic_limits_unit PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+add_gtest_discover_tests(tesseract_common_kinematic_limits_unit)
