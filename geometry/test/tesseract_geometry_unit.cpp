@@ -1035,7 +1035,7 @@ std::vector<Eigen::Vector3d> probePoints(double extent, double voxel, std::size_
   std::vector<Eigen::Vector3d> points;
   for (std::size_t n = 0; points.size() < count; ++n)
   {
-    const double t = static_cast<double>(n);
+    const auto t = static_cast<double>(n);
     Eigen::Vector3d p(std::sin((1.3 * t) + 0.1), std::sin((2.1 * t) + 0.7), std::sin((3.7 * t) + 1.3));
     p *= extent;
     const Eigen::Vector3d fraction = (p / voxel).array() - (p / voxel).array().floor();
@@ -1067,6 +1067,49 @@ TEST(TesseractGeometryUnit, SignedDistanceFieldGradient)  // NOLINT
       SPHERE, Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5), Eigen::Vector3i::Constant(21));
   const Eigen::Vector3d p(0.2, -0.1, 0.15);
   EXPECT_TRUE(lazy->getGradient(p).isApprox(p.normalized(), 1e-6));
+
+  // Its probes stay inside the domain from a point on or near the boundary: the sampler may be defined only there.
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5));
+  const tesseract::geometry::BatchedSignedDistanceFunction inside_only =
+      [&](const std::vector<Eigen::Vector3d>& points) {
+        std::vector<double> distances;
+        for (const Eigen::Vector3d& q : points)
+        {
+          if (!domain.contains(q))
+            throw std::out_of_range("sampled outside the domain");
+          distances.push_back(SPHERE(q));
+        }
+        return distances;
+      };
+  auto bounded = tesseract::geometry::createSignedDistanceField(
+      inside_only, domain.min(), domain.max(), Eigen::Vector3i::Constant(21));
+  for (const Eigen::Vector3d& q :
+       { Eigen::Vector3d(0.5, 0.1, -0.2), Eigen::Vector3d(-0.5, -0.5, 0.5), Eigen::Vector3d(0.5 - 1e-9, 0.0, 0.0) })
+  {
+    Eigen::Vector3d gradient;
+    EXPECT_NO_THROW(gradient = bounded->getGradient(q)) << q.transpose();  // NOLINT
+    EXPECT_LT((gradient - q.normalized()).norm(), 1e-3) << q.transpose();
+  }
+}
+
+TEST(TesseractGeometryUnit, SignedDistanceFieldDiscreteKeepsNoFunction)  // NOLINT
+{
+  // A field sampled up front answers from its grid: queries never call the function again.
+  std::size_t calls = 0;
+  const tesseract::geometry::SignedDistanceFunction counted = [&calls](const Eigen::Vector3d& p) {
+    ++calls;
+    return SPHERE(p);
+  };
+  auto field = tesseract::geometry::createDiscreteSignedDistanceField(
+      counted, Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5), Eigen::Vector3i::Constant(11));
+  EXPECT_EQ(calls, 11U * 11U * 11U);
+  const Eigen::Vector3d p(0.2, -0.1, 0.15);
+  Eigen::Vector3d gradient;
+  field->getDistance(p);
+  field->getGradient(p);
+  field->getDistanceAndGradient(p, gradient);
+  field->clone();
+  EXPECT_EQ(calls, 11U * 11U * 11U);
 }
 
 TEST(TesseractGeometryUnit, Octree)  // NOLINT

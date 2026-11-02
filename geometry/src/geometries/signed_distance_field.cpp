@@ -161,16 +161,21 @@ Eigen::Vector3d SignedDistanceField::getGradient(const Eigen::Vector3d& point) c
   {
     // Central differences of the sampler. The step matches what the implicit collision solver used
     // before fields carried their own gradient: 1e-5 of the shortest domain extent, floored at 1e-6
-    // in the scaled frame.
+    // in the scaled frame. A probe never steps out of the domain from a point inside it (the sampler
+    // may be defined only there): at a boundary it is one-sided, divided by the spacing it actually spans.
     const double step = std::max(1e-6 / scale_.x(), (domain_.max() - domain_.min()).minCoeff() * 1e-5);  // local units
     std::vector<Eigen::Vector3d> probes;
     probes.reserve(6);
+    Eigen::Vector3d spacing;
     for (Eigen::Index axis = 0; axis < 3; ++axis)
     {
-      Eigen::Vector3d offset = Eigen::Vector3d::Zero();
-      offset[axis] = step;
-      probes.emplace_back(point + offset);
-      probes.emplace_back(point - offset);
+      Eigen::Vector3d hi = point;
+      Eigen::Vector3d lo = point;
+      hi[axis] = std::min(point[axis] + step, std::max(point[axis], domain_.max()[axis]));
+      lo[axis] = std::max(point[axis] - step, std::min(point[axis], domain_.min()[axis]));
+      spacing[axis] = hi[axis] - lo[axis];
+      probes.push_back(hi);
+      probes.push_back(lo);
     }
     const std::vector<double> sampled = sampler_(probes);
     if (sampled.size() != probes.size())
@@ -178,7 +183,7 @@ Eigen::Vector3d SignedDistanceField::getGradient(const Eigen::Vector3d& point) c
                                " values for " + std::to_string(probes.size()) + " sample points");
     for (Eigen::Index axis = 0; axis < 3; ++axis)
       gradient[axis] = (sampled[static_cast<std::size_t>(2 * axis)] - sampled[static_cast<std::size_t>(2 * axis) + 1]) /
-                       (2.0 * step);
+                       spacing[axis];
     return gradient;
   }
 

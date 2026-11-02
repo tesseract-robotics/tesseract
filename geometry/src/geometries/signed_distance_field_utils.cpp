@@ -118,10 +118,10 @@ SignedDistanceField::Ptr createDiscreteSignedDistanceField(const BatchedSignedDi
                                                            const Eigen::Vector3i& dimensions,
                                                            const Eigen::Vector3d& scale)
 {
-  // Eager: a pre-discretized lazy field, i.e. sample the grid up front so it is immediately serializable.
-  auto field = createSignedDistanceField(sdf, domain_min, domain_max, dimensions, scale);
-  field->discretize();
-  return field;
+  // Eager: sample the grid up front and keep only the grid, so queries never call sdf again.
+  const auto lazy = createSignedDistanceField(sdf, domain_min, domain_max, dimensions, scale);
+  return std::make_shared<SignedDistanceField>(
+      lazy->getDomain(), lazy->getDimensions(), lazy->getDistances(), lazy->getScale());
 }
 
 SignedDistanceField::Ptr createSignedDistanceField(const SignedDistanceFunction& sdf,
