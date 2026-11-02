@@ -42,15 +42,15 @@ namespace tesseract::geometry
  *
  * Evaluates @p sdf at `dimensions.x() * dimensions.y() * dimensions.z()` points on a regular
  * axis-aligned lattice spanning [@p domain_min, @p domain_max] (inclusive of both corners) and
- * stores them as the field's backend-neutral grid. Each collision backend transcodes this grid into
- * its own native form when the geometry is added to a contact manager.
+ * stores them as the field's backend-neutral grid. @p sdf is not kept: queries and the collision
+ * backends interpolate the grid, so an expensive function is paid for once, here.
  *
  * @param sdf Signed distance function (negative inside, positive outside) in the field's local frame
  * @param domain_min Minimum corner of the sampled domain
  * @param domain_max Maximum corner of the sampled domain (must exceed @p domain_min on every axis)
  * @param dimensions Number of samples along each axis (each must be >= 2)
  * @param scale Local scaling applied to the field
- * @return A SignedDistanceField holding the sampled grid
+ * @return A grid-backed SignedDistanceField holding the sampled grid
  * @throw std::runtime_error on an invalid domain or dimensions
  */
 SignedDistanceField::Ptr createDiscreteSignedDistanceField(const SignedDistanceFunction& sdf,

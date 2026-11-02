@@ -165,9 +165,12 @@ void runSDFPositiveDistanceTest(DiscreteContactManager& checker, const SDFFactor
   EXPECT_TRUE(result_vector.empty());
 }
 
+/** @brief The sphere at 32 samples per axis: two interpolated grids add their errors, so the pair is sampled finer. */
+CollisionShapePtr fineSphereSDF() { return gridSphereSDF(32); }
+
 void runSDFPairTest(DiscreteContactManager& checker,
-                    const SDFFactory& make_sdf0 = makeSphereSDF,
-                    const SDFFactory& make_sdf1 = makeSphereSDF)
+                    const SDFFactory& make_sdf0 = fineSphereSDF,
+                    const SDFFactory& make_sdf1 = fineSphereSDF)
 {
   CollisionShapesConst sdf0_shapes{ make_sdf0() };
   CollisionShapesConst sdf1_shapes{ make_sdf1() };
@@ -380,6 +383,39 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, BulletLazyFieldIsNotDiscretized)
   ASSERT_EQ(result_vector.size(), 1);
   EXPECT_NEAR(result_vector[0].distance, -0.15, 1e-3);
   EXPECT_FALSE(sdf->isDiscretized());
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletDiscreteFieldDoesNotCallItsFunction)  // NOLINT
+{
+  // A field sampled up front is collided from its grid: contact queries never call the function again.
+  std::size_t calls = 0;
+  const tesseract::geometry::SignedDistanceFunction sphere = [&calls](const Eigen::Vector3d& p) {
+    ++calls;
+    return p.norm() - 0.5;
+  };
+  auto sdf = tesseract::geometry::createDiscreteSignedDistanceField(
+      sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(16, 16, 16));
+  const std::size_t sampled = calls;
+
+  BulletDiscreteBVHManager checker;
+  tesseract::common::VectorIsometry3d poses{ Eigen::Isometry3d::Identity() };
+  checker.addCollisionObject("sdf_link", 0, CollisionShapesConst{ sdf }, poses, true);
+  checker.addCollisionObject(
+      "sphere_link", 0, CollisionShapesConst{ std::make_shared<tesseract::geometry::Sphere>(0.1) }, poses, true);
+  checker.setActiveCollisionObjects({ "sdf_link", "sphere_link" });
+  checker.setDefaultCollisionMargin(0.0);
+
+  Eigen::Isometry3d sphere_tf = Eigen::Isometry3d::Identity();
+  sphere_tf.translation().x() = 0.45;
+  checker.setCollisionObjectsTransform("sphere_link", sphere_tf);
+  ContactResultMap result;
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
+  ContactResultVector result_vector;
+  result.flattenMoveResults(result_vector);
+
+  ASSERT_EQ(result_vector.size(), 1);
+  EXPECT_NEAR(result_vector[0].distance, -0.15, 2e-2);
+  EXPECT_EQ(calls, sampled);
 }
 
 void addCapsuleObjects(DiscreteContactManager& checker)
