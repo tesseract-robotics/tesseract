@@ -21,9 +21,7 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
-#include <BulletCollision/CollisionShapes/btSdfCollisionShape.h>
 #include <cmath>
-#include <limits>
 #include <stdexcept>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -105,39 +103,16 @@ const tesseract::geometry::SignedDistanceField& TesseractSdfCollisionShape::getF
 
 namespace
 {
-/** @brief The solver's view of Bullet's own btMiniSDF-backed shape, through its queryPoint. */
-ImplicitSDFShape makeBulletMiniSdfShape(const btSdfCollisionShape& shape, const btTransform& world_transform)
+/** @brief Every SDF_SHAPE_PROXYTYPE shape Tesseract creates is this one (createShapePrimitive). */
+const TesseractSdfCollisionShape& fieldShape(const btCollisionShape& shape)
 {
-  const btTransform inverse_transform = world_transform.inverse();
-  ImplicitSDFShape result;
-  result.distance = [&shape, inverse_transform](const Eigen::Vector3d& point) {
-    btScalar distance{ 0 };
-    btVector3 normal;
-    if (!querySdfShapePoint(shape, inverse_transform * convertEigenToBt(point), distance, normal))
-      return std::numeric_limits<double>::infinity();
-    return static_cast<double>(distance);
-  };
-  result.gradient = [&shape, inverse_transform, world_transform](const Eigen::Vector3d& point) -> Eigen::Vector3d {
-    btScalar distance{ 0 };
-    btVector3 normal;
-    if (!querySdfShapePoint(shape, inverse_transform * convertEigenToBt(point), distance, normal))
-      return Eigen::Vector3d::Zero();
-    normal = world_transform.getBasis() * normal;
-    return convertBtToEigen(normal);
-  };
-  btVector3 aabb_min;
-  btVector3 aabb_max;
-  shape.getAabb(world_transform, aabb_min, aabb_max);
-  result.aabb = Eigen::AlignedBox3d(convertBtToEigen(aabb_min), convertBtToEigen(aabb_max));
-  return result;
+  return static_cast<const TesseractSdfCollisionShape&>(shape);
 }
 }  // namespace
 
 ImplicitSDFShape makeImplicitSdfShape(const btCollisionShape& shape, const btTransform& world_transform)
 {
-  if (const auto* field_shape = dynamic_cast<const TesseractSdfCollisionShape*>(&shape))
-    return makeImplicitSDFShape(field_shape->getField(), convertBtToEigen(world_transform));
-  return makeBulletMiniSdfShape(static_cast<const btSdfCollisionShape&>(shape), world_transform);
+  return makeImplicitSDFShape(fieldShape(shape).getField(), convertBtToEigen(world_transform));
 }
 
 bool querySdfShapeContact(const btCollisionShape& shape,
@@ -146,15 +121,11 @@ bool querySdfShapeContact(const btCollisionShape& shape,
                           btScalar& distance,
                           btVector3& normal)
 {
-  if (const auto* field_shape = dynamic_cast<const TesseractSdfCollisionShape*>(&shape))
-  {
-    // Distance first: the normal is the expensive read when the gradient uses a wider stencil.
-    if (!field_shape->queryDistance(local_point, distance) || distance > max_distance)
-      return false;
-    return field_shape->queryPoint(local_point, distance, normal);
-  }
-  // btMiniSDF reads distance and normal together; there is nothing to skip.
-  return querySdfShapePoint(shape, local_point, distance, normal) && distance <= max_distance;
+  // Distance first: the normal is the expensive read when the gradient uses a wider stencil.
+  const TesseractSdfCollisionShape& field_shape = fieldShape(shape);
+  if (!field_shape.queryDistance(local_point, distance) || distance > max_distance)
+    return false;
+  return field_shape.queryPoint(local_point, distance, normal);
 }
 
 bool querySdfShapePoint(const btCollisionShape& shape,
@@ -162,13 +133,7 @@ bool querySdfShapePoint(const btCollisionShape& shape,
                         btScalar& distance,
                         btVector3& normal)
 {
-  if (const auto* field_shape = dynamic_cast<const TesseractSdfCollisionShape*>(&shape))
-    return field_shape->queryPoint(local_point, distance, normal);
-  // queryPoint is a non-const member on btSdfCollisionShape even though it does not mutate the
-  // field, hence the const_cast (stock Bullet C-casts away constness in the same spot).
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-  auto& mini_sdf = const_cast<btSdfCollisionShape&>(static_cast<const btSdfCollisionShape&>(shape));
-  return mini_sdf.queryPoint(local_point, distance, normal);
+  return fieldShape(shape).queryPoint(local_point, distance, normal);
 }
 
 }  // namespace tesseract::collision::bullet_internal

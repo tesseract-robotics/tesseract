@@ -36,7 +36,7 @@ namespace tesseract::collision::bullet_internal
  * Bullet's shape for every field (grid-backed or function-backed): it queries the field itself,
  * with no copy into Bullet's @c btMiniSDF. It reports @c SDF_SHAPE_PROXYTYPE, so the existing SDF
  * pair algorithms handle it; they reach the field through @ref makeImplicitSdfShape and
- * @ref querySdfShapePoint, which accept this shape and @c btSdfCollisionShape alike. The field's own
+ * @ref querySdfShapePoint. It is the only @c SDF_SHAPE_PROXYTYPE shape Tesseract creates. The field's own
  * @c scale is applied here; Bullet local scaling is not supported.
  */
 class TesseractSdfCollisionShape : public btConcaveShape
@@ -85,15 +85,15 @@ private:
 
 /**
  * @brief The implicit solver's view of a Bullet SDF shape (@c SDF_SHAPE_PROXYTYPE) placed at
- * @p world_transform: a @ref TesseractSdfCollisionShape or a @c btSdfCollisionShape.
+ * @p world_transform, which must be a @ref TesseractSdfCollisionShape.
  * @details The shape must outlive the result.
  */
 ImplicitSDFShape makeImplicitSdfShape(const btCollisionShape& shape, const btTransform& world_transform);
 
 /**
  * @brief Distance and normal at a point in an SDF shape's frame, but only if the distance is within
- * @p max_distance (a contact threshold). For a @ref TesseractSdfCollisionShape the distance is read
- * first and the normal only for points that pass; a btSdfCollisionShape reads both at once.
+ * @p max_distance (a contact threshold): the distance is read first and the normal only for points
+ * that pass. @p shape must be a @ref TesseractSdfCollisionShape.
  * @return true if the shape has a value there and it is within @p max_distance
  */
 bool querySdfShapeContact(const btCollisionShape& shape,
@@ -103,7 +103,8 @@ bool querySdfShapeContact(const btCollisionShape& shape,
                           btVector3& normal);
 
 /**
- * @brief Distance and normal at a point in an SDF shape's frame, for either Bullet SDF shape type.
+ * @brief Distance and normal at a point in an SDF shape's frame. @p shape must be a
+ * @ref TesseractSdfCollisionShape.
  * @return false where the shape has no value
  */
 bool querySdfShapePoint(const btCollisionShape& shape,

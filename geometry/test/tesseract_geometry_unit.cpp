@@ -1067,6 +1067,17 @@ TEST(TesseractGeometryUnit, SignedDistanceFieldGradient)  // NOLINT
       SPHERE, Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5), Eigen::Vector3i::Constant(21));
   const Eigen::Vector3d p(0.2, -0.1, 0.15);
   EXPECT_TRUE(lazy->getGradient(p).isApprox(p.normalized(), 1e-6));
+  Eigen::Vector3d combined;
+  EXPECT_EQ(lazy->getDistanceAndGradient(p, combined), lazy->getDistance(p));
+  EXPECT_EQ(combined, lazy->getGradient(p));
+
+  // A sampler answering the wrong number of probes is rejected.
+  const tesseract::geometry::BatchedSignedDistanceFunction one_value = [](const std::vector<Eigen::Vector3d>&) {
+    return std::vector<double>{ 0.0 };
+  };
+  auto short_sampler = tesseract::geometry::createSignedDistanceField(
+      one_value, Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5), Eigen::Vector3i::Constant(21));
+  EXPECT_THROW(short_sampler->getGradient(p), std::runtime_error);  // NOLINT
 
   // Its probes stay inside the domain from a point on or near the boundary: the sampler may be defined only there.
   const Eigen::AlignedBox3d domain(Eigen::Vector3d::Constant(-0.5), Eigen::Vector3d::Constant(0.5));
