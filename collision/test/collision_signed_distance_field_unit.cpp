@@ -21,6 +21,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cmath>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -717,6 +718,39 @@ TEST(TesseractCollisionSignedDistanceFieldUnit, ContactQueryReadsNormalOnlyWithi
     // Outside the domain: no contact.
     EXPECT_FALSE(querySdfShapeContact(s, btVector3(1.5, 0.0, 0.0), 10.0, d, n));
   }
+}
+
+TEST(TesseractCollisionSignedDistanceFieldUnit, BulletSdfShapeInterface)  // NOLINT
+{
+  using tesseract::collision::bullet_internal::TesseractSdfCollisionShape;
+  EXPECT_THROW(TesseractSdfCollisionShape(nullptr), std::invalid_argument);  // NOLINT
+
+  auto geom = std::static_pointer_cast<const tesseract::geometry::SignedDistanceField>(makeSphereSDF());
+  auto shape = std::make_unique<TesseractSdfCollisionShape>(geom);
+  EXPECT_EQ(shape->getShapeType(), SDF_SHAPE_PROXYTYPE);
+  EXPECT_STREQ(shape->getName(), "TesseractSdfCollisionShape");
+  EXPECT_EQ(&shape->getField(), geom.get());
+
+  // The field carries its scale: only unit Bullet scaling is accepted.
+  EXPECT_NO_THROW(shape->setLocalScaling(btVector3(1, 1, 1)));                      // NOLINT
+  EXPECT_THROW(shape->setLocalScaling(btVector3(2, 2, 2)), std::invalid_argument);  // NOLINT
+  EXPECT_EQ(shape->getLocalScaling(), btVector3(1, 1, 1));
+
+  btVector3 inertia(1, 1, 1);
+  shape->calculateLocalInertia(1, inertia);
+  EXPECT_EQ(inertia, btVector3(0, 0, 0));
+  shape->processAllTriangles(nullptr, btVector3(-1, -1, -1), btVector3(1, 1, 1));  // no triangles: a no-op
+
+  // A field with no finite value at a point inside its domain gives no contact there.
+  const tesseract::geometry::SignedDistanceFunction nan_field = [](const Eigen::Vector3d&) {
+    return std::numeric_limits<double>::quiet_NaN();
+  };
+  const TesseractSdfCollisionShape nan_shape(tesseract::geometry::createSignedDistanceField(
+      nan_field, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(4, 4, 4)));
+  btScalar distance{ 0 };
+  btVector3 normal;
+  EXPECT_FALSE(nan_shape.queryDistance(btVector3(0, 0, 0), distance));
+  EXPECT_FALSE(nan_shape.queryPoint(btVector3(0, 0, 0), distance, normal));
 }
 
 TEST(TesseractCollisionSignedDistanceFieldUnit, BulletConvexHullVertexPath)  // NOLINT
