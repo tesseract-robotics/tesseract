@@ -1068,9 +1068,10 @@ bool OFKTStateSolver::initHelper(const tesseract::scene_graph::SceneGraph& scene
   for (boost::tie(i, iend) = boost::vertices(scene_graph); i != iend; ++i, ++c)
     boost::put(prop_index_map, *i, c);
 
-  boost::depth_first_search(
-      static_cast<const tesseract::scene_graph::Graph&>(scene_graph),
-      boost::visitor(builder).root_vertex(scene_graph.getVertex(scene_graph.getRoot())).vertex_index_map(prop_index_map));
+  boost::depth_first_search(static_cast<const tesseract::scene_graph::Graph&>(scene_graph),
+                            boost::visitor(builder)
+                                .root_vertex(scene_graph.getVertex(scene_graph.getRoot()))
+                                .vertex_index_map(prop_index_map));
 
   // Populate Joint Limits
   addNewJointLimits(new_joints_limits);
