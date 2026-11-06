@@ -36,6 +36,10 @@ void KinematicLimits::resize(Eigen::Index size)
 
 bool KinematicLimits::operator==(const KinematicLimits& rhs) const
 {
+  if (joint_limits.rows() != rhs.joint_limits.rows() || velocity_limits.rows() != rhs.velocity_limits.rows() ||
+      acceleration_limits.rows() != rhs.acceleration_limits.rows() || jerk_limits.rows() != rhs.jerk_limits.rows())
+    return false;
+
   bool ret_val = true;
   ret_val &= (joint_limits.isApprox(rhs.joint_limits, 1e-5));
   ret_val &= (velocity_limits.isApprox(rhs.velocity_limits, 1e-5));
