@@ -39,7 +39,8 @@ TEST(TesseractStateSolverUnit, OFKTConstructorPrefixUnit)
     ASSERT_EQ(state.link_transforms.count(LinkId(prefix + "base_link")), 1);
     ASSERT_EQ(state.link_transforms.count(LinkId(prefix + "child_link")), 1);
     EXPECT_TRUE(state.link_transforms.at(LinkId(prefix + "base_link")).isApprox(Eigen::Isometry3d::Identity()));
-    EXPECT_TRUE(state.link_transforms.at(LinkId(prefix + "child_link")).isApprox(joint.parent_to_joint_origin_transform));
+    EXPECT_TRUE(
+        state.link_transforms.at(LinkId(prefix + "child_link")).isApprox(joint.parent_to_joint_origin_transform));
     EXPECT_EQ(graph.getRoot(), LinkId("base_link"));
     EXPECT_EQ(graph.getLinks().size(), 2);
   }
