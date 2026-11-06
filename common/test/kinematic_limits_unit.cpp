@@ -16,8 +16,10 @@ TEST(TesseractCommonUnit, KinematicLimitsEquality)  // NOLINT
   EXPECT_NE(limits, empty);
   EXPECT_NE(empty, limits);
 
-  for (auto member : { &KinematicLimits::joint_limits, &KinematicLimits::velocity_limits,
-                       &KinematicLimits::acceleration_limits, &KinematicLimits::jerk_limits })
+  for (auto member : { &KinematicLimits::joint_limits,
+                       &KinematicLimits::velocity_limits,
+                       &KinematicLimits::acceleration_limits,
+                       &KinematicLimits::jerk_limits })
   {
     for (Eigen::Index rows : { 0, 1, 3 })
     {
