@@ -1020,6 +1020,13 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
 
     manager->addCollisionObjects(objects);
 
+    // A manager built from scratch must honour links disabled by ChangeLinkCollisionEnabledCommand
+    for (const auto& object : objects)
+    {
+      if (!scene_graph->getLinkCollisionEnabled(object.id))
+        manager->disableCollisionObject(object.id);
+    }
+
     manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }
 
@@ -1046,6 +1053,13 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
         buildCollisionObjectSpecs(scene_graph->getLinks());
 
     manager->addCollisionObjects(objects);
+
+    // A manager built from scratch must honour links disabled by ChangeLinkCollisionEnabledCommand
+    for (const auto& object : objects)
+    {
+      if (!scene_graph->getLinkCollisionEnabled(object.id))
+        manager->disableCollisionObject(object.id);
+    }
 
     manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }

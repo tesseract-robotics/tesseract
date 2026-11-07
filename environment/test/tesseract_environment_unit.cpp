@@ -1362,6 +1362,39 @@ TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledCommandUnit)  // NOL
   EXPECT_TRUE(env->getSceneGraph()->getLinkCollisionEnabled(link_name));
 }
 
+TEST(TesseractEnvironmentUnit, EnvChangeLinkCollisionEnabledSurvivesManagerRebuildUnit)  // NOLINT
+{
+  auto env = getEnvironment();
+  const tesseract::common::LinkId link_id("link_1");
+  EXPECT_TRUE(env->applyCommand(std::make_shared<ChangeLinkCollisionEnabledCommand>(link_id, false)));
+  ASSERT_FALSE(env->getLinkCollisionEnabled(link_id));
+
+  // The cached managers were edited in place by the command
+  EXPECT_FALSE(env->getDiscreteContactManager()->isCollisionObjectEnabled(link_id));
+  EXPECT_FALSE(env->getContinuousContactManager()->isCollisionObjectEnabled(link_id));
+
+  // Managers built from scratch must honour the same flag
+  env->clearCachedDiscreteContactManager();
+  env->clearCachedContinuousContactManager();
+  EXPECT_FALSE(env->getDiscreteContactManager()->isCollisionObjectEnabled(link_id));
+  EXPECT_FALSE(env->getContinuousContactManager()->isCollisionObjectEnabled(link_id));
+
+  EXPECT_FALSE(env->getDiscreteContactManager("BulletDiscreteSimpleManager")->isCollisionObjectEnabled(link_id));
+  EXPECT_FALSE(env->getContinuousContactManager("BulletCastSimpleManager")->isCollisionObjectEnabled(link_id));
+
+  EXPECT_TRUE(env->setActiveDiscreteContactManager("BulletDiscreteSimpleManager"));
+  EXPECT_TRUE(env->setActiveContinuousContactManager("BulletCastSimpleManager"));
+  EXPECT_FALSE(env->getDiscreteContactManager()->isCollisionObjectEnabled(link_id));
+  EXPECT_FALSE(env->getContinuousContactManager()->isCollisionObjectEnabled(link_id));
+
+  // Re-enabling still reaches a rebuilt manager
+  EXPECT_TRUE(env->applyCommand(std::make_shared<ChangeLinkCollisionEnabledCommand>(link_id, true)));
+  env->clearCachedDiscreteContactManager();
+  env->clearCachedContinuousContactManager();
+  EXPECT_TRUE(env->getDiscreteContactManager()->isCollisionObjectEnabled(link_id));
+  EXPECT_TRUE(env->getContinuousContactManager()->isCollisionObjectEnabled(link_id));
+}
+
 TEST(TesseractEnvironmentUnit, EnvChangeLinkVisibilityCommandUnit)  // NOLINT
 {
   // Get the environment
