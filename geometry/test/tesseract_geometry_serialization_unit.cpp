@@ -25,6 +25,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <sstream>
 #include <octomap/octomap.h>
+#include <cereal/archives/binary.hpp>
 #include <cereal/archives/xml.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -35,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/geometry/mesh_parser.h>
 #include <tesseract/geometry/cereal_serialization.h>
 #include <tesseract/geometry/impl/octree_utils.h>
+#include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/common/serialization.h>
 
 using namespace tesseract::geometry;
@@ -215,6 +217,134 @@ TEST(TesseractGeometrySerializeUnit, SignedDistanceField)  // NOLINT
   auto object = std::make_shared<SignedDistanceField>(domain, dims, distances, Eigen::Vector3d(1.0, 2.0, 3.0));
   tesseract::common::testSerialization<SignedDistanceField>(*object, "SignedDistanceField");
   tesseract::common::testSerializationDerivedClass<Geometry, SignedDistanceField>(object, "SignedDistanceField");
+}
+
+TEST(TesseractGeometrySerializeUnit, SignedDistanceFieldInterpolationSettings)  // NOLINT
+{
+  // How the field is read travels with it: a loaded field answers as the saved one did.
+  const Eigen::AlignedBox3d domain(Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1));
+  std::vector<double> distances;
+  for (int k = 0; k < 5; ++k)
+    for (int j = 0; j < 5; ++j)
+      for (int i = 0; i < 5; ++i)
+        distances.push_back(Eigen::Vector3d(-1 + (0.5 * i), -1 + (0.5 * j), -1 + (0.5 * k)).norm() - 0.6);
+  SignedDistanceField object(domain, Eigen::Vector3i::Constant(5), distances);
+  object.setInterpolation(tesseract::geometry::SignedDistanceFieldInterpolation::TRILINEAR);
+  object.setGradientInterpolation(tesseract::geometry::SignedDistanceFieldInterpolation::TRICUBIC);
+
+  std::stringstream ss;
+  {
+    cereal::BinaryOutputArchive ar(ss);
+    ar(object);
+  }
+  cereal::BinaryInputArchive ar(ss);
+  SignedDistanceField loaded;
+  ar(loaded);
+  EXPECT_EQ(loaded.getInterpolation(), tesseract::geometry::SignedDistanceFieldInterpolation::TRILINEAR);
+  EXPECT_EQ(loaded.getGradientInterpolation(), tesseract::geometry::SignedDistanceFieldInterpolation::TRICUBIC);
+  const Eigen::Vector3d p(0.31, 0.12, -0.27);
+  EXPECT_EQ(loaded.getGradient(p), object.getGradient(p));
+  EXPECT_EQ(loaded, object);
+
+  // An archive from a format this build does not know is rejected, not misread.
+  std::stringstream xml;
+  {
+    cereal::XMLOutputArchive out(xml);
+    out(object);
+  }
+  std::string text = xml.str();
+  const auto at = text.find("<version>1</version>");
+  ASSERT_NE(at, std::string::npos);
+  text.replace(at, 20, "<version>2</version>");
+  std::stringstream newer(text);
+  cereal::XMLInputArchive in(newer);
+  SignedDistanceField rejected;
+  EXPECT_ANY_THROW(in(rejected));  // NOLINT
+}
+TEST(TesseractGeometrySerializeUnit, SparseSignedDistanceField)  // NOLINT
+{
+  // A sparse field made from a dense field's NanoVDB file.
+  const auto grid = [](double half, int n) {
+    std::vector<double> distances;
+    const double step = 2.0 * half / (n - 1);
+    for (int k = 0; k < n; ++k)
+      for (int j = 0; j < n; ++j)
+        for (int i = 0; i < n; ++i)
+          distances.push_back(Eigen::Vector3d(-half + (i * step), -half + (j * step), -half + (k * step)).norm() - 0.3);
+    return SignedDistanceField(Eigen::AlignedBox3d(Eigen::Vector3d::Constant(-half), Eigen::Vector3d::Constant(half)),
+                               Eigen::Vector3i::Constant(n),
+                               distances);
+  };
+  auto object = std::make_shared<SignedDistanceField>(
+      writeSignedDistanceFieldNVDB(grid(0.5, 21)), 0.25, Eigen::Vector3d::Constant(1e-3));
+  ASSERT_TRUE(object->isSparse());
+  tesseract::common::testSerialization<SignedDistanceField>(*object, "SparseSignedDistanceField");
+  tesseract::common::testSerializationDerivedClass<Geometry, SignedDistanceField>(object, "SparseSignedDistanceField");
+
+  // The loaded field answers queries without a dense grid.
+  std::stringstream ss;
+  {
+    cereal::XMLOutputArchive ar(ss);
+    ar(*object);
+  }
+  cereal::XMLInputArchive ar(ss);
+  SignedDistanceField loaded;
+  ar(loaded);
+  ASSERT_TRUE(loaded.isSparse());
+  EXPECT_EQ(loaded.getBandClamp(), 0.25);
+  EXPECT_EQ(loaded.getDistance(Eigen::Vector3d(0.31, 0.02, 0.01)),
+            object->getDistance(Eigen::Vector3d(0.31, 0.02, 0.01)));
+  EXPECT_EQ(loaded.getDomain().min(), object->getDomain().min());
+  EXPECT_EQ(loaded.getDimensions(), object->getDimensions());
+
+  // An archive listing more band clamps than its NanoVDB file holds grids is rejected.
+  std::string text = ss.str();
+  const std::string clamp = "<value0>0.25</value0>";
+  const auto at = text.find(clamp, text.find("<band_clamps"));
+  ASSERT_NE(at, std::string::npos);
+  text.insert(at + clamp.size(), "<value1>0.25</value1>");
+  std::stringstream extra(text);
+  cereal::XMLInputArchive extra_in(extra);
+  SignedDistanceField rejected;
+  EXPECT_ANY_THROW(extra_in(rejected));  // NOLINT
+}
+
+TEST(TesseractGeometrySerializeUnit, SparseSignedDistanceFieldLevels)  // NOLINT
+{
+  // A fine level over a small box and a coarse one over a larger box, from dense fields' NanoVDB files.
+  const auto grid = [](double half, int n) {
+    std::vector<double> distances;
+    const double step = 2.0 * half / (n - 1);
+    for (int k = 0; k < n; ++k)
+      for (int j = 0; j < n; ++j)
+        for (int i = 0; i < n; ++i)
+          distances.push_back(Eigen::Vector3d(-half + (i * step), -half + (j * step), -half + (k * step)).norm() - 0.3);
+    return SignedDistanceField(Eigen::AlignedBox3d(Eigen::Vector3d::Constant(-half), Eigen::Vector3d::Constant(half)),
+                               Eigen::Vector3i::Constant(n),
+                               distances);
+  };
+  const Eigen::Vector3d scale = Eigen::Vector3d::Constant(1e-3);
+  auto object = std::make_shared<SignedDistanceField>(std::vector<SignedDistanceField::ConstPtr>{
+      std::make_shared<SignedDistanceField>(writeSignedDistanceFieldNVDB(grid(0.5, 21)), 0.25, scale),
+      std::make_shared<SignedDistanceField>(writeSignedDistanceFieldNVDB(grid(1.0, 11)), 0.0, scale) });
+  ASSERT_EQ(object->getLevels().size(), 2);
+  tesseract::common::testSerialization<SignedDistanceField>(*object, "SparseSignedDistanceFieldLevels");
+  tesseract::common::testSerializationDerivedClass<Geometry, SignedDistanceField>(object,
+                                                                                  "SparseSignedDistanceFieldLevels");
+
+  std::stringstream ss;
+  {
+    cereal::XMLOutputArchive ar(ss);
+    ar(*object);
+  }
+  cereal::XMLInputArchive ar(ss);
+  SignedDistanceField loaded;
+  ar(loaded);
+  ASSERT_EQ(loaded.getLevels().size(), 2);
+  EXPECT_EQ(loaded.getLevels()[0]->getBandClamp(), 0.25);
+  EXPECT_EQ(loaded.getScale(), scale);
+  for (const Eigen::Vector3d& p : { Eigen::Vector3d(0.31, 0.02, 0.01), Eigen::Vector3d(0.8, 0.1, 0.0) })
+    EXPECT_EQ(loaded.getDistance(p), object->getDistance(p)) << p.transpose();
 }
 
 TEST(TesseractGeometrySerializeUnit, SignedDistanceFieldRejectsMalformedArchive)  // NOLINT

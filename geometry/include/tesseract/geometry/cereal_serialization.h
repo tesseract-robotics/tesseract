@@ -3,6 +3,7 @@
 
 #include <tesseract/geometry/geometry.h>
 #include <tesseract/geometry/geometries.h>
+#include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/common/cereal_serialization.h>
 
 #include <octomap/octomap.h>
@@ -121,6 +122,19 @@ void serialize(Archive& ar, Octree& obj)
   }
 }
 
+/** @brief The archive format version @ref serialize writes for a SignedDistanceField. */
+constexpr std::uint32_t SIGNED_DISTANCE_FIELD_ARCHIVE_VERSION = 1;
+
+/**
+ * @brief Format version 1, the first with a version: the interpolation settings, then the band clamp
+ * of each NanoVDB grid and the grids as one NanoVDB file, as @ref writeSignedDistanceFieldNVDB writes
+ * it. A sparse field has one grid and a multi-level field one per level, finest first; their domain
+ * and dimensions follow from the grids, and a field with one level loads as a plain sparse field. A
+ * field without grids is dense and stores its sample grid instead. Then the scale. A later format bumps
+ * SIGNED_DISTANCE_FIELD_ARCHIVE_VERSION and branches on it here.
+ * @note An explicit field rather than CEREAL_CLASS_VERSION: cereal also matches the base class's
+ * unversioned serialize for this type and rejects the pair as ambiguous.
+ */
 template <class Archive>
 void serialize(Archive& ar, SignedDistanceField& obj)
 {
@@ -128,16 +142,60 @@ void serialize(Archive& ar, SignedDistanceField& obj)
   // is a no-op (no sampler), and the grid is populated by the archive below.
   obj.discretize();
   ar(cereal::base_class<Geometry>(&obj));
-  ar(cereal::make_nvp("domain_min", obj.domain_.min()));
-  ar(cereal::make_nvp("domain_max", obj.domain_.max()));
-  ar(cereal::make_nvp("dim_x", obj.dimensions_.x()));
-  ar(cereal::make_nvp("dim_y", obj.dimensions_.y()));
-  ar(cereal::make_nvp("dim_z", obj.dimensions_.z()));
-  ar(cereal::make_nvp("distances", obj.distances_));
+  std::uint32_t version = SIGNED_DISTANCE_FIELD_ARCHIVE_VERSION;
+  ar(cereal::make_nvp("version", version));
+  if (version != SIGNED_DISTANCE_FIELD_ARCHIVE_VERSION)
+    throw std::runtime_error("SignedDistanceField: unsupported archive version " + std::to_string(version));
+  auto interpolation = static_cast<std::uint8_t>(obj.interpolation_);
+  auto gradient_interpolation = static_cast<std::uint8_t>(obj.gradient_interpolation_);
+  ar(cereal::make_nvp("interpolation", interpolation));
+  ar(cereal::make_nvp("gradient_interpolation", gradient_interpolation));
+  if (Archive::is_loading::value)
+  {
+    for (std::uint8_t method : { interpolation, gradient_interpolation })
+      if (method > static_cast<std::uint8_t>(SignedDistanceFieldInterpolation::TRICUBIC))
+        throw std::runtime_error("SignedDistanceField: unknown interpolation " + std::to_string(method));
+    obj.interpolation_ = static_cast<SignedDistanceFieldInterpolation>(interpolation);
+    obj.gradient_interpolation_ = static_cast<SignedDistanceFieldInterpolation>(gradient_interpolation);
+  }
+  std::vector<double> band_clamps;
+  std::vector<std::uint8_t> nvdb;
+  for (const SignedDistanceField::ConstPtr& level : obj.getLevels())
+    band_clamps.push_back(level->getBandClamp());
+  if (band_clamps.empty() && obj.isSparse())
+    band_clamps.push_back(obj.getBandClamp());
+  if (!band_clamps.empty())
+    nvdb = writeSignedDistanceFieldNVDB(obj);
+  ar(cereal::make_nvp("band_clamps", band_clamps));
+  ar(cereal::make_nvp("nvdb", nvdb));
+  if (band_clamps.empty())
+  {
+    ar(cereal::make_nvp("domain_min", obj.domain_.min()));
+    ar(cereal::make_nvp("domain_max", obj.domain_.max()));
+    ar(cereal::make_nvp("dim_x", obj.dimensions_.x()));
+    ar(cereal::make_nvp("dim_y", obj.dimensions_.y()));
+    ar(cereal::make_nvp("dim_z", obj.dimensions_.z()));
+    ar(cereal::make_nvp("distances", obj.distances_));
+  }
   ar(cereal::make_nvp("scale", obj.scale_));
 
   if (Archive::is_loading::value)
+  {
+    if (band_clamps.size() == 1)
+      obj.initializeSparse(std::move(nvdb), band_clamps.front());
+    else if (band_clamps.size() > 1)
+    {
+      const std::size_t grids = getSignedDistanceFieldNVDBGridNames(nvdb).size();
+      if (grids != band_clamps.size())
+        throw std::runtime_error("SignedDistanceField: the archive has " + std::to_string(grids) + " grids but " +
+                                 std::to_string(band_clamps.size()) + " band clamps");
+      std::vector<SignedDistanceField::ConstPtr> levels;
+      for (std::size_t i = 0; i < grids; ++i)
+        levels.push_back(readSparseSignedDistanceFieldNVDB(nvdb, band_clamps[i], obj.scale_, i));
+      obj.initializeLevels(std::move(levels));
+    }
     obj.validate();
+  }
 }
 
 template <class Archive>

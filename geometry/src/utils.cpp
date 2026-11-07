@@ -212,6 +212,28 @@ bool isIdentical(const Geometry& geom1, const Geometry& geom2)
       const auto& s1 = static_cast<const SignedDistanceField&>(geom1);
       const auto& s2 = static_cast<const SignedDistanceField&>(geom2);
 
+      if (s1.getInterpolation() != s2.getInterpolation() ||
+          s1.getGradientInterpolation() != s2.getGradientInterpolation())
+        return false;
+
+      // A sparse field has no dense grid to compare; it is identical when its grid is, level by
+      // level for a multi-level field.
+      if (s1.isSparse() || s2.isSparse())
+      {
+        if (s1.isSparse() != s2.isSparse() || s1.getNVDB() != s2.getNVDB() || s1.getBandClamp() != s2.getBandClamp())
+          return false;
+        const auto& l1 = s1.getLevels();
+        const auto& l2 = s2.getLevels();
+        if (l1.size() != l2.size())
+          return false;
+        for (std::size_t i = 0; i < l1.size(); ++i)
+          if (l1[i]->getNVDB() != l2[i]->getNVDB() || l1[i]->getBandClamp() != l2[i]->getBandClamp())
+            return false;
+        if (!s1.getScale().isApprox(s2.getScale(), std::numeric_limits<double>::epsilon()))
+          return false;
+        break;
+      }
+
       if (s1.getDimensions() != s2.getDimensions())
         return false;
 

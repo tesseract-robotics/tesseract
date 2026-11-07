@@ -33,15 +33,30 @@ Analytically-defined shapes with exact representations:
 
 @subsection geometry_sdf Signed Distance Field
 
-A volumetric, implicit geometry: the signed distance to a surface (negative inside) sampled on a
-regular axis-aligned grid over a local-frame domain. The grid is stored in a backend-neutral form
-(domain, per-axis dimensions, and the sampled distances). Collision backends query the field in place
-through its distance and gradient; nothing is copied into a backend-specific representation. It
-enables true concave volumetric contact and signed-distance/gradient queries, and is the canonical way
-to use a distance field. Create one in-process from any distance function (analytic, sensor-fused, or
-a sampler wrapping another library such as OpenVDB), sample a function onto a grid up front with the
-discrete factory, or load a serialized VDB FloatGrid. VDB import currently accepts one FloatGrid with
-an axis-aligned, uniform transform.
+A volumetric, implicit geometry: the signed distance to a surface (negative inside). It is stored in
+a backend-neutral form, either sampled on a regular axis-aligned grid over a local-frame domain, or
+sparse: a NanoVDB grid that holds only the voxels near the surface. Collision
+backends query the field in place through its distance and gradient; nothing is copied into a
+backend-specific representation. It enables true concave volumetric contact and
+signed-distance/gradient queries, and is the canonical way to use a distance field. Create one
+in-process from any distance function (analytic, sensor-fused, or a sampler wrapping another library
+such as OpenVDB), sample a function onto a grid up front with the discrete factory, or load a
+serialized VDB FloatGrid or NanoVDB file. VDB import currently accepts one FloatGrid with an
+axis-aligned, uniform transform.
+
+A sparse field is one grid of a NanoVDB file (by name when the file holds several), read in place
+with its band clamp: the distance at which its values saturate. Where it has no data, or reads at or
+past the clamp outside the surface, it has no answer (+infinity), so several fields on a link (for
+example level sets of different objects stored in one file) combine as any geometries do: the
+nearest answers. In a level set (NanoVDB grid class LevelSet) inactive voxels hold the background and count
+as data; in any other grid every voxel a read uses must be active.
+
+Grids of one surface at different resolutions can instead be stacked as levels, explicitly: a multi-level field
+takes sparse fields finest first and answers from the first that can, a finer level giving way at
+its band clamp to a coarser one with real range. A fine grid cropped around a region of interest
+over a coarse grid of the whole object then costs fine voxels only where they are needed. Levels
+must describe the same surface; separate objects belong in separate fields. In URDF, `level`
+children of the element select each level's grid (by `grid` name or `index`) and band clamp.
 
 > <b>Note:</b> A field built from a distance function calls that function at every collision query.
 > For an expensive function (for example, distance to a mesh), sample it onto a grid up front with

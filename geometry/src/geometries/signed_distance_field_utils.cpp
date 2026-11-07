@@ -22,6 +22,7 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdlib>
@@ -39,6 +40,9 @@ extern "C" {
 #include <tinyvdb_io.h>
 #include <tinyvdb_nanovdb.h>
 #include <tinyvdb_sparse_tree.h>
+#define PNANOVDB_C
+#define PNANOVDB_BUF_BOUNDS_CHECK
+#include <third_party/nanovdb/PNanoVDB.h>
 }
 
 namespace tesseract::geometry
@@ -142,8 +146,91 @@ SignedDistanceField::Ptr createSignedDistanceField(const BatchedSignedDistanceFu
   return std::make_shared<SignedDistanceField>(Eigen::AlignedBox3d(domain_min, domain_max), dimensions, sdf, scale);
 }
 
+/**
+ * @brief Describe a stored grid (a bare FloatGrid buffer the field has validated) for tinyvdb's file
+ * writer: every value comes from the grid's own header. @p name receives the grid's name, which the
+ * description points to.
+ */
+static tvdb_nanovdb_grid_t describeGrid(const std::vector<std::uint8_t>& bytes, std::string& name)
+{
+  // PNanoVDB reads through a non-const pointer; it never writes.
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast, cppcoreguidelines-pro-type-reinterpret-cast)
+  auto* words = reinterpret_cast<std::uint32_t*>(const_cast<std::uint8_t*>(bytes.data()));
+  const pnanovdb_buf_t buf = pnanovdb_make_buf(words, bytes.size() / 4);
+  const pnanovdb_grid_handle_t grid = { { 0U } };
+  const pnanovdb_tree_handle_t tree = pnanovdb_grid_get_tree(buf, grid);
+  const pnanovdb_root_handle_t root = pnanovdb_tree_get_root(buf, tree);
+  const char* stored_name = reinterpret_cast<const char*>(bytes.data()) + PNANOVDB_GRID_OFF_GRID_NAME;  // NOLINT
+  constexpr std::size_t grid_name_bytes = 256;  // NanoVDB's GridData name field
+  name.assign(stored_name, std::find(stored_name, stored_name + grid_name_bytes - 1, '\0'));
+
+  tvdb_nanovdb_grid_t meta{};
+  meta.name = name.data();
+  meta.size = pnanovdb_grid_get_grid_size(buf, grid);
+  meta.grid_type = TVDB_NANOVDB_GRID_TYPE_FLOAT;
+  meta.grid_class = pnanovdb_grid_get_grid_class(buf, grid);
+  const pnanovdb_coord_t index_min = pnanovdb_root_get_bbox_min(buf, root);
+  const pnanovdb_coord_t index_max = pnanovdb_root_get_bbox_max(buf, root);
+  meta.index_bbox_min[0] = index_min.x;
+  meta.index_bbox_min[1] = index_min.y;
+  meta.index_bbox_min[2] = index_min.z;
+  meta.index_bbox_max[0] = index_max.x;
+  meta.index_bbox_max[1] = index_max.y;
+  meta.index_bbox_max[2] = index_max.z;
+  for (pnanovdb_uint32_t a = 0; a < 3; ++a)
+  {
+    meta.voxel_size[a] = pnanovdb_grid_get_voxel_size(buf, grid, a);
+    meta.world_bbox_min[a] = pnanovdb_grid_get_world_bbox(buf, grid, a);
+    meta.world_bbox_max[a] = pnanovdb_grid_get_world_bbox(buf, grid, a + 3);
+  }
+  meta.active_voxel_count = pnanovdb_tree_get_voxel_count(buf, tree);
+  meta.node_count[0] = pnanovdb_tree_get_node_count_leaf(buf, tree);
+  meta.node_count[1] = pnanovdb_tree_get_node_count_lower(buf, tree);
+  meta.node_count[2] = pnanovdb_tree_get_node_count_upper(buf, tree);
+  meta.node_count[3] = 1;
+  meta.tile_count[0] = pnanovdb_tree_get_tile_count_lower(buf, tree);
+  meta.tile_count[1] = pnanovdb_tree_get_tile_count_upper(buf, tree);
+  meta.tile_count[2] = pnanovdb_tree_get_tile_count_root(buf, tree);
+  meta.data = const_cast<std::uint8_t*>(bytes.data());  // NOLINT(cppcoreguidelines-pro-type-const-cast)
+  return meta;
+}
+
+/**
+ * @brief A sparse field's grid as a NanoVDB file (the grid buffer as stored); a multi-level field's
+ * levels' grids, finest first, as one multi-grid file.
+ */
+static std::vector<std::uint8_t> writeSparseSignedDistanceFieldNVDB(const SignedDistanceField& sdf)
+{
+  std::vector<const std::vector<std::uint8_t>*> buffers;
+  if (sdf.getLevels().empty())
+    buffers.push_back(&sdf.getNVDB());
+  for (const SignedDistanceField::ConstPtr& level : sdf.getLevels())
+    buffers.push_back(&level->getNVDB());
+  std::vector<std::string> names(buffers.size());
+  std::vector<tvdb_nanovdb_grid_t> grids;
+  grids.reserve(buffers.size());
+  for (std::size_t i = 0; i < buffers.size(); ++i)
+    grids.push_back(describeGrid(*buffers[i], names[i]));
+
+  tvdb_nanovdb_file_t file{};
+  file.num_grids = grids.size();
+  file.grids = grids.data();
+  std::uint8_t* data = nullptr;
+  std::size_t size = 0;
+  tvdb_error_t error{};
+  const tvdb_status_t status = tvdb_nanovdb_write_to_memory(&file, TVDB_NANOVDB_CODEC_NONE, &data, &size, &error);
+  if (status != TVDB_OK)
+    throwTinyVDBError("writeSignedDistanceFieldNVDB", error);
+
+  const std::unique_ptr<std::uint8_t, decltype(&std::free)> data_owner(data, &std::free);
+  return { data, data + size };
+}
+
 std::vector<std::uint8_t> writeSignedDistanceFieldVDB(const SignedDistanceField& sdf)
 {
+  if (sdf.isSparse())
+    throw std::runtime_error("writeSignedDistanceFieldVDB: a sparse field has no single dense grid; write it with "
+                             "writeSignedDistanceFieldNVDB");
   const std::vector<double>& distances = sdf.getDistances();
   const Eigen::Vector3i& dimensions = sdf.getDimensions();
   const Eigen::Vector3d voxel_size =
@@ -302,6 +389,9 @@ SignedDistanceField::Ptr readSignedDistanceFieldVDB(const std::vector<std::uint8
 
 std::vector<std::uint8_t> writeSignedDistanceFieldNVDB(const SignedDistanceField& sdf)
 {
+  if (sdf.isSparse())
+    return writeSparseSignedDistanceFieldNVDB(sdf);
+
   const std::vector<std::uint8_t> vdb_data = writeSignedDistanceFieldVDB(sdf);
   tvdb_file_t vdb_file{};
   tvdb_error_t error{};
@@ -372,12 +462,16 @@ SignedDistanceField::Ptr readSignedDistanceFieldNVDB(const std::uint8_t* data,
   tvdb_error_t error{};
   const tvdb_status_t status = tvdb_nanovdb_file_open_memory(&file, data, size, nullptr, &error);
   if (status != TVDB_OK)
+  {
+    tvdb_nanovdb_file_close(&file);  // frees what a failed open allocated
     throwTinyVDBError("readSignedDistanceFieldNVDB", error);
+  }
 
   if (file.num_grids != 1 || file.grids[0].grid_type != TVDB_NANOVDB_GRID_TYPE_FLOAT)
   {
     tvdb_nanovdb_file_close(&file);
-    throw std::runtime_error("readSignedDistanceFieldNVDB: exactly one FloatGrid is required");
+    throw std::runtime_error("readSignedDistanceFieldNVDB: exactly one FloatGrid is required (read one grid of "
+                             "several with readSparseSignedDistanceFieldNVDB)");
   }
 
   const tvdb_nanovdb_grid_t& grid = file.grids[0];
@@ -419,6 +513,109 @@ SignedDistanceField::Ptr readSignedDistanceFieldNVDB(const std::vector<std::uint
                                                      const Eigen::Vector3d& scale)
 {
   return readSignedDistanceFieldNVDB(data.data(), data.size(), scale);
+}
+
+/** @brief Open a NanoVDB file with tinyvdb; the returned owner closes it (also after a failed open). */
+static std::unique_ptr<tvdb_nanovdb_file_t, void (*)(tvdb_nanovdb_file_t*)>
+openNVDB(const std::uint8_t* data, std::size_t size, tvdb_nanovdb_file_t& file, const char* where)
+{
+  if (data == nullptr || size == 0)
+    throw std::runtime_error(std::string(where) + ": input is empty");
+  tvdb_error_t error{};
+  const tvdb_status_t status = tvdb_nanovdb_file_open_memory(&file, data, size, nullptr, &error);
+  std::unique_ptr<tvdb_nanovdb_file_t, void (*)(tvdb_nanovdb_file_t*)> owner(&file, &tvdb_nanovdb_file_close);
+  if (status != TVDB_OK)
+    throwTinyVDBError(where, error);
+  return owner;
+}
+
+std::vector<std::string> getSignedDistanceFieldNVDBGridNames(const std::uint8_t* data, std::size_t size)
+{
+  tvdb_nanovdb_file_t file{};
+  const auto file_owner = openNVDB(data, size, file, "getSignedDistanceFieldNVDBGridNames");
+  std::vector<std::string> names;
+  names.reserve(file.num_grids);
+  for (std::size_t i = 0; i < file.num_grids; ++i)
+    names.emplace_back(file.grids[i].name != nullptr ? file.grids[i].name : "");
+  return names;
+}
+
+std::vector<std::string> getSignedDistanceFieldNVDBGridNames(const std::vector<std::uint8_t>& data)
+{
+  return getSignedDistanceFieldNVDBGridNames(data.data(), data.size());
+}
+
+SignedDistanceField::Ptr readSparseSignedDistanceFieldNVDB(const std::uint8_t* data,
+                                                           std::size_t size,
+                                                           double band_clamp,
+                                                           const Eigen::Vector3d& scale,
+                                                           const std::string& grid_name)
+{
+  constexpr const char* where = "readSparseSignedDistanceFieldNVDB";
+  tvdb_nanovdb_file_t file{};
+  const auto file_owner = openNVDB(data, size, file, where);
+
+  const tvdb_nanovdb_grid_t* grid = nullptr;
+  if (grid_name.empty())
+  {
+    if (file.num_grids != 1)
+      throw std::runtime_error(std::string(where) + ": the file holds " + std::to_string(file.num_grids) +
+                               " grids; name the one to read");
+    grid = &file.grids[0];
+  }
+  else
+  {
+    for (std::size_t i = 0; i < file.num_grids; ++i)
+    {
+      if (file.grids[i].name == nullptr || grid_name != file.grids[i].name)
+        continue;
+      if (grid != nullptr)
+        throw std::runtime_error(std::string(where) + ": more than one grid is named '" + grid_name + "'");
+      grid = &file.grids[i];
+    }
+    if (grid == nullptr)
+      throw std::runtime_error(std::string(where) + ": no grid is named '" + grid_name + "'");
+  }
+  if (grid->data == nullptr)
+    throw std::runtime_error(std::string(where) + ": the grid holds no data");
+  // The bare grid buffer is a valid input; the field validates it and stores it canonically.
+  return std::make_shared<SignedDistanceField>(
+      std::vector<std::uint8_t>(grid->data, grid->data + grid->size), band_clamp, scale);
+}
+
+SignedDistanceField::Ptr readSparseSignedDistanceFieldNVDB(const std::vector<std::uint8_t>& data,
+                                                           double band_clamp,
+                                                           const Eigen::Vector3d& scale,
+                                                           const std::string& grid_name)
+{
+  return readSparseSignedDistanceFieldNVDB(data.data(), data.size(), band_clamp, scale, grid_name);
+}
+
+SignedDistanceField::Ptr readSparseSignedDistanceFieldNVDB(const std::uint8_t* data,
+                                                           std::size_t size,
+                                                           double band_clamp,
+                                                           const Eigen::Vector3d& scale,
+                                                           std::size_t grid_index)
+{
+  constexpr const char* where = "readSparseSignedDistanceFieldNVDB";
+  tvdb_nanovdb_file_t file{};
+  const auto file_owner = openNVDB(data, size, file, where);
+  if (grid_index >= file.num_grids)
+    throw std::runtime_error(std::string(where) + ": grid " + std::to_string(grid_index) +
+                             " requested, but the file holds " + std::to_string(file.num_grids));
+  const tvdb_nanovdb_grid_t& grid = file.grids[grid_index];
+  if (grid.data == nullptr)
+    throw std::runtime_error(std::string(where) + ": the grid holds no data");
+  return std::make_shared<SignedDistanceField>(
+      std::vector<std::uint8_t>(grid.data, grid.data + grid.size), band_clamp, scale);
+}
+
+SignedDistanceField::Ptr readSparseSignedDistanceFieldNVDB(const std::vector<std::uint8_t>& data,
+                                                           double band_clamp,
+                                                           const Eigen::Vector3d& scale,
+                                                           std::size_t grid_index)
+{
+  return readSparseSignedDistanceFieldNVDB(data.data(), data.size(), band_clamp, scale, grid_index);
 }
 
 }  // namespace tesseract::geometry

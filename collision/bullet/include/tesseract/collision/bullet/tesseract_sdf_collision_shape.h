@@ -33,7 +33,7 @@ namespace tesseract::collision::bullet_internal
 /**
  * @brief A Bullet SDF shape that reads a @ref tesseract::geometry::SignedDistanceField in place.
  *
- * Bullet's shape for every field (grid-backed or function-backed): it queries the field itself,
+ * Bullet's shape for every field (dense, sparse or function-backed): it queries the field itself,
  * with no copy into Bullet's @c btMiniSDF. It reports @c SDF_SHAPE_PROXYTYPE, so the existing SDF
  * pair algorithms handle it; they reach the field through @ref makeImplicitSdfShape and
  * @ref querySdfShapePoint. It is the only @c SDF_SHAPE_PROXYTYPE shape Tesseract creates. The field's own
