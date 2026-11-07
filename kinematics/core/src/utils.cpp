@@ -28,6 +28,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <cmath>
+#include <limits>
+#include <tuple>
+#include <utility>
 
 #include <tesseract/kinematics/utils.h>
 #include <tesseract/kinematics/joint_group.h>
@@ -221,56 +224,60 @@ bool isNearSingularity(const Eigen::Ref<const Eigen::MatrixXd>& jacobian, double
   return (svd.singularValues().tail(1).value() < threshold);
 }
 
+namespace
+{
+/**
+ * @brief Velocity and force ellipsoids of one jacobian block, from the singular values of the block
+ * @details The eigenvalues of J*J^T are the squared singular values of J, padded with zeros when J has fewer columns
+ * than rows, and those of (J*J^T)^-1 are their reciprocals. Computing them from the SVD of J rather than from J*J^T
+ * avoids squaring the condition number, which loses every singular value below sqrt(epsilon) relative to the largest.
+ * A singular value is zero when it lies below the decomposition's numerical rank threshold.
+ * @return The velocity ellipsoid (first) and the force ellipsoid (second)
+ */
+std::pair<ManipulabilityEllipsoid, ManipulabilityEllipsoid>
+calcEllipsoids(const Eigen::Ref<const Eigen::MatrixXd>& jacobian)
+{
+  const Eigen::JacobiSVD<Eigen::MatrixXd> svd(jacobian);
+  const Eigen::Index rows = jacobian.rows();
+  const Eigen::Index rank = svd.rank();
+
+  // Singular values in increasing order, as the eigenvalues were reported, with the zero ones exactly zero
+  Eigen::VectorXd sv = Eigen::VectorXd::Zero(rows);
+  sv.tail(rank) = svd.singularValues().head(rank).reverse();
+
+  ManipulabilityEllipsoid m;
+  m.eigen_values = sv.array().square();
+  m.volume = sv.prod();
+
+  ManipulabilityEllipsoid f;
+  f.eigen_values = sv.reverse().array().square().inverse();  // +inf along a singular direction
+  f.volume = 1.0 / m.volume;                                 // +inf when singular
+
+  if (rank < rows)
+  {
+    m.measure = std::numeric_limits<double>::max();
+    m.condition = std::numeric_limits<double>::max();
+    f.measure = std::numeric_limits<double>::max();
+    f.condition = std::numeric_limits<double>::max();
+  }
+  else
+  {
+    m.measure = sv(rows - 1) / sv(0);
+    m.condition = m.measure * m.measure;
+    f.measure = m.measure;
+    f.condition = m.condition;
+  }
+
+  return { m, f };
+}
+}  // namespace
+
 Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacobian)
 {
   Manipulability manip;
-  Eigen::MatrixXd jacob_linear = jacobian.topRows(3);
-  Eigen::MatrixXd jacob_angular = jacobian.bottomRows(3);
-
-  auto fn = [](const Eigen::MatrixXd& m) {
-    ManipulabilityEllipsoid data;
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sm(m, Eigen::DecompositionOptions::EigenvaluesOnly);
-    data.eigen_values = sm.eigenvalues().real();
-
-    // Set eigenvalues near zero to zero. This also implies zero volume
-    for (Eigen::Index i = 0; i < data.eigen_values.size(); ++i)  // NOLINT(modernize-loop-convert)
-    {
-      if (tesseract::common::almostEqualRelativeAndAbs(data.eigen_values[i], 0))
-        data.eigen_values[i] = +0;
-    }
-
-    // If the minimum eigen value is approximately zero set measure and condition to max double
-    if (tesseract::common::almostEqualRelativeAndAbs(data.eigen_values.minCoeff(), 0))
-    {
-      data.measure = std::numeric_limits<double>::max();
-      data.condition = std::numeric_limits<double>::max();
-    }
-    else
-    {
-      data.condition = data.eigen_values.maxCoeff() / data.eigen_values.minCoeff();
-      data.measure = std::sqrt(data.condition);
-    }
-
-    data.volume = std::sqrt(data.eigen_values.prod());
-
-    return data;
-  };
-
-  Eigen::MatrixXd a = jacobian * jacobian.transpose();
-  Eigen::MatrixXd a_linear = jacob_linear * jacob_linear.transpose();
-  Eigen::MatrixXd a_angular = jacob_angular * jacob_angular.transpose();
-  manip.m = fn(a);
-  manip.m_linear = fn(a_linear);
-  manip.m_angular = fn(a_angular);
-
-  // NOLINTNEXTLINE
-  Eigen::MatrixXd a_inv = a.inverse();
-  Eigen::MatrixXd a_linear_inv = a_linear.inverse();
-  Eigen::MatrixXd a_angular_inv = a_angular.inverse();
-  manip.f = fn(a_inv);
-  manip.f_linear = fn(a_linear_inv);
-  manip.f_angular = fn(a_angular_inv);
-
+  std::tie(manip.m, manip.f) = calcEllipsoids(jacobian);
+  std::tie(manip.m_linear, manip.f_linear) = calcEllipsoids(jacobian.topRows(3));
+  std::tie(manip.m_angular, manip.f_angular) = calcEllipsoids(jacobian.bottomRows(3));
   return manip;
 }
 

@@ -19,7 +19,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <Eigen/QR>
 
+#include <cmath>
 #include <limits>
 #include <random>
 
@@ -425,6 +427,51 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityUnit)  // NOLINT
   EXPECT_NEAR(m.f_angular.condition, 3.0, 1e-6);
   EXPECT_NEAR(m.f_angular.measure, 1.7320508075688774, 1e-6);
   EXPECT_NEAR(m.f_angular.volume, 0.408248290463863, 1e-6);
+}
+
+TEST(TesseractKinematicsUnit, UtilscalcManipulabilityNearSingularUnit)  // NOLINT
+{
+  // J = Q1 * diag(sigma) * Q2^T with orthogonal Q1 and Q2, so the singular values of J are known exactly
+  Eigen::MatrixXd a(6, 6);
+  Eigen::MatrixXd b(6, 6);
+  for (Eigen::Index i = 0; i < 6; ++i)
+  {
+    for (Eigen::Index j = 0; j < 6; ++j)
+    {
+      a(i, j) = (1.0 / static_cast<double>(i + j + 1)) + (i == j ? 1.0 : 0.0);
+      b(i, j) = (1.0 / static_cast<double>(i + (2 * j) + 1)) + (i == j ? 2.0 : 0.0);
+    }
+  }
+  const Eigen::MatrixXd q1 = Eigen::HouseholderQR<Eigen::MatrixXd>(a).householderQ();
+  const Eigen::MatrixXd q2 = Eigen::HouseholderQR<Eigen::MatrixXd>(b).householderQ();
+
+  // Near-singular but full rank: the smallest singular value is well resolved in double precision
+  for (const double sigma_min : { 1e-3, 3e-4, 1e-6 })
+  {
+    Eigen::VectorXd sigma(6);
+    sigma << 3, 2, 1, 0.5, 0.2, sigma_min;
+    const Eigen::MatrixXd jacobian = q1 * sigma.asDiagonal() * q2.transpose();
+    const tesseract::kinematics::Manipulability m = tesseract::kinematics::calcManipulability(jacobian);
+
+    const double volume = sigma.prod();
+    const double condition = std::pow(sigma.maxCoeff() / sigma_min, 2);
+    EXPECT_NEAR(m.m.volume / volume, 1.0, 1e-6) << "sigma_min = " << sigma_min;
+    EXPECT_NEAR(m.m.eigen_values.minCoeff() / (sigma_min * sigma_min), 1.0, 1e-6) << "sigma_min = " << sigma_min;
+    EXPECT_NEAR(m.m.condition / condition, 1.0, 1e-6) << "sigma_min = " << sigma_min;
+    EXPECT_NEAR(m.m.measure / std::sqrt(condition), 1.0, 1e-6) << "sigma_min = " << sigma_min;
+    EXPECT_NEAR(m.f.volume * volume, 1.0, 1e-6) << "sigma_min = " << sigma_min;
+    EXPECT_NEAR(m.f.condition / condition, 1.0, 1e-6) << "sigma_min = " << sigma_min;
+  }
+
+  // Fewer columns than rows: J*J^T has a zero eigenvalue, so the full ellipsoid is singular
+  const Eigen::MatrixXd jacobian = q1.leftCols(5);
+  const tesseract::kinematics::Manipulability m = tesseract::kinematics::calcManipulability(jacobian);
+  EXPECT_EQ(m.m.eigen_values.size(), 6);
+  EXPECT_EQ(m.m.eigen_values.minCoeff(), 0);
+  EXPECT_NEAR(m.m.eigen_values.maxCoeff(), 1.0, 1e-12);
+  EXPECT_EQ(m.m.volume, 0);
+  EXPECT_EQ(m.m.condition, std::numeric_limits<double>::max());
+  EXPECT_EQ(m.m.measure, std::numeric_limits<double>::max());
 }
 
 TEST(TesseractKinematicsUnit, solvePInv_OverdeterminedSystem)
