@@ -21,19 +21,29 @@ target_code_coverage(
 add_gtest_discover_tests(tesseract_visualization_player_unit)
 add_dependencies(tesseract_visualization_player_unit tesseract::visualization)
 
-add_executable(tesseract_visualization_plugin_macro_unit visualization_plugin_macro_unit.cpp)
-target_link_libraries(tesseract_visualization_plugin_macro_unit PRIVATE GTest::GTest GTest::Main
-                                                                        tesseract::visualization)
-target_compile_options(tesseract_visualization_plugin_macro_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
-                                                                         ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
-target_compile_definitions(tesseract_visualization_plugin_macro_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
-target_clang_tidy(tesseract_visualization_plugin_macro_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(tesseract_visualization_plugin_macro_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+add_library(tesseract_visualization_test_plugin SHARED test_visualization_plugin.cpp)
+target_link_libraries(tesseract_visualization_test_plugin PRIVATE tesseract::visualization)
+target_compile_options(tesseract_visualization_test_plugin PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                   ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(tesseract_visualization_test_plugin PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC})
+target_clang_tidy(tesseract_visualization_test_plugin ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(tesseract_visualization_test_plugin PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+
+add_executable(tesseract_visualization_factory_unit visualization_factory_unit.cpp)
+target_link_libraries(tesseract_visualization_factory_unit PRIVATE GTest::GTest GTest::Main tesseract::visualization)
+target_compile_options(tesseract_visualization_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
+                                                                    ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
+target_compile_definitions(
+  tesseract_visualization_factory_unit
+  PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC}
+          TEST_PLUGIN_DIR="$<TARGET_FILE_DIR:tesseract_visualization_test_plugin>")
+target_clang_tidy(tesseract_visualization_factory_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(tesseract_visualization_factory_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
-  tesseract_visualization_plugin_macro_unit
+  tesseract_visualization_factory_unit
   PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
-add_gtest_discover_tests(tesseract_visualization_plugin_macro_unit)
-add_dependencies(tesseract_visualization_plugin_macro_unit tesseract::visualization)
+add_gtest_discover_tests(tesseract_visualization_factory_unit)
+add_dependencies(tesseract_visualization_factory_unit tesseract_visualization_test_plugin tesseract::visualization)

@@ -6,6 +6,7 @@ namespace tesseract::visualization
 {
 class TrajectoryInterpolator;
 class TrajectoryPlayer;
+class VisualizationFactory;
 class VisualizationLoader;
 class Visualization;
 class Marker;

@@ -27,6 +27,7 @@ set(SUPPORTED_COMPONENTS ${SUPPORTED_COMPONENTS} "visualization" PARENT_SCOPE)
 
 add_library(
   visualization
+  src/visualization_factory.cpp
   src/visualization_loader.cpp
   src/trajectory_interpolator.cpp
   src/trajectory_player.cpp
