@@ -34,9 +34,8 @@ target_link_libraries(tesseract_visualization_factory_unit PRIVATE GTest::GTest 
 target_compile_options(tesseract_visualization_factory_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE}
                                                                     ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(
-  tesseract_visualization_factory_unit
-  PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC}
-          TEST_PLUGIN_DIR="$<TARGET_FILE_DIR:tesseract_visualization_test_plugin>")
+  tesseract_visualization_factory_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS_PUBLIC}
+                                               TEST_PLUGIN_DIR="$<TARGET_FILE_DIR:tesseract_visualization_test_plugin>")
 target_clang_tidy(tesseract_visualization_factory_unit ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(tesseract_visualization_factory_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
