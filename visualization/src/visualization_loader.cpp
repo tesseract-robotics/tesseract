@@ -22,6 +22,8 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include <tesseract/common/logging.h>
 #include <tesseract/visualization/visualization_loader.h>
 #include <tesseract/visualization/visualization.h>
@@ -53,7 +55,7 @@ VisualizationLoader::VisualizationLoader()
   search_paths.emplace_back(TESSERACT_VISUALIZATION_PLUGIN_PATH);
 }
 
-std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name, const YAML::Node& config) const
+std::shared_ptr<Visualization> VisualizationLoader::create(std::string plugin_name, const YAML::Node& config) const
 {
   if (plugin_name.empty())
     plugin_name = TESSERACT_IGNITION_SYMBOL_NAME;
@@ -70,6 +72,11 @@ std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name,
     TESSERACT_LOG_WARN("Failed to load symbol '{}'", plugin_name);
     return nullptr;
   }
+}
+
+std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name) const
+{
+  return create(std::move(plugin_name));
 }
 
 }  // namespace tesseract::visualization

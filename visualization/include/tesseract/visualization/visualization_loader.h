@@ -54,7 +54,10 @@ public:
    * @param config The plugin's configuration
    * @return Returns nullptr if failed
    */
-  std::shared_ptr<Visualization> get(std::string plugin_name = "", const YAML::Node& config = YAML::Node()) const;
+  std::shared_ptr<Visualization> create(std::string plugin_name = "", const YAML::Node& config = YAML::Node()) const;
+
+  /** @deprecated Use create(). Kept for existing callers; each call also returns a new object. */
+  std::shared_ptr<Visualization> get(std::string plugin_name = "") const;
 };
 
 }  // namespace tesseract::visualization
