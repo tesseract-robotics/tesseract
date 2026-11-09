@@ -26,7 +26,9 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -47,17 +49,19 @@ public:
   VisualizationLoader();
 
   /**
-   * @brief Create a visualization object from a plugin
-   * @details Each call returns a new, independent object. The object keeps its plugin library loaded,
-   * so it may outlive this loader.
+   * @brief Get this loader's visualization object for a plugin
+   * @details The object is created by the first call and returned by later ones, so each loader owns
+   * one instance per plugin. Use another loader for an independent instance. The object keeps its
+   * plugin library loaded, so it may outlive this loader.
    * @param plugin_name The plugin name, if empty it tries to load default plugin
-   * @param config The plugin's configuration
+   * @param config The plugin's configuration, used by the call that creates the object
    * @return Returns nullptr if failed
    */
-  std::shared_ptr<Visualization> create(std::string plugin_name = "", const YAML::Node& config = YAML::Node()) const;
+  std::shared_ptr<Visualization> get(std::string plugin_name = "", const YAML::Node& config = YAML::Node()) const;
 
-  /** @deprecated Use create(). Kept for existing callers; each call also returns a new object. */
-  std::shared_ptr<Visualization> get(std::string plugin_name = "") const;
+private:
+  mutable std::mutex instances_mutex_;
+  mutable std::map<std::string, std::shared_ptr<Visualization>> instances_;
 };
 
 }  // namespace tesseract::visualization

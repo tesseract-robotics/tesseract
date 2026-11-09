@@ -35,24 +35,29 @@ static void configure(VisualizationLoader& loader)
   loader.search_libraries.emplace_back("tesseract_visualization_test_plugin");
 }
 
-TEST(TesseractVisualizationFactoryUnit, EachCreateReturnsAnIndependentObject)  // NOLINT
+TEST(TesseractVisualizationFactoryUnit, EachLoaderOwnsOneInstance)  // NOLINT
 {
   VisualizationLoader loader;
   configure(loader);
 
-  auto first = loader.create("TestVisualizationPlugin");
-  auto second = loader.create("TestVisualizationPlugin");
+  auto first = loader.get("TestVisualizationPlugin");
   ASSERT_NE(first, nullptr);
-  ASSERT_NE(second, nullptr);
-  EXPECT_NE(first.get(), second.get());
+  EXPECT_EQ(first.get(), loader.get("TestVisualizationPlugin").get());
   EXPECT_TRUE(first->isConnected());
 }
 
-TEST(TesseractVisualizationFactoryUnit, GetForwardsToCreate)  // NOLINT
+TEST(TesseractVisualizationFactoryUnit, LoadersAreIndependent)  // NOLINT
 {
-  VisualizationLoader loader;
-  configure(loader);
-  EXPECT_NE(loader.get("TestVisualizationPlugin"), nullptr);
+  VisualizationLoader first_loader;
+  configure(first_loader);
+  VisualizationLoader second_loader;
+  configure(second_loader);
+
+  auto first = first_loader.get("TestVisualizationPlugin");
+  auto second = second_loader.get("TestVisualizationPlugin");
+  ASSERT_NE(first, nullptr);
+  ASSERT_NE(second, nullptr);
+  EXPECT_NE(first.get(), second.get());
 }
 
 TEST(TesseractVisualizationFactoryUnit, ObjectMayOutliveTheLoader)  // NOLINT
@@ -61,7 +66,7 @@ TEST(TesseractVisualizationFactoryUnit, ObjectMayOutliveTheLoader)  // NOLINT
   {
     VisualizationLoader loader;
     configure(loader);
-    visualization = loader.create("TestVisualizationPlugin");
+    visualization = loader.get("TestVisualizationPlugin");
   }
   ASSERT_NE(visualization, nullptr);
   EXPECT_TRUE(visualization->isConnected());
@@ -71,14 +76,14 @@ TEST(TesseractVisualizationFactoryUnit, UnknownPluginReturnsNull)  // NOLINT
 {
   VisualizationLoader loader;
   configure(loader);
-  EXPECT_EQ(loader.create("DoesNotExist"), nullptr);
+  EXPECT_EQ(loader.get("DoesNotExist"), nullptr);
 }
 
 TEST(TesseractVisualizationFactoryUnit, InvalidConfigReturnsNull)  // NOLINT
 {
   VisualizationLoader loader;
   configure(loader);
-  EXPECT_EQ(loader.create("TestVisualizationPlugin", YAML::Load("port: 70000")), nullptr);
+  EXPECT_EQ(loader.get("TestVisualizationPlugin", YAML::Load("port: 70000")), nullptr);
 }
 
 int main(int argc, char** argv)
