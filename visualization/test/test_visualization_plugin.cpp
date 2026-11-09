@@ -1,6 +1,6 @@
 /**
- * @file visualization_plugin_macro_unit.cpp
- * @brief Compiles TESSERACT_ADD_VISUALIZATION_PLUGIN, which no other code built by default uses
+ * @file test_visualization_plugin.cpp
+ * @brief A minimal visualization plugin for testing the loader
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -19,14 +19,18 @@
 
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <gtest/gtest.h>
+#include <memory>
+#include <string>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/common/property_tree.h>
 #include <tesseract/visualization/visualization.h>
+#include <tesseract/visualization/visualization_factory.h>
 
-namespace
+namespace tesseract::visualization
 {
-class TestVisualization : public tesseract::visualization::Visualization
+class TestVisualization : public Visualization
 {
 public:
   bool isConnected() const override { return true; }
@@ -38,28 +42,33 @@ public:
                       std::string /*ns*/ = "") override
   {
   }
-  void plotMarker(const tesseract::visualization::Marker& /*marker*/, std::string /*ns*/ = "") override {}
-  void plotMarkers(const std::vector<std::shared_ptr<tesseract::visualization::Marker>>& /*markers*/,
-                   std::string /*ns*/ = "") override
-  {
-  }
+  void plotMarker(const Marker& /*marker*/, std::string /*ns*/ = "") override {}
+  void plotMarkers(const std::vector<std::shared_ptr<Marker>>& /*markers*/, std::string /*ns*/ = "") override {}
   void clear(std::string /*ns*/ = "") override {}
   void waitForInput(std::string /*message*/ = "") override {}
 };
-}  // namespace
+
+class TestVisualizationFactory : public VisualizationFactory
+{
+public:
+  tesseract::common::PropertyTree schema() const override
+  {
+    // clang-format off
+    return tesseract::common::PropertyTreeBuilder()
+        .attribute(tesseract::common::property_attribute::TYPE, tesseract::common::property_type::CONTAINER)
+        .int32("port").minimum(0).maximum(65535).done()
+        .build();
+    // clang-format on
+  }
+
+protected:
+  std::unique_ptr<Visualization> createImpl(const std::string& /*name*/,
+                                            const tesseract::common::PropertyTree& /*config*/) const override
+  {
+    return std::make_unique<TestVisualization>();
+  }
+};
+}  // namespace tesseract::visualization
 
 // NOLINTNEXTLINE
-TESSERACT_ADD_VISUALIZATION_PLUGIN(TestVisualization, TestVisualizationPlugin)
-
-TEST(TesseractVisualizationPluginMacroUnit, ExportsAnInstance)  // NOLINT
-{
-  const tesseract::visualization::Visualization& plugin = TestVisualizationPlugin;
-  EXPECT_TRUE(plugin.isConnected());
-}
-
-int main(int argc, char** argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
-}
+TESSERACT_ADD_VISUALIZATION_PLUGIN(tesseract::visualization::TestVisualizationFactory, TestVisualizationPlugin)

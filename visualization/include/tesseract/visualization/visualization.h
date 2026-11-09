@@ -35,12 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/environment/fwd.h>
 #include <tesseract/scene_graph/fwd.h>
 #include <tesseract/state_solver/fwd.h>
-#include <boost_plugin_loader/macros.h>
-
-// clang-format off
-#define TESSERACT_ADD_VISUALIZATION_PLUGIN(DERIVED_CLASS, ALIAS)                                                       \
-  EXPORT_CLASS_SECTIONED(DERIVED_CLASS, ALIAS, Plotter)
-// clang-format on
 
 namespace tesseract::visualization
 {

@@ -27,6 +27,8 @@
 #include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <string>
+#include <yaml-cpp/yaml.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <boost_plugin_loader/plugin_loader.hpp>
@@ -37,7 +39,6 @@ class Visualization;
 
 /**
  * @brief This is used to dynamically load tesseract visualizer.
- * This class must remain around for the life of the loaded visualization class.
  */
 class VisualizationLoader : public boost_plugin_loader::PluginLoader
 {
@@ -46,11 +47,14 @@ public:
   VisualizationLoader();
 
   /**
-   * @brief Load the default visualization plugin
+   * @brief Create a visualization object from a plugin
+   * @details Each call returns a new, independent object. The object keeps its plugin library loaded,
+   * so it may outlive this loader.
    * @param plugin_name The plugin name, if empty it tries to load default plugin
+   * @param config The plugin's configuration
    * @return Returns nullptr if failed
    */
-  std::shared_ptr<Visualization> get(std::string plugin_name = "") const;
+  std::shared_ptr<Visualization> get(std::string plugin_name = "", const YAML::Node& config = YAML::Node()) const;
 };
 
 }  // namespace tesseract::visualization

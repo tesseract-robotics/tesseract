@@ -25,6 +25,7 @@
 #include <tesseract/common/logging.h>
 #include <tesseract/visualization/visualization_loader.h>
 #include <tesseract/visualization/visualization.h>
+#include <tesseract/visualization/visualization_factory.h>
 
 const std::string TESSERACT_IGNITION_LIBRARY_NAME = "tesseract_visualization_ignition_visualization_plugin";
 const std::string TESSERACT_IGNITION_SYMBOL_NAME = "TesseractIgnitionVisualizationPlugin";
@@ -34,6 +35,16 @@ const std::string TESSERACT_VISUALIZATION_PLUGINS_ENV = "TESSERACT_VISUALIZATION
 
 namespace tesseract::visualization
 {
+namespace
+{
+/** @brief Members are destroyed in reverse order, so the object goes before the library holding its code */
+struct LoadedVisualization
+{
+  VisualizationFactory::Ptr factory;
+  std::unique_ptr<Visualization> visualization;
+};
+}  // namespace
+
 VisualizationLoader::VisualizationLoader()
 {
   search_paths_env = TESSERACT_VISUALIZATION_PLUGIN_DIRECTORIES_ENV;
@@ -42,14 +53,17 @@ VisualizationLoader::VisualizationLoader()
   search_paths.emplace_back(TESSERACT_VISUALIZATION_PLUGIN_PATH);
 }
 
-std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name) const
+std::shared_ptr<Visualization> VisualizationLoader::get(std::string plugin_name, const YAML::Node& config) const
 {
   if (plugin_name.empty())
     plugin_name = TESSERACT_IGNITION_SYMBOL_NAME;
 
   try
   {
-    return createInstance<Visualization>(plugin_name);
+    auto loaded = std::make_shared<LoadedVisualization>();
+    loaded->factory = createInstance<VisualizationFactory>(plugin_name);
+    loaded->visualization = loaded->factory->create(plugin_name, config);
+    return { loaded, loaded->visualization.get() };
   }
   catch (const std::exception&)
   {
