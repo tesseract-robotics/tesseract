@@ -149,6 +149,7 @@ buildCollisionObjectSpecs(const std::vector<tesseract::scene_graph::Link::ConstP
     {
       tesseract::collision::CollisionObjectSpec spec;
       spec.id = link->getId();
+      spec.enabled = link->collision_enabled;
       getCollisionObject(spec.shapes, spec.shape_poses, *link);
       objects.push_back(std::move(spec));
     }
@@ -1020,13 +1021,6 @@ Environment::Implementation::getDiscreteContactManagerHelper(const std::string& 
 
     manager->addCollisionObjects(objects);
 
-    // A manager built from scratch must honour links disabled by ChangeLinkCollisionEnabledCommand
-    for (const auto& object : objects)
-    {
-      if (!scene_graph->getLinkCollisionEnabled(object.id))
-        manager->disableCollisionObject(object.id);
-    }
-
     manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }
 
@@ -1053,13 +1047,6 @@ Environment::Implementation::getContinuousContactManagerHelper(const std::string
         buildCollisionObjectSpecs(scene_graph->getLinks());
 
     manager->addCollisionObjects(objects);
-
-    // A manager built from scratch must honour links disabled by ChangeLinkCollisionEnabledCommand
-    for (const auto& object : objects)
-    {
-      if (!scene_graph->getLinkCollisionEnabled(object.id))
-        manager->disableCollisionObject(object.id);
-    }
 
     manager->setActiveCollisionObjects(state_solver->getActiveLinkIds());
   }
