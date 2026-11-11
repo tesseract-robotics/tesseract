@@ -54,7 +54,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract/common/types.h>
 #include <tesseract/common/resource_locator.h>
 
+#include <map>
 #include <regex>
+#include <tuple>
+#include <utility>
 #include <boost/filesystem/path.hpp>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -63,6 +66,251 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract::geometry
 {
+namespace detail
+{
+/** @brief Convert an assimp texture map mode to a MeshTextureWrapMode */
+inline MeshTextureWrapMode toMeshTextureWrapMode(int mode)
+{
+  switch (mode)
+  {
+    case aiTextureMapMode_Clamp:
+    case aiTextureMapMode_Decal:
+      return MeshTextureWrapMode::CLAMP_TO_EDGE;
+    case aiTextureMapMode_Mirror:
+      return MeshTextureWrapMode::MIRRORED_REPEAT;
+    default:
+      return MeshTextureWrapMode::REPEAT;
+  }
+}
+
+/** @brief Convert an OpenGL / glTF 2.0 sampler filter enum to a MeshTextureFilter */
+inline MeshTextureFilter toMeshTextureFilter(int gl_filter)
+{
+  switch (gl_filter)
+  {
+    case 9728:  // NEAREST
+      return MeshTextureFilter::NEAREST;
+    case 9729:  // LINEAR
+      return MeshTextureFilter::LINEAR;
+    case 9984:  // NEAREST_MIPMAP_NEAREST
+      return MeshTextureFilter::NEAREST_MIPMAP_NEAREST;
+    case 9985:  // LINEAR_MIPMAP_NEAREST
+      return MeshTextureFilter::LINEAR_MIPMAP_NEAREST;
+    case 9986:  // NEAREST_MIPMAP_LINEAR
+      return MeshTextureFilter::NEAREST_MIPMAP_LINEAR;
+    case 9987:  // LINEAR_MIPMAP_LINEAR
+      return MeshTextureFilter::LINEAR_MIPMAP_LINEAR;
+    default:
+      return MeshTextureFilter::DEFAULT;
+  }
+}
+
+/**
+ * @brief Load the image of a texture referenced by a material
+ * @param scene The assimp scene, which holds embedded textures
+ * @param tex_path The texture path from the material. Embedded textures are "*<index>" or, for glTF, the image name.
+ * @param resource The mesh resource, used to locate external texture files. May be null.
+ * @return The image, or null if it is missing or not a png or jpg
+ */
+inline tesseract::common::Resource::Ptr loadTextureImage(const aiScene* scene,
+                                                         const aiString& tex_path,
+                                                         const tesseract::common::Resource::Ptr& resource)
+{
+  // https://stackoverflow.com/questions/56820244/assimp-doenst-return-texture-data
+  const aiTexture* texture_data = scene->GetEmbeddedTexture(tex_path.C_Str());
+  if (texture_data != nullptr)
+  {
+    // mHeight == 0 means pcData holds a compressed image (png, jpg...) of mWidth bytes. Otherwise it is raw texels.
+    const std::string file_type = texture_data->achFormatHint;
+    if (texture_data->mHeight != 0 || (file_type != "jpg" && file_type != "jpeg" && file_type != "png"))
+    {
+      TESSERACT_LOG_DEBUG("Embedded mesh texture '{}' with format '{}' is not supported",
+                          tex_path.C_Str(),
+                          texture_data->mHeight != 0 ? "raw" : file_type);
+      return nullptr;
+    }
+    const std::string ext = (file_type == "png") ? ".png" : ".jpg";
+    std::string name = tex_path.C_Str();
+    if (!name.empty() && name.front() == '*')
+      name = "texture_" + name.substr(1);
+    return std::make_shared<tesseract::common::BytesResource>("data://" + name + ext,
+                                                              reinterpret_cast<const uint8_t*>(texture_data->pcData),
+                                                              texture_data->mWidth);  // NOLINT
+  }
+
+  if (!resource || tex_path.length == 0 || tex_path.C_Str()[0] == '*')
+    return nullptr;
+
+  return resource->locateResource(tex_path.C_Str());
+}
+
+/**
+ * @brief Extract the PBR material and the textures of an assimp mesh
+ * @details Reads the glTF 2.0 metallic-roughness material when the importer provides one, and falls back to the
+ * diffuse and emissive colors otherwise. One MeshTexture is created for each supported texture slot that has an
+ * image: base color, metallic-roughness, normal, occlusion and emissive. Textures that use the same UV channel
+ * share a single UV vector.
+ */
+inline std::pair<MeshMaterial::Ptr, std::shared_ptr<std::vector<MeshTexture::Ptr>>>
+extractMeshMaterialAndTextures(const aiScene* scene, const aiMesh* a, const tesseract::common::Resource::Ptr& resource)
+{
+  std::shared_ptr<std::vector<MeshTexture::Ptr>> textures = nullptr;
+  if (scene->mMaterials == nullptr || a->mMaterialIndex >= scene->mNumMaterials)
+    return { nullptr, nullptr };
+
+  const aiMaterial* mat = scene->mMaterials[a->mMaterialIndex];
+  auto material = std::make_shared<MeshMaterial>();
+
+  aiColor4D color;
+  bool is_pbr = false;
+#ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
+  if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color) == AI_SUCCESS)
+  {
+    // Use PBR Metallic material properties if available
+    is_pbr = true;
+    material->setBaseColorFactor(Eigen::Vector4d(color.r, color.g, color.b, color.a));
+    float value{ 0 };
+    if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, value) == AI_SUCCESS)
+      material->setMetallicFactor(value);
+    if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, value) == AI_SUCCESS)
+      material->setRoughnessFactor(value);
+
+    aiString alpha_mode;
+    if (mat->Get(AI_MATKEY_GLTF_ALPHAMODE, alpha_mode) == AI_SUCCESS)
+    {
+      const std::string mode = alpha_mode.C_Str();
+      if (mode == "MASK")
+        material->setAlphaMode(MeshMaterialAlphaMode::MASK);
+      else if (mode == "BLEND")
+        material->setAlphaMode(MeshMaterialAlphaMode::BLEND);
+    }
+    if (mat->Get(AI_MATKEY_GLTF_ALPHACUTOFF, value) == AI_SUCCESS)
+      material->setAlphaCutoff(value);
+#ifdef AI_MATKEY_EMISSIVE_INTENSITY
+    if (mat->Get(AI_MATKEY_EMISSIVE_INTENSITY, value) == AI_SUCCESS)
+      material->setEmissiveStrength(value);
+#endif
+#ifdef AI_MATKEY_GLTF_TEXTURE_SCALE
+    if (mat->Get(AI_MATKEY_GLTF_TEXTURE_SCALE(aiTextureType_NORMALS, 0), value) == AI_SUCCESS)
+      material->setNormalScale(value);
+#endif
+#ifdef AI_MATKEY_GLTF_TEXTURE_STRENGTH
+    if (mat->Get(AI_MATKEY_GLTF_TEXTURE_STRENGTH(aiTextureType_LIGHTMAP, 0), value) == AI_SUCCESS)
+      material->setOcclusionStrength(value);
+    // Some assimp versions (5.3) write the occlusion strength under a different key than the one they define
+    else if (mat->Get("$tex.file.strength", aiTextureType_LIGHTMAP, 0, value) == AI_SUCCESS)
+      material->setOcclusionStrength(value);
+#endif
+  }
+  else
+#endif
+  {
+    // Use old style material. Ambient and specular not supported
+    Eigen::Vector4d base_color = Eigen::Vector4d::Zero();
+    if (mat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
+      base_color = Eigen::Vector4d(color.r, color.g, color.b, color.a);
+    float opacity{ 1 };
+    if (mat->Get(AI_MATKEY_OPACITY, opacity) == AI_SUCCESS && opacity < 1.0F)
+      base_color[3] *= opacity;
+    material->setBaseColorFactor(base_color);
+    // These formats have no alpha mode, so a translucent material is blended
+    if (base_color[3] < 1.0)
+      material->setAlphaMode(MeshMaterialAlphaMode::BLEND);
+  }
+
+  if (mat->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS)
+    material->setEmissiveFactor(Eigen::Vector4d(color.r, color.g, color.b, color.a));
+
+  int two_sided{ 0 };
+  if (mat->Get(AI_MATKEY_TWOSIDED, two_sided) == AI_SUCCESS)
+    material->setDoubleSided(two_sided != 0);
+
+  // The assimp texture slot for each glTF 2.0 texture. Formats without PBR only have a diffuse texture.
+  struct Slot
+  {
+    MeshTextureType type;
+    aiTextureType ai_type;
+    unsigned ai_index;
+  };
+  std::vector<Slot> slots;
+  if (is_pbr)
+  {
+    slots.push_back({ MeshTextureType::BASE_COLOR, aiTextureType_DIFFUSE, 0 });
+#ifdef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE
+    // The slot used for the metallic-roughness texture differs between assimp versions
+    // The macro expands to "<texture type>, <index>"
+    slots.push_back(
+        { MeshTextureType::METALLIC_ROUGHNESS, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE });
+#endif
+    slots.push_back({ MeshTextureType::NORMAL, aiTextureType_NORMALS, 0 });
+    slots.push_back({ MeshTextureType::OCCLUSION, aiTextureType_LIGHTMAP, 0 });
+    slots.push_back({ MeshTextureType::EMISSIVE, aiTextureType_EMISSIVE, 0 });
+  }
+  else
+  {
+    slots.push_back({ MeshTextureType::BASE_COLOR, aiTextureType_DIFFUSE, 0 });
+  }
+
+  // UV vectors already extracted, by UV channel, so textures on the same channel share them
+  std::map<unsigned, std::shared_ptr<const tesseract::common::VectorVector2d>> uv_channels;
+
+  for (const auto& slot : slots)
+  {
+    if (mat->GetTextureCount(slot.ai_type) <= slot.ai_index)
+      continue;
+
+    aiString tex_path;
+    aiTextureMapping mapping{ aiTextureMapping_UV };
+    unsigned int uv_index{ 0 };
+    if (mat->GetTexture(slot.ai_type, slot.ai_index, &tex_path, &mapping, &uv_index) != AI_SUCCESS)
+      continue;
+
+    if (uv_index >= AI_MAX_NUMBER_OF_TEXTURECOORDS || !a->HasTextureCoords(uv_index))
+    {
+      TESSERACT_LOG_DEBUG(
+          "Mesh texture '{}' uses UV channel {}, which the mesh does not have", tex_path.C_Str(), uv_index);
+      continue;
+    }
+
+    auto texture_image = loadTextureImage(scene, tex_path, resource);
+    if (!texture_image)
+      continue;
+
+    auto& uvs = uv_channels[uv_index];
+    if (!uvs)
+    {
+      auto channel = std::make_shared<tesseract::common::VectorVector2d>();
+      channel->reserve(a->mNumVertices);
+      const aiVector3D* tex_coords = a->mTextureCoords[uv_index];
+      for (unsigned int k = 0; k < a->mNumVertices; ++k)
+        channel->emplace_back(static_cast<double>(tex_coords[k].x), static_cast<double>(tex_coords[k].y));
+      uvs = channel;
+    }
+
+    auto tex = std::make_shared<MeshTexture>(texture_image, uvs, slot.type, uv_index);
+
+    int map_u{ aiTextureMapMode_Wrap };
+    int map_v{ aiTextureMapMode_Wrap };
+    mat->Get(AI_MATKEY_MAPPINGMODE_U(slot.ai_type, slot.ai_index), map_u);
+    mat->Get(AI_MATKEY_MAPPINGMODE_V(slot.ai_type, slot.ai_index), map_v);
+    tex->setWrap(toMeshTextureWrapMode(map_u), toMeshTextureWrapMode(map_v));
+#if defined(TESSERACT_ASSIMP_USE_PBRMATERIAL) && defined(AI_MATKEY_GLTF_MAPPINGFILTER_MAG)
+    int mag_filter{ 0 };
+    int min_filter{ 0 };
+    mat->Get(AI_MATKEY_GLTF_MAPPINGFILTER_MAG(slot.ai_type, slot.ai_index), mag_filter);
+    mat->Get(AI_MATKEY_GLTF_MAPPINGFILTER_MIN(slot.ai_type, slot.ai_index), min_filter);
+    tex->setFilters(toMeshTextureFilter(mag_filter), toMeshTextureFilter(min_filter));
+#endif
+
+    if (!textures)
+      textures = std::make_shared<std::vector<MeshTexture::Ptr>>();
+    textures->push_back(tex);
+  }
+
+  return { material, textures };
+}
+}  // namespace detail
+
 /**
  * The template type must have a constructor as follows
  * Constructor(std::shared_ptr<tesseract::geometry::VectorVector3d> vertices, std::shared_ptr<std::vector<int>> faces,
@@ -151,120 +399,7 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     }
 
     if (material_and_texture)
-    {
-      aiMaterial* mat = scene->mMaterials[a->mMaterialIndex];
-      {
-        Eigen::Vector4d base_color = Eigen::Vector4d::Zero();
-        double metallic = 0.0;
-        double roughness = 0.5;
-        Eigen::Vector4d emissive = Eigen::Vector4d::Zero();
-
-        aiColor4D pbr_base_color;
-#ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
-        if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, pbr_base_color) == AI_SUCCESS)
-        {
-          // Use PBR Metallic material properties if available
-          base_color = Eigen::Vector4d(pbr_base_color.r, pbr_base_color.g, pbr_base_color.b, pbr_base_color.a);
-          float metallicFactor{ 0 };
-          if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, metallicFactor) == AI_SUCCESS)
-          {
-            metallic = metallicFactor;
-          }
-          float roughnessFactor{ 0.5 };
-          if (mat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, roughnessFactor) == AI_SUCCESS)
-          {
-            roughness = roughnessFactor;
-          }
-          aiColor4D pbr_emissive_color;
-          if (mat->Get(AI_MATKEY_COLOR_EMISSIVE, pbr_emissive_color) == AI_SUCCESS)
-          {
-            emissive =
-                Eigen::Vector4d(pbr_emissive_color.r, pbr_emissive_color.g, pbr_emissive_color.b, pbr_emissive_color.a);
-          }
-        }
-        else
-#endif
-        {
-          // Use old style material. Ambient and specular not supported
-          aiColor4D diffuse_color;
-          if (mat->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color) == AI_SUCCESS)
-          {
-            base_color = Eigen::Vector4d(diffuse_color.r, diffuse_color.g, diffuse_color.b, diffuse_color.a);
-          }
-
-          aiColor4D emissive_color;
-          if (mat->Get(AI_MATKEY_COLOR_EMISSIVE, emissive_color) == AI_SUCCESS)
-          {
-            emissive = Eigen::Vector4d(emissive_color.r, emissive_color.g, emissive_color.b, emissive_color.a);
-          }
-        }
-
-        material = std::make_shared<MeshMaterial>(base_color, metallic, roughness, emissive);
-
-        for (unsigned int i = 0; i < a->GetNumUVChannels(); i++)
-        {
-          if (a->HasTextureCoords(i))
-          {
-            aiString texName;
-            aiTextureMapping mapping{ aiTextureMapping_OTHER };
-            unsigned int uvIndex{ 0 };
-            if (mat->GetTexture(aiTextureType_DIFFUSE, i, &texName, &mapping, &uvIndex) == AI_SUCCESS)
-            {
-              tesseract::common::Resource::Ptr texture_image;
-              tesseract::common::VectorVector2d uvs;
-              // https://stackoverflow.com/questions/56820244/assimp-doenst-return-texture-data
-              const char* texNamec = texName.C_Str();
-              if ('*' == *texNamec)
-              {
-                int tex_index = std::atoi(texNamec + 1);
-                if (0 > tex_index || scene->mNumTextures <= static_cast<unsigned>(tex_index))
-                  continue;
-                auto* texture_data = scene->mTextures[tex_index];
-                // returned pointer is not null, read texture from memory
-                std::string file_type = texture_data->achFormatHint;
-                if (file_type == "jpg" || file_type == "png")
-                {
-                  texture_image = std::make_shared<tesseract::common::BytesResource>(
-                      "data://", (const uint8_t*)texture_data->pcData, texture_data->mWidth);  // NOLINT
-                }
-                else
-                {
-                  // TODO: handle other file types
-                  continue;
-                }
-              }
-              else
-              {
-                if (!resource)
-                {
-                  continue;
-                }
-                std::string texName_str(texName.C_Str());
-                auto tex_resource = resource->locateResource(texName_str);
-                if (!tex_resource)
-                {
-                  continue;
-                }
-                texture_image = tex_resource;
-              }
-              aiVector3D* tex_coords = a->mTextureCoords[i];
-              for (unsigned int k = 0; k < a->mNumVertices; ++k)
-              {
-                aiVector3D v = tex_coords[k];
-                uvs.emplace_back(static_cast<double>(v.x), static_cast<double>(v.y));
-              }
-              auto tex = std::make_shared<MeshTexture>(
-                  texture_image, std::make_shared<tesseract::common::VectorVector2d>(std::move(uvs)));
-              if (!textures)
-              {
-                textures = std::make_shared<std::vector<MeshTexture::Ptr>>();
-              }
-              textures->push_back(tex);
-            }
-          }
-        }
-      }
-    }
+      std::tie(material, textures) = detail::extractMeshMaterialAndTextures(scene, a, resource);
 
     meshes.push_back(std::make_shared<T>(vertices,
                                          triangles,
