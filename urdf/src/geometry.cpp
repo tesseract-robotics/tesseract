@@ -283,6 +283,23 @@ tinyxml2::XMLElement* writeGeometry(const std::shared_ptr<const tesseract::geome
       std::throw_with_nested(std::runtime_error("Could not write geometry marked as mesh!"));
     }
   }
+  else if (type == tesseract::geometry::GeometryType::CONVEX_MESH)
+  {
+    try
+    {
+      // writeMesh marks a ConvexMesh with tesseract:make_convex, so it parses back as a ConvexMesh
+      tinyxml2::XMLElement* xml_mesh =
+          writeMesh(std::static_pointer_cast<const tesseract::geometry::ConvexMesh>(geometry),
+                    doc,
+                    package_path,
+                    filename + ".ply");
+      xml_element->InsertEndChild(xml_mesh);
+    }
+    catch (...)
+    {
+      std::throw_with_nested(std::runtime_error("Could not write geometry marked as convex mesh!"));
+    }
+  }
   else if (type == tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD)
   {
     try
