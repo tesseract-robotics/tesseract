@@ -377,12 +377,20 @@ std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     {
       vertex_normals = std::make_shared<tesseract::common::VectorVector3d>();
       vertex_normals->reserve(a->mNumVertices);
+      // Normals transform by the inverse transpose of the linear part of the node transform, without its
+      // translation, and by the inverse of the mesh scale. Then they are renormalized.
+      aiMatrix3x3 normal_transform(transform);
+      normal_transform.Inverse().Transpose();
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
       {
-        aiVector3D v = transform * a->mNormals[i];
-        vertex_normals->emplace_back(static_cast<double>(v.x) * scale(0),
-                                     static_cast<double>(v.y) * scale(1),
-                                     static_cast<double>(v.z) * scale(2));
+        aiVector3D v = normal_transform * a->mNormals[i];
+        Eigen::Vector3d n(static_cast<double>(v.x) / scale(0),
+                          static_cast<double>(v.y) / scale(1),
+                          static_cast<double>(v.z) / scale(2));
+        const double norm = n.norm();
+        if (norm > 0)
+          n /= norm;
+        vertex_normals->push_back(n);
       }
     }
 

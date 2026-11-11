@@ -1917,6 +1917,30 @@ TEST(TesseractGeometryUnit, LoadMeshWithPbrMaterialGltf2Unit)  // NOLINT
 }
 #endif
 
+TEST(TesseractGeometryUnit, LoadMeshNormalsAreUnitAndIgnoreTranslation)  // NOLINT
+{
+  using namespace tesseract::geometry;
+  tesseract::common::GeneralResourceLocator locator;
+
+  // The quads of tesseract_pbr_mesh.glb face +Z. A non-uniform scale must not tilt or stretch their normals.
+  auto pbr = locator.locateResource("package://tesseract/support/meshes/tesseract_pbr_mesh.glb");
+  for (const auto& mesh : createMeshFromResource<Mesh>(pbr, Eigen::Vector3d(2, 3, 4), true, true, true))
+  {
+    ASSERT_TRUE(mesh->getNormals() != nullptr);
+    for (const auto& n : *mesh->getNormals())
+      EXPECT_TRUE(n.isApprox(Eigen::Vector3d(0, 0, 1), 1e-6)) << n.transpose();
+  }
+
+  // tesseract_material_mesh.glb has translated nodes
+  auto material_mesh = locator.locateResource("package://tesseract/support/meshes/tesseract_material_mesh.glb");
+  for (const auto& mesh : createMeshFromResource<Mesh>(material_mesh, Eigen::Vector3d(0.5, 2, 1), true, true, true))
+  {
+    ASSERT_TRUE(mesh->getNormals() != nullptr);
+    for (const auto& n : *mesh->getNormals())
+      EXPECT_NEAR(n.norm(), 1.0, 1e-6);
+  }
+}
+
 TEST(TesseractGeometryUnit, MeshMaterialUnit)  // NOLINT
 {
   using namespace tesseract::geometry;
