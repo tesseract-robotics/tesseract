@@ -133,9 +133,8 @@ inline tesseract::common::Resource::Ptr loadTextureImage(const aiScene* scene,
     std::string name = tex_path.C_Str();
     if (!name.empty() && name.front() == '*')
       name = "texture_" + name.substr(1);
-    return std::make_shared<tesseract::common::BytesResource>("data://" + name + ext,
-                                                              reinterpret_cast<const uint8_t*>(texture_data->pcData),
-                                                              texture_data->mWidth);  // NOLINT
+    const auto* bytes = reinterpret_cast<const uint8_t*>(texture_data->pcData);  // NOLINT
+    return std::make_shared<tesseract::common::BytesResource>("data://" + name + ext, bytes, texture_data->mWidth);
   }
 
   if (!resource || tex_path.length == 0 || tex_path.C_Str()[0] == '*')
@@ -195,10 +194,9 @@ extractMeshMaterialAndTextures(const aiScene* scene, const aiMesh* a, const tess
       material->setNormalScale(value);
 #endif
 #ifdef AI_MATKEY_GLTF_TEXTURE_STRENGTH
-    if (mat->Get(AI_MATKEY_GLTF_TEXTURE_STRENGTH(aiTextureType_LIGHTMAP, 0), value) == AI_SUCCESS)
-      material->setOcclusionStrength(value);
     // Some assimp versions (5.3) write the occlusion strength under a different key than the one they define
-    else if (mat->Get("$tex.file.strength", aiTextureType_LIGHTMAP, 0, value) == AI_SUCCESS)
+    if (mat->Get(AI_MATKEY_GLTF_TEXTURE_STRENGTH(aiTextureType_LIGHTMAP, 0), value) == AI_SUCCESS ||
+        mat->Get("$tex.file.strength", aiTextureType_LIGHTMAP, 0, value) == AI_SUCCESS)
       material->setOcclusionStrength(value);
 #endif
   }

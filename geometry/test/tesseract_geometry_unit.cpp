@@ -21,6 +21,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/geometry/mesh_parser.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <assimp/version.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/geometry/conversions.h>
 #include <tesseract/geometry/utils.h>
 #include <tesseract/geometry/impl/octree_utils.h>
@@ -1844,7 +1847,10 @@ TEST(TesseractGeometryUnit, LoadMeshWithPbrMaterialGltf2Unit)  // NOLINT
   EXPECT_TRUE(material->getEmissiveFactor().head<3>().isApprox(Eigen::Vector3d(1.0, 0.5, 0.25), 1e-6));
   EXPECT_EQ(material->getAlphaMode(), MeshMaterialAlphaMode::BLEND);
   EXPECT_TRUE(material->getDoubleSided());
-  EXPECT_NEAR(material->getEmissiveStrength(), 2.5, 1e-6);
+  // assimp imports KHR_materials_emissive_strength from 5.3. Older versions leave the default.
+  const bool imports_emissive_strength =
+      aiGetVersionMajor() > 5 || (aiGetVersionMajor() == 5 && aiGetVersionMinor() >= 3);
+  EXPECT_NEAR(material->getEmissiveStrength(), imports_emissive_strength ? 2.5 : 1.0, 1e-6);
   EXPECT_NEAR(material->getNormalScale(), 0.5, 1e-6);
   EXPECT_NEAR(material->getOcclusionStrength(), 0.8, 1e-6);
 
