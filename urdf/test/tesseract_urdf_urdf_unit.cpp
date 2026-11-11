@@ -7,6 +7,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/scene_graph/joint.h>
+#include <tesseract/scene_graph/link.h>
+#include <tesseract/geometry/geometries.h>
 #include <tesseract/urdf/urdf_parser.h>
 #include <tesseract/common/resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
@@ -550,4 +552,80 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
     EXPECT_FALSE(success);
   }
   */
+}
+
+namespace
+{
+// A package directory, so the package:// URLs writeURDFFile writes resolve when the file is parsed back
+std::filesystem::path makeTempPackage(const std::string& name)
+{
+  const std::filesystem::path package_path = std::filesystem::path(tesseract::common::getTempPath()) / name;
+  std::filesystem::create_directories(package_path);
+  writeTextToFile((package_path / "package.xml").string(), "<package/>");
+  return package_path;
+}
+}  // namespace
+
+TEST(TesseractURDFUnit, write_urdf_convex_mesh)  // NOLINT
+{
+  const std::filesystem::path package_path = makeTempPackage("convex_pkg");
+
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  vertices->emplace_back(0, 0, 0);
+  vertices->emplace_back(1, 0, 0);
+  vertices->emplace_back(0, 1, 0);
+  vertices->emplace_back(0, 0, 1);
+  auto faces = std::make_shared<Eigen::VectorXi>(16);
+  *faces << 3, 0, 2, 1, 3, 0, 1, 3, 3, 0, 3, 2, 3, 1, 2, 3;
+
+  tesseract::scene_graph::Link link("link_0");
+  auto collision = std::make_shared<tesseract::scene_graph::Collision>();
+  collision->geometry = std::make_shared<tesseract::geometry::ConvexMesh>(vertices, faces);
+  link.collision.push_back(collision);
+
+  auto sg = std::make_shared<tesseract::scene_graph::SceneGraph>("convex");
+  sg->addLink(link);
+  sg->addLink(tesseract::scene_graph::Link("link_1"));
+
+  // The parser requires at least one joint
+  tesseract::scene_graph::Joint joint("joint_0");
+  joint.type = tesseract::scene_graph::JointType::FIXED;
+  joint.parent_link_id = tesseract::common::LinkId("link_0");
+  joint.child_link_id = tesseract::common::LinkId("link_1");
+  sg->addJoint(joint);
+
+  ASSERT_NO_THROW(tesseract::urdf::writeURDFFile(sg, package_path.string(), "convex"));  // NOLINT
+
+  // Reads back as a ConvexMesh
+  const std::vector<std::filesystem::path> package_dirs{ package_path.parent_path() };
+  tesseract::common::GeneralResourceLocator locator(package_dirs);
+  auto parsed = tesseract::urdf::parseURDFFile((package_path / "urdf" / "convex.urdf").string(), locator);
+  ASSERT_NE(parsed, nullptr);
+  const auto parsed_link = parsed->getLink(tesseract::common::LinkId("link_0"));
+  ASSERT_NE(parsed_link, nullptr);
+  ASSERT_EQ(parsed_link->collision.size(), 1);
+  EXPECT_EQ(parsed_link->collision[0]->geometry->getType(), tesseract::geometry::GeometryType::CONVEX_MESH);
+}
+
+TEST(TesseractURDFUnit, write_urdf_make_convex_robot)  // NOLINT
+{
+  // abb_irb2400.urdf sets tesseract:make_convex, so its collision meshes load as ConvexMesh
+  tesseract::common::GeneralResourceLocator locator;
+  const std::string urdf_file =
+      locator.locateResource("package://tesseract/support/urdf/abb_irb2400.urdf")->getFilePath();
+  std::shared_ptr<const tesseract::scene_graph::SceneGraph> sg = tesseract::urdf::parseURDFFile(urdf_file, locator);
+  ASSERT_NE(sg, nullptr);
+  EXPECT_NO_THROW(  // NOLINT
+      tesseract::urdf::writeURDFFile(sg, makeTempPackage("abb_irb2400_pkg").string(), "abb_irb2400"));
+}
+
+TEST(TesseractURDFUnit, write_urdf_save_failure)  // NOLINT
+{
+  const std::filesystem::path package_path = makeTempPackage("unsaved_pkg");
+  auto sg = std::make_shared<tesseract::scene_graph::SceneGraph>("unsaved");
+  sg->addLink(tesseract::scene_graph::Link("link_0"));
+
+  // The target path is a directory, so the file cannot be saved
+  std::filesystem::create_directories(package_path / "urdf" / "unsaved.urdf");
+  EXPECT_ANY_THROW(tesseract::urdf::writeURDFFile(sg, package_path.string(), "unsaved"));  // NOLINT
 }

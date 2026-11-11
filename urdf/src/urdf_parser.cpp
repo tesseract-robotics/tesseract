@@ -315,7 +315,9 @@ void writeURDFFile(const std::shared_ptr<const tesseract::scene_graph::SceneGrap
     full_filepath = trailingSlash(package_path) + "urdf/" + noLeadingSlash(urdf_name) + ".urdf";
   else
     full_filepath = trailingSlash(package_path) + "urdf/" + sg->getName() + ".urdf";
-  doc.SaveFile(full_filepath.c_str());
+  if (doc.SaveFile(full_filepath.c_str()) != tinyxml2::XML_SUCCESS)
+    std::throw_with_nested(
+        std::runtime_error("Failed to save URDF file '" + full_filepath + "': " + std::string(doc.ErrorStr())));
 }
 
 }  // namespace tesseract::urdf
