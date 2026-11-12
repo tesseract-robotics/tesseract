@@ -198,6 +198,17 @@ struct Manipulability
 Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacobian);
 
 /**
+ * @brief Calculate the manipulability volume of the provided jacobian (Yoshikawa's manipulability measure)
+ * @details The product of the singular values of the jacobian, and zero when it does not have full row rank. It is
+ * the volume of Manipulability::m as calcManipulability returns it, from the same decomposition of the whole
+ * jacobian, without decomposing the linear and angular blocks. For callers that need the measure alone, for example
+ * as a cost over many configurations.
+ * @param jacobian The jacobian used to calculate the manipulability volume
+ * @return The volume of the manipulability ellipsoid
+ */
+double calcManipulabilityVolume(const Eigen::Ref<const Eigen::MatrixXd>& jacobian);
+
+/**
  * @brief This a recursive function for calculating all permutations of the redundant solutions.
  * @details This should not be used directly, use getRedundantSolutions function.
  */
