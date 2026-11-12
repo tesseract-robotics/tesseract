@@ -281,6 +281,11 @@ Manipulability calcManipulability(const Eigen::Ref<const Eigen::MatrixXd>& jacob
   return manip;
 }
 
+double calcManipulabilityVolume(const Eigen::Ref<const Eigen::MatrixXd>& jacobian)
+{
+  return calcEllipsoids(jacobian).first.volume;
+}
+
 double computeChainReachUpperBound(const tesseract::scene_graph::SceneGraph& scene_graph,
                                    const tesseract::common::LinkId& base_link_id,
                                    const tesseract::common::LinkId& tip_link_id)
