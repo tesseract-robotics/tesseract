@@ -556,10 +556,13 @@ TEST(TesseractURDFUnit, write_urdf)  // NOLINT
 
 namespace
 {
-// A package directory, so the package:// URLs writeURDFFile writes resolve when the file is parsed back
+// A package directory, so the package:// URLs writeURDFFile writes resolve when the file is parsed back. The
+// packages share a parent of their own, because a resource locator searches every directory in its package path, and
+// the temp directory can hold directories this process may not read, such as systemd's private /tmp directories.
 std::filesystem::path makeTempPackage(const std::string& name)
 {
-  const std::filesystem::path package_path = std::filesystem::path(tesseract::common::getTempPath()) / name;
+  const std::filesystem::path package_path =
+      std::filesystem::path(tesseract::common::getTempPath()) / "tesseract_urdf_unit_packages" / name;
   std::filesystem::create_directories(package_path);
   writeTextToFile((package_path / "package.xml").string(), "<package/>");
   return package_path;
