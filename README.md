@@ -33,7 +33,7 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 We hold a monthly Google Meet for Tesseract project updates, coordination, and open discussion.
 
 **Schedule:** Second Thursday of the month
-**Time:** 10:00 – 11:00 AM Central Time  
+**Time:** 09:00 – 10:00 AM Central Time  
 **Time zone:** America/Chicago  
 **Google Meet:** https://meet.google.com/oyq-puvp-nyg
 
