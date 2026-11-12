@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <limits>
 #include <map>
@@ -2006,6 +2007,7 @@ TEST(TesseractGeometryUnit, MeshTextureUnit)  // NOLINT
   auto uvs_copy = std::make_shared<tesseract::common::VectorVector2d>(*uvs);
   auto image_copy = std::make_shared<tesseract::common::BytesResource>("data://other.png", bytes);
   EXPECT_TRUE(texture == MeshTexture(image_copy, uvs_copy));
+  EXPECT_TRUE(texture == MeshTexture(image, uvs));
 
   EXPECT_TRUE(texture != MeshTexture(image, uvs, MeshTextureType::EMISSIVE));
   EXPECT_TRUE(texture != MeshTexture(image, uvs, MeshTextureType::BASE_COLOR, 1));
@@ -2029,6 +2031,125 @@ TEST(TesseractGeometryUnit, MeshTextureUnit)  // NOLINT
   EXPECT_EQ(filtered.getMagFilter(), MeshTextureFilter::LINEAR);
   EXPECT_EQ(filtered.getMinFilter(), MeshTextureFilter::LINEAR_MIPMAP_LINEAR);
   EXPECT_TRUE(texture != filtered);
+
+  // Meshes compare their textures by value
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  vertices->emplace_back(0, 0, 0);
+  vertices->emplace_back(1, 0, 0);
+  vertices->emplace_back(0, 1, 0);
+  auto faces = std::make_shared<Eigen::VectorXi>(4);
+  *faces << 3, 0, 1, 2;
+  const auto make_mesh = [&](const MeshTexture& t) {
+    return Mesh(vertices,
+                faces,
+                nullptr,
+                Eigen::Vector3d::Ones(),
+                nullptr,
+                nullptr,
+                nullptr,
+                std::make_shared<std::vector<MeshTexture::Ptr>>(1, std::make_shared<MeshTexture>(t)));
+  };
+  const Mesh mesh = make_mesh(texture);
+  Mesh same_texture = make_mesh(texture);
+  Mesh other_texture = make_mesh(wrapped);
+  // Geometry equality also compares the UUID, which differs for each new mesh
+  same_texture.setUUID(mesh.getUUID());
+  other_texture.setUUID(mesh.getUUID());
+  EXPECT_TRUE(mesh == same_texture);
+  EXPECT_FALSE(mesh == other_texture);
+}
+
+TEST(TesseractGeometryUnit, MeshParserTextureSettingsUnit)  // NOLINT
+{
+  using namespace tesseract::geometry;
+
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Wrap), MeshTextureWrapMode::REPEAT);
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Clamp), MeshTextureWrapMode::CLAMP_TO_EDGE);
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Decal), MeshTextureWrapMode::CLAMP_TO_EDGE);
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Mirror), MeshTextureWrapMode::MIRRORED_REPEAT);
+
+  // The OpenGL enum values that glTF 2.0 samplers use
+  EXPECT_EQ(detail::toMeshTextureFilter(0), MeshTextureFilter::DEFAULT);
+  EXPECT_EQ(detail::toMeshTextureFilter(9728), MeshTextureFilter::NEAREST);
+  EXPECT_EQ(detail::toMeshTextureFilter(9729), MeshTextureFilter::LINEAR);
+  EXPECT_EQ(detail::toMeshTextureFilter(9984), MeshTextureFilter::NEAREST_MIPMAP_NEAREST);
+  EXPECT_EQ(detail::toMeshTextureFilter(9985), MeshTextureFilter::LINEAR_MIPMAP_NEAREST);
+  EXPECT_EQ(detail::toMeshTextureFilter(9986), MeshTextureFilter::NEAREST_MIPMAP_LINEAR);
+  EXPECT_EQ(detail::toMeshTextureFilter(9987), MeshTextureFilter::LINEAR_MIPMAP_LINEAR);
+}
+
+TEST(TesseractGeometryUnit, ExtractMeshMaterialFallbacksUnit)  // NOLINT
+{
+  using namespace tesseract::geometry;
+
+  // A triangle with one UV channel. assimp's aiMesh and aiScene free the arrays, materials and textures given to
+  // them, so they are created with new.
+  // NOLINTBEGIN(cppcoreguidelines-owning-memory)
+  aiMesh mesh;
+  mesh.mNumVertices = 3;
+  mesh.mVertices = new aiVector3D[3]{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  mesh.mTextureCoords[0] = new aiVector3D[3]{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  mesh.mNumUVComponents[0] = 2;
+
+  aiScene scene;
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, nullptr).first, nullptr);
+
+  // An embedded texture of raw texels, which is not supported
+  auto* raw_texture = new aiTexture();
+  raw_texture->mWidth = 1;
+  raw_texture->mHeight = 1;
+  raw_texture->pcData = new aiTexel[1];
+  scene.mNumTextures = 1;
+  scene.mTextures = new aiTexture*[1]{ raw_texture };
+
+  const auto make_material = [](const char* texture_path, int uv_channel) {
+    auto* material = new aiMaterial();
+    aiString path(texture_path);
+    material->AddProperty(&path, AI_MATKEY_TEXTURE_DIFFUSE(0));
+    material->AddProperty(&uv_channel, 1, AI_MATKEY_UVWSRC_DIFFUSE(0));
+    return material;
+  };
+  aiMaterial* translucent = make_material("*0", 0);
+  const aiColor4D diffuse(1, 0, 0, 1);
+  translucent->AddProperty(&diffuse, 1, AI_MATKEY_COLOR_DIFFUSE);
+  const float opacity = 0.5F;
+  translucent->AddProperty(&opacity, 1, AI_MATKEY_OPACITY);
+  scene.mNumMaterials = 3;
+  scene.mMaterials = new aiMaterial*[3]{ translucent,
+                                         make_material("logo_512_300dpi.png", 0),
+                                         make_material("logo_512_300dpi.png", 1) };
+  // NOLINTEND(cppcoreguidelines-owning-memory)
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto resource = locator.locateResource("package://tesseract/support/meshes/tesseract_pbr_mesh.glb");
+  ASSERT_TRUE(resource != nullptr);
+
+  // A material without PBR data that is translucent is blended. The raw embedded texture is skipped.
+  mesh.mMaterialIndex = 0;
+  auto [material, textures] = detail::extractMeshMaterialAndTextures(&scene, &mesh, resource);
+  ASSERT_TRUE(material != nullptr);
+  EXPECT_TRUE(material->getBaseColorFactor().isApprox(Eigen::Vector4d(1, 0, 0, 0.5)));
+  EXPECT_EQ(material->getAlphaMode(), MeshMaterialAlphaMode::BLEND);
+  EXPECT_EQ(textures, nullptr);
+
+  // An external texture is located next to the mesh, and needs the mesh resource to be found
+  mesh.mMaterialIndex = 1;
+  textures = detail::extractMeshMaterialAndTextures(&scene, &mesh, resource).second;
+  ASSERT_TRUE(textures != nullptr);
+  ASSERT_EQ(textures->size(), 1U);
+  const MeshTexture& texture = *textures->front();
+  EXPECT_EQ(texture.getType(), MeshTextureType::BASE_COLOR);
+  EXPECT_EQ(std::filesystem::path(texture.getTextureImage()->getFilePath()).filename(), "logo_512_300dpi.png");
+  EXPECT_EQ(texture.getUVs()->size(), 3U);
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, nullptr).second, nullptr);
+
+  // A texture on a UV channel the mesh does not have is skipped
+  mesh.mMaterialIndex = 2;
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, resource).second, nullptr);
+
+  // A material index past the end of the materials has no material
+  mesh.mMaterialIndex = 3;
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, resource).first, nullptr);
 }
 
 // Helper to create a trivial single-triangle mesh
