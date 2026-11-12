@@ -68,7 +68,21 @@ protected:
     return std::make_unique<TestVisualization>();
   }
 };
+
+/** @brief Keeps the default, empty schema */
+class TestDefaultSchemaVisualizationFactory : public VisualizationFactory
+{
+protected:
+  std::unique_ptr<Visualization> createImpl(const std::string& /*name*/,
+                                            const tesseract::common::PropertyTree& /*config*/) const override
+  {
+    return std::make_unique<TestVisualization>();
+  }
+};
 }  // namespace tesseract::visualization
 
 // NOLINTNEXTLINE
 TESSERACT_ADD_VISUALIZATION_PLUGIN(tesseract::visualization::TestVisualizationFactory, TestVisualizationPlugin)
+// NOLINTNEXTLINE
+TESSERACT_ADD_VISUALIZATION_PLUGIN(tesseract::visualization::TestDefaultSchemaVisualizationFactory,
+                                   TestDefaultSchemaVisualizationPlugin)
