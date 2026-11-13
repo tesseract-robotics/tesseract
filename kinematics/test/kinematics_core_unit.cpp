@@ -474,6 +474,60 @@ TEST(TesseractKinematicsUnit, UtilscalcManipulabilityNearSingularUnit)  // NOLIN
   EXPECT_EQ(m.m.measure, std::numeric_limits<double>::max());
 }
 
+TEST(TesseractKinematicsUnit, UtilscalcManipulabilityVolumeUnit)  // NOLINT
+{
+  // J = Q1 * diag(sigma) * R with orthogonal Q1 and orthonormal rows in R (6 x 6 or 6 x 7), so the singular values of
+  // J are sigma
+  Eigen::MatrixXd a(6, 6);
+  Eigen::MatrixXd b(7, 7);
+  for (Eigen::Index i = 0; i < 7; ++i)
+  {
+    for (Eigen::Index j = 0; j < 7; ++j)
+    {
+      if (i < 6 && j < 6)
+        a(i, j) = (1.0 / static_cast<double>(i + j + 1)) + (i == j ? 1.0 : 0.0);
+      b(i, j) = (1.0 / static_cast<double>(i + (2 * j) + 1)) + (i == j ? 2.0 : 0.0);
+    }
+  }
+  const Eigen::MatrixXd q1 = Eigen::HouseholderQR<Eigen::MatrixXd>(a).householderQ();
+  const Eigen::MatrixXd q2 = Eigen::HouseholderQR<Eigen::MatrixXd>(b).householderQ();
+  const Eigen::MatrixXd q2_square = Eigen::HouseholderQR<Eigen::MatrixXd>(b.topLeftCorner(6, 6)).householderQ();
+  const Eigen::MatrixXd square = q2_square.transpose();
+  const Eigen::MatrixXd redundant = q2.leftCols(6).transpose();
+
+  // From well conditioned to below the numerical rank threshold, where the volume becomes exactly zero. The volume
+  // is the one of the full manipulability data bit for bit, on either side of the threshold.
+  bool positive = false;
+  bool zero = false;
+  for (const Eigen::MatrixXd& right : { square, redundant })
+  {
+    for (const double sigma_min : { 0.1, 1e-3, 1e-6, 1e-9, 1e-12, 1e-14, 1e-15, 1e-16, 1e-18, 1e-20, 0.0 })
+    {
+      Eigen::VectorXd sigma(6);
+      sigma << 3, 2, 1, 0.5, 0.2, sigma_min;
+      const Eigen::MatrixXd jacobian = q1 * sigma.asDiagonal() * right;
+      const double volume = tesseract::kinematics::calcManipulabilityVolume(jacobian);
+      EXPECT_EQ(volume, tesseract::kinematics::calcManipulability(jacobian).m.volume)
+          << "cols = " << right.cols() << ", sigma_min = " << sigma_min;
+      positive = positive || (volume > 0);
+      zero = zero || (volume == 0);
+    }
+  }
+  EXPECT_TRUE(positive);
+  EXPECT_TRUE(zero);
+
+  // Near-singular but full rank: the product of the singular values
+  Eigen::VectorXd sigma(6);
+  sigma << 3, 2, 1, 0.5, 0.2, 1e-6;
+  EXPECT_NEAR(tesseract::kinematics::calcManipulabilityVolume(q1 * sigma.asDiagonal() * square) / sigma.prod(), 1.0,
+              1e-6);
+  EXPECT_NEAR(tesseract::kinematics::calcManipulabilityVolume(q1 * sigma.asDiagonal() * redundant) / sigma.prod(), 1.0,
+              1e-6);
+
+  // Fewer columns than rows: never full row rank
+  EXPECT_EQ(tesseract::kinematics::calcManipulabilityVolume(q1.leftCols(5)), 0);
+}
+
 TEST(TesseractKinematicsUnit, solvePInv_OverdeterminedSystem)
 {
   Eigen::MatrixXd A(4, 2);
