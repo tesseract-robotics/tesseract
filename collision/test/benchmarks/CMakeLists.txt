@@ -28,7 +28,7 @@ macro(add_benchmark benchmark_name benchmark_file)
     tesseract::collision_fcl)
   if(TESSERACT_ENABLE_RUN_BENCHMARKING)
     message(STATUS "Running benchmark ${benchmark_name}")
-    add_run_benchmark_target(${benchmark_name})
+    tesseract_add_run_benchmark_target(${benchmark_name})
   endif()
 endmacro()
 

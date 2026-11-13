@@ -1,55 +1,23 @@
 #!/usr/bin/python3
 import json
-import os
+from pathlib import Path
 
-workspace_dir = "/__w/tesseract/tesseract/target_ws"
-build_dir = workspace_dir + "/build"
-result_files = []
+workspace_dir = Path("/__w/tesseract/tesseract/target_ws")
 
-search_path = build_dir + "/tesseract_collision/test/benchmarks"
-for file in os.listdir(search_path):
-    if file.endswith(".json"):
-        result_files.append(os.path.join(search_path, file))
-    # endif
-# endfor
+# Every component writes its results next to its benchmark executables, <build>/<component>/test/benchmarks
+result_files = sorted((workspace_dir / "build" / "tesseract").glob("*/test/benchmarks/*_results.json"))
+if not result_files:
+    raise SystemExit("No benchmark results found under " + str(workspace_dir / "build" / "tesseract"))
 
-search_path = build_dir + "/tesseract_environment/test/benchmarks"
-for file in os.listdir(search_path):
-    if file.endswith(".json"):
-        result_files.append(os.path.join(search_path, file))
-    # endif
-#endfor
-
-cnt = 0
 all_data = {}
 for file in result_files:
-    # Opening JSON file
-    f = open(file, "r")
-
-    # returns JSON object as a dictionary
-    data = json.loads(f.read())
-
-    if cnt == 0:
+    print("Combining " + str(file))
+    data = json.loads(file.read_text())
+    if not all_data:
         all_data = data
     else:
-        for benchmark in data["benchmarks"]:
-            all_data["benchmarks"].append(benchmark)
-        # endfor
-    # endif
+        all_data["benchmarks"].extend(data["benchmarks"])
 
-    # Closing file
-    f.close()
-
-    # Increment counter
-    cnt+=1
-# endfor
-
-# the base path to where the output must be stored
-if not os.path.exists(workspace_dir + "/benchmarks"):
-    os.makedirs(workspace_dir + "/benchmarks")
-# endif
-
-# the json file where the output must be stored
-out_file = open(workspace_dir + "/benchmarks/tesseract-benchmark_result.json", "w+")
-json.dump(all_data, out_file, indent = 4)
-out_file.close()
+out_dir = workspace_dir / "benchmarks"
+out_dir.mkdir(parents=True, exist_ok=True)
+(out_dir / "tesseract-benchmark_result.json").write_text(json.dumps(all_data, indent=4))
