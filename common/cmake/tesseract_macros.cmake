@@ -217,3 +217,15 @@ macro(find_bullet)
     endif()
   endif()
 endmacro()
+
+# Adds a target, built with ALL, that runs a benchmark executable and writes its results to
+# ${CMAKE_CURRENT_BINARY_DIR}/<benchmark_name>_results.json. Unlike add_run_benchmark_target from
+# ros_industrial_cmake_boilerplate, which expects the executable at ${CMAKE_BINARY_DIR}/test/benchmarks, it finds the
+# executable wherever it is built, so it works for every component of this single CMake project.
+macro(tesseract_add_run_benchmark_target benchmark_name)
+  add_custom_target(
+    run_benchmark_${benchmark_name} ALL WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND $<TARGET_FILE:${benchmark_name}> --benchmark_out_format=json
+            --benchmark_out=${CMAKE_CURRENT_BINARY_DIR}/${benchmark_name}_results.json)
+  add_dependencies(run_benchmark_${benchmark_name} ${benchmark_name})
+endmacro()
