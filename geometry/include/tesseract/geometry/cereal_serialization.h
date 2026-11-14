@@ -3,6 +3,7 @@
 
 #include <tesseract/geometry/geometry.h>
 #include <tesseract/geometry/geometries.h>
+#include <tesseract/geometry/impl/mesh_material.h>
 #include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/common/cereal_serialization.h>
 
@@ -201,6 +202,34 @@ void serialize(Archive& ar, SignedDistanceField& obj)
 }
 
 template <class Archive>
+void serialize(Archive& ar, MeshMaterial& obj)
+{
+  ar(cereal::make_nvp("base_color_factor", obj.base_color_factor_));
+  ar(cereal::make_nvp("metallic_factor", obj.metallic_factor_));
+  ar(cereal::make_nvp("roughness_factor", obj.roughness_factor_));
+  ar(cereal::make_nvp("emissive_factor", obj.emissive_factor_));
+  ar(cereal::make_nvp("alpha_mode", obj.alpha_mode_));
+  ar(cereal::make_nvp("alpha_cutoff", obj.alpha_cutoff_));
+  ar(cereal::make_nvp("double_sided", obj.double_sided_));
+  ar(cereal::make_nvp("emissive_strength", obj.emissive_strength_));
+  ar(cereal::make_nvp("normal_scale", obj.normal_scale_));
+  ar(cereal::make_nvp("occlusion_strength", obj.occlusion_strength_));
+}
+
+template <class Archive>
+void serialize(Archive& ar, MeshTexture& obj)
+{
+  ar(cereal::make_nvp("texture_image", obj.texture_image_));
+  ar(cereal::make_nvp("uvs", obj.uvs_));
+  ar(cereal::make_nvp("type", obj.type_));
+  ar(cereal::make_nvp("uv_channel", obj.uv_channel_));
+  ar(cereal::make_nvp("wrap_u", obj.wrap_u_));
+  ar(cereal::make_nvp("wrap_v", obj.wrap_v_));
+  ar(cereal::make_nvp("mag_filter", obj.mag_filter_));
+  ar(cereal::make_nvp("min_filter", obj.min_filter_));
+}
+
+template <class Archive>
 void serialize(Archive& ar, PolygonMesh& obj)
 {
   ar(cereal::base_class<Geometry>(&obj));
@@ -212,9 +241,8 @@ void serialize(Archive& ar, PolygonMesh& obj)
   ar(cereal::make_nvp("scale", obj.scale_));
   ar(cereal::make_nvp("normals", obj.normals_));
   ar(cereal::make_nvp("vertex_colors", obj.vertex_colors_));
-  /// @todo Serialize mesh materials and textures
-  //    ar(cereal::make_nvp("mesh_material", obj.mesh_material_));
-  //    ar(cereal::make_nvp("mesh_textures", obj.mesh_textures_));
+  ar(cereal::make_nvp("mesh_material", obj.mesh_material_));
+  ar(cereal::make_nvp("mesh_textures", obj.mesh_textures_));
 }
 
 template <class Archive>

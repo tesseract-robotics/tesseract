@@ -59,6 +59,26 @@ void load(Archive& ar, Eigen::VectorXd& g, const unsigned int /*version*/)
 }
 
 /*****************************/
+/****** Eigen::Vector2d ******/
+/*****************************/
+template <class Archive>
+void save(Archive& ar, const Eigen::Vector2d& g, const unsigned int /*version*/)
+{
+  long rows = g.rows();
+  ar(CEREAL_NVP(rows));
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
+}
+
+template <class Archive>
+void load(Archive& ar, Eigen::Vector2d& g, const unsigned int /*version*/)
+{
+  long rows{ 0 };
+  ar(CEREAL_NVP(rows));
+  g.resize(rows);
+  ar(cereal::make_nvp("data", tesseract::common::serialization::make_array(g.data(), rows)));
+}
+
+/*****************************/
 /****** Eigen::Vector3d ******/
 /*****************************/
 template <class Archive>

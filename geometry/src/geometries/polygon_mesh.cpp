@@ -28,6 +28,27 @@
 
 namespace tesseract::geometry
 {
+namespace
+{
+bool texturesEqual(const std::shared_ptr<const std::vector<MeshTexture::Ptr>>& a,
+                   const std::shared_ptr<const std::vector<MeshTexture::Ptr>>& b)
+{
+  if (a == b)
+    return true;
+  // A null vector and an empty one both mean no textures
+  const std::size_t a_size = (a != nullptr) ? a->size() : 0;
+  const std::size_t b_size = (b != nullptr) ? b->size() : 0;
+  if (a_size != b_size)
+    return false;
+  for (std::size_t i = 0; i < a_size; ++i)
+  {
+    if (!tesseract::common::pointersEqual((*a)[i], (*b)[i]))
+      return false;
+  }
+  return true;
+}
+}  // namespace
+
 PolygonMesh::PolygonMesh(std::shared_ptr<const tesseract::common::VectorVector3d> vertices,
                          std::shared_ptr<const Eigen::VectorXi> faces,
                          std::shared_ptr<const tesseract::common::Resource> resource,
@@ -123,7 +144,9 @@ bool PolygonMesh::operator==(const PolygonMesh& rhs) const
   equal &= tesseract::common::almostEqualRelativeAndAbs(scale_, rhs.scale_);
   equal &= tesseract::common::pointersEqual(vertices_, rhs.vertices_);
   equal &= tesseract::common::pointersEqual(faces_, rhs.faces_);
-  /// @todo Compare resource, normals, vertex colors, material and textures
+  equal &= tesseract::common::pointersEqual(mesh_material_, rhs.mesh_material_);
+  equal &= texturesEqual(mesh_textures_, rhs.mesh_textures_);
+  /// @todo Compare resource, normals and vertex colors
   return equal;
 }
 bool PolygonMesh::operator!=(const PolygonMesh& rhs) const { return !operator==(rhs); }

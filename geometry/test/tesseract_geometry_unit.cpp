@@ -5,8 +5,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <limits>
+#include <map>
 #include <memory>
 #include <numeric>
 #include <optional>
@@ -20,6 +22,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/geometry/mesh_parser.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <assimp/version.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/geometry/conversions.h>
 #include <tesseract/geometry/utils.h>
 #include <tesseract/geometry/impl/octree_utils.h>
@@ -1814,8 +1819,338 @@ TEST(TesseractGeometryUnit, LoadMeshWithMaterialGltf2Unit)  // NOLINT
   auto texture = mesh3->getTextures()->at(0);
   EXPECT_EQ(texture->getTextureImage()->getResourceContents().size(), 38212);
   EXPECT_EQ(texture->getUVs()->size(), 4);
+  EXPECT_EQ(texture->getType(), MeshTextureType::BASE_COLOR);
+  EXPECT_EQ(texture->getUVChannel(), 0);
+}
+
+TEST(TesseractGeometryUnit, LoadMeshWithPbrMaterialGltf2Unit)  // NOLINT
+{
+  using namespace tesseract::geometry;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto resource = locator.locateResource("package://tesseract/support/meshes/tesseract_pbr_mesh.glb");
+  ASSERT_TRUE(resource != nullptr);
+  std::vector<Mesh::Ptr> meshes =
+      createMeshFromResource<Mesh>(resource, Eigen::Vector3d(1, 1, 1), true, true, true, true, true);
+  ASSERT_EQ(meshes.size(), 2);
+
+  // The mesh with textures is "pbr_full", the other "pbr_mask"
+  const bool first_is_full = meshes[0]->getTextures() != nullptr;
+  const Mesh::Ptr& full = first_is_full ? meshes[0] : meshes[1];
+  const Mesh::Ptr& mask = first_is_full ? meshes[1] : meshes[0];
+
+  // pbr_full: every texture slot, blended, double sided, with the extension and texture parameters
+  auto material = full->getMaterial();
+  ASSERT_TRUE(material != nullptr);
+  EXPECT_TRUE(material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.9, 0.8, 0.7, 0.6), 1e-6));
+  EXPECT_NEAR(material->getMetallicFactor(), 0.75, 1e-6);
+  EXPECT_NEAR(material->getRoughnessFactor(), 0.25, 1e-6);
+  EXPECT_TRUE(material->getEmissiveFactor().head<3>().isApprox(Eigen::Vector3d(1.0, 0.5, 0.25), 1e-6));
+  EXPECT_EQ(material->getAlphaMode(), MeshMaterialAlphaMode::BLEND);
+  EXPECT_TRUE(material->getDoubleSided());
+  // assimp imports KHR_materials_emissive_strength from 5.3. Older versions leave the default.
+  const bool imports_emissive_strength =
+      aiGetVersionMajor() > 5 || (aiGetVersionMajor() == 5 && aiGetVersionMinor() >= 3);
+  EXPECT_NEAR(material->getEmissiveStrength(), imports_emissive_strength ? 2.5 : 1.0, 1e-6);
+  EXPECT_NEAR(material->getNormalScale(), 0.5, 1e-6);
+  EXPECT_NEAR(material->getOcclusionStrength(), 0.8, 1e-6);
+
+  const auto& textures = full->getTextures();
+  ASSERT_TRUE(textures != nullptr);
+  ASSERT_EQ(textures->size(), 5);
+  std::map<MeshTextureType, MeshTexture::Ptr> by_type;
+  for (const auto& texture : *textures)
+    by_type[texture->getType()] = texture;
+  ASSERT_EQ(by_type.size(), 5);
+
+  for (const auto& [type, texture] : by_type)
+  {
+    ASSERT_TRUE(texture->getTextureImage() != nullptr);
+    ASSERT_TRUE(texture->getUVs() != nullptr);
+    EXPECT_EQ(texture->getUVs()->size(), full->getVertexCount());
+    const std::string url = texture->getTextureImage()->getUrl();
+    const std::string ext = (type == MeshTextureType::EMISSIVE) ? ".jpg" : ".png";
+    EXPECT_EQ(url.substr(url.size() - ext.size()), ext) << url;
+  }
+
+  const auto& base = by_type.at(MeshTextureType::BASE_COLOR);
+  const auto& occlusion = by_type.at(MeshTextureType::OCCLUSION);
+  EXPECT_EQ(base->getUVChannel(), 0);
+  EXPECT_EQ(by_type.at(MeshTextureType::METALLIC_ROUGHNESS)->getUVChannel(), 0);
+  EXPECT_EQ(by_type.at(MeshTextureType::NORMAL)->getUVChannel(), 0);
+  EXPECT_EQ(by_type.at(MeshTextureType::EMISSIVE)->getUVChannel(), 0);
+  EXPECT_EQ(occlusion->getUVChannel(), 1);
+
+  // Textures on one UV channel share the UV vector. TEXCOORD_1 spans half of TEXCOORD_0.
+  EXPECT_EQ(base->getUVs(), by_type.at(MeshTextureType::NORMAL)->getUVs());
+  EXPECT_NE(base->getUVs(), occlusion->getUVs());
+  double max_u0 = 0;
+  double max_u1 = 0;
+  for (const auto& uv : *base->getUVs())
+    max_u0 = std::max(max_u0, uv.x());
+  for (const auto& uv : *occlusion->getUVs())
+    max_u1 = std::max(max_u1, uv.x());
+  EXPECT_NEAR(max_u0, 1.0, 1e-6);
+  EXPECT_NEAR(max_u1, 0.5, 1e-6);
+
+  // The base color texture has its own sampler, the others the glTF defaults
+  EXPECT_EQ(base->getWrapU(), MeshTextureWrapMode::CLAMP_TO_EDGE);
+  EXPECT_EQ(base->getWrapV(), MeshTextureWrapMode::MIRRORED_REPEAT);
+  EXPECT_EQ(base->getMagFilter(), MeshTextureFilter::NEAREST);
+  EXPECT_EQ(base->getMinFilter(), MeshTextureFilter::NEAREST);
+  EXPECT_EQ(occlusion->getWrapU(), MeshTextureWrapMode::REPEAT);
+  EXPECT_EQ(occlusion->getWrapV(), MeshTextureWrapMode::REPEAT);
+
+  // pbr_mask: factors only, alpha masked
+  auto mask_material = mask->getMaterial();
+  ASSERT_TRUE(mask_material != nullptr);
+  EXPECT_TRUE(mask_material->getBaseColorFactor().isApprox(Eigen::Vector4d(0.2, 0.4, 0.6, 1.0), 1e-6));
+  EXPECT_NEAR(mask_material->getMetallicFactor(), 0.1, 1e-6);
+  EXPECT_NEAR(mask_material->getRoughnessFactor(), 0.9, 1e-6);
+  EXPECT_EQ(mask_material->getAlphaMode(), MeshMaterialAlphaMode::MASK);
+  EXPECT_NEAR(mask_material->getAlphaCutoff(), 0.3, 1e-6);
+  EXPECT_FALSE(mask_material->getDoubleSided());
+  EXPECT_NEAR(mask_material->getEmissiveStrength(), 1.0, 1e-6);
+  EXPECT_TRUE(mask->getTextures() == nullptr);
+
+  // Loading without materials drops them (and lets assimp merge the two quads)
+  std::vector<Mesh::Ptr> plain = createMeshFromResource<Mesh>(resource, Eigen::Vector3d(1, 1, 1), true, true);
+  ASSERT_FALSE(plain.empty());
+  for (const auto& mesh : plain)
+  {
+    EXPECT_TRUE(mesh->getMaterial() == nullptr);
+    EXPECT_TRUE(mesh->getTextures() == nullptr);
+  }
 }
 #endif
+
+TEST(TesseractGeometryUnit, LoadMeshNormalsAreUnitAndIgnoreTranslation)  // NOLINT
+{
+  using namespace tesseract::geometry;
+  tesseract::common::GeneralResourceLocator locator;
+
+  // The quads of tesseract_pbr_mesh.glb face +Z. A non-uniform scale must not tilt or stretch their normals.
+  auto pbr = locator.locateResource("package://tesseract/support/meshes/tesseract_pbr_mesh.glb");
+  for (const auto& mesh : createMeshFromResource<Mesh>(pbr, Eigen::Vector3d(2, 3, 4), true, true, true))
+  {
+    ASSERT_TRUE(mesh->getNormals() != nullptr);
+    for (const auto& n : *mesh->getNormals())
+      EXPECT_TRUE(n.isApprox(Eigen::Vector3d(0, 0, 1), 1e-6)) << n.transpose();
+  }
+
+  // tesseract_material_mesh.glb has translated nodes
+  auto material_mesh = locator.locateResource("package://tesseract/support/meshes/tesseract_material_mesh.glb");
+  for (const auto& mesh : createMeshFromResource<Mesh>(material_mesh, Eigen::Vector3d(0.5, 2, 1), true, true, true))
+  {
+    ASSERT_TRUE(mesh->getNormals() != nullptr);
+    for (const auto& n : *mesh->getNormals())
+      EXPECT_NEAR(n.norm(), 1.0, 1e-6);
+  }
+}
+
+TEST(TesseractGeometryUnit, MeshMaterialUnit)  // NOLINT
+{
+  using namespace tesseract::geometry;
+
+  MeshMaterial material;
+  EXPECT_TRUE(material.getBaseColorFactor().isApprox(Eigen::Vector4d::Zero()));
+  EXPECT_DOUBLE_EQ(material.getMetallicFactor(), 0.0);
+  EXPECT_DOUBLE_EQ(material.getRoughnessFactor(), 0.5);
+  EXPECT_EQ(material.getAlphaMode(), MeshMaterialAlphaMode::OPAQUE);
+  EXPECT_DOUBLE_EQ(material.getAlphaCutoff(), 0.5);
+  EXPECT_FALSE(material.getDoubleSided());
+  EXPECT_DOUBLE_EQ(material.getEmissiveStrength(), 1.0);
+  EXPECT_DOUBLE_EQ(material.getNormalScale(), 1.0);
+  EXPECT_DOUBLE_EQ(material.getOcclusionStrength(), 1.0);
+
+  MeshMaterial other(Eigen::Vector4d(0, 0, 0, 0), 0, 0.5, Eigen::Vector4d(0, 0, 0, 0));
+  EXPECT_TRUE(material == other);
+
+  const auto expect_differs = [&material](const std::function<void(MeshMaterial&)>& change) {
+    MeshMaterial changed = material;
+    change(changed);
+    EXPECT_TRUE(changed != material);
+  };
+  expect_differs([](MeshMaterial& m) { m.setBaseColorFactor(Eigen::Vector4d(1, 0, 0, 1)); });
+  expect_differs([](MeshMaterial& m) { m.setMetallicFactor(0.3); });
+  expect_differs([](MeshMaterial& m) { m.setRoughnessFactor(0.3); });
+  expect_differs([](MeshMaterial& m) { m.setEmissiveFactor(Eigen::Vector4d(1, 0, 0, 1)); });
+  expect_differs([](MeshMaterial& m) { m.setAlphaMode(MeshMaterialAlphaMode::MASK); });
+  expect_differs([](MeshMaterial& m) { m.setAlphaCutoff(0.2); });
+  expect_differs([](MeshMaterial& m) { m.setDoubleSided(true); });
+  expect_differs([](MeshMaterial& m) { m.setEmissiveStrength(3.0); });
+  expect_differs([](MeshMaterial& m) { m.setNormalScale(2.0); });
+  expect_differs([](MeshMaterial& m) { m.setOcclusionStrength(0.1); });
+}
+
+TEST(TesseractGeometryUnit, MeshTextureUnit)  // NOLINT
+{
+  using namespace tesseract::geometry;
+
+  auto uvs = std::make_shared<tesseract::common::VectorVector2d>();
+  uvs->emplace_back(0, 0);
+  uvs->emplace_back(1, 0.5);
+  const std::vector<std::uint8_t> bytes = { 1, 2, 3 };
+  auto image = std::make_shared<tesseract::common::BytesResource>("data://image.png", bytes);
+
+  MeshTexture texture(image, uvs);
+  EXPECT_EQ(texture.getType(), MeshTextureType::BASE_COLOR);
+  EXPECT_EQ(texture.getUVChannel(), 0);
+  EXPECT_EQ(texture.getWrapU(), MeshTextureWrapMode::REPEAT);
+  EXPECT_EQ(texture.getWrapV(), MeshTextureWrapMode::REPEAT);
+  EXPECT_EQ(texture.getMagFilter(), MeshTextureFilter::DEFAULT);
+  EXPECT_EQ(texture.getMinFilter(), MeshTextureFilter::DEFAULT);
+  EXPECT_EQ(texture.getUVs(), uvs);
+  EXPECT_EQ(texture.getTextureImage(), image);
+
+  // Equal settings, UV values and image contents compare equal, even in different objects
+  auto uvs_copy = std::make_shared<tesseract::common::VectorVector2d>(*uvs);
+  auto image_copy = std::make_shared<tesseract::common::BytesResource>("data://other.png", bytes);
+  EXPECT_TRUE(texture == MeshTexture(image_copy, uvs_copy));
+  EXPECT_TRUE(texture == MeshTexture(image, uvs));
+
+  EXPECT_TRUE(texture != MeshTexture(image, uvs, MeshTextureType::EMISSIVE));
+  EXPECT_TRUE(texture != MeshTexture(image, uvs, MeshTextureType::BASE_COLOR, 1));
+  EXPECT_TRUE(texture != MeshTexture(nullptr, uvs));
+  EXPECT_TRUE(texture != MeshTexture(image, nullptr));
+  EXPECT_TRUE(texture != MeshTexture(std::make_shared<tesseract::common::BytesResource>(
+                                         "data://image.png", std::vector<std::uint8_t>{ 1, 2, 4 }),
+                                     uvs));
+  auto uvs_moved = std::make_shared<tesseract::common::VectorVector2d>(*uvs);
+  uvs_moved->back().y() = 0.25;
+  EXPECT_TRUE(texture != MeshTexture(image, uvs_moved));
+
+  MeshTexture wrapped(image, uvs);
+  wrapped.setWrap(MeshTextureWrapMode::CLAMP_TO_EDGE, MeshTextureWrapMode::MIRRORED_REPEAT);
+  EXPECT_EQ(wrapped.getWrapU(), MeshTextureWrapMode::CLAMP_TO_EDGE);
+  EXPECT_EQ(wrapped.getWrapV(), MeshTextureWrapMode::MIRRORED_REPEAT);
+  EXPECT_TRUE(texture != wrapped);
+
+  MeshTexture filtered(image, uvs);
+  filtered.setFilters(MeshTextureFilter::LINEAR, MeshTextureFilter::LINEAR_MIPMAP_LINEAR);
+  EXPECT_EQ(filtered.getMagFilter(), MeshTextureFilter::LINEAR);
+  EXPECT_EQ(filtered.getMinFilter(), MeshTextureFilter::LINEAR_MIPMAP_LINEAR);
+  EXPECT_TRUE(texture != filtered);
+
+  // Meshes compare their textures by value
+  auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
+  vertices->emplace_back(0, 0, 0);
+  vertices->emplace_back(1, 0, 0);
+  vertices->emplace_back(0, 1, 0);
+  auto faces = std::make_shared<Eigen::VectorXi>(4);
+  *faces << 3, 0, 1, 2;
+  const auto make_mesh = [&](const MeshTexture& t) {
+    return Mesh(vertices,
+                faces,
+                nullptr,
+                Eigen::Vector3d::Ones(),
+                nullptr,
+                nullptr,
+                nullptr,
+                std::make_shared<std::vector<MeshTexture::Ptr>>(1, std::make_shared<MeshTexture>(t)));
+  };
+  const Mesh mesh = make_mesh(texture);
+  Mesh same_texture = make_mesh(texture);
+  Mesh other_texture = make_mesh(wrapped);
+  // Geometry equality also compares the UUID, which differs for each new mesh
+  same_texture.setUUID(mesh.getUUID());
+  other_texture.setUUID(mesh.getUUID());
+  EXPECT_TRUE(mesh == same_texture);
+  EXPECT_FALSE(mesh == other_texture);
+}
+
+TEST(TesseractGeometryUnit, MeshParserTextureSettingsUnit)  // NOLINT
+{
+  using namespace tesseract::geometry;
+
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Wrap), MeshTextureWrapMode::REPEAT);
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Clamp), MeshTextureWrapMode::CLAMP_TO_EDGE);
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Decal), MeshTextureWrapMode::CLAMP_TO_EDGE);
+  EXPECT_EQ(detail::toMeshTextureWrapMode(aiTextureMapMode_Mirror), MeshTextureWrapMode::MIRRORED_REPEAT);
+
+  // The OpenGL enum values that glTF 2.0 samplers use
+  EXPECT_EQ(detail::toMeshTextureFilter(0), MeshTextureFilter::DEFAULT);
+  EXPECT_EQ(detail::toMeshTextureFilter(9728), MeshTextureFilter::NEAREST);
+  EXPECT_EQ(detail::toMeshTextureFilter(9729), MeshTextureFilter::LINEAR);
+  EXPECT_EQ(detail::toMeshTextureFilter(9984), MeshTextureFilter::NEAREST_MIPMAP_NEAREST);
+  EXPECT_EQ(detail::toMeshTextureFilter(9985), MeshTextureFilter::LINEAR_MIPMAP_NEAREST);
+  EXPECT_EQ(detail::toMeshTextureFilter(9986), MeshTextureFilter::NEAREST_MIPMAP_LINEAR);
+  EXPECT_EQ(detail::toMeshTextureFilter(9987), MeshTextureFilter::LINEAR_MIPMAP_LINEAR);
+}
+
+TEST(TesseractGeometryUnit, ExtractMeshMaterialFallbacksUnit)  // NOLINT
+{
+  using namespace tesseract::geometry;
+
+  // A triangle with one UV channel. assimp's aiMesh and aiScene free the arrays, materials and textures given to
+  // them, so they are created with new.
+  // NOLINTBEGIN(cppcoreguidelines-owning-memory)
+  aiMesh mesh;
+  mesh.mNumVertices = 3;
+  mesh.mVertices = new aiVector3D[3]{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  mesh.mTextureCoords[0] = new aiVector3D[3]{ { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } };
+  mesh.mNumUVComponents[0] = 2;
+
+  aiScene scene;
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, nullptr).first, nullptr);
+
+  // An embedded texture of raw texels, which is not supported
+  auto* raw_texture = new aiTexture();
+  raw_texture->mWidth = 1;
+  raw_texture->mHeight = 1;
+  raw_texture->pcData = new aiTexel[1];
+  scene.mNumTextures = 1;
+  scene.mTextures = new aiTexture*[1]{ raw_texture };
+
+  const auto make_material = [](const char* texture_path, int uv_channel) {
+    auto* material = new aiMaterial();
+    aiString path(texture_path);
+    material->AddProperty(&path, AI_MATKEY_TEXTURE_DIFFUSE(0));
+    material->AddProperty(&uv_channel, 1, AI_MATKEY_UVWSRC_DIFFUSE(0));
+    return material;
+  };
+  aiMaterial* translucent = make_material("*0", 0);
+  const aiColor4D diffuse(1, 0, 0, 1);
+  translucent->AddProperty(&diffuse, 1, AI_MATKEY_COLOR_DIFFUSE);
+  const float opacity = 0.5F;
+  translucent->AddProperty(&opacity, 1, AI_MATKEY_OPACITY);
+  scene.mNumMaterials = 3;
+  scene.mMaterials = new aiMaterial*[3]{ translucent,
+                                         make_material("logo_512_300dpi.png", 0),
+                                         make_material("logo_512_300dpi.png", 1) };
+  // NOLINTEND(cppcoreguidelines-owning-memory)
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto resource = locator.locateResource("package://tesseract/support/meshes/tesseract_pbr_mesh.glb");
+  ASSERT_TRUE(resource != nullptr);
+
+  // A material without PBR data that is translucent is blended. The raw embedded texture is skipped.
+  mesh.mMaterialIndex = 0;
+  auto [material, textures] = detail::extractMeshMaterialAndTextures(&scene, &mesh, resource);
+  ASSERT_TRUE(material != nullptr);
+  EXPECT_TRUE(material->getBaseColorFactor().isApprox(Eigen::Vector4d(1, 0, 0, 0.5)));
+  EXPECT_EQ(material->getAlphaMode(), MeshMaterialAlphaMode::BLEND);
+  EXPECT_EQ(textures, nullptr);
+
+  // An external texture is located next to the mesh, and needs the mesh resource to be found
+  mesh.mMaterialIndex = 1;
+  textures = detail::extractMeshMaterialAndTextures(&scene, &mesh, resource).second;
+  ASSERT_TRUE(textures != nullptr);
+  ASSERT_EQ(textures->size(), 1U);
+  const MeshTexture& texture = *textures->front();
+  EXPECT_EQ(texture.getType(), MeshTextureType::BASE_COLOR);
+  EXPECT_EQ(std::filesystem::path(texture.getTextureImage()->getFilePath()).filename(), "logo_512_300dpi.png");
+  EXPECT_EQ(texture.getUVs()->size(), 3U);
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, nullptr).second, nullptr);
+
+  // A texture on a UV channel the mesh does not have is skipped
+  mesh.mMaterialIndex = 2;
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, resource).second, nullptr);
+
+  // A material index past the end of the materials has no material
+  mesh.mMaterialIndex = 3;
+  EXPECT_EQ(detail::extractMeshMaterialAndTextures(&scene, &mesh, resource).first, nullptr);
+}
 
 // Helper to create a trivial single-triangle mesh
 static std::shared_ptr<tesseract::geometry::Mesh> makeSimpleTriangleMesh()

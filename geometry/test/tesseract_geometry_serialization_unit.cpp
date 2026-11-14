@@ -107,6 +107,23 @@ TEST(TesseractGeometrySerializeUnit, Mesh)  // NOLINT
   tesseract::common::testSerializationDerivedClass<PolygonMesh, Mesh>(object.front(), "Mesh");
 }
 
+#ifdef TESSERACT_ASSIMP_USE_PBRMATERIAL
+TEST(TesseractGeometrySerializeUnit, MeshWithPbrMaterial)  // NOLINT
+{
+  tesseract::common::GeneralResourceLocator locator;
+  std::string path = "package://tesseract/support/meshes/tesseract_pbr_mesh.glb";
+  auto objects = tesseract::geometry::createMeshFromResource<tesseract::geometry::Mesh>(
+      locator.locateResource(path), Eigen::Vector3d(1, 1, 1), true, true, true, true, true);
+  ASSERT_EQ(objects.size(), 2);
+  for (const auto& object : objects)
+  {
+    ASSERT_TRUE(object->getMaterial() != nullptr);
+    tesseract::common::testSerialization<Mesh>(*object, "MeshWithPbrMaterial");
+    tesseract::common::testSerializationDerivedClass<Geometry, Mesh>(object, "MeshWithPbrMaterial");
+  }
+}
+#endif
+
 TEST(TesseractGeometrySerializeUnit, CompoundMesh)  // NOLINT
 {
   tesseract::common::GeneralResourceLocator locator;
