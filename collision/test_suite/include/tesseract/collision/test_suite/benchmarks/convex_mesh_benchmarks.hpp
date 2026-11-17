@@ -27,7 +27,7 @@ namespace tesseract::collision::test_suite
 inline tesseract::geometry::ConvexMesh::Ptr makeConvexSphere(int rings, int segments, double radius)
 {
   auto vertices = std::make_shared<tesseract::common::VectorVector3d>();
-  vertices->reserve(static_cast<std::size_t>((rings * segments) + 2));
+  vertices->reserve((static_cast<std::size_t>(rings) * static_cast<std::size_t>(segments)) + 2U);
   vertices->emplace_back(0, 0, radius);  // north pole, index 0
   for (int r = 1; r <= rings; ++r)
   {
