@@ -4,6 +4,7 @@
 #include <tesseract/collision/test_suite/benchmarks/primatives_benchmarks.hpp>
 #include <tesseract/collision/test_suite/benchmarks/large_dataset_benchmarks.hpp>
 #include <tesseract/collision/test_suite/benchmarks/benchmark_utils.hpp>
+#include <tesseract/collision/test_suite/benchmarks/convex_mesh_benchmarks.hpp>
 #include <tesseract/collision/fcl/fcl_discrete_managers.h>
 #include <tesseract/geometry/geometry.h>
 
@@ -344,6 +345,8 @@ int main(int argc, char** argv)
       // clang-format on
     }
   }
+
+  registerConvexMeshBenchmarks(checker);
 
   benchmark::Initialize(&argc, argv);
   benchmark::RunSpecifiedBenchmarks();
