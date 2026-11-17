@@ -206,9 +206,15 @@ std::shared_ptr<BulletCollisionShape> createShapePrimitive(const tesseract::geom
   if (vertice_count > 0 && triangle_count > 0)
   {
     auto convex_hull_shape = std::make_shared<btConvexHullShape>();
+    // recalcLocalAabb() caches the local AABB grown by the margin set at that time, and setMargin() does not
+    // recompute it. Set the margin first, so the cached AABB does not keep Bullet's default
+    // CONVEX_DISTANCE_MARGIN (0.04). addPoint() recalculates the AABB over all points by default, which makes
+    // the build quadratic in the vertex count, so add the points without it and recalculate once.
+    convex_hull_shape->setMargin(BULLET_MARGIN);
     for (const auto& v : vertices)
       convex_hull_shape->addPoint(
-          btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
+          btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])), false);
+    convex_hull_shape->recalcLocalAabb();
 
     return std::make_shared<BulletCollisionShape>(convex_hull_shape);
   }

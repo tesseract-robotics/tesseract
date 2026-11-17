@@ -3,8 +3,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <filesystem>
+#include <limits>
 #include <memory>
 #include <set>
 #include <string>
@@ -12,8 +16,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/collision/bullet/bullet_utils.h>
 #include <tesseract/collision/bullet/convex_hull_utils.h>
 #include <tesseract/common/ply_io.h>
+#include <tesseract/geometry/impl/convex_mesh.h>
 #include <tesseract/geometry/mesh_parser.h>
 
 namespace
@@ -105,6 +111,48 @@ struct PlyFile
     std::filesystem::remove(path, error);
   }
 };
+
+/** @brief The 12 triangles of cube() as a face list */
+Eigen::VectorXi cubeTriangles()
+{
+  Eigen::VectorXi triangles(48);
+  triangles << 3, 0, 2, 3, 3, 0, 3, 1, 3, 4, 5, 7, 3, 4, 7, 6, 3, 0, 1, 5, 3, 0, 5, 4, 3, 2, 6, 7, 3, 2, 7, 3, 3, 0, 4,
+      6, 3, 0, 6, 2, 3, 1, 3, 7, 3, 1, 7, 5;
+  return triangles;
+}
+
+/** @brief Points on the unit sphere (Fibonacci spiral), so every point is a vertex of the convex hull */
+std::shared_ptr<const Vertices> spherePoints(int count)
+{
+  auto vertices = std::make_shared<Vertices>();
+  vertices->reserve(static_cast<std::size_t>(count));
+  const double golden_angle = 2.39996322972865332;  // pi * (3 - sqrt(5))
+  for (int i = 0; i < count; ++i)
+  {
+    const double z = 1.0 - (2.0 * (static_cast<double>(i) + 0.5) / static_cast<double>(count));
+    const double r = std::sqrt(1.0 - (z * z));
+    const double angle = golden_angle * static_cast<double>(i);
+    vertices->emplace_back(r * std::cos(angle), r * std::sin(angle), z);
+  }
+  return vertices;
+}
+
+/** @brief Time in seconds to build the Bullet shape of a convex mesh with the given vertices */
+double convexMeshBuildSeconds(const std::shared_ptr<const Vertices>& vertices)
+{
+  // The Bullet shape is built from the vertices only, so one face is enough. A new geometry has a new UUID, so
+  // the shape cache does not return a shape built earlier.
+  auto faces = std::make_shared<Eigen::VectorXi>(4);
+  *faces << 3, 0, 1, 2;
+  const auto geom = std::make_shared<tesseract::geometry::ConvexMesh>(vertices, faces, 1);
+
+  const auto start = std::chrono::steady_clock::now();
+  const auto shape = tesseract::collision::bullet_internal::createShapePrimitive(geom);
+  const double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+
+  EXPECT_NE(shape, nullptr);
+  return elapsed;
+}
 }  // namespace
 
 TEST(TesseractConvexHullUnit, CubeFaces)  // NOLINT
@@ -166,4 +214,65 @@ TEST(TesseractConvexHullUnit, MeshPlyRoundTrip)  // NOLINT
   ASSERT_NE(loaded.front(), nullptr);
   checkHull(
       *loaded.front()->getVertices(), *loaded.front()->getFaces(), loaded.front()->getFaceCount(), *input, CUBE_FACES);
+}
+
+/**
+ * A convex mesh becomes a btConvexHullShape, which caches its local AABB grown by the margin the shape has when
+ * recalcLocalAabb() runs. setMargin() does not update that cache. The points must therefore be added with
+ * BULLET_MARGIN already set, or the AABB keeps Bullet's default CONVEX_DISTANCE_MARGIN (0.04) on every side.
+ */
+TEST(TesseractConvexHullUnit, BulletConvexMeshAabbUsesBulletMargin)  // NOLINT
+{
+  using tesseract::collision::bullet_internal::BULLET_MARGIN;
+
+  const auto geom = std::make_shared<tesseract::geometry::ConvexMesh>(
+      std::make_shared<const Vertices>(cube()), std::make_shared<const Eigen::VectorXi>(cubeTriangles()), 12);
+
+  const auto shape = tesseract::collision::bullet_internal::createShapePrimitive(geom);
+  ASSERT_NE(shape, nullptr);
+  ASSERT_NE(shape->top_level, nullptr);
+  ASSERT_EQ(shape->top_level->getShapeType(), CONVEX_HULL_SHAPE_PROXYTYPE);
+  const auto* hull = static_cast<const btConvexHullShape*>(shape->top_level.get());
+  EXPECT_EQ(hull->getNumPoints(), 8);
+  EXPECT_NEAR(hull->getMargin(), BULLET_MARGIN, 1e-12);
+
+  btTransform identity;
+  identity.setIdentity();
+  btVector3 aabb_min;
+  btVector3 aabb_max;
+  hull->getAabb(identity, aabb_min, aabb_max);
+  for (int i = 0; i < 3; ++i)
+  {
+    EXPECT_NEAR(aabb_min[i], -0.5 - BULLET_MARGIN, 1e-9) << "axis " << i;
+    EXPECT_NEAR(aabb_max[i], 0.5 + BULLET_MARGIN, 1e-9) << "axis " << i;
+  }
+}
+
+/**
+ * Building the Bullet shape of a convex mesh must be linear in the vertex count (issue #1392).
+ * btConvexHullShape::addPoint() recalculates the local AABB over all points by default, which makes the build
+ * quadratic. The vertex count grows 16 times here, so a linear build takes about 16 times longer and a quadratic
+ * build at least 256 times longer. The bound of 64 leaves a factor of 4 on each side. Each time is the minimum of
+ * several interleaved runs, which limits the effect of machine load on the ratio.
+ */
+TEST(TesseractConvexHullUnit, BulletConvexMeshBuildIsLinear)  // NOLINT
+{
+  const int small_count = 500;
+  const int large_count = 16 * small_count;
+  const auto small_vertices = spherePoints(small_count);
+  const auto large_vertices = spherePoints(large_count);
+
+  double small_seconds = std::numeric_limits<double>::max();
+  double large_seconds = std::numeric_limits<double>::max();
+  for (int i = 0; i < 10; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+      small_seconds = std::min(small_seconds, convexMeshBuildSeconds(small_vertices));
+    large_seconds = std::min(large_seconds, convexMeshBuildSeconds(large_vertices));
+  }
+
+  EXPECT_GT(small_seconds, 0.0);
+  EXPECT_LT(large_seconds, 64.0 * small_seconds)
+      << small_count << " vertices: " << small_seconds << " s, " << large_count << " vertices: " << large_seconds
+      << " s, ratio " << large_seconds / small_seconds;
 }
