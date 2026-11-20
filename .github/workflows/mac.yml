@@ -48,6 +48,9 @@ jobs:
             arch: arm64
             homebrew_root: /opt/homebrew
     runs-on: ${{ matrix.config.runner }}
+    env:
+      # ctest runs one test at a time by default; the suite has ~1200 short tests and a few slow ones.
+      CTEST_PARALLEL_LEVEL: 4
     steps:
     - uses: actions/checkout@v7
       with:

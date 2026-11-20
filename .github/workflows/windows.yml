@@ -19,6 +19,9 @@ jobs:
   ci:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    env:
+      # ctest runs one test at a time by default; the suite has ~1200 short tests and a few slow ones.
+      CTEST_PARALLEL_LEVEL: 4
     strategy:
       fail-fast: false
       matrix:
