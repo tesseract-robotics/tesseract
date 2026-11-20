@@ -37,6 +37,8 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
         TZ: Etc/UTC
+        # ctest runs one test at a time by default; the suite has ~1200 short tests and a few slow ones.
+        CTEST_PARALLEL_LEVEL: 4
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

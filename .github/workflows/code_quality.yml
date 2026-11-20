@@ -26,7 +26,7 @@ jobs:
         include:
           - job_type: clang-tidy
             env:
-              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=${{ github.event_name == 'pull_request' && 'OFF' || 'ON' }} -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DCLANG_TIDY_NAMES=clang-tidy-17"
+              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=${{ github.event_name == 'pull_request' && 'OFF' || 'ON' }} -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DCLANG_TIDY_NAMES=clang-tidy-cached"
           - job_type: codecov
             env:
               TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CODE_COVERAGE=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"
@@ -64,6 +64,30 @@ jobs:
           apt_update
           apt-get -o Acquire::Retries=3 install -y clang-tidy-17 libomp-17-dev
 
+      # clang-tidy re-analysed every file on every run (~38 min), and ccache does not cover it.
+      # ctcache wraps clang-tidy and caches each result, keyed on the preprocessed source, the
+      # effective clang-tidy config and the arguments; only clean results are cached, so a file
+      # with findings is always re-analysed. https://github.com/matus-chochlik/ctcache
+      - name: Install ctcache
+        if: matrix.job_type == 'clang-tidy'
+        shell: bash
+        env:
+          CTCACHE_SHA: 2cb1c2bdd86f5e56a9044908f7c36a8a04a30ca2
+        run: |
+          mkdir -p /opt/ctcache
+          wget -qO- "https://github.com/matus-chochlik/ctcache/archive/${CTCACHE_SHA}.tar.gz" | tar xz -C /opt/ctcache --strip-components=1
+          ln -sf /opt/ctcache/clang-tidy /usr/local/bin/clang-tidy-cached
+          echo "CTCACHE_CLANG_TIDY=/usr/bin/clang-tidy-17" >> "$GITHUB_ENV"
+          echo "CTCACHE_DIR=$GITHUB_WORKSPACE/.ctcache" >> "$GITHUB_ENV"
+
+      - name: Restore clang-tidy cache
+        if: matrix.job_type == 'clang-tidy'
+        uses: actions/cache/restore@v4
+        with:
+          path: .ctcache
+          key: ctcache-clang-tidy-17-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ctcache-clang-tidy-17-
+
       - name: Build and Tests
         uses: tesseract-robotics/colcon-action@v16
         with:
@@ -74,6 +98,19 @@ jobs:
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
           target-args: --cmake-args ${{ matrix.env.TARGET_CMAKE_ARGS }}
+
+      - name: clang-tidy cache statistics
+        if: ${{ !cancelled() && matrix.job_type == 'clang-tidy' }}
+        shell: bash
+        run: python3 /opt/ctcache/src/ctcache/clang_tidy_cache.py --show-stats || true
+
+      # Saved after a failed build too: the files that passed are still worth keeping.
+      - name: Save clang-tidy cache
+        if: ${{ !cancelled() && matrix.job_type == 'clang-tidy' }}
+        uses: actions/cache/save@v4
+        with:
+          path: .ctcache
+          key: ctcache-clang-tidy-17-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload CodeCov Results
         if: matrix.job_type == 'codecov'
