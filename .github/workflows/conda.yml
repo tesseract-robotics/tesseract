@@ -18,8 +18,9 @@ concurrency:
 
 jobs:
   conda-win:
-    # Full-matrix job: skipped on pull requests (a skipped job reports as passing); runs in the merge queue and on branch pushes.
-    if: github.event_name != 'pull_request'
+    # Package build (40-60 min, uncached): too slow to gate merges. Skipped on pull requests and in the
+    # merge queue (a skipped job reports as passing); runs on branch pushes and releases.
+    if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
     runs-on: windows-latest
     defaults:
       run:
@@ -55,8 +56,9 @@ jobs:
         rattler-build build -m .ci_support/win_64_.yaml --recipe recipe/recipe.yaml
 
   conda-linux:
-    # Full-matrix job: skipped on pull requests (a skipped job reports as passing); runs in the merge queue and on branch pushes.
-    if: github.event_name != 'pull_request'
+    # Package build (40-60 min, uncached): too slow to gate merges. Skipped on pull requests and in the
+    # merge queue (a skipped job reports as passing); runs on branch pushes and releases.
+    if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -90,8 +92,9 @@ jobs:
         rattler-build build -m .ci_support/linux_64_.yaml --recipe recipe/recipe.yaml
 
   conda-mac:
-    # Full-matrix job: skipped on pull requests (a skipped job reports as passing); runs in the merge queue and on branch pushes.
-    if: github.event_name != 'pull_request'
+    # Package build (40-60 min, uncached): too slow to gate merges. Skipped on pull requests and in the
+    # merge queue (a skipped job reports as passing); runs on branch pushes and releases.
+    if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
     runs-on: macos-15-intel
     defaults:
       run:
