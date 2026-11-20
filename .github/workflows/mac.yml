@@ -6,6 +6,7 @@ on:
       - master
       - 'dev**'
   pull_request:
+  merge_group:
   schedule:
     - cron: '0 5 * * *'
   release:
@@ -32,6 +33,8 @@ env:
 
 jobs:
   build-macos:
+    # Full-matrix job: skipped on pull requests (a skipped job reports as passing); runs in the merge queue and on branch pushes.
+    if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:

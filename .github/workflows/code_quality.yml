@@ -6,6 +6,7 @@ on:
       - master
       - 'dev**'
   pull_request:
+  merge_group:
   schedule:
     - cron: '0 5 * * *'
 
@@ -25,7 +26,7 @@ jobs:
         include:
           - job_type: clang-tidy
             env:
-              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DCLANG_TIDY_NAMES=clang-tidy-17"
+              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=${{ github.event_name == 'pull_request' && 'OFF' || 'ON' }} -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DCLANG_TIDY_NAMES=clang-tidy-17"
           - job_type: codecov
             env:
               TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CODE_COVERAGE=ON -DTESSERACT_WARNINGS_AS_ERRORS=OFF"

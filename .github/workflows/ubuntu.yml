@@ -6,6 +6,7 @@ on:
       - master
       - 'dev**'
   pull_request:
+  merge_group:
   schedule:
     - cron: '0 5 * * *'
   release:
@@ -57,4 +58,4 @@ jobs:
           rosdep-install-args: -iry --skip-keys ${{ matrix.rosdep_skip_keys }}
           upstream-args: --cmake-args -DCMAKE_BUILD_TYPE=Release
           target-path: target_ws/src
-          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=ON -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DTESSERACT_PACKAGE=ON
+          target-args: --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_BENCHMARKING=${{ github.event_name == 'pull_request' && 'OFF' || 'ON' }} -DTESSERACT_ENABLE_RUN_BENCHMARKING=OFF -DTESSERACT_PACKAGE=ON
