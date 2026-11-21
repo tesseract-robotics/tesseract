@@ -580,6 +580,42 @@ TEST(TesseractKinematicsFactoryUnit, PluginFactorAPIUnit)  // NOLINT
   }
 }
 
+TEST(TesseractKinematicsFactoryUnit, RemoveLastFwdKinPluginRemovesGroupUnit)  // NOLINT
+{
+  KinematicsPluginFactory factory;
+  tesseract::common::PluginInfo pi;
+  pi.class_name = "KDLFwdKin";
+
+  factory.addFwdKinPlugin("new_group", "only_solver", pi);
+  factory.setDefaultFwdKinPlugin("new_group", "only_solver");
+
+  auto map = factory.getFwdKinPlugins();
+  EXPECT_EQ(map.at("new_group").plugins.size(), 1);
+  EXPECT_EQ(map.at("new_group").default_plugin, "only_solver");
+
+  factory.removeFwdKinPlugin("new_group", "only_solver");
+  map = factory.getFwdKinPlugins();
+  EXPECT_TRUE(map.find("new_group") == map.end());
+}
+
+TEST(TesseractKinematicsFactoryUnit, RemoveLastInvKinPluginRemovesGroupUnit)  // NOLINT
+{
+  KinematicsPluginFactory factory;
+  tesseract::common::PluginInfo pi;
+  pi.class_name = "KDLInvKin";
+
+  factory.addInvKinPlugin("new_group", "only_solver", pi);
+  factory.setDefaultInvKinPlugin("new_group", "only_solver");
+
+  auto map = factory.getInvKinPlugins();
+  EXPECT_EQ(map.at("new_group").plugins.size(), 1);
+  EXPECT_EQ(map.at("new_group").default_plugin, "only_solver");
+
+  factory.removeInvKinPlugin("new_group", "only_solver");
+  map = factory.getInvKinPlugins();
+  EXPECT_TRUE(map.find("new_group") == map.end());
+}
+
 TEST(TesseractKinematicsFactoryUnit, LoadKinematicsPluginInfoUnit)  // NOLINT
 {
   using namespace tesseract::scene_graph;
