@@ -225,12 +225,12 @@ void KinematicsPluginFactory::removeFwdKinPlugin(const std::string& group_name, 
     throw std::runtime_error("KinematicsPluginFactory, tried to removed fwd kin solver '" + solver_name +
                              "' that does not exist for group '" + group_name + "'!");
 
+  if (group_it->second.default_plugin == solver_name)
+    group_it->second.default_plugin.clear();
+
   group_it->second.plugins.erase(solver_it);
   if (group_it->second.plugins.empty())
     fwd_plugin_info_.erase(group_it);
-
-  if (group_it->second.default_plugin == solver_name)
-    group_it->second.default_plugin.clear();
 }
 
 void KinematicsPluginFactory::setDefaultFwdKinPlugin(const std::string& group_name, const std::string& solver_name)
@@ -285,12 +285,12 @@ void KinematicsPluginFactory::removeInvKinPlugin(const std::string& group_name, 
     throw std::runtime_error("KinematicsPluginFactory, tried to removed inv kin solver '" + solver_name +
                              "' that does not exist for group '" + group_name + "'!");
 
+  if (group_it->second.default_plugin == solver_name)
+    group_it->second.default_plugin.clear();
+
   group_it->second.plugins.erase(solver_it);
   if (group_it->second.plugins.empty())
     inv_plugin_info_.erase(group_it);
-
-  if (group_it->second.default_plugin == solver_name)
-    group_it->second.default_plugin.clear();
 }
 
 void KinematicsPluginFactory::setDefaultInvKinPlugin(const std::string& group_name, const std::string& solver_name)
