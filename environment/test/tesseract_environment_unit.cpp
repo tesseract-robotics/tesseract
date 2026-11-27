@@ -819,7 +819,7 @@ TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
     joint_3.child_link_id = "does_not_exist";
     joint_3.type = JointType::FIXED;
 
-    EXPECT_ANY_THROW(std::make_shared<AddLinkCommand>(link_3, joint_3));  // NOLINT
+    EXPECT_ANY_THROW((void)std::make_shared<AddLinkCommand>(link_3, joint_3));  // NOLINT
   }
 }
 

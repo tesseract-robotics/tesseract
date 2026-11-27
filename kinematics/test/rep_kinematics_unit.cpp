@@ -69,33 +69,33 @@ InverseKinematics::UPtr getFullInvKinematics(const tesseract::scene_graph::Scene
   {  // Test failure
     tesseract::scene_graph::SceneGraph scene_graph_empty;
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_shared<REPInvKin>(
         scene_graph_empty, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_shared<REPInvKin>(
         scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution, ""));
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_shared<REPInvKin>(
         scene_graph, scene_state, nullptr, 2.5, positioner_kin->clone(), positioner_resolution));
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_shared<REPInvKin>(
         scene_graph, scene_state, opw_kin->clone(), -2.5, positioner_kin->clone(), positioner_resolution));
 
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(
-        std::make_shared<REPInvKin>(scene_graph, scene_state, opw_kin->clone(), 2.5, nullptr, positioner_resolution));
+    EXPECT_ANY_THROW((void)std::make_shared<REPInvKin>(
+        scene_graph, scene_state, opw_kin->clone(), 2.5, nullptr, positioner_resolution));
 
     positioner_resolution = Eigen::VectorXd();
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_shared<REPInvKin>(
         scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
 
     positioner_resolution = Eigen::VectorXd::Constant(2, -0.1);
     // NOLINTNEXTLINE
-    EXPECT_ANY_THROW(std::make_shared<REPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_shared<REPInvKin>(
         scene_graph, scene_state, opw_kin->clone(), 2.5, positioner_kin->clone(), positioner_resolution));
   }
 

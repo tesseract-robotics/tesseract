@@ -68,6 +68,25 @@ private:
   tesseract::common::LinkId base_link_;
   std::vector<tesseract::common::LinkId> tip_links_;
 };
+
+/** @brief An inverse kinematics solver that returns its seed (in its own joint order) as the only solution. */
+class EchoSeedInvKin : public FakeInvKin
+{
+public:
+  using FakeInvKin::FakeInvKin;
+
+  void calcInvKin(tesseract::kinematics::IKSolutions& solutions,
+                  const tesseract::common::LinkIdTransformMap& /*tip_link_poses*/,
+                  const Eigen::Ref<const Eigen::VectorXd>& seed) const override
+  {
+    solutions.emplace_back(seed);
+  }
+
+  tesseract::kinematics::InverseKinematics::UPtr clone() const override
+  {
+    return std::make_unique<EchoSeedInvKin>(*this);
+  }
+};
 }  // namespace
 
 TEST(TesseractKinematicsUnit, UtilsHarmonizeTowardZeroUnit)  // NOLINT
@@ -986,6 +1005,45 @@ TEST(TesseractKinematicsUnit, KinematicGroupConstructorThrowsUnit)  // NOLINT
     EXPECT_THROW(tesseract::kinematics::KinematicGroup("kg", joint_ids, std::move(inv), *scene_graph, scene_state),
                  std::runtime_error);
   }
+}
+
+TEST(TesseractKinematicsUnit, KinematicGroupReorderedCalcInvKinUnit)  // NOLINT
+{
+  using tesseract::common::JointId;
+  using tesseract::common::LinkId;
+
+  tesseract::common::GeneralResourceLocator locator;
+  auto scene_graph = tesseract::kinematics::test_suite::getSceneGraphIIWA(locator);
+
+  tesseract::scene_graph::KDLStateSolver ss(*scene_graph);
+  const auto scene_state = ss.getState();
+
+  const LinkId base_link_id("base_link");
+  const LinkId tip_link_id("tool0");
+  const std::vector<JointId> solver_joint_ids{ "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                               "joint_a5", "joint_a6", "joint_a7" };
+
+  // The group lists the solver's joints shifted by one, so both index maps differ from identity
+  const std::vector<JointId> group_joint_ids{ "joint_a2", "joint_a3", "joint_a4", "joint_a5",
+                                              "joint_a6", "joint_a7", "joint_a1" };
+  auto inv = std::make_unique<EchoSeedInvKin>(solver_joint_ids, base_link_id, std::vector<LinkId>{ tip_link_id });
+  const tesseract::kinematics::KinematicGroup kg(
+      "kg_reordered", group_joint_ids, std::move(inv), *scene_graph, scene_state);
+
+  // joint_a1 = 2.5 is within its own limits (+/-2.9668) but outside joint_a2's (+/-2.0942), so a solution
+  // checked against the group's limits in solver order is wrongly rejected.
+  Eigen::VectorXd seed(7);
+  seed << 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 2.5;  // group order: a2, a3, a4, a5, a6, a7, a1
+  ASSERT_TRUE(kg.checkJoints(seed));
+
+  const tesseract::kinematics::KinGroupIKInput input(Eigen::Isometry3d::Identity(), base_link_id, tip_link_id);
+  const tesseract::kinematics::IKSolutions solutions = kg.calcInvKin(input, seed);
+
+  // The echo solver returns the seed in solver order; the group must hand it back in group order.
+  // Harmonization may add and remove a 2*pi turn, so allow round-off (rad) of a few ulp of 2*pi.
+  constexpr double round_off = 1e-12;
+  ASSERT_EQ(solutions.size(), 1);
+  EXPECT_TRUE(solutions.front().isApprox(seed, round_off)) << solutions.front().transpose();
 }
 
 TEST(TesseractKinematicsUnit, JointGroupCopyAssignmentUnit)  // NOLINT
