@@ -62,6 +62,9 @@ jobs:
         pkgs: >-
           ${{ env.VCPKG_PKGS }}
         triplet: ${{ matrix.config.vcpkg_triplet }}
+        # The 2026.10.16 vcpkg release carries a stale kubazip hash (fixed in microsoft/vcpkg#55202).
+        # Drop this pin once a vcpkg release containing that fix is out.
+        revision: 504152f3f2a9fc3290c4214d05ff641be2c9b4c1
         extra-args: --clean-after-build --overlay-triplets=${{ github.workspace }}/target_ws/src/.github/workflows/vcpkg_triplets
         token: ${{ github.token }}
         cache-key: osx-${{ matrix.config.arch }}-vcpkg
