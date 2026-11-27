@@ -304,8 +304,11 @@ void KinematicGroup::calcInvKin(IKSolutions& solutions,
     inv_kin_->calcInvKin(solutions, ik_inputs, ordered);
 
     auto ne = std::remove_if(solutions.begin() + num_sol, solutions.end(), [&](Eigen::VectorXd& solution) {
+      // The solver returns its own joint order: map each solution back to the group order before harmonizing,
+      // checking limits and returning it, since redundancy_indices_ and limits_ are in group order.
+      const Eigen::VectorXd solver_order = solution;
       for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
-        ordered(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
+        solution(i) = solver_order(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
 
       tesseract::kinematics::harmonizeTowardMedian<double>(solution, redundancy_indices_, limits_.joint_limits);
       return (!tesseract::common::satisfiesLimits<double>(solution, limits_.joint_limits));
