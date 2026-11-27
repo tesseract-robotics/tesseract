@@ -774,7 +774,7 @@ TEST(TesseractGeometryUnit, CompoundMesh)  // NOLINT
   // Test Failure
   meshes.clear();
   meshes.push_back(sub_geom);
-  EXPECT_ANY_THROW(std::make_shared<tesseract::geometry::CompoundMesh>(meshes));  // NOLINT
+  EXPECT_ANY_THROW((void)std::make_shared<tesseract::geometry::CompoundMesh>(meshes));  // NOLINT
 
   // Test isIdentical
   EXPECT_TRUE(tesseract::geometry::isIdentical(*geom, *geom_clone));

@@ -255,66 +255,66 @@ TEST(TesseractKinematicsUnit, RTPInvKinConstructorValidation)  // NOLINT
 
   {  // Empty scene graph
     tesseract::scene_graph::SceneGraph empty_sg;
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         empty_sg, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), tool_resolution));  // NOLINT
   }
   {  // Empty solver name
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), tool_resolution, ""));  // NOLINT
   }
   {  // Null manipulator
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, nullptr, 2.0, tool_kin->clone(), tool_resolution));  // NOLINT
   }
   {  // Zero reach
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 0.0, tool_kin->clone(), tool_resolution));  // NOLINT
   }
   {  // Null tool positioner
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, nullptr, tool_resolution));  // NOLINT
   }
   {  // Empty resolution
     Eigen::VectorXd bad_res;
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), bad_res));  // NOLINT
   }
   {  // Negative resolution
     Eigen::VectorXd neg_res = Eigen::VectorXd::Constant(1, -0.1);
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), neg_res));  // NOLINT
   }
   {  // Auto-reach ctor: empty scene graph
     tesseract::scene_graph::SceneGraph empty_sg;
     EXPECT_ANY_THROW(
-        std::make_unique<RTPInvKin>(empty_sg, scene_state, opw_kin->clone(), tool_kin->clone(), tool_resolution));
+        (void)std::make_unique<RTPInvKin>(empty_sg, scene_state, opw_kin->clone(), tool_kin->clone(), tool_resolution));
   }
   {  // Auto-reach ctor: null manipulator
     EXPECT_ANY_THROW(
-        std::make_unique<RTPInvKin>(*scene_graph, scene_state, nullptr, tool_kin->clone(), tool_resolution));
+        (void)std::make_unique<RTPInvKin>(*scene_graph, scene_state, nullptr, tool_kin->clone(), tool_resolution));
   }
   {  // Auto-reach ctor: null tool positioner
     EXPECT_ANY_THROW(
-        std::make_unique<RTPInvKin>(*scene_graph, scene_state, opw_kin->clone(), nullptr, tool_resolution));
+        (void)std::make_unique<RTPInvKin>(*scene_graph, scene_state, opw_kin->clone(), nullptr, tool_resolution));
   }
   {  // Inverted tool sample range (min > max)
     Eigen::MatrixX2d bad_range(1, 2);
     bad_range << 1.0, -1.0;
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), bad_range, tool_resolution));  // NOLINT
   }
   Eigen::MatrixX2d range(1, 2);
   range << -M_PI, M_PI;
   {  // Explicit-range ctor with explicit reach: null tool positioner
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, nullptr, range, tool_resolution));  // NOLINT
   }
   {  // Explicit-range auto-reach ctor: null tool positioner
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), nullptr, range, tool_resolution));  // NOLINT
   }
   {  // Explicit-range auto-reach ctor: multi-tip manipulator
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, std::make_unique<TwoTipStubInvKin>(), tool_kin->clone(), range, tool_resolution));
   }
   {  // Tool positioner with other than one tip link. The stub's base is the manipulator tip, so
@@ -340,23 +340,23 @@ TEST(TesseractKinematicsUnit, RTPInvKinConstructorValidation)  // NOLINT
      // an unchecked map::at would throw out_of_range, which is a logic_error and would not match.
     tesseract::scene_graph::SceneState partial_state = scene_state;
     partial_state.link_transforms.erase(ABB_MANIP_TIP_LINK);
-    EXPECT_THROW(std::make_unique<RTPInvKin>(*scene_graph,  // NOLINT
-                                             partial_state,
-                                             opw_kin->clone(),
-                                             2.0,
-                                             tool_kin->clone(),
-                                             tool_resolution),
+    EXPECT_THROW((void)std::make_unique<RTPInvKin>(*scene_graph,  // NOLINT
+                                                   partial_state,
+                                                   opw_kin->clone(),
+                                                   2.0,
+                                                   tool_kin->clone(),
+                                                   tool_resolution),
                  std::runtime_error);
   }
   {  // tool_sample_range row count mismatch (2 rows, 1-DOF tool positioner)
     Eigen::MatrixX2d wrong_range(2, 2);
     wrong_range << -1.0, 1.0, -1.0, 1.0;
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         *scene_graph, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), wrong_range, tool_resolution));  // NOLINT
   }
   {  // Empty scene graph via the explicit-range ctor
     tesseract::scene_graph::SceneGraph empty_sg;
-    EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(
+    EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(
         empty_sg, scene_state, opw_kin->clone(), 2.0, tool_kin->clone(), range, tool_resolution));  // NOLINT
   }
 }
@@ -857,7 +857,7 @@ TEST(TesseractKinematicsUnit, RTPInvKinRejectsMultiTipManipulator)  // NOLINT
   Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
 
   // Explicit-reach ctor.
-  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+  EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(  // NOLINT
       *scene_graph,
       scene_state,
       std::make_unique<TwoTipStubInvKin>(),
@@ -866,7 +866,7 @@ TEST(TesseractKinematicsUnit, RTPInvKinRejectsMultiTipManipulator)  // NOLINT
       tool_resolution));
 
   // Auto-reach ctor.
-  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+  EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(  // NOLINT
       *scene_graph,
       scene_state,
       std::make_unique<TwoTipStubInvKin>(),
@@ -888,7 +888,7 @@ TEST(TesseractKinematicsUnit, RTPInvKinRejectsActiveJointBetweenManipTipAndToolB
   auto tool_kin = std::make_unique<KDLFwdKinChain>(*scene_graph, "tool_pivot", "tool_tip");
   Eigen::VectorXd tool_resolution = Eigen::VectorXd::Constant(1, 0.1);
 
-  EXPECT_ANY_THROW(std::make_unique<RTPInvKin>(  // NOLINT
+  EXPECT_ANY_THROW((void)std::make_unique<RTPInvKin>(  // NOLINT
       *scene_graph,
       scene_state,
       std::move(opw_kin),
